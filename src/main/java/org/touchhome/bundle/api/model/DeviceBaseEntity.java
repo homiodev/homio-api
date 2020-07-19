@@ -25,11 +25,11 @@ import java.util.Set;
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T> {
 
     @UIField(readOnly = true, order = 100)
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Getter
     private String ieeeAddress;
 
-    @Setter(onMethod_ = {@PublicJsMethod})
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Setter
+    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @UIField(order = 11, type = UIFieldType.Selection)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994", method = "selectPlace")

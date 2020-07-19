@@ -32,8 +32,6 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -124,7 +122,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                 throw new RuntimeException("Unable to execute hardware method without implementation");
             }));
         }
-        if(this.handler != null) {
+        if (this.handler != null) {
             this.handler.accept(beanFactory);
         }
     }

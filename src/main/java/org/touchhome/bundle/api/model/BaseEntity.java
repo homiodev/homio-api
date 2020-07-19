@@ -33,39 +33,39 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
     private String entityID;
 
     @UIField(order = 2, inlineEdit = true)
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Getter
     private String name;
 
     @Lob
     @UIField(order = 3, hideOnEmpty = true)
     @Column(length = 1048576)
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Getter
     private String description;
 
     @Column(nullable = false)
     @UIField(order = 4, readOnly = true, type = StaticDate)
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Getter
     private Date creationTime;
 
     @UIField(order = 5, readOnly = true, type = StaticDate)
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Getter
     private Date updateTime;
 
     @Transient
     private String entityIDSupplierStr;
 
-    @Getter(onMethod_ = {@PublicJsMethod})
-    @Setter(onMethod_ = {@PublicJsMethod})
+    @Getter
+    @Setter
     private Integer xb = 0;
 
-    @Getter(onMethod_ = {@PublicJsMethod})
-    @Setter(onMethod_ = {@PublicJsMethod})
+    @Getter
+    @Setter
     private Integer yb = 0;
 
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Getter
     private Integer bw = 1;
 
-    @Getter(onMethod_ = {@PublicJsMethod})
+    @Getter
     private Integer bh = 1;
 
     public static BaseEntity of(String entityID, String name) {
