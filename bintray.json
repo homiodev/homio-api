@@ -26,8 +26,8 @@
       }
     },
     {
-      "includePattern": "target/@project.build.finalName@.jar",
-      "uploadPattern": "org/touchhome/@project.artifactId@/@project.version@/@project.artifactId@-@project.version@.jar",
+      "includePattern": "target/(.*\.jar)",
+      "uploadPattern": "org/touchhome/@project.artifactId@/@project.version@/$1",
       "matrixParams": {
         "override": 1
       }
