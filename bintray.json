@@ -1,6 +1,6 @@
 {
   "package": {
-    "name": "touchhome",
+    "name": "@project.artifactId@",
     "repo": "maven-repo",
     "subject": "touchhome",
     "website_url": "@project.url@",
