@@ -1,0 +1,25 @@
+{
+  "package": {
+    "name": "touchhome-bundle-api",
+    "repo": "touchhome-bundle-api",
+    "subject": "touchhome-bundle-api",
+    "vcs_url": "https://github.com/touchhome/touchhome-bundle-api.git",
+    "licenses": [
+      "MIT"
+    ],
+    "public_download_numbers": true
+  },
+  "version": {
+    "name": "1.0.0"
+  },
+  "files": [
+    {
+      "includePattern": "target/touchhome-bundle-api.git",
+      "uploadPattern": "touchhome-bundle-api.git",
+      "matrixParams": {
+        "override": 1
+      }
+    }
+  ],
+  "publish": true
+}
