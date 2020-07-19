@@ -1,6 +1,6 @@
 {
   "package": {
-    "name": "touchhome-bundle-api",
+    "name": "Deploy release to bintray for touchhome-bundle-api",
     "repo": "touchhome-bundle-api",
     "subject": "touchhome-bundle-api",
     "vcs_url": "https://github.com/touchhome/touchhome-bundle-api.git",
@@ -10,12 +10,12 @@
     "public_download_numbers": true
   },
   "version": {
-    "name": "1.0.0"
+    "name": "$TRAVIS_TAG"
   },
   "files": [
     {
-      "includePattern": "target/touchhome-bundle-api.git",
-      "uploadPattern": "touchhome-bundle-api.git",
+      "includePattern": "target/*.jar",
+      "uploadPattern": "$1",
       "matrixParams": {
         "override": 1
       }
