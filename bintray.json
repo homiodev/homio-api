@@ -1,21 +1,33 @@
 {
   "package": {
-    "name": "touchhome-bundle-api",
-    "repo": "touchhome-bundle-api",
-    "subject": "touchhome-bundle-api",
-    "vcs_url": "https://github.com/touchhome/touchhome-bundle-api.git",
+    "name": "touchhome",
+    "repo": "bundle-api",
+    "subject": "TouchHome",
+    "website_url": "${project.url}",
+    "issue_tracker_url": "${project.url}/issues",
+    "vcs_url": "${project.url}",
     "licenses": [
       "MIT"
     ],
-    "public_download_numbers": true
+    "public_download_numbers": true,
+    "public_stats": true
   },
   "version": {
-    "name": "1.0.0"
+    "name": "${project.version}",
+    "released": "${maven.build.timestamp}",
+    "vcs_tag": "${project.version}"
   },
   "files": [
     {
-      "includePattern": "target/touchhome-bundle-api.git",
-      "uploadPattern": "touchhome-bundle-api.git",
+      "includePattern": "pom.xml",
+      "uploadPattern": "org/touchhome/${project.artifactId}/${project.version}/${project.artifactId}-${project.version}.pom",
+      "matrixParams": {
+        "override": 1
+      }
+    },
+    {
+      "includePattern": "target/${project.build.finalName}.jar",
+      "uploadPattern": "org/touchhome/${project.artifactId}/${project.version/${project.artifactId}-${project.version}.jar",
       "matrixParams": {
         "override": 1
       }
