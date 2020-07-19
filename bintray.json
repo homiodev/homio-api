@@ -2,7 +2,7 @@
   "package": {
     "name": "touchhome",
     "repo": "bundle-api",
-    "subject": "TouchHome",
+    "subject": "touchhome",
     "website_url": "${project.url}",
     "issue_tracker_url": "${project.url}/issues",
     "vcs_url": "${project.url}",
