@@ -1,7 +1,7 @@
 {
   "package": {
     "name": "touchhome",
-    "repo": "bundle-api",
+    "repo": "maven-repo",
     "subject": "touchhome",
     "website_url": "${project.url}",
     "issue_tracker_url": "${project.url}/issues",
