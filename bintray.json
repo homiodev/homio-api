@@ -10,7 +10,7 @@
     "public_download_numbers": true
   },
   "version": {
-    "name": "$TRAVIS_TAG"
+    "name": "1.0"
   },
   "files": [
     {
