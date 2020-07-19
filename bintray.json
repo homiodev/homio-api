@@ -3,9 +3,9 @@
     "name": "touchhome",
     "repo": "maven-repo",
     "subject": "touchhome",
-    "website_url": "${project.url}",
-    "issue_tracker_url": "${project.url}/issues",
-    "vcs_url": "${project.url}",
+    "website_url": "@project.url@",
+    "issue_tracker_url": "@project.url@/issues",
+    "vcs_url": "@project.url@",
     "licenses": [
       "MIT"
     ],
@@ -13,21 +13,21 @@
     "public_stats": true
   },
   "version": {
-    "name": "${project.version}",
-    "released": "${maven.build.timestamp}",
-    "vcs_tag": "${project.version}"
+    "name": "@project.version@",
+    "released": "@maven.build.timestamp@",
+    "vcs_tag": "@project.version@"
   },
   "files": [
     {
       "includePattern": "pom.xml",
-      "uploadPattern": "org/touchhome/${project.artifactId}/${project.version}/${project.artifactId}-${project.version}.pom",
+      "uploadPattern": "org/touchhome/@project.artifactId@/@project.version@/@project.artifactId@-@project.version@.pom",
       "matrixParams": {
         "override": 1
       }
     },
     {
-      "includePattern": "target/${project.build.finalName}.jar",
-      "uploadPattern": "org/touchhome/${project.artifactId}/${project.version/${project.artifactId}-${project.version}.jar",
+      "includePattern": "target/@project.build.finalName@.jar",
+      "uploadPattern": "org/touchhome/@project.artifactId@/@project.version@/@project.artifactId@-@project.version@.jar",
       "matrixParams": {
         "override": 1
       }
