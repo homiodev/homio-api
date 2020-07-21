@@ -23,7 +23,7 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
     }
 
     default String getBundleImage() {
-        return getBundleId() + ".png";
+        return "image.png";
     }
 
     String getBundleId();
