@@ -42,7 +42,10 @@ public class Scratch3ExtensionBlocks {
         if (color != null) {
             URL resource = getClass().getClassLoader().getResource(this.id + ".png");
             if (resource == null) {
-                throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
+                resource = getClass().getClassLoader().getResource("image.png");
+                if (resource == null) {
+                    throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
+                }
             }
             this.blockIconURI = "data:image/png;base64," + Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
             this.scratch3Color = new Scratch3Color(color);
