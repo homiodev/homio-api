@@ -1,13 +1,12 @@
 package org.touchhome.bundle.api;
 
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.SystemUtils;
-import org.touchhome.bundle.api.hquery.api.HQueryParam;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.model.BaseEntity;
 import org.touchhome.bundle.api.model.HasIdIdentifier;
 import org.touchhome.bundle.api.model.UserEntity;
 import org.touchhome.bundle.api.repository.AbstractRepository;
-import org.touchhome.bundle.api.ui.PublicJsMethod;
 import org.touchhome.bundle.api.util.NotificationType;
 
 import javax.validation.constraints.NotNull;
@@ -37,155 +36,125 @@ public interface EntityContext {
         return SystemUtils.IS_OS_LINUX && !isDevEnvironment();
     }
 
-    @PublicJsMethod
-    void sendNotification(String destination, Object param);
+    void sendNotification(@ApiParam("destination") String destination, @ApiParam("param") Object param);
 
-    @PublicJsMethod
-    default void sendNotification(NotificationEntityJSON notificationEntityJSON) {
+    default void sendNotification(@ApiParam("NotificationEntityJSON") NotificationEntityJSON notificationEntityJSON) {
         if (notificationEntityJSON != null) {
             sendNotification("-notification", notificationEntityJSON);
         }
     }
 
-    @PublicJsMethod
-    void showAlwaysOnViewNotification(NotificationEntityJSON notificationEntityJSON, @HQueryParam("color (in secs.)") int duration, @HQueryParam("color") String color);
+    void showAlwaysOnViewNotification(@ApiParam("NotificationEntityJSON") NotificationEntityJSON notificationEntityJSON, @ApiParam("duration") int duration, @ApiParam("color") String color);
 
-    @PublicJsMethod
-    void hideAlwaysOnViewNotification(NotificationEntityJSON notificationEntityJSON);
+    void hideAlwaysOnViewNotification(@ApiParam("NotificationEntityJSON") NotificationEntityJSON notificationEntityJSON);
 
-    @PublicJsMethod
-    default void sendNotification(String name, String description, NotificationType notificationType) {
+    default void sendNotification(@ApiParam("name") String name, @ApiParam("description") String description, @ApiParam("notificationType") NotificationType notificationType) {
         sendNotification(new NotificationEntityJSON("random-" + System.currentTimeMillis())
                 .setName(name)
                 .setDescription(description)
                 .setNotificationType(notificationType));
     }
 
-    @PublicJsMethod
-    <T> T getSettingValue(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz);
+    <T> T getSettingValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass);
 
-    default <T> void listenSettingValueAsync(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, Consumer<T> listener) {
-        listenSettingValue(bundleSettingPluginClazz, value ->
-                new Thread(() -> listener.accept(value), "run-listen-value-async-" + bundleSettingPluginClazz.getSimpleName()).start());
+    default <T> void listenSettingValueAsync(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Consumer<T> listener) {
+        listenSettingValue(settingClass, value ->
+                new Thread(() -> listener.accept(value), "run-listen-value-async-" + settingClass.getSimpleName()).start());
     }
 
-    default <T> void listenSettingValueAsync(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, Runnable listener) {
-        listenSettingValueAsync(bundleSettingPluginClazz, t -> listener.run());
+    default <T> void listenSettingValueAsync(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Runnable listener) {
+        listenSettingValueAsync(settingClass, t -> listener.run());
     }
 
-    default <T> void listenSettingValue(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, Runnable listener) {
-        listenSettingValue(bundleSettingPluginClazz, p -> listener.run());
+    default <T> void listenSettingValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Runnable listener) {
+        listenSettingValue(settingClass, p -> listener.run());
     }
 
-    <T> void listenSettingValue(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, Consumer<T> listener);
+    <T> void listenSettingValue(Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Consumer<T> listener);
 
-    @PublicJsMethod
-    <T> void setSettingValueRaw(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, @NotNull String value);
+    <T> void setSettingValueRaw(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, @ApiParam("value") @NotNull String value);
 
-    @PublicJsMethod
-    <T> void setSettingValue(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, T value);
+    <T> void setSettingValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull T value);
 
-    @PublicJsMethod
-    <T> void setSettingValueSilence(Class<? extends BundleSettingPlugin<T>> settingPluginClazz, @NotNull T value);
+    <T> void setSettingValueSilence(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull T value);
 
-    @PublicJsMethod
-    <T> void setSettingValueSilenceRaw(Class<? extends BundleSettingPlugin<T>> settingPluginClazz, @NotNull String value);
+    <T> void setSettingValueSilenceRaw(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull String value);
 
-    @PublicJsMethod
-    <T extends BaseEntity> T getEntity(String entityID);
+    <T extends BaseEntity> T getEntity(@ApiParam("entityID") String entityID);
 
-    @PublicJsMethod
-    <T extends BaseEntity> T getEntityOrDefault(String entityID, T defEntity);
+    <T extends BaseEntity> T getEntityOrDefault(@ApiParam("entityID") String entityID, @ApiParam("defEntity") T defEntity);
 
-    @PublicJsMethod
-    <T> T getEntity(String entityID, Class<T> clazz);
+    <T> T getEntity(@ApiParam("entityID") String entityID, @ApiParam("clazz") Class<T> clazz);
 
-    @PublicJsMethod
-    <T extends BaseEntity> T getEntity(String entityID, boolean useCache);
+    <T extends BaseEntity> T getEntity(@ApiParam("entityID") String entityID, @ApiParam("useCache") boolean useCache);
 
-    @PublicJsMethod
-    default Optional<AbstractRepository> getRepository(BaseEntity baseEntity) {
+    default Optional<AbstractRepository> getRepository(@ApiParam("baseEntity") BaseEntity baseEntity) {
         return getRepository(baseEntity.getEntityID());
     }
 
-    @PublicJsMethod
-    Optional<AbstractRepository> getRepository(String entityID);
+    Optional<AbstractRepository> getRepository(@ApiParam("entityID") String entityID);
 
-    @PublicJsMethod
     AbstractRepository getRepository(Class<? extends BaseEntity> entityClass);
 
-    @PublicJsMethod
-    <T extends BaseEntity> T getEntity(T entity);
+    <T extends BaseEntity> T getEntity(@ApiParam("entity") T entity);
 
-    @PublicJsMethod
-    <T extends HasIdIdentifier> void saveDelayed(T entity);
+    <T extends HasIdIdentifier> void saveDelayed(@ApiParam("entity") T entity);
 
-    @PublicJsMethod
-    <T extends BaseEntity> void saveDelayed(T entity);
+    <T extends BaseEntity> void saveDelayed(@ApiParam("entity") T entity);
 
-    @PublicJsMethod
-    <T extends HasIdIdentifier> void save(T entity);
+    <T extends HasIdIdentifier> void save(@ApiParam("entity") T entity);
 
-    @PublicJsMethod
-    <T extends BaseEntity> T save(T entity);
+    <T extends BaseEntity> T save(@ApiParam("entity") T entity);
 
-    @PublicJsMethod
-    BaseEntity<? extends BaseEntity> delete(BaseEntity baseEntity);
+    <T extends BaseEntity> T delete(@ApiParam("entity") T entity);
 
-    @PublicJsMethod
-    void sendInfoMessage(String message);
+    void sendInfoMessage(@ApiParam("message") String message);
 
-    @PublicJsMethod
-    void sendErrorMessage(String message, Exception ex);
+    void sendErrorMessage(@ApiParam("message") String message, @ApiParam("ex") Exception ex);
 
-    @PublicJsMethod
-    <T extends BaseEntity> List<T> findAll(Class<T> clazz);
+    <T extends BaseEntity> List<T> findAll(@ApiParam("clazz") Class<T> clazz);
 
-    @PublicJsMethod
-    <T extends BaseEntity> List<T> findAllByPrefix(String prefix);
+    <T extends BaseEntity> List<T> findAllByPrefix(@ApiParam("prefix") String prefix);
 
-    @PublicJsMethod
-    default <T extends BaseEntity> List<T> findAll(T baseEntity) {
-        return (List<T>) findAll(baseEntity.getClass());
+    default <T extends BaseEntity> List<T> findAll(@ApiParam("entity") T entity) {
+        return (List<T>) findAll(entity.getClass());
     }
 
-    @PublicJsMethod
-    BaseEntity<? extends BaseEntity> delete(String entityId);
+    BaseEntity<? extends BaseEntity> delete(@ApiParam("entityID") String entityId);
 
-    @PublicJsMethod
-    AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(String repositoryPrefix);
+    AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(@ApiParam("repositoryPrefix") String repositoryPrefix);
 
-    @PublicJsMethod
-    AbstractRepository<BaseEntity> getRepositoryByClass(String className);
+    AbstractRepository<BaseEntity> getRepositoryByClass(@ApiParam("className") String className);
 
-    @PublicJsMethod
-    <T extends BaseEntity> T getEntityByName(String name, Class<T> entityClass);
+    <T extends BaseEntity> T getEntityByName(@ApiParam("name") String name, @ApiParam("entityClass") Class<T> entityClass);
 
-    <T extends BaseEntity> void addEntityUpdateListener(String entityID, Consumer<T> listener);
+    <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityID") String entityID, @ApiParam("listener") Consumer<T> listener);
 
-    <T extends BaseEntity> void addEntityUpdateListener(String entityID, BiConsumer<T, T> listener);
+    <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityID") String entityID, @ApiParam("listener") BiConsumer<T, T> listener);
 
-    <T extends BaseEntity> void addEntityUpdateListener(Class<T> entityClass, Consumer<T> listener);
+    <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityClass") Class<T> entityClass, @ApiParam("listener") Consumer<T> listener);
 
-    <T extends BaseEntity> void addEntityUpdateListener(Class<T> entityClass, BiConsumer<T, T> listener);
+    <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityClass") Class<T> entityClass, @ApiParam("listener") BiConsumer<T, T> listener);
 
-    <T extends BaseEntity> void removeEntityUpdateListener(String entityID, BiConsumer<T, T> listener);
+    <T extends BaseEntity> void addEntityRemovedListener(@ApiParam("entityClass") Class<T> entityClass, @ApiParam("listener") Consumer<T> listener);
 
-    void setFeatureState(String feature, boolean state);
+    <T extends BaseEntity> void removeEntityUpdateListener(@ApiParam("entityID") String entityID, @ApiParam("listener") BiConsumer<T, T> listener);
 
-    boolean isFeatureEnabled(String deviceFeature);
+    void setFeatureState(@ApiParam("feature") String feature, @ApiParam("state") boolean state);
+
+    boolean isFeatureEnabled(@ApiParam("deviceFeature") String deviceFeature);
 
     Map<String, Boolean> getDeviceFeatures();
 
-    <T> T getBean(String beanName, Class<T> clazz);
+    <T> T getBean(@ApiParam("beanName") String beanName, @ApiParam("clazz") Class<T> clazz);
 
-    <T> T getBean(Class<T> clazz);
+    <T> T getBean(@ApiParam("clazz") Class<T> clazz);
 
-    <T> Collection<T> getBeansOfType(Class<T> clazz);
+    <T> Collection<T> getBeansOfType(@ApiParam("clazz") Class<T> clazz);
 
     UserEntity getUser();
 
     Collection<AbstractRepository> getRepositories();
 
-    <T> List<Class<? extends T>> getClassesWithAnnotation(Class<? extends Annotation> annotation);
+    <T> List<Class<? extends T>> getClassesWithAnnotation(@ApiParam("annotation") Class<? extends Annotation> annotation);
 }

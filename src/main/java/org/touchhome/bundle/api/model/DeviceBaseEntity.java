@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.json.Option;
-import org.touchhome.bundle.api.ui.PublicJsMethod;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
@@ -56,12 +55,10 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     /**
      * Define order in which entity will be shown on UI map
      */
-    @PublicJsMethod
     public int getOrder() {
         return 100;
     }
 
-    @PublicJsMethod
     public T setIeeeAddress(String ieeeAddress) {
         this.ieeeAddress = ieeeAddress;
         return (T) this;

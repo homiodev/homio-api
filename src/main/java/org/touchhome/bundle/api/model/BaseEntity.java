@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.model;
 
+import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -7,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.repository.AbstractRepository;
-import org.touchhome.bundle.api.ui.PublicJsMethod;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
 
@@ -73,13 +73,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
         }.setName(name).setEntityID(entityID);
     }
 
-    @PublicJsMethod
     public T setBw(Integer bw) {
         this.bw = bw < 1 ? null : bw;
         return (T) this;
     }
 
-    @PublicJsMethod
     public T setBh(Integer bh) {
         this.bh = bh < 1 ? null : bh;
         return (T) this;
@@ -90,32 +88,27 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
         return (T) this;
     }
 
-    @PublicJsMethod
-    public T setName(String name) {
+    public T setName(@ApiParam("name") String name) {
         this.name = name;
         return (T) this;
     }
 
-    @PublicJsMethod
-    public T setCreationTime(Date creationTime) {
+    public T setCreationTime(@ApiParam("creationTime") Date creationTime) {
         this.creationTime = creationTime;
         return (T) this;
     }
 
-    @PublicJsMethod
-    public T setDescription(String description) {
+    public T setDescription(@ApiParam("description") String description) {
         this.description = description;
         return (T) this;
     }
 
-    @PublicJsMethod
     public String getTitle() {
         String name = getName();
         return name == null || name.trim().length() == 0 ? getEntityID() : name;
     }
 
     @Override
-    @PublicJsMethod
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -128,18 +121,15 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
     }
 
     @Override
-    @PublicJsMethod
     public int hashCode() {
         return entityID != null ? entityID.hashCode() : 0;
     }
 
     @Override
-    @PublicJsMethod
     public String toString() {
         return "{'entityID':'" + getEntityID(false) + "'\'}";
     }
 
-    @PublicJsMethod
     public String getType() {
         return this.getClass().getSimpleName();
     }
@@ -198,13 +188,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
         return (T) this;
     }
 
-    @PublicJsMethod
     public String getEntityID() {
         return getEntityID(false);
     }
 
-    @PublicJsMethod
-    public T setEntityID(String entityID) {
+    public T setEntityID(@ApiParam("entityID") String entityID) {
         this.entityID = entityID;
         return (T) this;
     }
@@ -233,7 +221,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
         return getEntityID() == null ? String.valueOf(getId()) : getEntityID();
     }
 
-    @PublicJsMethod
     public void copy() {
         id = null;
         entityID = null;
