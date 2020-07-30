@@ -6,15 +6,14 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
+import org.json.JSONObject;
+import org.touchhome.bundle.api.converter.JSONObjectConverter;
+import org.touchhome.bundle.api.converter.StringSetConverter;
 import org.touchhome.bundle.api.util.SslUtil;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Lob;
-import java.util.Collections;
+import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 @Setter
 @Entity
@@ -33,28 +32,31 @@ public class UserEntity extends BaseEntity<UserEntity> {
     private String password;
 
     @Lob
+    @Getter
     @Type(type = "org.hibernate.type.BinaryType")
     @JsonIgnore
-    @Getter
     private byte[] keystore;
 
     @Getter
     private Date keystoreDate;
 
-    @JsonIgnore
-    @Getter
-    private String googleDriveAccessToken;
-
-    @JsonIgnore
-    @Getter
-    private String googleDriveRefreshToken;
-
     @Getter
     private String lang = "en";
 
-    @Enumerated(EnumType.STRING)
     @Getter
+    @Enumerated(EnumType.STRING)
     private UserType userType = UserType.REGULAR;
+
+    @Getter
+    @Lob
+    @Column(length = 1048576)
+    @Convert(converter = JSONObjectConverter.class)
+    private JSONObject jsonData;
+
+    @Getter
+    @Column(nullable = false)
+    @Convert(converter = StringSetConverter.class)
+    private Set<String> roles;
 
     public boolean matchPassword(String encodedPassword) {
         return this.password != null && this.password.equals(encodedPassword);
@@ -62,10 +64,6 @@ public class UserEntity extends BaseEntity<UserEntity> {
 
     public boolean isPasswordNotSet() {
         return StringUtils.isEmpty(password);
-    }
-
-    public List<Role> getRoles() {
-        return Collections.singletonList(Role.ROLE_ADMIN);
     }
 
     public UserEntity setKeystore(byte[] keystore) {

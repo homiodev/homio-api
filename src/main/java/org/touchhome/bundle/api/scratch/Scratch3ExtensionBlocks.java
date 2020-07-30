@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.BaseEntity;
 
@@ -32,20 +33,13 @@ public class Scratch3ExtensionBlocks {
     private Scratch3Color scratch3Color;
 
     @SneakyThrows
-    public Scratch3ExtensionBlocks(String id, String color, EntityContext entityContext) {
-        if (getClass().isAnnotationPresent(Scratch3Extension.class)) {
-            this.id = getClass().getDeclaredAnnotation(Scratch3Extension.class).value();
-        } else {
-            this.id = id;
-        }
+    public Scratch3ExtensionBlocks(String id, String color, EntityContext entityContext, BundleEntrypoint bundleEntrypointClass) {
+        this.id = id;
         this.entityContext = entityContext;
         if (color != null) {
-            URL resource = getClass().getClassLoader().getResource(this.id + ".png");
+            URL resource = getImage(bundleEntrypointClass);
             if (resource == null) {
-                resource = getClass().getClassLoader().getResource("image.png");
-                if (resource == null) {
-                    throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
-                }
+                throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
             }
             this.blockIconURI = "data:image/png;base64," + Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
             this.scratch3Color = new Scratch3Color(color);
@@ -53,7 +47,7 @@ public class Scratch3ExtensionBlocks {
     }
 
     public Scratch3ExtensionBlocks(String color, EntityContext entityContext) {
-        this(null, color, entityContext);
+        this(null, color, entityContext, null);
     }
 
     public static void sendWorkspaceBooleanValueChangeValue(EntityContext entityContext, BaseEntity baseEntity, boolean value) {
@@ -73,6 +67,23 @@ public class Scratch3ExtensionBlocks {
         ObjectNode node = mapper.createObjectNode().put("block", baseEntity.getEntityID()).put("type", type);
         fn.accept(node);
         entityContext.sendNotification("-workspace-value", node);
+    }
+
+    private URL getImage(BundleEntrypoint bundleEntrypointClass) {
+        URL resource = null;
+        if (bundleEntrypointClass != null) {
+            resource = bundleEntrypointClass.getResource(this.id + ".png");
+            if (resource == null) {
+                resource = bundleEntrypointClass.getResource("image.png");
+            }
+        }
+        if (resource == null) {
+            resource = getClass().getClassLoader().getResource(this.id + ".png");
+            if (resource == null) {
+                resource = getClass().getClassLoader().getResource("image.png");
+            }
+        }
+        return resource;
     }
 
     @SneakyThrows

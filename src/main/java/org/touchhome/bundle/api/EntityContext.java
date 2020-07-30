@@ -11,14 +11,13 @@ import org.touchhome.bundle.api.util.NotificationType;
 
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public interface EntityContext {
+
+    String APP_ID = Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
 
     static boolean isDevEnvironment() {
         return "true".equals(System.getProperty("development"));
@@ -151,6 +150,8 @@ public interface EntityContext {
     <T> T getBean(@ApiParam("clazz") Class<T> clazz);
 
     <T> Collection<T> getBeansOfType(@ApiParam("clazz") Class<T> clazz);
+
+    <T> Map<String, Collection<T>> getBeansOfTypeByBundles(Class<T> clazz);
 
     UserEntity getUser();
 

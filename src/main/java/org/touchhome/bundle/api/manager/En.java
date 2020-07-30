@@ -6,6 +6,9 @@ import org.touchhome.bundle.api.util.TouchHomeUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class provides text translate rely on en.json files
+ */
 public class En {
     private static final En INSTANCE = new En();
 

@@ -2,7 +2,6 @@ package org.touchhome.bundle.api.model;
 
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
@@ -54,33 +53,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
     @Transient
     private String entityIDSupplierStr;
 
-    @Getter
-    @Setter
-    private Integer xb = 0;
-
-    @Getter
-    @Setter
-    private Integer yb = 0;
-
-    @Getter
-    private Integer bw = 1;
-
-    @Getter
-    private Integer bh = 1;
-
     public static BaseEntity of(String entityID, String name) {
         return new BaseEntity() {
         }.setName(name).setEntityID(entityID);
-    }
-
-    public T setBw(Integer bw) {
-        this.bw = bw < 1 ? null : bw;
-        return (T) this;
-    }
-
-    public T setBh(Integer bh) {
-        this.bh = bh < 1 ? null : bh;
-        return (T) this;
     }
 
     public T setId(Integer id) {

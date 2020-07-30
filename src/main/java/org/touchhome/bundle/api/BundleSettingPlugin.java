@@ -3,6 +3,7 @@ package org.touchhome.bundle.api;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.json.JSONObject;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.json.Option;
 
@@ -32,8 +33,8 @@ public interface BundleSettingPlugin<T> {
     }
 
     // min/max/step (Slider)
-    default String[] getAvailableValues() {
-        return new String[0];
+    default JSONObject getParameters() {
+        return null;
     }
 
     SettingType getSettingType();
@@ -57,8 +58,7 @@ public interface BundleSettingPlugin<T> {
 
     default boolean transientState() {
         return this.getSettingType() == SettingType.Button
-                || this.getSettingType() == SettingType.Info
-                || this.getSettingType() == SettingType.Event;
+                || this.getSettingType() == SettingType.Info;
     }
 
     int order();
@@ -98,7 +98,6 @@ public interface BundleSettingPlugin<T> {
         Text,
         TextSelectBoxDynamic,
         Button,
-        Info,
-        Event
+        Info
     }
 }

@@ -8,7 +8,9 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.touchhome.bundle.api.model.BaseEntity;
+import org.touchhome.bundle.api.model.HasDescription;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
@@ -77,7 +79,11 @@ public class Option implements Comparable<Option> {
     public static List<Option> simpleNamelist(Collection list) {
         List<Option> options = new ArrayList<>();
         for (Object o : list) {
-            options.add(Option.key(o.getClass().getSimpleName()));
+            Option option = Option.key(o.getClass().getSimpleName());
+            if (o instanceof HasDescription) {
+                option.setJson(new JSONObject("description", ((HasDescription) o).getDescription()).toString());
+            }
+            options.add(option);
         }
         return options;
     }

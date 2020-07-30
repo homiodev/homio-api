@@ -1,8 +1,12 @@
 package org.touchhome.bundle.api;
 
+import lombok.SneakyThrows;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 
 import javax.validation.constraints.NotNull;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 
 public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
@@ -26,6 +30,11 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
         return "image.png";
     }
 
+    @SneakyThrows
+    default URL getBundleImageURL() {
+        return getResource(getBundleImage());
+    }
+
     String getBundleId();
 
     int order();
@@ -41,6 +50,18 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
 
     default Set<NotificationEntityJSON> getNotifications() {
         return null;
+    }
+
+    @SneakyThrows
+    default URL getResource(String resource) {
+        URL imageUrl = null;
+        ArrayList<URL> urls = Collections.list(getClass().getClassLoader().getResources(resource));
+        if (urls.size() == 1) {
+            imageUrl = urls.get(0);
+        } else if (urls.size() > 1) {
+            imageUrl = urls.stream().filter(url -> url.getFile().contains(getBundleId())).findAny().orElse(null);
+        }
+        return imageUrl;
     }
 
     enum BundleImageColorIndex {

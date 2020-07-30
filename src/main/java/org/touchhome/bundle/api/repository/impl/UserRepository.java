@@ -1,6 +1,7 @@
 package org.touchhome.bundle.api.repository.impl;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.UserEntity;
 import org.touchhome.bundle.api.repository.AbstractRepository;
@@ -23,6 +24,7 @@ public class UserRepository extends AbstractRepository<UserEntity> {
         }
     }
 
+    @Transactional(readOnly = true)
     public UserEntity getUser(String email) {
         return findSingleByField("userId", email);
     }

@@ -21,7 +21,7 @@ import java.util.Set;
 @UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#51145e")
 @NoArgsConstructor
 @Accessors(chain = true)
-public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T> {
+public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T> implements HasPosition<DeviceBaseEntity> {
 
     @UIField(readOnly = true, order = 100)
     @Getter
@@ -33,6 +33,22 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @UIField(order = 11, type = UIFieldType.Selection)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994", method = "selectPlace")
     private PlaceEntity ownerPlace;
+
+    @Getter
+    @Setter
+    private int xb = 0;
+
+    @Getter
+    @Setter
+    private int yb = 0;
+
+    @Getter
+    @Setter
+    private int bw = 1;
+
+    @Getter
+    @Setter
+    private int bh = 1;
 
     public String getShortTitle() {
         return "";

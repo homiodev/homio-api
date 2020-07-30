@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.model;
+package org.touchhome.bundle.api.json;
 
 import com.pi4j.io.gpio.PinState;
 import lombok.Getter;

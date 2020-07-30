@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -36,6 +38,9 @@ public class TouchHomeUtils {
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final String[] SYSTEM_BUNDLES = {"arduino", "raspberry", "telegram", "zigbee", "cloud", "bluetooth", "xaomi"};
+    public static final String ADMIN_ROLE = "ROLE_ADMIN";
+    public static final String PRIVILEGED_USER_ROLE = "ROLE_PRIVILEGED_USER";
+    public static final String GUEST_ROLE = "ROLE_GUEST";
     private static final Path TMP_FOLDER = Paths.get(FileUtils.getTempDirectoryPath());
     @Getter
     private static final Path filesPath;
@@ -43,9 +48,13 @@ public class TouchHomeUtils {
     private static final Path bundlePath;
     @Getter
     private static final Path sshPath;
+
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private static Path rootPath;
-    private static Map<String, ClassLoader> bundleClassLoaders = new HashMap();
+    private static Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
+
+    private static IpGeoLocation ipGeoLocation;
+    private static String ipAddress;
 
     static {
         if (SystemUtils.IS_OS_WINDOWS) {
@@ -134,7 +143,7 @@ public class TouchHomeUtils {
     }
 
     public static String getErrorMessage(Throwable ex) {
-        if (ex.getCause() instanceof NullPointerException) {
+        if (ex instanceof NullPointerException || ex.getCause() instanceof NullPointerException) {
             return ex.getStackTrace()[0].toString();
         }
         return ex.getCause() == null ? ex.getMessage() : ex.getCause().getLocalizedMessage();
@@ -244,6 +253,32 @@ public class TouchHomeUtils {
 
     private static Path getOrCreatePath(String path) {
         return TouchHomeUtils.createDirectoriesIfNotExists(rootPath.resolve(path));
+    }
+
+    public static String getOuterIpAddress() {
+        if (ipAddress == null) {
+            ipAddress = Curl.get("http://checkip.amazonaws.com", String.class);
+        }
+        return ipAddress;
+    }
+
+    public static IpGeoLocation getIpGeoLocation() throws SocketException, UnknownHostException {
+        if (ipGeoLocation == null) {
+            ipGeoLocation = Curl.get("http://ip-api.com/json/" + getOuterIpAddress(), IpGeoLocation.class);
+        }
+        return ipGeoLocation;
+    }
+
+    @Getter
+    public static class IpGeoLocation {
+        private String country;
+        private String countryCode;
+        private String region;
+        private String regionName;
+        private String city;
+        private Integer lat;
+        private Integer lon;
+        private String timezone;
     }
 
     public static class TemplateBuilder {

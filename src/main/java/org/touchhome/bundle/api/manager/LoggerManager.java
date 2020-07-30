@@ -27,6 +27,9 @@ import java.util.function.Consumer;
 
 import static org.touchhome.bundle.api.util.TouchHomeUtils.resolvePath;
 
+/**
+ * TODO: move to app code
+ */
 @Log4j2
 @Controller
 @RequiredArgsConstructor
