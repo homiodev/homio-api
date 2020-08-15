@@ -45,6 +45,10 @@ public interface EntityContext {
 
     void showAlwaysOnViewNotification(@ApiParam("NotificationEntityJSON") NotificationEntityJSON notificationEntityJSON, @ApiParam("duration") int duration, @ApiParam("color") String color);
 
+    void showAlwaysOnViewNotification(@ApiParam("NotificationEntityJSON") NotificationEntityJSON notificationEntityJSON,
+                                      @ApiParam("icon") String icon, @ApiParam("color") String color,
+                                      @ApiParam("stopAction") Class<? extends BundleSettingPluginButton> stopAction);
+
     void hideAlwaysOnViewNotification(@ApiParam("NotificationEntityJSON") NotificationEntityJSON notificationEntityJSON);
 
     default void sendNotification(@ApiParam("name") String name, @ApiParam("description") String description, @ApiParam("notificationType") NotificationType notificationType) {

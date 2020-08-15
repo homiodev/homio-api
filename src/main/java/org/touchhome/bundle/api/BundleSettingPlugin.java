@@ -33,7 +33,7 @@ public interface BundleSettingPlugin<T> {
     }
 
     // min/max/step (Slider)
-    default JSONObject getParameters() {
+    default JSONObject getParameters(EntityContext entityContext, String value) {
         return null;
     }
 
@@ -56,13 +56,19 @@ public interface BundleSettingPlugin<T> {
         throw new IllegalStateException("Must be implemented in sub-classes");
     }
 
+    /**
+     * Values of settings with transient state doesn't save to db
+     */
     default boolean transientState() {
-        return this.getSettingType() == SettingType.Button
+        return (this.getSettingType() == SettingType.Button && this.getParameters(null, null) == null)
                 || this.getSettingType() == SettingType.Info;
     }
 
     int order();
 
+    /**
+     * Advances settings opens in additional panel on ui
+     */
     default boolean isAdvanced() {
         return false;
     }
@@ -71,6 +77,9 @@ public interface BundleSettingPlugin<T> {
         return null;
     }
 
+    /**
+     * Covnerter from target type to string
+     */
     default String writeValue(T value) {
         return value == null ? "" : value.toString();
     }

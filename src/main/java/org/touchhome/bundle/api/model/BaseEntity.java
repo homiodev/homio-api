@@ -31,22 +31,22 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
     @Column(name = "entityID", unique = true, nullable = false)
     private String entityID;
 
-    @UIField(order = 2, inlineEdit = true)
+    @UIField(order = 10, inlineEdit = true)
     @Getter
     private String name;
 
     @Lob
-    @UIField(order = 3, hideOnEmpty = true)
+    @UIField(order = 15, hideOnEmpty = true)
     @Column(length = 1048576)
     @Getter
     private String description;
 
     @Column(nullable = false)
-    @UIField(order = 4, readOnly = true, type = StaticDate)
+    @UIField(order = 16, readOnly = true, type = StaticDate)
     @Getter
     private Date creationTime;
 
-    @UIField(order = 5, readOnly = true, type = StaticDate)
+    @UIField(order = 17, readOnly = true, type = StaticDate)
     @Getter
     private Date updateTime;
 

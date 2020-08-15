@@ -1,7 +1,8 @@
 package org.touchhome.bundle.api.widget;
 
 import lombok.SneakyThrows;
-import org.touchhome.bundle.api.ui.field.UIFieldType;
+import org.json.JSONObject;
+import org.touchhome.bundle.api.EntityContext;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -20,6 +21,8 @@ public interface JavaScriptBuilder {
 
     JavaScriptBuilder css(String className, String... values);
 
+    void setJsonReadOnly();
+
     JsMethod js(String methodName, String... params);
 
     JSContent jsContent();
@@ -31,8 +34,6 @@ public interface JavaScriptBuilder {
     JsMethod readyOnClient();
 
     JavaScriptBuilder jsonParam(String key, Object value);
-
-    JavaScriptBuilder objectParam(String key, Object value, UIFieldType uiFieldType, int order);
 
     interface JSStyle {
 
@@ -83,9 +84,38 @@ public interface JavaScriptBuilder {
 
     }
 
-    interface JSWindow {
+    interface JSWindow extends JSONParameterContext {
 
-        <T> T parameter(String name, T param);
+    }
+
+    interface EvaluableValue extends Supplier<String> {
+
+    }
+
+    interface ProxyEntityContextValue {
+        void apply(EntityContext entityContext);
+    }
+
+    interface JSONParameterContext {
+        JSONParameter obj(String name);
+
+        JSONParameter array(String name);
+    }
+
+    interface JSONParameter {
+        JSONParameter obj(String key);
+
+        JSONParameter array(String key);
+
+        JSONParameter value(String key, String value);
+
+        JSONParameter value(String key, Consumer<JSONObject> consumer);
+
+        JSONParameter value(String key, EvaluableValue value);
+
+        JSONParameter value(String key, ProxyEntityContextValue proxyEntityContextValue);
+
+        String toString(int indentFactor);
     }
 
     interface JSCodeContext<T> extends Builder {

@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 @Getter
 @RequiredArgsConstructor
-public enum Hilo {
+public enum HighLow {
     high(PinState::isHigh, PinState.HIGH), low(PinState::isLow, PinState.LOW);
 
     private final Predicate<PinState> supplier;

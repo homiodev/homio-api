@@ -30,7 +30,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Setter
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
-    @UIField(order = 11, type = UIFieldType.Selection)
+    @UIField(order = 20, type = UIFieldType.Selection)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994", method = "selectPlace")
     private PlaceEntity ownerPlace;
 
