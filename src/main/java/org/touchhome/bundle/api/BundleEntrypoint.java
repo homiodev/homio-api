@@ -26,6 +26,10 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
 
     }
 
+    default String getSettingDescription() {
+        return null;
+    }
+
     default String getBundleImage() {
         return "image.png";
     }

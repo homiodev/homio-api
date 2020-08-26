@@ -7,6 +7,8 @@ import org.touchhome.bundle.api.model.BaseEntity;
 import org.touchhome.bundle.api.model.HasIdIdentifier;
 import org.touchhome.bundle.api.model.UserEntity;
 import org.touchhome.bundle.api.repository.AbstractRepository;
+import org.touchhome.bundle.api.setting.BundleSettingPlugin;
+import org.touchhome.bundle.api.setting.BundleSettingPluginButton;
 import org.touchhome.bundle.api.util.NotificationType;
 
 import javax.validation.constraints.NotNull;

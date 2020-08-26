@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api;
+package org.touchhome.bundle.api.setting;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.touchhome.bundle.api.EntityContext;
 
 import java.util.List;
 import java.util.regex.Pattern;

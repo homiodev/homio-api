@@ -5,6 +5,8 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.touchhome.bundle.api.scratch.WorkspaceBlock;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -13,6 +15,7 @@ public class BroadcastLock<T> {
     private final Condition condition;
     private final ReentrantLock lock;
     private String key;
+    private Map<String, Runnable> releaseListeners;
 
     @Getter
     private T value;
@@ -58,6 +61,21 @@ public class BroadcastLock<T> {
             log.error("Unrecognized error while call broadcast signalAll", ex);
         } finally {
             lock.unlock();
+        }
+    }
+
+    public void addReleaseListener(String key, Runnable listener) {
+        if (releaseListeners == null) {
+            releaseListeners = new HashMap<>();
+        }
+        releaseListeners.put(key, listener);
+    }
+
+    public void release() {
+        if (releaseListeners != null) {
+            for (Runnable releaseListener : releaseListeners.values()) {
+                releaseListener.run();
+            }
         }
     }
 }

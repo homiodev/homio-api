@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api;
+package org.touchhome.bundle.api.setting;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.touchhome.bundle.api.console.ConsolePlugin;

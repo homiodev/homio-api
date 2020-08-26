@@ -58,8 +58,17 @@ public class BroadcastLockManager {
         warehouse.putIfAbsent(id, new Holder());
 
         Holder listenerHolder = warehouse.get(id);
+
+        for (Pair<BroadcastLock, Supplier<Boolean>> pair : listenerHolder.broadcastListenersMap.values()) {
+            pair.getFirst().release();
+        }
         listenerHolder.broadcastListenersMap.clear();
+
+        for (BroadcastLock broadcastLock : listenerHolder.broadcastListeners.values()) {
+            broadcastLock.release();
+        }
         listenerHolder.broadcastListeners.clear();
+
         if (listenerHolder.thread != null) {
             listenerHolder.thread.interrupt();
             listenerHolder.thread = null;

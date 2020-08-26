@@ -1,9 +1,10 @@
-package org.touchhome.bundle.api;
+package org.touchhome.bundle.api.setting;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.json.JSONObject;
+import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.json.Option;
 
@@ -96,16 +97,23 @@ public interface BundleSettingPlugin<T> {
     }
 
     enum SettingType {
+        // Description type uses for showing text inside setting panel on whole width
+        Description,
         ColorPicker,
         Float,
         Boolean,
         Integer,
         SelectBox,
         SelectBoxButton,
+        // Slider with min/max/step parameters
         Slider,
+        // Select box with options fetched from server
         SelectBoxDynamic,
+        // Just a text
         Text,
+        // Input text with additional button that able to fetch values from server
         TextSelectBoxDynamic,
+        // Button that fires server action
         Button,
         Info
     }

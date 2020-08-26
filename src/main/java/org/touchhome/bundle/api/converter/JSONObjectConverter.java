@@ -24,7 +24,7 @@ public class JSONObjectConverter implements AttributeConverter<JSONObject, Strin
         try {
             jsonData = new JSONObject(jsonDataAsJson);
         } catch (Exception ex) {
-            jsonData = null;
+            jsonData = new JSONObject();
         }
         return jsonData;
     }

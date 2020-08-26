@@ -74,6 +74,6 @@ public class UserEntity extends BaseEntity<UserEntity> {
     }
 
     public enum UserType {
-        REGULAR, TELEGRAM
+        REGULAR, OTHER
     }
 }

@@ -142,17 +142,17 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     public interface LinkGeneratorHandler {
-        void handle(String varGroup, String varName, JSONObject parameter);
+        void handle(String varGroup, String varName, JSONObject parameter) throws Exception;
     }
 
     @FunctionalInterface
     public interface Scratch3BlockHandler {
-        void handle(WorkspaceBlock workspaceBlock);
+        void handle(WorkspaceBlock workspaceBlock) throws Exception;
     }
 
     @FunctionalInterface
     public interface Scratch3BlockEvaluateHandler {
-        Object handle(WorkspaceBlock workspaceBlock);
+        Object handle(WorkspaceBlock workspaceBlock) throws Exception;
     }
 
     @Getter
