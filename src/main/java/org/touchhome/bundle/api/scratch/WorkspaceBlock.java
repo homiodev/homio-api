@@ -2,9 +2,11 @@ package org.touchhome.bundle.api.scratch;
 
 import org.json.JSONArray;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.workspace.BroadcastLock;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface WorkspaceBlock {
@@ -31,6 +33,18 @@ public interface WorkspaceBlock {
     boolean hasField(String fieldName);
 
     void handle();
+
+    default void subscribeToLock(BroadcastLock lock) {
+        subscribeToLock(lock, o -> true);
+    }
+
+    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn) {
+        while (!Thread.currentThread().isInterrupted()) {
+            if (lock.await(this) && checkFn.apply(lock.getValue())) {
+                this.getNext().handle();
+            }
+        }
+    }
 
     Object evaluate();
 
@@ -65,4 +79,13 @@ public interface WorkspaceBlock {
     void release();
 
     EntityContext getEntityContext();
+
+    default boolean hasNext() {
+        WorkspaceBlock next = getNext();
+        if (next == null) {
+            logErrorAndThrow("No next block found");
+            return false;
+        }
+        return true;
+    }
 }

@@ -17,7 +17,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 @Getter
-@SuppressWarnings("SpringJavaConstructorAutowiringInspection")
 public class Scratch3ExtensionBlocks {
 
     public static final String EVENT = "EVENT";
@@ -32,12 +31,16 @@ public class Scratch3ExtensionBlocks {
     private String blockIconURI;
     private Scratch3Color scratch3Color;
 
+    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntrypoint bundleEntrypoint) {
+        this(color, entityContext, bundleEntrypoint, null);
+    }
+
     @SneakyThrows
-    public Scratch3ExtensionBlocks(String id, String color, EntityContext entityContext, BundleEntrypoint bundleEntrypointClass) {
-        this.id = id;
+    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntrypoint bundleEntrypoint, String idSuffix) {
+        this.id = bundleEntrypoint == null ? idSuffix : bundleEntrypoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
         this.entityContext = entityContext;
         if (color != null) {
-            URL resource = getImage(bundleEntrypointClass);
+            URL resource = getImage(bundleEntrypoint);
             if (resource == null) {
                 throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
             }
@@ -46,8 +49,11 @@ public class Scratch3ExtensionBlocks {
         }
     }
 
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext) {
-        this(null, color, entityContext, null);
+    /**
+     * Uses only in app
+     */
+    public Scratch3ExtensionBlocks(String id, EntityContext entityContext) {
+        this(null, entityContext, null, id);
     }
 
     public static void sendWorkspaceBooleanValueChangeValue(EntityContext entityContext, BaseEntity baseEntity, boolean value) {
@@ -69,12 +75,12 @@ public class Scratch3ExtensionBlocks {
         entityContext.sendNotification("-workspace-value", node);
     }
 
-    private URL getImage(BundleEntrypoint bundleEntrypointClass) {
+    private URL getImage(BundleEntrypoint bundleEntrypoint) {
         URL resource = null;
-        if (bundleEntrypointClass != null) {
-            resource = bundleEntrypointClass.getResource(this.id + ".png");
+        if (bundleEntrypoint != null) {
+            resource = bundleEntrypoint.getResource(this.id + ".png");
             if (resource == null) {
-                resource = bundleEntrypointClass.getResource("image.png");
+                resource = bundleEntrypoint.getResource("image.png");
             }
         }
         if (resource == null) {
@@ -92,7 +98,20 @@ public class Scratch3ExtensionBlocks {
         for (Object additionalExtension : additionalExtensions) {
             assembleFields(additionalExtension);
         }
+        postUpdateBlocks(blocks);
+    }
 
+    public void postConstruct(List<Scratch3Block> blocks, Map<String, MenuBlock> menus) {
+        this.blocks.clear();
+        this.menus.clear();
+        this.blocksMap.clear();
+
+        this.blocks.addAll(blocks);
+        this.menus.putAll(menus);
+        postUpdateBlocks(blocks);
+    }
+
+    private void postUpdateBlocks(List<Scratch3Block> blocks) {
         Collections.sort(blocks);
         for (Scratch3Block block : blocks) {
             if (blocksMap.put(block.getOpcode(), block) != null) {

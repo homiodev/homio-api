@@ -2,11 +2,11 @@ package org.touchhome.bundle.api;
 
 import lombok.SneakyThrows;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
+import org.touchhome.bundle.api.setting.BundleSettingPluginStatus;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.validation.constraints.NotNull;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Set;
 
 public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
@@ -39,6 +39,7 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
         return getResource(getBundleImage());
     }
 
+    // a-z or at most one '-' and nothing else
     String getBundleId();
 
     int order();
@@ -52,20 +53,23 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
         return Integer.compare(this.order(), o.order());
     }
 
+    /**
+     * Notifications that visible in ui header
+     */
     default Set<NotificationEntityJSON> getNotifications() {
+        return null;
+    }
+
+    /**
+     * Get main bundle status setting. Will be shown on header ui
+     */
+    default Class<? extends BundleSettingPluginStatus> getBundleStatusSetting() {
         return null;
     }
 
     @SneakyThrows
     default URL getResource(String resource) {
-        URL imageUrl = null;
-        ArrayList<URL> urls = Collections.list(getClass().getClassLoader().getResources(resource));
-        if (urls.size() == 1) {
-            imageUrl = urls.get(0);
-        } else if (urls.size() > 1) {
-            imageUrl = urls.stream().filter(url -> url.getFile().contains(getBundleId())).findAny().orElse(null);
-        }
-        return imageUrl;
+        return TouchHomeUtils.getResource(getBundleId(), resource);
     }
 
     enum BundleImageColorIndex {

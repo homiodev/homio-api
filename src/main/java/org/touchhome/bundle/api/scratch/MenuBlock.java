@@ -118,8 +118,8 @@ public class MenuBlock {
         @Getter
         @AllArgsConstructor
         private static class StaticMenuItem {
-            private String text;
             private String value;
+            private String text;
         }
     }
 }

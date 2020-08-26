@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.converter.StringSetConverter;
 import org.touchhome.bundle.api.util.SslUtil;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -71,6 +72,10 @@ public class UserEntity extends BaseEntity<UserEntity> {
         SslUtil.validateKeyStore(keystore, password);
         this.keystoreDate = new Date();
         return this;
+    }
+
+    public boolean isAdmin() {
+        return this.userType == UserType.REGULAR && this.roles != null && this.roles.contains(TouchHomeUtils.ADMIN_ROLE);
     }
 
     public enum UserType {

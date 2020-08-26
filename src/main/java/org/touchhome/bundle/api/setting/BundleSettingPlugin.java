@@ -27,6 +27,10 @@ public interface BundleSettingPlugin<T> {
 
     default String getDefaultValue() {
         switch (getSettingType()) {
+            case Integer:
+            case Slider:
+            case Float:
+                return "0";
             case Boolean:
                 return Boolean.FALSE.toString();
         }
@@ -40,6 +44,35 @@ public interface BundleSettingPlugin<T> {
 
     SettingType getSettingType();
 
+    // if secured - users without admin privileges can't see values
+    default boolean isSecuredValue() {
+        return false;
+    }
+
+    // add revert button to ui
+    default boolean isReverted() {
+        return false;
+    }
+
+    default boolean isRequired() {
+        return false;
+    }
+
+    // disabled input/button on ui
+    default boolean isDisabled(EntityContext entityContext) {
+        return false;
+    }
+
+    // visible on ui or not
+    default boolean isVisible(EntityContext entityContext) {
+        return true;
+    }
+
+    // grouping settings by group name
+    default String group() {
+        return null;
+    }
+
     default T parseValue(EntityContext entityContext, String value) {
         switch (getSettingType()) {
             case Float:
@@ -48,7 +81,22 @@ public interface BundleSettingPlugin<T> {
                 return (T) Boolean.valueOf(value);
             case Integer:
             case Slider:
-                return (T) Integer.valueOf(value);
+                Integer parseValue;
+                try {
+                    parseValue = Integer.valueOf(value);
+                } catch (NumberFormatException ex) {
+                    throw new IllegalArgumentException("Unable parse setting value <" + value + "> as integer value");
+                }
+                JSONObject parameters = getParameters(entityContext, value);
+                if (parameters != null) {
+                    if (parameters.has("min") && parseValue < parameters.getInt("min")) {
+                        throw new IllegalArgumentException("Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+                    }
+                    if (parameters.has("max") && parseValue > parameters.getInt("max")) {
+                        throw new IllegalArgumentException("Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+                    }
+                }
+                return (T) parseValue;
         }
         return (T) value;
     }
@@ -83,17 +131,6 @@ public interface BundleSettingPlugin<T> {
      */
     default String writeValue(T value) {
         return value == null ? "" : value.toString();
-    }
-
-    @AllArgsConstructor
-    enum GroupKey {
-        dashboard("fas fa-tachometer-alt"),
-        map("fas fa-map"),
-        usb("fab fa-usb"),
-        system("fas fa-tools");
-
-        @Getter
-        private final String icon;
     }
 
     enum SettingType {

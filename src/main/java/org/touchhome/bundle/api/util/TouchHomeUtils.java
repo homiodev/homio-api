@@ -3,11 +3,13 @@ package org.touchhome.bundle.api.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +23,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.SocketException;
 import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -54,6 +55,7 @@ public class TouchHomeUtils {
     private static Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
 
     private static IpGeoLocation ipGeoLocation;
+    private static final Map<String, CityToGeoLocation> cityToGeoMap = new HashMap<>();
     private static String ipAddress;
 
     static {
@@ -136,6 +138,21 @@ public class TouchHomeUtils {
 
         }
         return Collections.emptyList();
+    }
+
+    @SneakyThrows
+    public static URL getResource(String bundle, String resource) {
+        if (bundle != null && bundleClassLoaders.containsKey(bundle)) {
+            return bundleClassLoaders.get(bundle).getResource(resource);
+        }
+        URL resourceURL = null;
+        ArrayList<URL> urls = Collections.list(TouchHomeUtils.class.getClassLoader().getResources(resource));
+        if (urls.size() == 1) {
+            resourceURL = urls.get(0);
+        } else if (urls.size() > 1 && bundle != null) {
+            resourceURL = urls.stream().filter(url -> url.getFile().contains(bundle)).findAny().orElse(null);
+        }
+        return resourceURL;
     }
 
     public static Path path(String path) {
@@ -257,16 +274,59 @@ public class TouchHomeUtils {
 
     public static String getOuterIpAddress() {
         if (ipAddress == null) {
-            ipAddress = Curl.get("http://checkip.amazonaws.com", String.class);
+            try {
+                ipAddress = Curl.get("http://checkip.amazonaws.com", String.class);
+            } catch (Exception ex) {
+                return "";
+            }
         }
         return ipAddress;
     }
 
-    public static IpGeoLocation getIpGeoLocation() throws SocketException, UnknownHostException {
+    @SneakyThrows
+    public static <T> T newInstance(Class<T> clazz) {
+        Constructor<T> constructor = findObjectConstructor(clazz);
+        return constructor == null ? null : constructor.newInstance();
+    }
+
+    @SneakyThrows
+    public static <T> Constructor<T> findObjectConstructor(Class<T> clazz, Class<?>... parameterTypes) {
+        if (parameterTypes.length > 0) {
+            return clazz.getConstructor(parameterTypes);
+        }
+        for (Constructor<?> constructor : clazz.getConstructors()) {
+            if (constructor.getParameterCount() == 0) {
+                constructor.setAccessible(true);
+                return (Constructor<T>) constructor;
+            }
+        }
+        return null;
+    }
+
+    public static synchronized IpGeoLocation getIpGeoLocation(String ip) {
         if (ipGeoLocation == null) {
-            ipGeoLocation = Curl.get("http://ip-api.com/json/" + getOuterIpAddress(), IpGeoLocation.class);
+            try {
+                ipGeoLocation = Curl.get("http://ip-api.com/json/" + ip, IpGeoLocation.class);
+            } catch (Exception ex) {
+                return new IpGeoLocation();
+            }
         }
         return ipGeoLocation;
+    }
+
+    public static synchronized CityToGeoLocation findCityGeolocation(String city) {
+        if (!cityToGeoMap.containsKey(city)) {
+            CityToGeoLocation cityToGeoLocation = Curl.get("https://geocode.xyz/" + city + "?json=1", CityToGeoLocation.class);
+            if (cityToGeoLocation.error != null) {
+                String error = cityToGeoLocation.error.description;
+                if ("15. Your request did not produce any results.".equals(error)) {
+                    error = "Unable to find city: " + city + ". Please, check city from site: https://geocode.xyz";
+                }
+                throw new IllegalArgumentException(error);
+            }
+            cityToGeoMap.put(city, cityToGeoLocation);
+        }
+        return cityToGeoMap.get(city);
     }
 
     @Getter
@@ -279,6 +339,23 @@ public class TouchHomeUtils {
         private Integer lat;
         private Integer lon;
         private String timezone;
+
+        @Override
+        public String toString() {
+            return new JSONObject(this).toString();
+        }
+    }
+
+    @Getter
+    public static class CityToGeoLocation {
+        private String longt;
+        private String latt;
+        private Error error;
+
+        @Setter
+        private static class Error {
+            private String description;
+        }
     }
 
     public static class TemplateBuilder {

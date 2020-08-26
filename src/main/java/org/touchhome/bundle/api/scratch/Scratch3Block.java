@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -200,5 +201,18 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         private LinkCodeGenerator getLinkCodeGenerator(EntityContext entityContext) {
             return new LinkCodeGenerator(extension, getOpcode(), entityContext, menuValues, getArguments());
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Scratch3Block that = (Scratch3Block) o;
+        return opcode.equals(that.opcode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(opcode);
     }
 }

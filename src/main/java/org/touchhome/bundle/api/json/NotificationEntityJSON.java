@@ -45,6 +45,10 @@ public class NotificationEntityJSON implements Comparable<NotificationEntityJSON
         return new NotificationEntityJSON(entityID).setNotificationType(NotificationType.info);
     }
 
+    public static NotificationEntityJSON success(String entityID) {
+        return new NotificationEntityJSON(entityID).setNotificationType(NotificationType.success);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

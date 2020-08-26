@@ -26,17 +26,12 @@ public enum ArgumentType {
      */
     string,
 
-    /**
-     * String value with matrix field
-     */
-    matrix,
-
-    /**
-     * MIDI note number with note picker (piano) field
-     */
-    note,
-
     reference,
 
-    variable
+    variable,
+
+    /**
+     * Boolean checkbox UI representation
+     */
+    checkbox
 }

@@ -61,7 +61,7 @@ public class Option implements Comparable<Option> {
     }
 
     public static List<Option> list(Class<? extends Enum> enumClass) {
-        return Stream.of(enumClass.getEnumConstants()).map(n -> Option.key(n.name())).collect(Collectors.toList());
+        return Stream.of(enumClass.getEnumConstants()).map(n -> Option.of(n.name(), n.toString())).collect(Collectors.toList());
     }
 
     public static List<Option> list(Option... options) {
