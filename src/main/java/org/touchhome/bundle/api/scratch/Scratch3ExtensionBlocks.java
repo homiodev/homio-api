@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 @Getter
-public class Scratch3ExtensionBlocks {
+public abstract class Scratch3ExtensionBlocks {
 
     public static final String EVENT = "EVENT";
 

@@ -60,27 +60,33 @@ public interface EntityContext {
                 .setNotificationType(notificationType));
     }
 
+    void addHeaderNotification(NotificationEntityJSON notificationEntityJSON);
+
+    void removeHeaderNotification(NotificationEntityJSON notificationEntityJSON);
+
     <T> T getSettingValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass);
+
+    <T> String getSettingRawValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass);
 
     default <T> T getSettingValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, T defaultValue) {
         T value = getSettingValue(settingClass);
         return value == null ? defaultValue : value;
     }
 
-    default <T> void listenSettingValueAsync(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Consumer<T> listener) {
-        listenSettingValue(settingClass, value ->
+    default <T> void listenSettingValueAsync(@ApiParam("setting class") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Consumer<T> listener) {
+        listenSettingValue(settingClass, key, value ->
                 new Thread(() -> listener.accept(value), "run-listen-value-async-" + settingClass.getSimpleName()).start());
     }
 
-    default <T> void listenSettingValueAsync(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Runnable listener) {
-        listenSettingValueAsync(settingClass, t -> listener.run());
+    default <T> void listenSettingValueAsync(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Runnable listener) {
+        listenSettingValueAsync(settingClass, key, t -> listener.run());
     }
 
-    default <T> void listenSettingValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Runnable listener) {
-        listenSettingValue(settingClass, p -> listener.run());
+    default <T> void listenSettingValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Runnable listener) {
+        listenSettingValue(settingClass, key, p -> listener.run());
     }
 
-    <T> void listenSettingValue(Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("listener") Consumer<T> listener);
+    <T> void listenSettingValue(Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Consumer<T> listener);
 
     <T> void setSettingValueRaw(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, @ApiParam("value") @NotNull String value);
 
@@ -167,7 +173,9 @@ public interface EntityContext {
 
     <T> Collection<T> getBeansOfType(@ApiParam("clazz") Class<T> clazz);
 
-    <T> Map<String, Collection<T>> getBeansOfTypeByBundles(Class<T> clazz);
+    <T> Map<String, T> getBeansOfTypeWithBeanName(@ApiParam("clazz") Class<T> clazz);
+
+    <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@ApiParam("clazz") Class<T> clazz);
 
     UserEntity getUser();
 

@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fazecast.jSerialComm.SerialPort;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,7 +28,6 @@ public class Option implements Comparable<Option> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private String key;
-    private String entityID;
     private String title;
 
     @Setter
@@ -38,15 +38,12 @@ public class Option implements Comparable<Option> {
 
     public Option(Object key, Object title) {
         this.key = String.valueOf(key);
-        this.entityID = this.key;
         this.title = String.valueOf(title);
     }
 
     public static Option key(String key) {
         Option option = new Option();
         option.key = key;
-        option.entityID = key;
-        option.title = key;
         return option;
     }
 
@@ -55,9 +52,17 @@ public class Option implements Comparable<Option> {
     }
 
     public static List<Option> listWithEmpty(Class<? extends Enum> enumClass) {
-        List<Option> list = list(enumClass);
-        list.add(Option.key(""));
+        return withEmpty(list(enumClass));
+    }
+
+    public static List<Option> withEmpty(List<Option> list) {
+        list.add(Option.of("", "no_value"));
         return list;
+    }
+
+    public static List<Option> listOfPorts() {
+        return withEmpty(Arrays.stream(SerialPort.getCommPorts()).map(p ->
+                new Option(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName())).collect(Collectors.toList()));
     }
 
     public static List<Option> list(Class<? extends Enum> enumClass) {

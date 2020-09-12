@@ -1,17 +1,22 @@
 package org.touchhome.bundle.api.setting;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fazecast.jSerialComm.SerialPort;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.json.Option;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface BundleSettingPlugin<T> {
+
+    default Class<T> getType() {
+        return null;
+    }
 
     default String getIcon() {
         return "";
@@ -98,10 +103,18 @@ public interface BundleSettingPlugin<T> {
                 }
                 return (T) parseValue;
         }
+        if (SerialPort.class.equals(getType())) {
+            return (T) (StringUtils.isEmpty(value) ? null :
+                    Stream.of(SerialPort.getCommPorts())
+                            .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null));
+        }
         return (T) value;
     }
 
     default List<Option> loadAvailableValues(EntityContext entityContext) {
+        if (SerialPort.class.equals(getType())) {
+            return Option.listOfPorts();
+        }
         throw new IllegalStateException("Must be implemented in sub-classes");
     }
 
@@ -122,7 +135,7 @@ public interface BundleSettingPlugin<T> {
         return false;
     }
 
-    default NotificationEntityJSON buildToastrNotificationEntity(T value, EntityContext entityContext) {
+    default NotificationEntityJSON buildToastrNotificationEntity(T value, String raw, EntityContext entityContext) {
         return null;
     }
 
@@ -130,7 +143,13 @@ public interface BundleSettingPlugin<T> {
      * Covnerter from target type to string
      */
     default String writeValue(T value) {
-        return value == null ? "" : value.toString();
+        if(value == null) {
+            return "";
+        }
+        if (SerialPort.class.equals(getType())) {
+            return ((SerialPort) value).getSystemPortName();
+        }
+        return value.toString();
     }
 
     enum SettingType {

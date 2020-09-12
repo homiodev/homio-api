@@ -4,12 +4,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.json.JSONObject;
+import org.touchhome.bundle.api.DynamicOptionLoader;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.json.Option;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
-import org.touchhome.bundle.api.ui.method.UIFieldSelectValueOnEmpty;
+import org.touchhome.bundle.api.ui.field.selection.UIFieldSelectValueOnEmpty;
+import org.touchhome.bundle.api.ui.field.selection.UIFieldSelection;
 
 import javax.persistence.*;
 import java.util.List;
@@ -31,8 +35,15 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @UIField(order = 20, type = UIFieldType.Selection)
-    @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994", method = "selectPlace")
+    @UIFieldSelection(SelectPlaceLoader.class)
+    @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994")
     private PlaceEntity ownerPlace;
+
+    @Getter
+    @Lob
+    @Column(length = 1048576)
+    @Convert(converter = JSONObjectConverter.class)
+    private JSONObject jsonData;
 
     @Getter
     @Setter
@@ -59,10 +70,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
         return getShortTitle();
     }
 
-    public List<Option> selectPlace(EntityContext entityContext) {
-        return Option.list(entityContext.findAll(PlaceEntity.class));
-    }
-
     @Override
     public void getAllRelatedEntities(Set<BaseEntity> set) {
         set.add(ownerPlace);
@@ -78,5 +85,13 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     public T setIeeeAddress(String ieeeAddress) {
         this.ieeeAddress = ieeeAddress;
         return (T) this;
+    }
+
+    public static class SelectPlaceLoader implements DynamicOptionLoader {
+
+        @Override
+        public List<Option> loadOptions(Object parameter, EntityContext entityContext) {
+            return Option.list(entityContext.findAll(PlaceEntity.class));
+        }
     }
 }

@@ -16,8 +16,8 @@ public class ApplicationContextHolder implements ApplicationContextAware {
         return applicationContext.getBean(clazz);
     }
 
-    public static <T> T getBean(String beanName, Class<T> clazz) {
-        return applicationContext.getBean(beanName, clazz);
+    public static <T> Object getBean(String name) {
+        return applicationContext.getBean(name);
     }
 
     @Override

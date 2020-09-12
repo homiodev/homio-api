@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.ui.field;
+package org.touchhome.bundle.api.ui.field.selection;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,11 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Instruct UI ability to select options for string fields
+ * Annotation on field to handle when appropriate field has empty value
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldTextWithSelection {
+public @interface UIFieldSelectValueOnEmpty {
 
-    String method();
+    String label();
+
+    String color();
 }

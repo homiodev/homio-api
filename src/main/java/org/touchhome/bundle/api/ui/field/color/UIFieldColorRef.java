@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.ui.method;
+package org.touchhome.bundle.api.ui.field.color;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,15 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation on field to handle when appropriate field has empty value
+ * Field with this annotation take ref field value as color reference
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldSelectValueOnEmpty {
-
-    String label();
-
-    String color();
-
-    String method();
+public @interface UIFieldColorRef {
+    String value();
 }

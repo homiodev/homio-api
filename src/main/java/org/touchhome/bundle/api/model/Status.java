@@ -1,5 +1,5 @@
 package org.touchhome.bundle.api.model;
 
-public enum BundleStatus {
+public enum Status {
     OFFLINE, ONLINE, UNKNOWN, ERROR
 }
