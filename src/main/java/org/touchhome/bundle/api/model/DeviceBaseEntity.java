@@ -43,7 +43,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Lob
     @Column(length = 1048576)
     @Convert(converter = JSONObjectConverter.class)
-    private JSONObject jsonData;
+    private JSONObject jsonData = new JSONObject();
 
     @Getter
     @Setter

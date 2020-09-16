@@ -142,6 +142,19 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return new WorkspaceCodeGenerator(extension);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Scratch3Block that = (Scratch3Block) o;
+        return opcode.equals(that.opcode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(opcode);
+    }
+
     public interface LinkGeneratorHandler {
         void handle(String varGroup, String varName, JSONObject parameter) throws Exception;
     }
@@ -201,18 +214,5 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         private LinkCodeGenerator getLinkCodeGenerator(EntityContext entityContext) {
             return new LinkCodeGenerator(extension, getOpcode(), entityContext, menuValues, getArguments());
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Scratch3Block that = (Scratch3Block) o;
-        return opcode.equals(that.opcode);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(opcode);
     }
 }

@@ -143,7 +143,7 @@ public interface BundleSettingPlugin<T> {
      * Covnerter from target type to string
      */
     default String writeValue(T value) {
-        if(value == null) {
+        if (value == null) {
             return "";
         }
         if (SerialPort.class.equals(getType())) {

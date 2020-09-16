@@ -59,6 +59,14 @@ public interface BundleSettingPluginButton extends BundleSettingPlugin<JSONObjec
         }
     }
 
+    enum InputParameterType {
+        text, json, textarea, password
+    }
+
+    enum InputParameterValidator {
+        ip, password, email
+    }
+
     @Setter
     @Accessors(chain = true)
     @RequiredArgsConstructor
@@ -68,13 +76,5 @@ public interface BundleSettingPluginButton extends BundleSettingPlugin<JSONObjec
         private final InputParameterValidator validator;
         private final String value;
         private String description;
-    }
-
-    enum InputParameterType {
-        text, json, textarea, password
-    }
-
-    enum InputParameterValidator {
-        ip, password, email
     }
 }

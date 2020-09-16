@@ -1,7 +1,7 @@
 package org.touchhome.bundle.api.console;
 
-import org.touchhome.bundle.api.setting.BundleSettingPlugin;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
+import org.touchhome.bundle.api.setting.BundleSettingPlugin;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;

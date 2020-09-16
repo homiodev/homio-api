@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation on field to handle when appropriate field has empty value
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSelectValueOnEmpty {
 

@@ -49,13 +49,11 @@ public class TouchHomeUtils {
     private static final Path bundlePath;
     @Getter
     private static final Path sshPath;
-
+    private static final Map<String, CityToGeoLocation> cityToGeoMap = new HashMap<>();
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private static Path rootPath;
     private static Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
-
     private static IpGeoLocation ipGeoLocation;
-    private static final Map<String, CityToGeoLocation> cityToGeoMap = new HashMap<>();
     private static String ipAddress;
 
     static {
