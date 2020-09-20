@@ -39,4 +39,10 @@ public class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> {
     public String getTitle() {
         return "Backup[" + workspaceBackupGroupEntity.getName() + "] - variable: " + this.getName();
     }
+
+    @Override
+    public void merge(WorkspaceBackupEntity entity) {
+        super.merge(entity);
+        this.values = entity.getValues();
+    }
 }

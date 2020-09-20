@@ -4,6 +4,8 @@ import com.pivovarit.function.ThrowingRunnable;
 import com.pivovarit.function.ThrowingSupplier;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.SystemUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.model.BaseEntity;
 import org.touchhome.bundle.api.model.HasIdIdentifier;
@@ -12,6 +14,7 @@ import org.touchhome.bundle.api.repository.AbstractRepository;
 import org.touchhome.bundle.api.setting.BundleSettingPlugin;
 import org.touchhome.bundle.api.setting.BundleSettingPluginButton;
 import org.touchhome.bundle.api.util.NotificationType;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
@@ -106,11 +109,14 @@ public interface EntityContext {
 
     <T> void setSettingValueSilenceRaw(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull String value);
 
-    <T extends BaseEntity> T getEntity(@ApiParam("entityID") String entityID);
+    default <T extends BaseEntity> T getEntity(@ApiParam("entityID") String entityID) {
+        return getEntity(entityID, true);
+    }
 
-    <T extends BaseEntity> T getEntityOrDefault(@ApiParam("entityID") String entityID, @ApiParam("defEntity") T defEntity);
-
-    <T> T getEntity(@ApiParam("entityID") String entityID, @ApiParam("clazz") Class<T> clazz);
+    default <T extends BaseEntity> T getEntityOrDefault(@ApiParam("entityID") String entityID, @ApiParam("defEntity") T defEntity) {
+        T entity = getEntity(entityID, true);
+        return entity == null ? defEntity : entity;
+    }
 
     <T extends BaseEntity> T getEntity(@ApiParam("entityID") String entityID, @ApiParam("useCache") boolean useCache);
 
@@ -122,7 +128,9 @@ public interface EntityContext {
 
     AbstractRepository getRepository(Class<? extends BaseEntity> entityClass);
 
-    <T extends BaseEntity> T getEntity(@ApiParam("entity") T entity);
+    default <T extends BaseEntity> T getEntity(@ApiParam("entity") T entity) {
+        return getEntity(entity.getEntityID());
+    }
 
     <T extends HasIdIdentifier> void saveDelayed(@ApiParam("entity") T entity);
 
@@ -132,11 +140,18 @@ public interface EntityContext {
 
     <T extends BaseEntity> T save(@ApiParam("entity") T entity);
 
-    <T extends BaseEntity> T delete(@ApiParam("entity") T entity);
+    default <T extends BaseEntity> T delete(@ApiParam("entity") T entity) {
+        return (T) delete(entity.getEntityID());
+    }
 
-    void sendInfoMessage(@ApiParam("message") String message);
+    default void sendInfoMessage(@ApiParam("message") String message) {
+        sendNotification(NotificationEntityJSON.info("info-" + message.hashCode()).setName(message));
+    }
 
-    void sendErrorMessage(@ApiParam("message") String message, @ApiParam("ex") Exception ex);
+    default void sendErrorMessage(@ApiParam("message") String message, @ApiParam("ex") Exception ex) {
+        sendNotification(NotificationEntityJSON.danger("error-" + message.hashCode())
+                .setName(message + ". Cause: " + TouchHomeUtils.getErrorMessage(ex)));
+    }
 
     <T extends BaseEntity> List<T> findAll(@ApiParam("clazz") Class<T> clazz);
 
@@ -150,11 +165,11 @@ public interface EntityContext {
 
     AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(@ApiParam("repositoryPrefix") String repositoryPrefix);
 
-    AbstractRepository<BaseEntity> getRepositoryByClass(@ApiParam("className") String className);
-
     <T extends BaseEntity> T getEntityByName(@ApiParam("name") String name, @ApiParam("entityClass") Class<T> entityClass);
 
-    <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityID") String entityID, @ApiParam("listener") Consumer<T> listener);
+    default <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityID") String entityID, @ApiParam("listener") Consumer<T> listener) {
+        this.addEntityUpdateListener(entityID, (t, t2) -> listener.accept((T) t));
+    }
 
     <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityID") String entityID, @ApiParam("listener") BiConsumer<T, T> listener);
 
@@ -164,7 +179,9 @@ public interface EntityContext {
      * @param entityClass type to listen
      * @param listener    handler invoke when entity update
      */
-    <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityClass") Class<T> entityClass, @ApiParam("listener") Consumer<T> listener);
+    default <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityClass") Class<T> entityClass, @ApiParam("listener") Consumer<T> listener) {
+        this.addEntityUpdateListener(entityClass, (t, t2) -> listener.accept(t));
+    }
 
     /**
      * Listen any changes fot BaseEntity of concrete type.
@@ -194,7 +211,13 @@ public interface EntityContext {
 
     <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@ApiParam("clazz") Class<T> clazz);
 
-    UserEntity getUser();
+    default UserEntity getUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            return getEntity((String) authentication.getCredentials());
+        }
+        return null;
+    }
 
     Collection<AbstractRepository> getRepositories();
 

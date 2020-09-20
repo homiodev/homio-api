@@ -204,4 +204,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
 
         ApplicationContextHolder.getBean(EntityManager.class).detach(this);
     }
+
+    public void merge(T entity) {
+        this.name = entity.getName();
+        this.description = entity.getDescription();
+    }
 }

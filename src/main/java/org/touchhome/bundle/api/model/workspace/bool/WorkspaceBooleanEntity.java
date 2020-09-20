@@ -30,6 +30,12 @@ public class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> {
         return "Var: " + getName() + " / group [" + workspaceBooleanGroupEntity.getName() + "]";
     }
 
+    @Override
+    public void merge(WorkspaceBooleanEntity entity) {
+        super.merge(entity);
+        this.value = entity.value;
+    }
+
     public WorkspaceBooleanEntity inverseValue() {
         this.value = !this.value;
         return this;

@@ -17,7 +17,7 @@ public class SpringBeanDeserializer extends JsonDeserializer<Object> {
         try {
             return ApplicationContextHolder.getBean(beanName);
         } catch (Exception ex) {
-            log.warn("Unable to fund bean with name: {}", beanName);
+            log.warn("Unable to find bean: {}", beanName);
             return null;
         }
     }

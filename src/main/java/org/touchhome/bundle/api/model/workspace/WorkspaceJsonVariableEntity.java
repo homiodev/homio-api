@@ -29,4 +29,10 @@ public class WorkspaceJsonVariableEntity extends BaseEntity<WorkspaceJsonVariabl
     public String getTitle() {
         return "JSON Variable: " + getName();
     }
+
+    @Override
+    public void merge(WorkspaceJsonVariableEntity entity) {
+        super.merge(entity);
+        this.value = entity.getValue();
+    }
 }

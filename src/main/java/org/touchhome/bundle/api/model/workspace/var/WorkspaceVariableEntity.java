@@ -31,4 +31,10 @@ public class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity>
     public String getTitle() {
         return "Var: " + getName() + " / group [" + workspaceVariableGroupEntity.getName() + "]";
     }
+
+    @Override
+    public void merge(WorkspaceVariableEntity entity) {
+        super.merge(entity);
+        this.value = entity.getValue();
+    }
 }

@@ -5,18 +5,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.json.JSONObject;
-import org.touchhome.bundle.api.DynamicOptionLoader;
-import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
-import org.touchhome.bundle.api.json.Option;
+import org.touchhome.bundle.api.optionProvider.SelectPlaceOptionLoader;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
+import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 import org.touchhome.bundle.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.touchhome.bundle.api.ui.field.selection.UIFieldSelection;
 
 import javax.persistence.*;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -35,11 +33,17 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @UIField(order = 20, type = UIFieldType.Selection)
-    @UIFieldSelection(SelectPlaceLoader.class)
+    @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994")
     private PlaceEntity ownerPlace;
 
     @Getter
+    @Setter
+    @UIField(order = 22, readOnly = true, hideOnEmpty = true)
+    @UIFieldColorStatusMatch
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     @Lob
     @Column(length = 1048576)
     @Convert(converter = JSONObjectConverter.class)
@@ -61,6 +65,10 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Setter
     private int bh = 1;
 
+    protected JSONObject getJsonData() {
+        return jsonData;
+    }
+
     public String getShortTitle() {
         return "";
     }
@@ -75,6 +83,19 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
         set.add(ownerPlace);
     }
 
+    @Override
+    public void merge(T entity) {
+        super.merge(entity);
+        this.jsonData = entity.getJsonData();
+        this.bh = entity.getBh();
+        this.bw = entity.getBw();
+        this.xb = entity.getXb();
+        this.yb = entity.getYb();
+        this.ieeeAddress = entity.getIeeeAddress();
+        this.ownerPlace = entity.getOwnerPlace();
+        this.status = entity.getStatus();
+    }
+
     /**
      * Define order in which entity will be shown on UI map
      */
@@ -85,13 +106,5 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     public T setIeeeAddress(String ieeeAddress) {
         this.ieeeAddress = ieeeAddress;
         return (T) this;
-    }
-
-    public static class SelectPlaceLoader implements DynamicOptionLoader {
-
-        @Override
-        public List<Option> loadOptions(Object parameter, EntityContext entityContext) {
-            return Option.list(entityContext.findAll(PlaceEntity.class));
-        }
     }
 }

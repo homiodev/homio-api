@@ -23,4 +23,10 @@ public class WorkspaceStandaloneVariableEntity extends BaseEntity<WorkspaceStand
     public String getTitle() {
         return "Variable: " + getName();
     }
+
+    @Override
+    public void merge(WorkspaceStandaloneVariableEntity entity) {
+        super.merge(entity);
+        this.value = entity.getValue();
+    }
 }

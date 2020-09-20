@@ -21,4 +21,10 @@ public class WorkspaceShareVariableEntity extends BaseEntity<WorkspaceShareVaria
     @Lob
     @Column(length = 1048576)
     private String content = "";
+
+    @Override
+    public void merge(WorkspaceShareVariableEntity entity) {
+        super.merge(entity);
+        this.content = entity.getContent();
+    }
 }
