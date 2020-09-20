@@ -15,6 +15,7 @@ import org.touchhome.bundle.api.model.HasDescription;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -51,8 +52,12 @@ public class Option implements Comparable<Option> {
         return new Option(key, title);
     }
 
-    public static List<Option> listWithEmpty(Class<? extends Enum> enumClass) {
+    public static List<Option> listWithEmpty(Class<? extends KeyValueEnum> enumClass) {
         return withEmpty(list(enumClass));
+    }
+
+    public static List<Option> enumWithEmpty(Class<? extends Enum> enumClass) {
+        return withEmpty(enumList(enumClass));
     }
 
     public static List<Option> withEmpty(List<Option> list) {
@@ -65,8 +70,12 @@ public class Option implements Comparable<Option> {
                 new Option(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName())).collect(Collectors.toList()));
     }
 
-    public static List<Option> list(Class<? extends Enum> enumClass) {
+    public static List<Option> enumList(Class<? extends Enum> enumClass) {
         return Stream.of(enumClass.getEnumConstants()).map(n -> Option.of(n.name(), n.toString())).collect(Collectors.toList());
+    }
+
+    public static List<Option> list(Class<? extends KeyValueEnum> enumClass) {
+        return Stream.of(enumClass.getEnumConstants()).map(n -> Option.of(n.getKey(), n.getValue())).collect(Collectors.toList());
     }
 
     public static List<Option> list(Option... options) {
@@ -77,7 +86,11 @@ public class Option implements Comparable<Option> {
         return IntStream.range(min, max).mapToObj(value -> Option.key(String.valueOf(value))).collect(Collectors.toList());
     }
 
-    public static <T extends BaseEntity> List<Option> list(List<T> list) {
+    public static <T> List<Option> list(Collection<T> list, Function<T, String> keyFn, Function<T, String> valueFn) {
+        return list.stream().map(e -> Option.of(keyFn.apply(e), valueFn.apply(e))).collect(Collectors.toList());
+    }
+
+    public static <T extends BaseEntity> List<Option> list(Collection<T> list) {
         return list.stream().map(e -> Option.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle()))).collect(Collectors.toList());
     }
 

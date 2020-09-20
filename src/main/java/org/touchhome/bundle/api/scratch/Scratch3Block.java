@@ -92,13 +92,15 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return argumentTypeDescription;
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type, Object defaultValue, MenuBlock menu) {
-        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(type, defaultValue == null ? null : defaultValue.toString(), menu);
+    public ArgumentTypeDescription addArgument(String argumentName, MenuBlock.StaticMenuBlock menu) {
+        Object defaultValue = menu.getDefaultValue();
+        String defStr = defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
+        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(ArgumentType.string, defStr, menu.getName(), menu);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;
     }
 
-    public ArgumentTypeDescription addArgumentServerSelection(String argumentName, MenuBlock.ServerMenuBlock menu) {
+    public ArgumentTypeDescription addArgument(String argumentName, MenuBlock.ServerMenuBlock menu) {
         ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(ArgumentType.string, menu.getItems().getFirstKV()[1], menu.getName(), menu);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;

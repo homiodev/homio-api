@@ -115,7 +115,7 @@ public abstract class Scratch3ExtensionBlocks {
         Collections.sort(blocks);
         for (Scratch3Block block : blocks) {
             if (blocksMap.put(block.getOpcode(), block) != null) {
-                throw new RuntimeException("Found multiple blocks with same opcode");
+                throw new RuntimeException("Found multiple blocks with same opcode: " + block.getOpcode());
             }
         }
     }

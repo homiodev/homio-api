@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.touchhome.bundle.api.json.KeyValueEnum;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,12 +28,20 @@ public class MenuBlock {
         return new ServerMenuBlock(name, url, firstKey, firstValue, null);
     }
 
-    public static StaticMenuBlock ofStatic(String name, Class<? extends Enum> enumClass) {
-        return new StaticMenuBlock(name, null).addEnum(enumClass);
+    public static ServerMenuBlock ofServer(String name, String url) {
+        return new ServerMenuBlock(name, url, "-", "-", null);
     }
 
-    public static <T extends Enum> StaticMenuBlock ofStatic(String name, Class<T> enumClass, Predicate<T> filter) {
-        return new StaticMenuBlock(name, null).addEnum(enumClass, filter);
+    public static <T extends Enum> StaticMenuBlock ofStatic(String name, Class<T> enumClass, T defaultValue) {
+        return new StaticMenuBlock(name, null).addEnum(enumClass).setDefaultValue(defaultValue);
+    }
+
+    public static <T extends KeyValueEnum> StaticMenuBlock ofStaticKV(String name, Class<T> enumClass, T defaultValue) {
+        return new StaticMenuBlock(name, null).addEnumKVE(enumClass).setDefaultValue(defaultValue);
+    }
+
+    public static <T extends Enum> StaticMenuBlock ofStatic(String name, Class<T> enumClass, T defaultValue, Predicate<T> filter) {
+        return new StaticMenuBlock(name, null).addEnum(enumClass, filter).setDefaultValue(defaultValue);
     }
 
     public static StaticMenuBlock ofStaticList(String name, Map<String, String> items) {
@@ -57,6 +66,11 @@ public class MenuBlock {
             this(name, url, null, null, firstKey, firstValue, clusters);
         }
 
+        public ServerMenuBlock setDependency(MenuBlock... dependencies) {
+            this.items.dependencies = Stream.of(dependencies).map(MenuBlock::getName).collect(Collectors.toList());
+            return this;
+        }
+
         @Getter
         @RequiredArgsConstructor
         static class MenuBlockFunction {
@@ -64,6 +78,7 @@ public class MenuBlock {
             private final String keyName;
             private final String valueName;
             private final String[] firstKV;
+            public List<String> dependencies;
         }
     }
 
@@ -72,6 +87,7 @@ public class MenuBlock {
         private boolean acceptReporters = true;
         private List<StaticMenuItem> items = new ArrayList<>();
         private Map<String, List> subMenu;
+        private Object defaultValue;
 
         StaticMenuBlock(String name, Map<String, String> map) {
             super(name);
@@ -87,14 +103,21 @@ public class MenuBlock {
             return this;
         }
 
-        public StaticMenuBlock addEnum(Class<? extends Enum> enumClass) {
+        private StaticMenuBlock addEnum(Class<? extends Enum> enumClass) {
             for (Enum item : enumClass.getEnumConstants()) {
                 this.items.add(new StaticMenuItem(item.name(), item.toString()));
             }
             return this;
         }
 
-        public <T extends Enum> StaticMenuBlock addEnum(Class<T> enumClass, Predicate<T> filter) {
+        private StaticMenuBlock addEnumKVE(Class<? extends KeyValueEnum> enumClass) {
+            for (KeyValueEnum item : enumClass.getEnumConstants()) {
+                this.items.add(new StaticMenuItem(item.getKey(), item.getValue()));
+            }
+            return this;
+        }
+
+        private <T extends Enum> StaticMenuBlock addEnum(Class<T> enumClass, Predicate<T> filter) {
             for (T item : enumClass.getEnumConstants()) {
                 if (filter.test(item)) {
                     this.items.add(new StaticMenuItem(item.name(), item.toString()));
@@ -113,6 +136,11 @@ public class MenuBlock {
 
         public String getFirstValue() {
             return this.items.isEmpty() ? null : this.items.get(0).getText();
+        }
+
+        public StaticMenuBlock setDefaultValue(Object defaultValue) {
+            this.defaultValue = defaultValue;
+            return this;
         }
 
         @Getter

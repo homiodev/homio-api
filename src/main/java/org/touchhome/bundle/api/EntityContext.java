@@ -132,9 +132,9 @@ public interface EntityContext {
         return getEntity(entity.getEntityID());
     }
 
-    <T extends HasIdIdentifier> void saveDelayed(@ApiParam("entity") T entity);
+    <T extends HasIdIdentifier> void createDelayed(@ApiParam("entity") T entity);
 
-    <T extends BaseEntity> void saveDelayed(@ApiParam("entity") T entity);
+    <T extends HasIdIdentifier> void updateDelayed(T entity, Consumer<T> fieldUpdateConsumer);
 
     <T extends HasIdIdentifier> void save(@ApiParam("entity") T entity);
 
@@ -192,6 +192,8 @@ public interface EntityContext {
     <T extends BaseEntity> void addEntityUpdateListener(@ApiParam("entityClass") Class<T> entityClass, @ApiParam("listener") BiConsumer<T, T> listener);
 
     <T extends BaseEntity> void addEntityRemovedListener(@ApiParam("entityClass") Class<T> entityClass, @ApiParam("listener") Consumer<T> listener);
+
+    <T extends BaseEntity> void addEntityRemovedListener(@ApiParam("entityID") String entityID, @ApiParam("listener") Consumer<T> listener);
 
     <T extends BaseEntity> void removeEntityUpdateListener(@ApiParam("entityID") String entityID, @ApiParam("listener") BiConsumer<T, T> listener);
 

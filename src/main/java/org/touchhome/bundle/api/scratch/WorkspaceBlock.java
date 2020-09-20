@@ -34,11 +34,11 @@ public interface WorkspaceBlock {
 
     void handle();
 
-    default void subscribeToLock(BroadcastLock lock) {
+    default <T> void subscribeToLock(BroadcastLock<T> lock) {
         subscribeToLock(lock, o -> true);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn) {
+    default <T> void subscribeToLock(BroadcastLock<T> lock, Function<T, Boolean> checkFn) {
         while (!Thread.currentThread().isInterrupted()) {
             if (lock.await(this) && checkFn.apply(lock.getValue())) {
                 this.getNext().handle();

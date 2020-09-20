@@ -8,7 +8,7 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 @Log4j2
-@Converter
+@Converter(autoApply = true)
 @RequiredArgsConstructor
 public class SerialPortConverter implements AttributeConverter<SerialPort, String> {
 

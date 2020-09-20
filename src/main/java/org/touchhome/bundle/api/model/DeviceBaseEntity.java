@@ -44,6 +44,11 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Getter
+    @Setter
+    @UIField(order = 23, readOnly = true, hideOnEmpty = true)
+    private String statusMessage;
+
     @Lob
     @Column(length = 1048576)
     @Convert(converter = JSONObjectConverter.class)
@@ -81,19 +86,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Override
     public void getAllRelatedEntities(Set<BaseEntity> set) {
         set.add(ownerPlace);
-    }
-
-    @Override
-    public void merge(T entity) {
-        super.merge(entity);
-        this.jsonData = entity.getJsonData();
-        this.bh = entity.getBh();
-        this.bw = entity.getBw();
-        this.xb = entity.getXb();
-        this.yb = entity.getYb();
-        this.ieeeAddress = entity.getIeeeAddress();
-        this.ownerPlace = entity.getOwnerPlace();
-        this.status = entity.getStatus();
     }
 
     /**
