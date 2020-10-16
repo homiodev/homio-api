@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
 @JacksonAnnotationsInside
 @JsonSerialize(using = SerialPortSerializer.class)
 @JsonDeserialize(using = SerialPortDeserializer.class)
-@Target(value = {ElementType.FIELD})
+@Target(value = {ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsonSerialPort {
 }

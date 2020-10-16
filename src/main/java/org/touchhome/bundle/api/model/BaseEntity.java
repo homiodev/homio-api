@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -20,7 +21,7 @@ import static org.touchhome.bundle.api.ui.field.UIFieldType.StaticDate;
 
 @Log4j2
 @MappedSuperclass
-public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifier, HasEntityIdentifier, Serializable {
+public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdentifier, Serializable {
 
     @Id
     @GeneratedValue
@@ -174,7 +175,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
 
     public String getEntityID(boolean create) {
         if (create && this.entityID == null) {
-            AbstractRepository repo = ApplicationContextHolder.getBean(EntityContext.class).getRepository(getClass());
+            AbstractRepository repo = getEntityContext().getRepository(getClass());
             String simpleId = entityIDSupplierStr;
             if (simpleId == null) {
                 String name = getClass().getSimpleName();
@@ -202,11 +203,16 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasIdIdentifie
         creationTime = null;
         updateTime = null;
 
-        ApplicationContextHolder.getBean(EntityManager.class).detach(this);
+        getEntityContext().getBean(EntityManager.class).detach(this);
     }
 
     public void merge(T entity) {
         this.name = entity.getName();
         this.description = entity.getDescription();
+    }
+
+    @JsonIgnore
+    public EntityContext getEntityContext() {
+        return ApplicationContextHolder.getBean(EntityContext.class);
     }
 }

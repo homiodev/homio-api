@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fazecast.jSerialComm.SerialPort;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 
@@ -13,8 +14,11 @@ public class SerialPortDeserializer extends JsonDeserializer<SerialPort> {
 
     @Override
     public SerialPort deserialize(JsonParser jp, DeserializationContext ctx) throws IOException {
-        String systemPortName = jp.getText();
-        if (systemPortName == null) {
+        return getSerialPort(jp.getText());
+    }
+
+    public static SerialPort getSerialPort(String systemPortName) {
+        if (StringUtils.isEmpty(systemPortName)) {
             return null;
         }
         try {

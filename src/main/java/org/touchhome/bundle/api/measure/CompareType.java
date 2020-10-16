@@ -28,7 +28,7 @@ public enum CompareType implements KeyValueEnum {
     }
 
     @Override
-    public String getValue() {
+    public String toString() {
         return shortName;
     }
 }

@@ -1,5 +1,7 @@
 package org.touchhome.bundle.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,7 +21,6 @@ import java.util.Set;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "device_discriminator")
 @UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#51145e")
 @NoArgsConstructor
 @Accessors(chain = true)
@@ -41,6 +42,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Setter
     @UIField(order = 22, readOnly = true, hideOnEmpty = true)
     @UIFieldColorStatusMatch
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Enumerated(EnumType.STRING)
     private Status status;
 
@@ -48,6 +50,13 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Setter
     @UIField(order = 23, readOnly = true, hideOnEmpty = true)
     private String statusMessage;
+
+    @Getter
+    @Setter
+    @UIField(order = 22, readOnly = true)
+    @Enumerated(EnumType.STRING)
+    @UIFieldColorStatusMatch
+    private Status joined = Status.UNKNOWN;
 
     @Lob
     @Column(length = 1048576)
@@ -70,8 +79,33 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Setter
     private int bh = 1;
 
-    protected JSONObject getJsonData() {
-        return jsonData;
+    protected <P> T setJsonData(String key, P value) {
+        jsonData.put(key, value);
+        return (T) this;
+    }
+
+    protected Integer getJsonData(String key, int defaultValue) {
+        return jsonData.optInt(key, defaultValue);
+    }
+
+    protected Boolean getJsonData(String key, boolean defaultValue) {
+        return jsonData.optBoolean(key, defaultValue);
+    }
+
+    protected String getJsonData(String key, String defaultValue) {
+        return jsonData.optString(key, defaultValue);
+    }
+
+    protected Long getJsonData(String key, long defaultValue) {
+        return jsonData.optLong(key, defaultValue);
+    }
+
+    protected String getJsonData(String key) {
+        return jsonData.optString(key);
+    }
+
+    protected Double getJsonData(String key, double defaultValue) {
+        return jsonData.optDouble(key, defaultValue);
     }
 
     public String getShortTitle() {
@@ -98,5 +132,13 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     public T setIeeeAddress(String ieeeAddress) {
         this.ieeeAddress = ieeeAddress;
         return (T) this;
+    }
+
+    /**
+     * Determine if status, joined and statusMessage should be reset to default at startup
+     */
+    @JsonIgnore
+    public boolean isResetStatusAtStartup() {
+        return true;
     }
 }

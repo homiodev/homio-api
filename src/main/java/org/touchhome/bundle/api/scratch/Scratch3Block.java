@@ -125,7 +125,9 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     public void overrideColor(String color) {
-        this.scratch3Color = new Scratch3Color(color);
+        if (color != null) {
+            this.scratch3Color = new Scratch3Color(color);
+        }
     }
 
     public void allowLinkBoolean(BiConsumer<String, WorkspaceBlock> allowLinkBoolean) {

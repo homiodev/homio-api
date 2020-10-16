@@ -10,7 +10,7 @@ import static org.touchhome.bundle.api.ui.field.UIFieldType.StaticDate;
 
 @Getter
 @MappedSuperclass
-public class CrudEntity<T> implements HasIdIdentifier {
+public class CrudEntity<T> implements HasEntityIdentifier {
     @Id
     @GeneratedValue
     private Integer id;
@@ -34,5 +34,10 @@ public class CrudEntity<T> implements HasIdIdentifier {
 
     private void beforePersist() {
 
+    }
+
+    @Override
+    public String getEntityID() {
+        return String.valueOf(id);
     }
 }

@@ -158,6 +158,9 @@ public class TouchHomeUtils {
     }
 
     public static String getErrorMessage(Throwable ex) {
+        if (ex == null) {
+            return null;
+        }
         if (ex instanceof NullPointerException || ex.getCause() instanceof NullPointerException) {
             return ex.getStackTrace()[0].toString();
         }

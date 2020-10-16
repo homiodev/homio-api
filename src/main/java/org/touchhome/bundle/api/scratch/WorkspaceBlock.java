@@ -76,7 +76,7 @@ public interface WorkspaceBlock {
 
     void setState(String state);
 
-    void release();
+    boolean isDestroyed();
 
     EntityContext getEntityContext();
 

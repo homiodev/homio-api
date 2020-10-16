@@ -106,13 +106,6 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
         return byEntityID;
     }
 
-    @Transactional(readOnly = true)
-    public List<T> listAllWithFetchLazy() {
-        List<T> items = listAll();
-        items.forEach(t -> fetchLazy(t, new HashSet<>(), false));
-        return items;
-    }
-
     private void fetchLazy(Object entity, Set<Object> visitedEntities, boolean ignoreNotUI) {
         FieldUtils.getAllFieldsList(entity.getClass()).forEach(field -> {
             try {
