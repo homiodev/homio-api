@@ -1,0 +1,5 @@
+{
+  "SCAN_CONTROLLER_ERROR" : "Error while scan for controllers: {{MSG}}",
+  "FOUND_CONTROLLER_RESULT": "Found {{COUNT}} controller devices",
+  "SCAN_CONTROLLER_ALREADY_STARTED": "Scan for controllers already in progress"
+}

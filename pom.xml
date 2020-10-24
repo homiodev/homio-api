@@ -50,19 +50,40 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <outputDirectory>${basedir}/target</outputDirectory>
-                    <resources>
-                        <resource>
-                            <directory>${basedir}</directory>
-                            <include>bintray.json</include>
-                            <filtering>true</filtering>
-                        </resource>
-                    </resources>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>copy-config-files</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/resources</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <include>bintray.json</include>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

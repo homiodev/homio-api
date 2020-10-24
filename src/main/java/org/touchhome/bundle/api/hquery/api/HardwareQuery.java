@@ -20,4 +20,11 @@ public @interface HardwareQuery {
     String echo() default "";
 
     boolean cache() default false;
+
+    String[] win() default "";
+
+    // how long cache valid in sec. if set and > 0 than cache - true
+    int cacheValid() default 0;
+
+    String valueOnError() default "";
 }

@@ -1,6 +1,6 @@
 package org.touchhome.bundle.api.optionProvider;
 
-import org.touchhome.bundle.api.DynamicOptionLoader;
+import org.touchhome.bundle.api.ui.action.DynamicOptionLoader;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.json.Option;
 import org.touchhome.bundle.api.model.BaseEntity;

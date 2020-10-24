@@ -1,6 +1,6 @@
 package org.touchhome.bundle.api.ui.field.selection;
 
-import org.touchhome.bundle.api.DynamicOptionLoader;
+import org.touchhome.bundle.api.ui.action.DynamicOptionLoader;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

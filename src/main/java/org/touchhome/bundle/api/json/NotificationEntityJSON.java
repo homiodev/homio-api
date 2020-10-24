@@ -10,6 +10,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Objects;
 
+import static org.apache.commons.lang3.StringUtils.defaultString;
+
 @Getter
 @Accessors(chain = true)
 public class NotificationEntityJSON implements Comparable<NotificationEntityJSON> {
@@ -32,11 +34,11 @@ public class NotificationEntityJSON implements Comparable<NotificationEntityJSON
             throw new IllegalArgumentException("entityId is null");
         }
         this.entityID = entityID;
-        this.name = this.entityID;
+        this.name = entityID;
     }
 
     public static NotificationEntityJSON danger(String entityID) {
-        return new NotificationEntityJSON(entityID).setNotificationType(NotificationType.danger);
+        return new NotificationEntityJSON(entityID).setNotificationType(NotificationType.error);
     }
 
     public static NotificationEntityJSON warn(String entityID) {
@@ -76,6 +78,6 @@ public class NotificationEntityJSON implements Comparable<NotificationEntityJSON
 
     @Override
     public String toString() {
-        return name + (StringUtils.isNotEmpty(description) ? " | " + description : "");
+        return defaultString(name, "") + (StringUtils.isNotEmpty(description) ? " | " + description : "");
     }
 }

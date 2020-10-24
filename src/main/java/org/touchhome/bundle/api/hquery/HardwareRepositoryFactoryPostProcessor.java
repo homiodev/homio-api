@@ -1,11 +1,11 @@
 package org.touchhome.bundle.api.hquery;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -14,13 +14,14 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.thavam.util.concurrent.blockingMap.BlockingHashMap;
-import org.thavam.util.concurrent.blockingMap.BlockingMap;
 import org.touchhome.bundle.api.hquery.api.*;
+import org.touchhome.bundle.api.util.Curl;
 import org.touchhome.bundle.api.util.SpringUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
@@ -31,38 +32,52 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Log4j2
 public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostProcessor {
 
-    private static final BlockingQueue<PrintContext> printLogsJobs = new LinkedBlockingQueue<>(10);
-    private static final BlockingMap<Process, List<String>> inputResponse = new BlockingHashMap<>();
+    private static final BlockingQueue<HardwareProcessIO> inputProcessContextJobs = new LinkedBlockingQueue<>(10);
+    private static final BlockingQueue<HardwareProcessIO> errorProcessContextJobs = new LinkedBlockingQueue<>(10);
     private static final Constructor<MethodHandles.Lookup> lookupConstructor;
     private static final Map<String, ProcessCache> cache = new HashMap<>();
-    private static Thread logThread = new Thread(() -> {
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                PrintContext printContext = printLogsJobs.take();
-                Process process = printContext.process;
 
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    List<String> lines = new ArrayList<>();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        log.info(line);
-                        lines.add(line);
+    @RequiredArgsConstructor
+    private static class StreamReader implements Runnable {
+
+        private final BlockingQueue<HardwareProcessIO> queue;
+
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()) {
+                HardwareProcessIO context = null;
+                try {
+                    context = queue.take();
+                    Process process = context.process;
+
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(context.inputStreamFn.apply(process)))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            log.log(context.logLevel, line);
+                            context.lines.add(line);
+                        }
                     }
-                    inputResponse.put(process, lines);
+                } catch (Exception ex) {
+                    log.error("Hardware error occurs while take io stream");
+                } finally {
+                    if (context != null) {
+                        context.sem.release();
+                    }
                 }
-            } catch (Exception ex) {
-                log.error("Hardware error occurs while take print log job");
             }
         }
-    }, "Hardware thread log");
+    }
 
     static {
         try {
@@ -74,12 +89,12 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
     }
 
     static {
-        logThread.start();
+        new Thread(new StreamReader(errorProcessContextJobs), "Hardware io error stream thread").start();
+        new Thread(new StreamReader(inputProcessContextJobs), "Hardware io input stream thread").start();
     }
 
     private final String basePackages;
     private HardwareRepositoryFactoryPostHandler handler;
-    private String pm = "apt";
 
     HardwareRepositoryFactoryPostProcessor(String basePackages, HardwareRepositoryFactoryPostHandler handler) {
         this.basePackages = basePackages;
@@ -90,22 +105,28 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
     @SneakyThrows
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         Environment env = beanFactory.getBean(Environment.class);
+        HQueryExecutor hQueryExecutor = beanFactory.getBean(HQueryExecutor.class);
         List<Class<?>> classes = getClassesWithAnnotation();
         for (Class<?> aClass : classes) {
             beanFactory.registerSingleton(aClass.getSimpleName(), Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{aClass}, (proxy, method, args) -> {
+                Class<?> returnType = method.getReturnType();
                 List<Object> results = null;
                 for (HardwareQuery hardwareQuery : method.getDeclaredAnnotationsByType(HardwareQuery.class)) {
                     if (results == null) {
                         results = new ArrayList<>();
                     }
-                    results.add(handleHardwareQuery(hardwareQuery, args, method, env));
+                    results.add(handleHardwareQuery(hardwareQuery, args, method, env, aClass, hQueryExecutor));
+                }
+                Object value = handleCurlQuery(method, args, env);
+                if (value != null) {
+                    return value;
                 }
                 if (results != null) {
                     if (results.isEmpty()) {
                         return null;
                     } else if (results.size() == 1) {
                         return results.iterator().next();
-                    } else if (method.getReturnType().isAssignableFrom(List.class)) {
+                    } else if (returnType.isAssignableFrom(List.class)) {
                         return results;
                     } else {
                         return null;
@@ -127,6 +148,41 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
         }
     }
 
+    private Object handleCurlQuery(Method method, Object[] args, Environment env) {
+        CurlQuery curlQuery = method.getDeclaredAnnotation(CurlQuery.class);
+        if (curlQuery != null) {
+            String argCmd = replaceStringWithArgs(curlQuery.value(), args, method);
+            String command = SpringUtils.replaceEnvValues(argCmd, env::getProperty);
+            ProcessCache processCache;
+
+            if ((curlQuery.cache() || curlQuery.cacheValid() > 0)
+                    && cache.containsKey(command)
+                    && (curlQuery.cacheValid() < 1 || (System.currentTimeMillis() - cache.get(command).executedTime) / 1000 < cache.get(command).cacheValidInSec)) {
+                processCache = cache.get(command);
+            } else {
+                processCache = new ProcessCache(curlQuery.cacheValid());
+                try {
+                    Object result = Curl.getWithTimeout(command, method.getReturnType(), curlQuery.maxSecondsTimeout());
+                    Function<Object, Object> mapping = curlQuery.mapping().newInstance();
+                    processCache.response = mapping.apply(result);
+
+                } catch (Exception ex) {
+                    log.error("Error while execute curl command <{}>. Msg: <{}>", command, ex.getMessage());
+                    processCache.errors = Collections.singletonList(ex.getMessage());
+                    if (!curlQuery.ignoreOnError()) {
+                        throw new HardwareException(processCache.errors, -1);
+                    }
+                    processCache.retValue = -1;
+                }
+                if (curlQuery.cache() || curlQuery.cacheValid() > 0) {
+                    cache.put(command, processCache);
+                }
+            }
+            return processCache.response;
+        }
+        return null;
+    }
+
     private String replaceStringWithArgs(String str, Object[] args, Method method) {
         if (args != null) {
             Annotation[][] apiParams = method.getParameterAnnotations();
@@ -143,22 +199,28 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
         return str;
     }
 
-    private Object handleHardwareQuery(HardwareQuery hardwareQuery, Object[] args, Method method, Environment env) throws InstantiationException, IllegalAccessException {
+    @SneakyThrows
+    private Object handleHardwareQuery(HardwareQuery hardwareQuery, Object[] args, Method method, Environment env, Class<?> aClass, HQueryExecutor hQueryExecutor) {
         ErrorsHandler errorsHandler = method.getAnnotation(ErrorsHandler.class);
         List<String> parts = new ArrayList<>();
-        for (String cmd : hardwareQuery.value()) {
+        String[] values = hQueryExecutor.getValues(hardwareQuery);
+        Stream.of(values).filter(cmd -> !cmd.isEmpty()).forEach(cmd -> {
             String argCmd = replaceStringWithArgs(cmd, args, method);
             String envCmd = SpringUtils.replaceEnvValues(argCmd, env::getProperty);
-            String partCmd = envCmd.contains("$PM") ? envCmd.replace("$PM", pm) : envCmd;
-            parts.add(partCmd);
+            parts.add(hQueryExecutor.updateCommand(envCmd));
+        });
+        if (parts.isEmpty()) {
+            return returnOnDisableValue(method, aClass);
         }
         String[] cmdParts = parts.toArray(new String[0]);
         String command = String.join(", ", parts);
         ProcessCache processCache;
-        if (hardwareQuery.cache() && cache.containsKey(command)) {
+        if ((hardwareQuery.cache() || hardwareQuery.cacheValid() > 0)
+                && cache.containsKey(command)
+                && (hardwareQuery.cacheValid() < 1 || (System.currentTimeMillis() - cache.get(command).executedTime) / 1000 < cache.get(command).cacheValidInSec)) {
             processCache = cache.get(command);
         } else {
-            processCache = new ProcessCache();
+            processCache = new ProcessCache(hardwareQuery.cacheValid());
             if (!StringUtils.isEmpty(hardwareQuery.echo())) {
                 log.info("Execute: <{}>. Command: <{}>", hardwareQuery.echo(), command);
             } else {
@@ -168,32 +230,49 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
             try {
                 if (!StringUtils.isEmpty(hardwareQuery.dir())) {
                     File dir = new File(replaceStringWithArgs(hardwareQuery.dir(), args, method));
-                    process = Runtime.getRuntime().exec(cmdParts, null, dir);
-                } else if (cmdParts.length == 1) {
-                    process = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", cmdParts[0]});
+                    process = hQueryExecutor.createProcess(cmdParts, null, dir);
                 } else {
-                    process = Runtime.getRuntime().exec(cmdParts);
+                    process = hQueryExecutor.createProcess(cmdParts, null, null);
                 }
 
-                if (hardwareQuery.printOutput()) {
-                    printLogsJobs.add(new PrintContext(process));
-                }
+                HardwareProcessIO errors = new HardwareProcessIO(process, hardwareQuery.printOutput() ? Level.WARN : Level.TRACE, Process::getErrorStream);
+                HardwareProcessIO inputs = new HardwareProcessIO(process, hardwareQuery.printOutput() ? Level.INFO : Level.TRACE, Process::getInputStream);
+                errorProcessContextJobs.add(errors);
+                inputProcessContextJobs.add(inputs);
 
                 process.waitFor(hardwareQuery.maxSecondsTimeout(), TimeUnit.SECONDS);
                 processCache.retValue = process.exitValue();
-                processCache.errors = IOUtils.readLines(process.getErrorStream());
-                processCache.inputs = hardwareQuery.printOutput() ? inputResponse.take(process) : IOUtils.readLines(process.getInputStream());
+                processCache.errors = errors.get();
+                processCache.inputs = inputs.get();
             } catch (Exception ex) {
                 processCache.retValue = 1;
                 processCache.errors = Collections.singletonList(ex.getMessage());
             } finally {
-                if (hardwareQuery.cache()) {
+                if (hardwareQuery.cache() || hardwareQuery.cacheValid() > 0) {
                     cache.put(command, processCache);
                 }
             }
         }
 
         return handleCommandResult(hardwareQuery, method, errorsHandler, command, processCache.retValue, processCache.inputs, processCache.errors);
+    }
+
+    private Object returnOnDisableValue(Method method, Class<?> aClass) {
+        // in case we expect return num we ignore any errors
+        Class<?> returnType = method.getReturnType();
+        HardwareRepositoryAnnotation hardwareRepositoryAnnotation = aClass.getDeclaredAnnotation(HardwareRepositoryAnnotation.class);
+        if (returnType.isPrimitive()) {
+            switch (returnType.getName()) {
+                case "int":
+                    return hardwareRepositoryAnnotation.intValueOnDisable();
+                case "boolean":
+                    return hardwareRepositoryAnnotation.boolValueOnDisable();
+            }
+        }
+        if (returnType.isAssignableFrom(String.class)) {
+            return hardwareRepositoryAnnotation.stringValueOnDisable();
+        }
+        return null;
     }
 
     private Object handleCommandResult(HardwareQuery hardwareQuery, Method method, ErrorsHandler errorsHandler, String command, int retValue, List<String> inputs, List<String> errors) throws IllegalAccessException, InstantiationException {
@@ -223,6 +302,8 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                 log.error("Error while execute command <{}>. Code: <{}>, Msg: <{}>", command, retValue, String.join(", ", errors));
                 if (!hardwareQuery.ignoreOnError()) {
                     throw new HardwareException(errors, retValue);
+                } else if (!hardwareQuery.valueOnError().isEmpty()) {
+                    return hardwareQuery.valueOnError();
                 }
             }
         } else {
@@ -236,6 +317,8 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
             ListParse.LineParse lineParse = method.getAnnotation(ListParse.LineParse.class);
             ListParse.BooleanLineParse booleanParse = method.getAnnotation(ListParse.BooleanLineParse.class);
             ListParse.LineParsers lineParsers = method.getAnnotation(ListParse.LineParsers.class);
+            RawParse rawParse = method.getAnnotation(RawParse.class);
+
             if (listParse != null) {
                 String delimiter = listParse.delimiter();
                 List<List<String>> buckets = new ArrayList<>();
@@ -262,6 +345,8 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                 return handleBucket(inputs, lineParsers);
             } else if (booleanParse != null) {
                 return handleBucket(inputs, booleanParse);
+            } else if (rawParse != null) {
+                return handleBucket(inputs, rawParse, null);
             } else {
                 return handleBucket(inputs, returnType);
             }
@@ -293,6 +378,12 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                     }
                 }
             }
+        }
+
+        for (Field field : FieldUtils.getFieldsListWithAnnotation(genericClass, RawParse.class)) {
+            Object value = handleBucket(input, field.getDeclaredAnnotation(RawParse.class), field);
+            FieldUtils.writeField(field, obj, value, true);
+            handleFields = true;
         }
 
         for (Field field : FieldUtils.getFieldsListWithAnnotation(genericClass, ListParse.LineParse.class)) {
@@ -333,6 +424,10 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
             }
         }
         return null;
+    }
+
+    private Object handleBucket(List<String> inputs, RawParse rawParse, Field field) {
+        return TouchHomeUtils.newInstance(rawParse.value()).handle(inputs, field);
     }
 
     private Object handleType(String value, Class<?> type) {
@@ -411,14 +506,39 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
         return foundClasses;
     }
 
+    @RequiredArgsConstructor
     private static class ProcessCache {
         int retValue;
         List<String> errors;
         List<String> inputs;
+        Object response;
+        long executedTime = System.currentTimeMillis();
+        final int cacheValidInSec;
     }
 
-    @AllArgsConstructor
-    private static class PrintContext {
-        private Process process;
+    private class HardwareProcessIO {
+        private final Process process;
+        private final List<String> lines = new ArrayList<>();
+        private final Semaphore sem = new Semaphore(1);
+        private Level logLevel;
+        private Function<Process, InputStream> inputStreamFn;
+
+        @SneakyThrows
+        public HardwareProcessIO(Process process, Level logLevel, Function<Process, InputStream> inputStreamFn) {
+            this.process = process;
+            this.logLevel = logLevel;
+            this.inputStreamFn = inputStreamFn;
+            this.sem.acquire();
+        }
+
+        @SneakyThrows
+        public List<String> get() {
+            try {
+                sem.acquire();
+                return lines;
+            } finally {
+                sem.release();
+            }
+        }
     }
 }

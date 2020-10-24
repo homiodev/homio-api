@@ -25,13 +25,13 @@ public interface HardwareEvents {
     String addEvent(String key, String name);
 
     default String addEvent(String key, String name, FlowMap nameParams) {
-        return addEvent(key, En.get().getServerMessage(name, nameParams));
+        return addEvent(key, En.getServerMessage(name, nameParams));
     }
 
     String addEventAndFire(String key, String name, Object value);
 
     default String addEventAndFire(String key, String name, FlowMap nameParams, Object value) {
-        return addEventAndFire(key, En.get().getServerMessage(name, nameParams), value);
+        return addEventAndFire(key, En.getServerMessage(name, nameParams), value);
     }
 
     default String addEventAndFire(String key, String name) {

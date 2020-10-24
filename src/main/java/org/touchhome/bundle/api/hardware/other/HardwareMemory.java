@@ -1,9 +1,7 @@
 package org.touchhome.bundle.api.hardware.other;
 
-import lombok.ToString;
 import org.touchhome.bundle.api.hquery.api.SplitParse;
 
-@ToString
 @SplitParse("\\s+")
 public class HardwareMemory {
 
@@ -19,7 +17,7 @@ public class HardwareMemory {
     @SplitParse.SplitParseIndex(index = 4)
     public String usedPercentage;
 
-    public String toFineString() {
+    public String toString() {
         return String.format("%d/%d Mb (%s)", used, size, usedPercentage);
     }
 }

@@ -134,7 +134,7 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
         T entity = getByEntityID(entityID);
         if (entity != null) {
             em.remove(entity);
-            log.warn("Entity " + entity + "was removed");
+            log.warn("Entity <{}> was removed", entity);
         }
 
         return entity;

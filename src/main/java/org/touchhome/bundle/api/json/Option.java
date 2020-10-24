@@ -78,6 +78,10 @@ public class Option implements Comparable<Option> {
         return Stream.of(enumClass.getEnumConstants()).map(n -> Option.of(n.getKey(), n.getValue())).collect(Collectors.toList());
     }
 
+    public static List<Option> list(String... values) {
+        return Stream.of(values).map(v -> Option.of(v, v)).collect(Collectors.toList());
+    }
+
     public static List<Option> list(Option... options) {
         return Stream.of(options).collect(Collectors.toList());
     }
@@ -136,6 +140,9 @@ public class Option implements Comparable<Option> {
 
     @SneakyThrows
     public Option addJson(String key, String value) {
+        if (value == null) {
+            return this;
+        }
         Map<String, Object> jsonObject;
         if (json == null) {
             jsonObject = new HashMap<>();

@@ -8,4 +8,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface HardwareRepositoryAnnotation {
+    String stringValueOnDisable() default "unknown";
+
+    int intValueOnDisable() default -1;
+
+    boolean boolValueOnDisable() default false;
 }

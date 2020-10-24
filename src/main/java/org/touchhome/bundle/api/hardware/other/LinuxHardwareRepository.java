@@ -1,19 +1,14 @@
 package org.touchhome.bundle.api.hardware.other;
 
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.SystemUtils;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.hquery.api.HQueryParam;
 import org.touchhome.bundle.api.hquery.api.HardwareQuery;
 import org.touchhome.bundle.api.hquery.api.HardwareRepositoryAnnotation;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Enumeration;
 
-@HardwareRepositoryAnnotation
+@HardwareRepositoryAnnotation(stringValueOnDisable = "N/A")
 public interface LinuxHardwareRepository {
 
     @HardwareQuery("df -m / | sed -e /^Filesystem/d")
@@ -51,25 +46,5 @@ public interface LinuxHardwareRepository {
 
     default String getDeviceModel() {
         return EntityContext.isLinuxEnvironment() ? catDeviceModel() : SystemUtils.OS_NAME;
-    }
-
-    @SneakyThrows
-    default String getIpAddress() {
-        if (EntityContext.isDevEnvironment()) {
-            return "127.0.0.1";
-        }
-        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-        StringBuilder address = new StringBuilder();
-        for (NetworkInterface networkInterface : Collections.list(nets)) {
-            for (InetAddress inetAddress : Collections.list(networkInterface.getInetAddresses())) {
-                if (inetAddress.isSiteLocalAddress()) {
-                    address.append(inetAddress.getHostAddress()).append(",");
-                }
-            }
-        }
-        if (address.length() > 0) {
-            address.deleteCharAt(address.length() - 1);
-        }
-        return address.toString();
     }
 }

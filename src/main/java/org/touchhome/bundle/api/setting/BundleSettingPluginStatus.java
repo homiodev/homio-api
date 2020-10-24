@@ -79,7 +79,7 @@ public interface BundleSettingPluginStatus extends BundleSettingPlugin<BundleSet
                 case ONLINE:
                     return NotificationType.success;
                 default:
-                    return NotificationType.danger;
+                    return NotificationType.error;
             }
         }
     }

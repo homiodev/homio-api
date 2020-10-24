@@ -3,13 +3,11 @@ package org.touchhome.bundle.api.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,12 +47,9 @@ public class TouchHomeUtils {
     private static final Path bundlePath;
     @Getter
     private static final Path sshPath;
-    private static final Map<String, CityToGeoLocation> cityToGeoMap = new HashMap<>();
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private static Path rootPath;
     private static Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
-    private static IpGeoLocation ipGeoLocation;
-    private static String ipAddress;
 
     static {
         if (SystemUtils.IS_OS_WINDOWS) {
@@ -244,44 +239,12 @@ public class TouchHomeUtils {
         return properties;
     }
 
-    public static Method findRequreMethod(Class cl, String name) {
-        for (Class<?> current = cl; current != null; current = current.getSuperclass()) {
-            for (Method m : current.getDeclaredMethods()) {
-                if (m.getName().equals(name)) {
-                    m.setAccessible(true);
-                    return m;
-                }
-            }
-        }
-        throw new NotFoundException("Unable to find method: " + name + " in class: " + cl.getSimpleName());
-    }
-
-    public static boolean containsAny(int[] array, Integer value) {
-        for (int i : array) {
-            if (i == value) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static TemplateBuilder templateBuilder(String templateName) {
         return new TemplateBuilder(templateName);
     }
 
     private static Path getOrCreatePath(String path) {
         return TouchHomeUtils.createDirectoriesIfNotExists(rootPath.resolve(path));
-    }
-
-    public static String getOuterIpAddress() {
-        if (ipAddress == null) {
-            try {
-                ipAddress = Curl.get("http://checkip.amazonaws.com", String.class);
-            } catch (Exception ex) {
-                return "";
-            }
-        }
-        return ipAddress;
     }
 
     @SneakyThrows
@@ -302,61 +265,6 @@ public class TouchHomeUtils {
             }
         }
         return null;
-    }
-
-    public static synchronized IpGeoLocation getIpGeoLocation(String ip) {
-        if (ipGeoLocation == null) {
-            try {
-                ipGeoLocation = Curl.get("http://ip-api.com/json/" + ip, IpGeoLocation.class);
-            } catch (Exception ex) {
-                return new IpGeoLocation();
-            }
-        }
-        return ipGeoLocation;
-    }
-
-    public static synchronized CityToGeoLocation findCityGeolocation(String city) {
-        if (!cityToGeoMap.containsKey(city)) {
-            CityToGeoLocation cityToGeoLocation = Curl.get("https://geocode.xyz/" + city + "?json=1", CityToGeoLocation.class);
-            if (cityToGeoLocation.error != null) {
-                String error = cityToGeoLocation.error.description;
-                if ("15. Your request did not produce any results.".equals(error)) {
-                    error = "Unable to find city: " + city + ". Please, check city from site: https://geocode.xyz";
-                }
-                throw new IllegalArgumentException(error);
-            }
-            cityToGeoMap.put(city, cityToGeoLocation);
-        }
-        return cityToGeoMap.get(city);
-    }
-
-    @Getter
-    public static class IpGeoLocation {
-        private String country;
-        private String countryCode;
-        private String region;
-        private String regionName;
-        private String city;
-        private Integer lat;
-        private Integer lon;
-        private String timezone;
-
-        @Override
-        public String toString() {
-            return new JSONObject(this).toString();
-        }
-    }
-
-    @Getter
-    public static class CityToGeoLocation {
-        private String longt;
-        private String latt;
-        private Error error;
-
-        @Setter
-        private static class Error {
-            private String description;
-        }
     }
 
     public static class TemplateBuilder {

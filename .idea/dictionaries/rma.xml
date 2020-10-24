@@ -3,8 +3,11 @@
     <words>
       <w>bintray</w>
       <w>entrypoint</w>
+      <w>netstat</w>
+      <w>qrcode</w>
       <w>toastr</w>
       <w>touchhome</w>
+      <w>tracert</w>
     </words>
   </dictionary>
 </component>

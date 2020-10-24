@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIMethodAction {
-    String name();
+    String value();
 
     ResponseAction responseAction() default ResponseAction.ShowToastr;
 
