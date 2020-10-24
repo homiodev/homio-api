@@ -20,6 +20,14 @@ public interface WorkspaceBlock {
 
     <P> P getMenuValue(String key, MenuBlock menuBlock, Class<P> type);
 
+    default String getMenuValue(String key, MenuBlock.ServerMenuBlock menuBlock) {
+        return getMenuValue(key, menuBlock, String.class);
+    }
+
+    default <P> P getMenuValue(String key, MenuBlock.StaticMenuBlock<P> menuBlock) {
+        return getMenuValue(key, menuBlock, menuBlock.getTypeClass());
+    }
+
     Map<String, JSONArray> getInputs();
 
     String getOpcode();
@@ -31,6 +39,8 @@ public interface WorkspaceBlock {
     String getFieldId(String fieldName);
 
     boolean hasField(String fieldName);
+
+    void setValue(Object value);
 
     void handle();
 
@@ -64,7 +74,15 @@ public interface WorkspaceBlock {
 
     String getId();
 
+    String getExtensionId();
+
+    default String getBlockId() {
+        return getExtensionId() + "_" + getOpcode();
+    }
+
     WorkspaceBlock getNext();
+
+    WorkspaceBlock getParent();
 
     boolean isTopLevel();
 
@@ -80,12 +98,13 @@ public interface WorkspaceBlock {
 
     EntityContext getEntityContext();
 
-    default boolean hasNext() {
+    void onRelease(Runnable listener);
+
+    default WorkspaceBlock getNextOrThrow() {
         WorkspaceBlock next = getNext();
         if (next == null) {
             logErrorAndThrow("No next block found");
-            return false;
         }
-        return true;
+        return next;
     }
 }

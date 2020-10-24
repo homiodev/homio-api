@@ -81,9 +81,22 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type) {
-        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(type, "", null);
-        this.arguments.put(argumentName, argumentTypeDescription);
-        return argumentTypeDescription;
+        return addArgument(argumentName, type, "");
+    }
+
+    /**
+     * Add argument with type string and default empty value
+     */
+    public ArgumentTypeDescription addArgument(String argumentName) {
+        return addArgument(argumentName, "");
+    }
+
+    public ArgumentTypeDescription addArgument(String argumentName, String defaultValue) {
+        return addArgument(argumentName, ArgumentType.string, defaultValue);
+    }
+
+    public ArgumentTypeDescription addArgument(String argumentName, Integer defaultValue) {
+        return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 
     public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type, String defaultValue) {

@@ -2,11 +2,6 @@ package org.touchhome.bundle.api.scratch;
 
 public enum ArgumentType {
     /**
-     * Numeric value with angle picker
-     */
-    angle,
-
-    /**
      * Boolean value with hexagonal placeholder
      */
     Boolean,
@@ -33,5 +28,9 @@ public enum ArgumentType {
     /**
      * Boolean checkbox UI representation
      */
-    checkbox
+    checkbox,
+
+    icon,
+
+    broadcast
 }

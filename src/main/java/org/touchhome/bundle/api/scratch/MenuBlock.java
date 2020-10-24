@@ -32,20 +32,20 @@ public class MenuBlock {
         return new ServerMenuBlock(name, url, "-", "-", null);
     }
 
-    public static <T extends Enum> StaticMenuBlock ofStatic(String name, Class<T> enumClass, T defaultValue) {
-        return new StaticMenuBlock(name, null).addEnum(enumClass).setDefaultValue(defaultValue);
+    public static <T extends Enum> StaticMenuBlock<T> ofStatic(String name, Class<T> enumClass, T defaultValue) {
+        return new StaticMenuBlock(name, null, enumClass).addEnum(enumClass).setDefaultValue(defaultValue);
     }
 
-    public static <T extends KeyValueEnum> StaticMenuBlock ofStaticKV(String name, Class<T> enumClass, T defaultValue) {
-        return new StaticMenuBlock(name, null).addEnumKVE(enumClass).setDefaultValue(defaultValue);
+    public static <T extends KeyValueEnum> StaticMenuBlock<T> ofStaticKV(String name, Class<T> enumClass, T defaultValue) {
+        return new StaticMenuBlock(name, null, enumClass).addEnumKVE(enumClass).setDefaultValue(defaultValue);
     }
 
-    public static <T extends Enum> StaticMenuBlock ofStatic(String name, Class<T> enumClass, T defaultValue, Predicate<T> filter) {
-        return new StaticMenuBlock(name, null).addEnum(enumClass, filter).setDefaultValue(defaultValue);
+    public static <T extends Enum> StaticMenuBlock<T> ofStatic(String name, Class<T> enumClass, T defaultValue, Predicate<T> filter) {
+        return new StaticMenuBlock(name, null, enumClass).addEnum(enumClass, filter).setDefaultValue(defaultValue);
     }
 
-    public static StaticMenuBlock ofStaticList(String name, Map<String, String> items) {
-        return new StaticMenuBlock(name, items);
+    public static StaticMenuBlock<String> ofStaticList(String name, Map<String, String> items) {
+        return new StaticMenuBlock(name, items, String.class);
     }
 
     @Getter
@@ -83,14 +83,16 @@ public class MenuBlock {
     }
 
     @Getter
-    public static class StaticMenuBlock extends MenuBlock {
+    public static class StaticMenuBlock<T> extends MenuBlock {
         private boolean acceptReporters = true;
         private List<StaticMenuItem> items = new ArrayList<>();
         private Map<String, List> subMenu;
         private Object defaultValue;
+        private Class<T> typeClass;
 
-        StaticMenuBlock(String name, Map<String, String> map) {
+        StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
             super(name);
+            this.typeClass = typeClass;
             if (map != null) {
                 for (Map.Entry<String, String> entry : map.entrySet()) {
                     this.items.add(new StaticMenuItem(entry.getKey(), entry.getValue()));

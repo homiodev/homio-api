@@ -2,6 +2,7 @@ package org.touchhome.bundle.api;
 
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.SystemUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.model.BaseEntity;
@@ -142,5 +143,11 @@ public interface EntityContext extends NotificationMessageEntityContext, Setting
 
     <T> List<Class<? extends T>> getClassesWithAnnotation(@ApiParam("annotation") Class<? extends Annotation> annotation);
 
-    void listenUdp(String host, int port, BiConsumer<DatagramPacket, String> listener);
+    /**
+     * Listen upd on host/port. default host is wildcard
+     * listener accept DatagramPacket and string value
+     */
+    void listenUdp(String key, @Nullable String host, int port, BiConsumer<DatagramPacket, String> listener);
+
+    void stopListenUdp(String key);
 }

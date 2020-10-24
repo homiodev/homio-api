@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.json;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.util.NotificationType;
 
 import javax.validation.constraints.NotNull;
@@ -31,6 +32,7 @@ public class NotificationEntityJSON implements Comparable<NotificationEntityJSON
             throw new IllegalArgumentException("entityId is null");
         }
         this.entityID = entityID;
+        this.name = this.entityID;
     }
 
     public static NotificationEntityJSON danger(String entityID) {
@@ -70,5 +72,10 @@ public class NotificationEntityJSON implements Comparable<NotificationEntityJSON
     public int compareTo(@NotNull NotificationEntityJSON other) {
         int i = this.notificationType.name().compareTo(other.notificationType.name());
         return i == 0 ? this.name.compareTo(other.name) : i;
+    }
+
+    @Override
+    public String toString() {
+        return name + (StringUtils.isNotEmpty(description) ? " | " + description : "");
     }
 }

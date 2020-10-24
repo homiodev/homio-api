@@ -3,7 +3,7 @@ package org.touchhome.bundle.api.manager;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
-import org.touchhome.bundle.api.NotificationMessageEntityContext;
+import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.HashMap;
@@ -36,7 +36,7 @@ public class En {
         return objectNode.at("/" + name.replaceAll("\\.", "/")).textValue();
     }
 
-    public String getServerMessage(String message, NotificationMessageEntityContext.MessageParam messageParam) {
+    public String getServerMessage(String message, FlowMap messageParam) {
         return getServerMessage(message, messageParam.getParams());
     }
 

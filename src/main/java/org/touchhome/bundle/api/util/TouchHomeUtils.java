@@ -164,7 +164,7 @@ public class TouchHomeUtils {
         if (ex instanceof NullPointerException || ex.getCause() instanceof NullPointerException) {
             return ex.getStackTrace()[0].toString();
         }
-        return ex.getCause() == null ? ex.getMessage() : ex.getCause().getLocalizedMessage();
+        return ex.getCause() == null ? ex.toString() : ex.getCause().toString();
     }
 
     public static String toTmpFile(String uniqueID, String suffix, ByteArrayOutputStream outputStream) throws IOException {

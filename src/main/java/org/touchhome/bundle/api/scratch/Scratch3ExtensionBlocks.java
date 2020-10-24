@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 public abstract class Scratch3ExtensionBlocks {
 
     public static final String EVENT = "EVENT";
+    public static final String VALUE = "VALUE";
 
     protected final EntityContext entityContext;
     private final String id;
