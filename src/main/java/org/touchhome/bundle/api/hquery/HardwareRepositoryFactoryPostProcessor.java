@@ -34,6 +34,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,9 +118,9 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                     }
                     results.add(handleHardwareQuery(hardwareQuery, args, method, env, aClass, hQueryExecutor));
                 }
-                Object value = handleCurlQuery(method, args, env);
-                if (value != null) {
-                    return value;
+                Optional<AtomicReference<Object>> value = handleCurlQuery(method, args, env);
+                if (value.isPresent()) {
+                    return value.get().get();
                 }
                 if (results != null) {
                     if (results.isEmpty()) {
@@ -148,7 +149,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
         }
     }
 
-    private Object handleCurlQuery(Method method, Object[] args, Environment env) {
+    private Optional<AtomicReference<Object>> handleCurlQuery(Method method, Object[] args, Environment env) {
         CurlQuery curlQuery = method.getDeclaredAnnotation(CurlQuery.class);
         if (curlQuery != null) {
             String argCmd = replaceStringWithArgs(curlQuery.value(), args, method);
@@ -168,19 +169,26 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
 
                 } catch (Exception ex) {
                     log.error("Error while execute curl command <{}>. Msg: <{}>", command, ex.getMessage());
-                    processCache.errors = Collections.singletonList(ex.getMessage());
+                    processCache.errors = Collections.singletonList(TouchHomeUtils.getErrorMessage(ex));
                     if (!curlQuery.ignoreOnError()) {
                         throw new HardwareException(processCache.errors, -1);
+                    } else if (!curlQuery.valueOnError().isEmpty()) {
+                        return Optional.of(new AtomicReference<>(curlQuery.valueOnError()));
                     }
                     processCache.retValue = -1;
+
+                    // to avoid NPE instantiate empty class
+                    if (!method.getReturnType().isAssignableFrom(String.class)) {
+                        processCache.response = TouchHomeUtils.newInstance(method.getReturnType());
+                    }
                 }
-                if (curlQuery.cache() || curlQuery.cacheValid() > 0) {
+                if (processCache.errors == null && curlQuery.cache() || curlQuery.cacheValid() > 0) {
                     cache.put(command, processCache);
                 }
             }
-            return processCache.response;
+            return Optional.of(new AtomicReference<>(processCache.response));
         }
-        return null;
+        return Optional.empty();
     }
 
     private String replaceStringWithArgs(String str, Object[] args, Method method) {
@@ -246,9 +254,9 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                 processCache.inputs = inputs.get();
             } catch (Exception ex) {
                 processCache.retValue = 1;
-                processCache.errors = Collections.singletonList(ex.getMessage());
+                processCache.errors = Collections.singletonList(TouchHomeUtils.getErrorMessage(ex));
             } finally {
-                if (hardwareQuery.cache() || hardwareQuery.cacheValid() > 0) {
+                if (processCache.errors != null && hardwareQuery.cache() || hardwareQuery.cacheValid() > 0) {
                     cache.put(command, processCache);
                 }
             }

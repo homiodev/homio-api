@@ -2,13 +2,16 @@ package org.touchhome.bundle.api;
 
 import com.pivovarit.function.ThrowingRunnable;
 import com.pivovarit.function.ThrowingSupplier;
+import org.springframework.lang.Nullable;
 
+import java.net.DatagramPacket;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public interface ThreadEntityContext {
+public interface EntityContextBGP {
     ThreadContext<Void> schedule(String name, int timeout, TimeUnit timeUnit, ThrowingRunnable<Exception> command, boolean showOnUI);
 
     default ThreadContext<Void> run(String name, ThrowingRunnable<Exception> command, boolean showOnUI) {

@@ -1,12 +1,11 @@
-package org.touchhome.bundle.api.hardware;
+package org.touchhome.bundle.api;
 
 import org.touchhome.bundle.api.manager.En;
 import org.touchhome.bundle.api.util.FlowMap;
 
 import java.util.function.Consumer;
 
-public interface HardwareEvents {
-
+public interface EntityContextEvent {
     void removeEvents(String... keys);
 
     void setListener(String key, Consumer<Object> listener);

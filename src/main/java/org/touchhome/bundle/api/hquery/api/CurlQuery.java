@@ -11,6 +11,8 @@ import java.util.function.Function;
 public @interface CurlQuery {
     String value();
 
+    String valueOnError() default "";
+
     int maxSecondsTimeout() default 60;
 
     boolean cache() default false;

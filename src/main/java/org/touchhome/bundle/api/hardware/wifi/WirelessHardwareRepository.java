@@ -76,16 +76,17 @@ public interface WirelessHardwareRepository {
     @RawParse(value = NetStatGatewayParser.class)
     String getGatewayIpAddress();
 
-    @CurlQuery(value = "http://checkip.amazonaws.com", cacheValid = 3600, ignoreOnError = true, mapping = TrimEndMapping.class)
+    @CurlQuery(value = "http://checkip.amazonaws.com", cacheValid = 3600, ignoreOnError = true,
+            mapping = TrimEndMapping.class, valueOnError = "127.0.0.1")
     String getOuterIpAddress();
 
-    @CurlQuery(value = "http://ip-api.com/json/:ip", cache = true)
+    @CurlQuery(value = "http://ip-api.com/json/:ip", cache = true, ignoreOnError = true)
     IpGeoLocation getIpGeoLocation(@HQueryParam("ip") String ip);
 
     @HardwareQuery("hostname -i")
     String getLinuxIPAddress();
 
-    @CurlQuery(value = "https://geocode.xyz/:city?json=1", cache = true)
+    @CurlQuery(value = "https://geocode.xyz/:city?json=1", cache = true, ignoreOnError = true)
     CityToGeoLocation findCityGeolocation(@HQueryParam("city") String city);
 
     default CityToGeoLocation findCityGeolocationOrThrowException(String city) {
@@ -191,14 +192,14 @@ public interface WirelessHardwareRepository {
 
     @Getter
     class IpGeoLocation {
-        private String country;
-        private String countryCode;
-        private String region;
-        private String regionName;
-        private String city;
-        private Integer lat;
-        private Integer lon;
-        private String timezone;
+        private String country = "unknown";
+        private String countryCode = "unknown";
+        private String region = "unknown";
+        private String regionName = "unknown";
+        private String city = "unknown";
+        private Integer lat = 0;
+        private Integer lon = 0;
+        private String timezone = "unknown";
 
         @Override
         public String toString() {

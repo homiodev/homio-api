@@ -2,7 +2,7 @@ package org.touchhome.bundle.api.ui.action;
 
 import org.touchhome.bundle.api.EntityContext;
 
-import java.util.function.Consumer;
+import java.util.function.Function;
 
-public interface UISidebarButtonHandler extends Consumer<EntityContext> {
+public interface UISidebarButtonHandler extends Function<EntityContext, String> {
 }

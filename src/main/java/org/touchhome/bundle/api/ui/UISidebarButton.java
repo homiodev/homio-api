@@ -25,6 +25,4 @@ public @interface UISidebarButton {
      * Target class for handle button
      */
     Class<? extends UISidebarButtonHandler> handlerClass();
-
-    String onDone() default "";
 }

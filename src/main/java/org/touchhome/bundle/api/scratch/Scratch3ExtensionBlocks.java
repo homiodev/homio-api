@@ -73,7 +73,7 @@ public abstract class Scratch3ExtensionBlocks {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode node = mapper.createObjectNode().put("block", baseEntity.getEntityID()).put("type", type);
         fn.accept(node);
-        entityContext.sendNotification("-workspace-value", node);
+        entityContext.ui().sendNotification("-workspace-value", node);
     }
 
     private URL getImage(BundleEntrypoint bundleEntrypoint) {

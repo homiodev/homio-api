@@ -2,7 +2,6 @@ package org.touchhome.bundle.api;
 
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.SystemUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.model.BaseEntity;
@@ -11,14 +10,23 @@ import org.touchhome.bundle.api.model.UserEntity;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 
 import java.lang.annotation.Annotation;
-import java.net.DatagramPacket;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public interface EntityContext extends NotificationMessageEntityContext, SettingEntityContext, ThreadEntityContext {
+public interface EntityContext {
 
     String APP_ID = Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
+
+    EntityContextUI ui();
+
+    EntityContextEvent event();
+
+    EntityContextUDP udp();
+
+    EntityContextBGP bgp();
+
+    EntityContextSetting setting();
 
     static boolean isDevEnvironment() {
         return "true".equals(System.getProperty("development"));
@@ -142,12 +150,4 @@ public interface EntityContext extends NotificationMessageEntityContext, Setting
     Collection<AbstractRepository> getRepositories();
 
     <T> List<Class<? extends T>> getClassesWithAnnotation(@ApiParam("annotation") Class<? extends Annotation> annotation);
-
-    /**
-     * Listen upd on host/port. default host is wildcard
-     * listener accept DatagramPacket and string value
-     */
-    void listenUdp(String key, @Nullable String host, int port, BiConsumer<DatagramPacket, String> listener);
-
-    void stopListenUdp(String key);
 }
