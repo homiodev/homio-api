@@ -139,6 +139,11 @@ public interface EntityContext {
 
     <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@ApiParam("clazz") Class<T> clazz);
 
+    default boolean isAdminUserOrNone() {
+        UserEntity user = getUser();
+        return user == null || user.isAdmin();
+    }
+
     default UserEntity getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {

@@ -15,6 +15,7 @@ import org.touchhome.bundle.api.model.HasDescription;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,8 +35,7 @@ public class Option implements Comparable<Option> {
     @Setter
     private String imageRef;
 
-    @Setter
-    private String json;
+    private JSONObject json = new JSONObject();
 
     public Option(Object key, Object title) {
         this.key = String.valueOf(key);
@@ -103,11 +103,16 @@ public class Option implements Comparable<Option> {
         for (Object o : list) {
             Option option = Option.key(o.getClass().getSimpleName());
             if (o instanceof HasDescription) {
-                option.setJson(new JSONObject("description", ((HasDescription) o).getDescription()).toString());
+                option.json.put("description", ((HasDescription) o).getDescription());
             }
             options.add(option);
         }
         return options;
+    }
+
+    public Option json(Consumer<JSONObject> consumer) {
+        consumer.accept(json);
+        return this;
     }
 
     @Override
@@ -136,21 +141,5 @@ public class Option implements Comparable<Option> {
     @Override
     public int hashCode() {
         return Objects.hash(key);
-    }
-
-    @SneakyThrows
-    public Option addJson(String key, String value) {
-        if (value == null) {
-            return this;
-        }
-        Map<String, Object> jsonObject;
-        if (json == null) {
-            jsonObject = new HashMap<>();
-        } else {
-            jsonObject = OBJECT_MAPPER.readValue(json, HashMap.class);
-        }
-        jsonObject.put(key, value);
-        json = OBJECT_MAPPER.writeValueAsString(jsonObject);
-        return this;
     }
 }

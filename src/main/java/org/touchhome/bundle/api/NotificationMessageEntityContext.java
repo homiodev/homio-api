@@ -52,6 +52,10 @@ public interface NotificationMessageEntityContext {
         this.addHeaderNotification(topJson);
     }
 
+    default void showAlwaysOnViewNotification(String name, String icon, String color) {
+        showAlwaysOnViewNotification(new NotificationEntityJSON(name), icon, color, null);
+    }
+
     default void showAlwaysOnViewNotification(NotificationEntityJSON json, int duration, String color, Class<? extends BundleSettingPluginButton> stopAction) {
         AlwaysOnTopNotificationEntityJSON topJson = new AlwaysOnTopNotificationEntityJSON(json, color, duration, null);
         if (stopAction != null) {
@@ -60,7 +64,7 @@ public interface NotificationMessageEntityContext {
         this.addHeaderNotification(topJson);
     }
 
-    void hideAlwaysOnViewNotification(NotificationEntityJSON notificationEntityJSON);
+    void hideAlwaysOnViewNotification(String key);
 
     default void sendErrorMessage(String message) {
         sendErrorMessage(null, message, null, null);
@@ -80,6 +84,10 @@ public interface NotificationMessageEntityContext {
 
     default void sendErrorMessage(String message, FlowMap messageParam, Exception ex) {
         sendErrorMessage(null, message, messageParam, ex);
+    }
+
+    default void sendErrorMessage(String message, FlowMap messageParam) {
+        sendErrorMessage(null, message, messageParam, null);
     }
 
     default void sendErrorMessage(String title, String message, FlowMap messageParam, Exception ex) {

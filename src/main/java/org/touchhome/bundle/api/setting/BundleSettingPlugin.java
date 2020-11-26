@@ -8,7 +8,7 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.json.Option;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,10 +22,6 @@ public interface BundleSettingPlugin<T> {
         return "";
     }
 
-    default String getToggleIcon() {
-        return getIcon();
-    }
-
     default String getIconColor() {
         return "";
     }
@@ -37,6 +33,7 @@ public interface BundleSettingPlugin<T> {
             case Float:
                 return "0";
             case Boolean:
+            case Toggle:
                 return Boolean.FALSE.toString();
         }
         return "";
@@ -83,6 +80,7 @@ public interface BundleSettingPlugin<T> {
             case Float:
                 return (T) Float.valueOf(value);
             case Boolean:
+            case Toggle:
                 return (T) Boolean.valueOf(value);
             case Integer:
             case Slider:
@@ -111,7 +109,7 @@ public interface BundleSettingPlugin<T> {
         return (T) value;
     }
 
-    default List<Option> loadAvailableValues(EntityContext entityContext) {
+    default Collection<Option> loadAvailableValues(EntityContext entityContext) {
         if (SerialPort.class.equals(getType())) {
             return Option.listOfPorts();
         }
@@ -171,6 +169,7 @@ public interface BundleSettingPlugin<T> {
         TextSelectBoxDynamic,
         // Button that fires server action
         Button,
+        Toggle,
         Info
     }
 }

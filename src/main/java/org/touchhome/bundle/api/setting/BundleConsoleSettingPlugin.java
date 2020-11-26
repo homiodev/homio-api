@@ -11,7 +11,13 @@ public interface BundleConsoleSettingPlugin<T> extends BundleSettingPlugin<T> {
     /**
      * @return list of console page names where this setting enabled
      */
-    String[] pages();
+    default String[] pages() {
+        return null;
+    }
+
+    default ConsolePlugin.RenderType[] renderTypes() {
+        return null;
+    }
 
     default boolean acceptConsolePluginPage(ConsolePlugin consolePlugin) {
         return false;
