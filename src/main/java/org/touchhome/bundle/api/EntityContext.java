@@ -4,9 +4,9 @@ import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.touchhome.bundle.api.model.BaseEntity;
+import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
-import org.touchhome.bundle.api.model.UserEntity;
+import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 
 import java.lang.annotation.Annotation;

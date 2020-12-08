@@ -44,6 +44,9 @@ public interface LinuxHardwareRepository {
     @HardwareQuery(value = "apt-get install :soft", echo = "Install software")
     void installSoftware(@HQueryParam("soft") String soft);
 
+    @HardwareQuery("which :soft")
+    boolean isSoftwareInstalled(@HQueryParam("soft") String soft);
+
     default String getDeviceModel() {
         return EntityContext.isLinuxEnvironment() ? catDeviceModel() : SystemUtils.OS_NAME;
     }

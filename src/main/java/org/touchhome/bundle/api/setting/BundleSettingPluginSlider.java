@@ -3,6 +3,8 @@ package org.touchhome.bundle.api.setting;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
+
 public interface BundleSettingPluginSlider extends BundleSettingPluginInteger {
 
     @Override
@@ -10,8 +12,8 @@ public interface BundleSettingPluginSlider extends BundleSettingPluginInteger {
         return SettingType.Slider;
     }
 
-    default int getStep() {
-        return 1;
+    default Integer getStep() {
+        return null;
     }
 
     default String getHeader() {
@@ -20,7 +22,9 @@ public interface BundleSettingPluginSlider extends BundleSettingPluginInteger {
 
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
-        return BundleSettingPluginInteger.super.getParameters(entityContext, value)
-                .put("step", getStep()).put("header", getHeader());
+        JSONObject parameters = BundleSettingPluginInteger.super.getParameters(entityContext, value);
+        putOpt(parameters, "step", getStep());
+        putOpt(parameters, "header", getHeader());
+        return parameters;
     }
 }

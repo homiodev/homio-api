@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.touchhome.bundle.api.json.KeyValueEnum;
+import org.touchhome.bundle.api.model.KeyValueEnum;
 
 import java.util.ArrayList;
 import java.util.HashMap;

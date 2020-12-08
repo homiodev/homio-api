@@ -7,9 +7,9 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.touchhome.bundle.api.BundleEntrypoint;
+import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.model.BaseEntity;
+import org.touchhome.bundle.api.entity.BaseEntity;
 
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -32,16 +32,16 @@ public abstract class Scratch3ExtensionBlocks {
     private String blockIconURI;
     private Scratch3Color scratch3Color;
 
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntrypoint bundleEntrypoint) {
-        this(color, entityContext, bundleEntrypoint, null);
+    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint) {
+        this(color, entityContext, bundleEntryPoint, null);
     }
 
     @SneakyThrows
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntrypoint bundleEntrypoint, String idSuffix) {
-        this.id = bundleEntrypoint == null ? idSuffix : bundleEntrypoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
+    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint, String idSuffix) {
+        this.id = bundleEntryPoint == null ? idSuffix : bundleEntryPoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
         this.entityContext = entityContext;
         if (color != null) {
-            URL resource = getImage(bundleEntrypoint);
+            URL resource = getImage(bundleEntryPoint);
             if (resource == null) {
                 throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
             }
@@ -76,12 +76,12 @@ public abstract class Scratch3ExtensionBlocks {
         entityContext.ui().sendNotification("-workspace-value", node);
     }
 
-    private URL getImage(BundleEntrypoint bundleEntrypoint) {
+    private URL getImage(BundleEntryPoint bundleEntryPoint) {
         URL resource = null;
-        if (bundleEntrypoint != null) {
-            resource = bundleEntrypoint.getResource(this.id + ".png");
+        if (bundleEntryPoint != null) {
+            resource = bundleEntryPoint.getResource(this.id + ".png");
             if (resource == null) {
-                resource = bundleEntrypoint.getResource("image.png");
+                resource = bundleEntryPoint.getResource("image.png");
             }
         }
         if (resource == null) {

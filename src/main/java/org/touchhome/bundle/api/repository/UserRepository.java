@@ -2,10 +2,9 @@ package org.touchhome.bundle.api.repository;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.touchhome.bundle.api.model.UserEntity;
-import org.touchhome.bundle.api.repository.AbstractRepository;
+import org.touchhome.bundle.api.entity.UserEntity;
 
-import static org.touchhome.bundle.api.model.UserEntity.PREFIX;
+import static org.touchhome.bundle.api.entity.UserEntity.PREFIX;
 
 @Repository
 public class UserRepository extends AbstractRepository<UserEntity> {

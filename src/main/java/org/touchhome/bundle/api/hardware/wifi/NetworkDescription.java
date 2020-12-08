@@ -11,7 +11,7 @@ import org.touchhome.bundle.api.hquery.api.ListParse;
 @ToString
 @Accessors(chain = true)
 public class NetworkDescription {
-    public static final String IP_PATTERN = "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
+    public static final String IP_PATTERN = "((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))";
 
     @ListParse.LineParse("inet " + IP_PATTERN + ".*")
     private String inet;

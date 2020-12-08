@@ -1,10 +1,10 @@
 package org.touchhome.bundle.api.setting;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.model.Status;
-import org.touchhome.bundle.api.util.NotificationType;
+import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
@@ -33,6 +33,11 @@ public interface BundleSettingPluginStatus extends BundleSettingPlugin<BundleSet
     }
 
     @Override
+    default Class<BundleSettingPluginStatus.BundleStatusInfo> getType() {
+        return BundleSettingPluginStatus.BundleStatusInfo.class;
+    }
+
+    @Override
     default String getDefaultValue() {
         return Status.UNKNOWN.name();
     }
@@ -51,6 +56,8 @@ public interface BundleSettingPluginStatus extends BundleSettingPlugin<BundleSet
     @AllArgsConstructor
     class BundleStatusInfo {
         private final Status status;
+
+        @Getter
         private final String message;
 
         public boolean isOnline() {
@@ -61,25 +68,20 @@ public interface BundleSettingPluginStatus extends BundleSettingPlugin<BundleSet
             return status;
         }
 
-        public NotificationEntityJSON toNotification(String bundleId) {
-            return new NotificationEntityJSON(bundleId + "-status").setNotificationType(getNotificationType())
-                    .setName(bundleId).setDescription(defaultIfEmpty(message, status.name()));
-        }
-
         @Override
         public String toString() {
             return status.name() + (isEmpty(message) ? "" : " - " + message);
         }
 
-        private NotificationType getNotificationType() {
+        public NotificationLevel getLevel() {
             switch (status) {
                 case OFFLINE:
                 case UNKNOWN:
-                    return NotificationType.warning;
+                    return NotificationLevel.warning;
                 case ONLINE:
-                    return NotificationType.success;
+                    return NotificationLevel.success;
                 default:
-                    return NotificationType.error;
+                    return NotificationLevel.error;
             }
         }
     }

@@ -1,14 +1,12 @@
 package org.touchhome.bundle.api.setting;
 
 import com.fazecast.jSerialComm.SerialPort;
-import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.json.NotificationEntityJSON;
+import org.touchhome.bundle.api.model.OptionModel;
 
-public interface BundleSettingPluginPort extends BundleSettingPlugin<SerialPort> {
+import java.util.Collection;
 
-    String PORT_AVAILABLE = "Port available";
-    String PORT_UNAVAILABLE = "Port unavailable for setting: ";
+public interface BundleSettingPluginPort extends BundleSettingPlugin<SerialPort>, BundleSettingOptionsSettingPlugin<SerialPort> {
 
     @Override
     default SettingType getSettingType() {
@@ -16,15 +14,17 @@ public interface BundleSettingPluginPort extends BundleSettingPlugin<SerialPort>
     }
 
     @Override
-    default NotificationEntityJSON buildToastrNotificationEntity(SerialPort value, String raw, EntityContext entityContext) {
-        if (StringUtils.isNotEmpty(raw)) {
-            if (value == null) {
-                return NotificationEntityJSON.danger(getClass().getSimpleName()).setName(raw).setDescription(PORT_UNAVAILABLE + getClass().getSimpleName());
-            } else {
-                return NotificationEntityJSON.info(getClass().getSimpleName()).setName(raw).setDescription(PORT_AVAILABLE);
-            }
-        }
-        return null;
+    default Collection<OptionModel> loadAvailableValues(EntityContext entityContext) {
+        return OptionModel.listOfPorts(withEmpty());
+    }
+
+    default boolean withEmpty() {
+        return false;
+    }
+
+    @Override
+    default String writeValue(SerialPort value) {
+        return value == null ? "" : value.getSystemPortName();
     }
 
     @Override

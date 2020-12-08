@@ -12,13 +12,13 @@ public class FlowMap {
     private FlowMap(String name, String value, String name1, String value1, String name2, String value2, String name3, String value3) {
         this.params.put(name, value);
         if (name1 != null) {
-            this.params.put(name1, value1);
+            this.params.put(name1, value1 == null ? "" : value1);
         }
         if (name2 != null) {
-            this.params.put(name2, value2);
+            this.params.put(name2, value2 == null ? "" : value2);
         }
         if (name3 != null) {
-            this.params.put(name3, value3);
+            this.params.put(name3, value3 == null ? "" : value3);
         }
     }
 

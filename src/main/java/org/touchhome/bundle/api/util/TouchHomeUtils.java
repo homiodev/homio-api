@@ -8,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +16,12 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.touchhome.bundle.api.exception.NotFoundException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
@@ -35,6 +34,7 @@ import java.util.function.Predicate;
 @Log4j2
 public class TouchHomeUtils {
 
+    public static final String RED_COLOR = "#E65100";
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final String[] SYSTEM_BUNDLES = {"arduino", "raspberry", "telegram", "zigbee", "cloud", "bluetooth", "xaomi"};
     public static final String ADMIN_ROLE = "ROLE_ADMIN";
@@ -60,6 +60,13 @@ public class TouchHomeUtils {
         filesPath = getOrCreatePath("asm_files");
         sshPath = getOrCreatePath("ssh");
         bundlePath = getOrCreatePath("bundles");
+    }
+
+    public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {
+        if (key != null && value != null) {
+            jsonObject.put(key, value);
+        }
+        return jsonObject;
     }
 
     public static void addClassLoader(String bundleName, ClassLoader classLoader) {
@@ -131,6 +138,11 @@ public class TouchHomeUtils {
 
         }
         return Collections.emptyList();
+    }
+
+    @SneakyThrows
+    public static String getResourceAsString(String bundle, String resource) {
+        return IOUtils.toString(getResource(bundle, resource));
     }
 
     @SneakyThrows

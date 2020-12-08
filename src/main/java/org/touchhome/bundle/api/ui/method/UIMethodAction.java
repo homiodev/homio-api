@@ -12,10 +12,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIMethodAction {
     String value();
-
-    ResponseAction responseAction() default ResponseAction.ShowToastr;
-
-    enum ResponseAction {
-        ShowToastr, ShowJson
-    }
 }

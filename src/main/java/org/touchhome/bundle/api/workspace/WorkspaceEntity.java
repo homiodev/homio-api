@@ -3,7 +3,7 @@ package org.touchhome.bundle.api.workspace;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.touchhome.bundle.api.model.BaseEntity;
+import org.touchhome.bundle.api.entity.BaseEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

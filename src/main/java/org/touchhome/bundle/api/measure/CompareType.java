@@ -2,7 +2,7 @@ package org.touchhome.bundle.api.measure;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.touchhome.bundle.api.json.KeyValueEnum;
+import org.touchhome.bundle.api.model.KeyValueEnum;
 
 import java.util.function.BiPredicate;
 

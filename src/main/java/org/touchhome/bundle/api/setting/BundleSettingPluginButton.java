@@ -11,9 +11,20 @@ import org.touchhome.bundle.api.EntityContext;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
+
 public interface BundleSettingPluginButton extends BundleSettingPlugin<JSONObject> {
 
     Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_]+");
+
+    default String getConfirmMsg() {
+        return "ACTION_CONFIRM_MESSAGE";
+    }
+
+    @Override
+    default Class<JSONObject> getType() {
+        return JSONObject.class;
+    }
 
     @Override
     default SettingType getSettingType() {
@@ -26,6 +37,8 @@ public interface BundleSettingPluginButton extends BundleSettingPlugin<JSONObjec
 
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
+        JSONObject parameters = BundleSettingPlugin.super.getParameters(entityContext, value);
+        putOpt(parameters, "confirm", getConfirmMsg());
         List<InputParameter> inputParameters = getInputParameters(entityContext, value);
         if (inputParameters != null && !inputParameters.isEmpty()) {
             JSONArray jsonArray = new JSONArray();
@@ -45,9 +58,9 @@ public interface BundleSettingPluginButton extends BundleSettingPlugin<JSONObjec
                 }
                 jsonArray.put(obj);
             }
-            return new JSONObject().put("parameters", jsonArray);
+            return parameters.put("parameters", jsonArray);
         }
-        return null;
+        return parameters;
     }
 
     @Override

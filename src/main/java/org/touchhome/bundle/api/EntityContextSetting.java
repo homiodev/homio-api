@@ -1,46 +1,63 @@
 package org.touchhome.bundle.api;
 
-import io.swagger.annotations.ApiParam;
+import org.touchhome.bundle.api.setting.BundleSettingOptionsSettingPlugin;
 import org.touchhome.bundle.api.setting.BundleSettingPlugin;
+import org.touchhome.bundle.api.setting.header.dynamic.BundleDynamicHeaderSettingPlugin;
+import org.touchhome.bundle.api.setting.header.dynamic.BundleHeaderDynamicContainerSettingPlugin;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 import java.util.function.Consumer;
 
 public interface EntityContextSetting {
-    <T> T getValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass);
 
-    <T> String getRawValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass);
+    /**
+     * Update setting components on ui
+     */
+    void reloadSettings(Class<? extends BundleSettingOptionsSettingPlugin> settingPlugin);
 
-    default <T> T getValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, T defaultValue) {
+    /**
+     * Update setting components on ui. Uses for updating dynamic settings
+     */
+    void reloadSettings(Class<? extends BundleHeaderDynamicContainerSettingPlugin> dynamicSettingPluginClass,
+                        List<? extends BundleDynamicHeaderSettingPlugin> dynamicSettings);
+
+    <T> T getValue(Class<? extends BundleSettingPlugin<T>> settingClass);
+
+    <T> String getRawValue(Class<? extends BundleSettingPlugin<T>> settingClass);
+
+    default <T> T getValue(Class<? extends BundleSettingPlugin<T>> settingClass, T defaultValue) {
         T value = getValue(settingClass);
         return value == null ? defaultValue : value;
     }
 
-    default <T> void listenValueAsync(@ApiParam("setting class") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Consumer<T> listener) {
-        listenValue(settingClass, key, value ->
-                new Thread(() -> listener.accept(value), "run-listen-value-async-" + settingClass.getSimpleName()).start());
-    }
+    <T> void listenValueAsync(Class<? extends BundleSettingPlugin<T>> settingClass, String key, Consumer<T> listener);
 
-    default <T> void listenValueAsync(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Runnable listener) {
+    default <T> void listenValueAsync(Class<? extends BundleSettingPlugin<T>> settingClass, String key, Runnable listener) {
         listenValueAsync(settingClass, key, t -> listener.run());
     }
 
-    default <T> void listenValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Runnable listener) {
+    default <T> void listenValue(Class<? extends BundleSettingPlugin<T>> settingClass, String key, Runnable listener) {
         listenValue(settingClass, key, p -> listener.run());
     }
 
-    <T> void listenValue(Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Consumer<T> listener);
+    <T> void listenValue(Class<? extends BundleSettingPlugin<T>> settingClass, String key, Consumer<T> listener);
 
-    <T> void setValueRaw(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, @ApiParam("value") @NotNull String value);
+    default <T> void listenValueAndGet(Class<? extends BundleSettingPlugin<T>> settingClass, String key, Consumer<T> listener) {
+        listenValue(settingClass, key, listener);
+        listener.accept(getValue(settingClass));
+    }
 
-    <T> void setValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull T value);
+    <T> void setValueRaw(Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, @NotNull String value);
+
+    <T> void setValue(Class<? extends BundleSettingPlugin<T>> settingClass, @NotNull T value);
 
     /**
      * Save setting value without firing events
      *
      * @return value converted to string
      */
-    <T> String setValueSilence(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull T value);
+    <T> String setValueSilence(Class<? extends BundleSettingPlugin<T>> settingClass, @NotNull T value);
 
-    <T> void setValueSilenceRaw(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull String value);
+    <T> void setValueSilenceRaw(Class<? extends BundleSettingPlugin<T>> settingClass, @NotNull String value);
 }

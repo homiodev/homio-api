@@ -1,6 +1,8 @@
 package org.touchhome.bundle.api.console;
 
-import org.touchhome.bundle.api.setting.BundleSettingPlugin;
+import org.json.JSONObject;
+import org.touchhome.bundle.api.BundleEntryPoint;
+import org.touchhome.bundle.api.setting.header.BundleHeaderSettingPlugin;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
@@ -10,7 +12,15 @@ import java.util.Map;
  */
 public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
 
+    default String getEntityID() {
+        return BundleEntryPoint.getBundleName(getClass());
+    }
+
     T getValue();
+
+    default JSONObject getOptions() {
+        return null;
+    }
 
     RenderType getRenderType();
 
@@ -24,7 +34,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     /**
      * Uses when need header buttons for whole plugin
      */
-    default Map<String, Class<? extends BundleSettingPlugin<?>>> getHeaderActions() {
+    default Map<String, Class<? extends BundleHeaderSettingPlugin<?>>> getHeaderActions() {
         return null;
     }
 
@@ -51,6 +61,6 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     enum RenderType {
-        lines, comm, table, string
+        lines, comm, table, string, editor
     }
 }

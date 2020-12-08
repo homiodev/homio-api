@@ -1,9 +1,10 @@
 package org.touchhome.bundle.api.ui.action;
 
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.json.Option;
-import org.touchhome.bundle.api.model.BaseEntity;
+import org.touchhome.bundle.api.model.OptionModel;
+import org.touchhome.bundle.api.entity.BaseEntity;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -11,5 +12,5 @@ import java.util.List;
  */
 public interface DynamicOptionLoader<T> {
 
-    List<Option> loadOptions(T parameter, BaseEntity baseEntity, EntityContext entityContext);
+    Collection<OptionModel> loadOptions(T parameter, BaseEntity baseEntity, EntityContext entityContext);
 }
