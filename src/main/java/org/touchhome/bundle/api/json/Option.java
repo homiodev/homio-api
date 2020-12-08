@@ -37,6 +37,8 @@ public class Option implements Comparable<Option> {
 
     private JSONObject json = new JSONObject();
 
+    private Collection<Option> children;
+
     public Option(Object key, Object title) {
         this.key = String.valueOf(key);
         this.title = String.valueOf(title);
@@ -46,6 +48,13 @@ public class Option implements Comparable<Option> {
         Option option = new Option();
         option.key = key;
         return option;
+    }
+
+    public void addChild(Option child) {
+        if (this.children == null) {
+            children = new ArrayList<>();
+        }
+        children.add(child);
     }
 
     public static Option of(String key, String title) {
@@ -65,9 +74,10 @@ public class Option implements Comparable<Option> {
         return list;
     }
 
-    public static List<Option> listOfPorts() {
-        return withEmpty(Arrays.stream(SerialPort.getCommPorts()).map(p ->
-                new Option(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName())).collect(Collectors.toList()));
+    public static List<Option> listOfPorts(boolean withEmpty) {
+        List<Option> options = Arrays.stream(SerialPort.getCommPorts()).map(p ->
+                new Option(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName())).collect(Collectors.toList());
+        return withEmpty ? withEmpty(options) : options;
     }
 
     public static List<Option> enumList(Class<? extends Enum> enumClass) {

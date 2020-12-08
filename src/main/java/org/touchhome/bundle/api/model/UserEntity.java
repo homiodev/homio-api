@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
 import org.json.JSONObject;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.converter.StringSetConverter;
 import org.touchhome.bundle.api.util.SslUtil;
@@ -16,7 +17,6 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
 
-@Setter
 @Entity
 @Accessors(chain = true)
 public class UserEntity extends BaseEntity<UserEntity> {
@@ -26,6 +26,7 @@ public class UserEntity extends BaseEntity<UserEntity> {
     public static final String ADMIN_USER = PREFIX + "user";
 
     @Getter
+    @Setter
     private String userId;
 
     @Getter
@@ -39,32 +40,50 @@ public class UserEntity extends BaseEntity<UserEntity> {
     private byte[] keystore;
 
     @Getter
+    @Setter
     private Date keystoreDate;
 
     @Getter
+    @Setter
     private String lang = "en";
 
     @Getter
+    @Setter
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.REGULAR;
 
     @Getter
+    @Setter
     @Lob
     @Column(length = 1048576)
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData;
 
     @Getter
+    @Setter
     @Column(nullable = false)
     @Convert(converter = StringSetConverter.class)
     private Set<String> roles;
 
-    public boolean matchPassword(String encodedPassword) {
-        return this.password != null && this.password.equals(encodedPassword);
+    public boolean matchPassword(String password, PasswordEncoder passwordEncoder) {
+        return this.password != null && (this.password.equals(password) ||
+                (passwordEncoder != null && passwordEncoder.matches(password, this.password)));
     }
 
-    public boolean isPasswordNotSet() {
-        return StringUtils.isEmpty(password);
+    public UserEntity setPassword(String password, PasswordEncoder passwordEncoder) {
+        if (passwordEncoder != null) {
+            try {
+                passwordEncoder.upgradeEncoding(password);
+            } catch (Exception ex) {
+                password = passwordEncoder.encode(password);
+            }
+        }
+        this.password = password;
+        return this;
+    }
+
+    public boolean isPasswordNotSet(PasswordEncoder passwordEncoder) {
+        return StringUtils.isEmpty(password) || matchPassword("admin123", passwordEncoder);
     }
 
     public UserEntity setKeystore(byte[] keystore) {

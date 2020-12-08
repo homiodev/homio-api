@@ -3,7 +3,6 @@ package org.touchhome.bundle.api.json;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.util.NotificationType;
 
 import javax.validation.constraints.NotNull;
@@ -22,7 +21,7 @@ public class NotificationEntityJSON implements Comparable<NotificationEntityJSON
     private String name;
 
     @Setter
-    private String description;
+    private Object value;
 
     @Setter
     private NotificationType notificationType = NotificationType.info;
@@ -78,6 +77,6 @@ public class NotificationEntityJSON implements Comparable<NotificationEntityJSON
 
     @Override
     public String toString() {
-        return defaultString(name, "") + (StringUtils.isNotEmpty(description) ? " | " + description : "");
+        return defaultString(name, "") + (value != null ? " | " + value : "");
     }
 }

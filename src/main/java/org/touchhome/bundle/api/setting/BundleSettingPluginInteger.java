@@ -3,6 +3,8 @@ package org.touchhome.bundle.api.setting;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
+
 public interface BundleSettingPluginInteger extends BundleSettingPlugin<Integer> {
 
     @Override
@@ -10,12 +12,17 @@ public interface BundleSettingPluginInteger extends BundleSettingPlugin<Integer>
         return SettingType.Integer;
     }
 
-    default int getMin() {
-        return Integer.MIN_VALUE;
+    default Integer getMin() {
+        return null;
     }
 
-    default int getMax() {
-        return Integer.MAX_VALUE;
+    default Integer getMax() {
+        return null;
+    }
+
+    @Override
+    default Class<Integer> getType() {
+        return Integer.class;
     }
 
     int defaultValue();
@@ -27,6 +34,9 @@ public interface BundleSettingPluginInteger extends BundleSettingPlugin<Integer>
 
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
-        return new JSONObject().put("min", getMin()).put("max", getMax());
+        JSONObject parameters = BundleSettingPlugin.super.getParameters(entityContext, value);
+        putOpt(parameters, "min", getMin());
+        putOpt(parameters, "max", getMax());
+        return parameters;
     }
 }

@@ -31,6 +31,11 @@ public interface EntityContextSetting {
 
     <T> void listenValue(Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Consumer<T> listener);
 
+    default <T> void listenValueAndGet(Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("unique key") String key, @ApiParam("listener") Consumer<T> listener) {
+        listenValue(settingClass, key, listener);
+        listener.accept(getValue(settingClass));
+    }
+
     <T> void setValueRaw(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> bundleSettingPluginClazz, @ApiParam("value") @NotNull String value);
 
     <T> void setValue(@ApiParam("settingClass") Class<? extends BundleSettingPlugin<T>> settingClass, @ApiParam("value") @NotNull T value);

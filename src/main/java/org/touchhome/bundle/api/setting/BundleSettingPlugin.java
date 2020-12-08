@@ -5,16 +5,22 @@ import com.fazecast.jSerialComm.SerialPort;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.json.KeyValueEnum;
 import org.touchhome.bundle.api.json.NotificationEntityJSON;
 import org.touchhome.bundle.api.json.Option;
 
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface BundleSettingPlugin<T> {
 
-    default Class<T> getType() {
+    Class<T> getType();
+
+    // specify max width of rendered ui item. Uses with SelectBox/SelectBoxDynamic
+    default Integer getMaxWidth() {
         return null;
     }
 
@@ -36,12 +42,20 @@ public interface BundleSettingPlugin<T> {
             case Toggle:
                 return Boolean.FALSE.toString();
         }
+        if (KeyValueEnum.class.isAssignableFrom(getType())) {
+            return ((KeyValueEnum) getType().getEnumConstants()[0]).getKey();
+        }
+        if (getType().isEnum()) {
+            return getType().getEnumConstants()[0].toString();
+        }
         return "";
     }
 
     // min/max/step (Slider)
     default JSONObject getParameters(EntityContext entityContext, String value) {
-        return null;
+        JSONObject parameters = new JSONObject();
+        putOpt(parameters, "maxWidth", getMaxWidth());
+        return parameters;
     }
 
     SettingType getSettingType();
@@ -76,6 +90,13 @@ public interface BundleSettingPlugin<T> {
     }
 
     default T parseValue(EntityContext entityContext, String value) {
+        if (value == null) {
+            return null;
+        }
+        switch (getType().getSimpleName()) {
+            case "Integer":
+                return parseInteger(entityContext, value);
+        }
         switch (getSettingType()) {
             case Float:
                 return (T) Float.valueOf(value);
@@ -84,22 +105,10 @@ public interface BundleSettingPlugin<T> {
                 return (T) Boolean.valueOf(value);
             case Integer:
             case Slider:
-                Integer parseValue;
-                try {
-                    parseValue = Integer.valueOf(value);
-                } catch (NumberFormatException ex) {
-                    throw new IllegalArgumentException("Unable parse setting value <" + value + "> as integer value");
-                }
-                JSONObject parameters = getParameters(entityContext, value);
-                if (parameters != null) {
-                    if (parameters.has("min") && parseValue < parameters.getInt("min")) {
-                        throw new IllegalArgumentException("Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
-                    }
-                    if (parameters.has("max") && parseValue > parameters.getInt("max")) {
-                        throw new IllegalArgumentException("Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
-                    }
-                }
-                return (T) parseValue;
+                return parseInteger(entityContext, value);
+        }
+        if (getType().isEnum()) {
+            return (T) Enum.valueOf((Class) getType(), value);
         }
         if (SerialPort.class.equals(getType())) {
             return (T) (StringUtils.isEmpty(value) ? null :
@@ -110,8 +119,10 @@ public interface BundleSettingPlugin<T> {
     }
 
     default Collection<Option> loadAvailableValues(EntityContext entityContext) {
-        if (SerialPort.class.equals(getType())) {
-            return Option.listOfPorts();
+        if (KeyValueEnum.class.isAssignableFrom(getType())) {
+            return Option.list((Class<? extends KeyValueEnum>) getType());
+        } else if (getType().isEnum()) {
+            return Option.enumList((Class<? extends Enum>) getType());
         }
         throw new IllegalStateException("Must be implemented in sub-classes");
     }
@@ -144,9 +155,6 @@ public interface BundleSettingPlugin<T> {
         if (value == null) {
             return "";
         }
-        if (SerialPort.class.equals(getType())) {
-            return ((SerialPort) value).getSystemPortName();
-        }
         return value.toString();
     }
 
@@ -170,6 +178,26 @@ public interface BundleSettingPlugin<T> {
         // Button that fires server action
         Button,
         Toggle,
-        Info
+        Info,
+        Upload
+    }
+
+    default T parseInteger(EntityContext entityContext, String value) {
+        Integer parseValue;
+        try {
+            parseValue = Integer.valueOf(value);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Unable parse setting value <" + value + "> as integer value");
+        }
+        JSONObject parameters = getParameters(entityContext, value);
+        if (parameters != null) {
+            if (parameters.has("min") && parseValue < parameters.getInt("min")) {
+                throw new IllegalArgumentException("Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+            }
+            if (parameters.has("max") && parseValue > parameters.getInt("max")) {
+                throw new IllegalArgumentException("Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+            }
+        }
+        return (T) parseValue;
     }
 }

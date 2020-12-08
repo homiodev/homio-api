@@ -16,6 +16,15 @@ public class ActionResponse {
         this.value = value instanceof String ? En.getServerMessage((String) value) : value;
     }
 
+    public ActionResponse(Object value, String param0, String value0) {
+        this.value = value instanceof String ? En.getServerMessage((String) value, param0, value0) : value;
+    }
+
+    public ActionResponse(Object value, String param0, String value0, ResponseAction responseAction) {
+        this(value, param0, value0);
+        this.responseAction = responseAction;
+    }
+
     public ActionResponse(Object value, ResponseAction responseAction) {
         this(value);
         this.responseAction = responseAction;

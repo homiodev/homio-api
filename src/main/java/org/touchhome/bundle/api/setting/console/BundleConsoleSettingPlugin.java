@@ -1,7 +1,8 @@
-package org.touchhome.bundle.api.setting;
+package org.touchhome.bundle.api.setting.console;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.touchhome.bundle.api.console.ConsolePlugin;
+import org.touchhome.bundle.api.setting.BundleSettingPlugin;
 
 /**
  * Interface for Console settings that enable to filter settings depend on current active tab

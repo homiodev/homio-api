@@ -46,6 +46,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
     /**
      * The serial port output stream.
      */
+    @Getter
     protected OutputStream outputStream;
 
     protected final String coordinator;

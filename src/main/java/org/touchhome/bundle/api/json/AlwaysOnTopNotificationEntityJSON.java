@@ -33,7 +33,7 @@ public class AlwaysOnTopNotificationEntityJSON extends NotificationEntityJSON {
     public AlwaysOnTopNotificationEntityJSON(NotificationEntityJSON json) {
         super(json.getEntityID());
         setName(json.getName());
-        setDescription(json.getDescription());
+        setValue(json.getValue());
         setNotificationType(json.getNotificationType());
     }
 
@@ -43,8 +43,8 @@ public class AlwaysOnTopNotificationEntityJSON extends NotificationEntityJSON {
     }
 
     @Override
-    public AlwaysOnTopNotificationEntityJSON setDescription(String description) {
-        return (AlwaysOnTopNotificationEntityJSON) super.setDescription(description);
+    public AlwaysOnTopNotificationEntityJSON setValue(Object value) {
+        return (AlwaysOnTopNotificationEntityJSON) super.setValue(value);
     }
 
     @Override

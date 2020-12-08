@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.console;
 
+import org.json.JSONObject;
 import org.touchhome.bundle.api.setting.BundleSettingPlugin;
 
 import javax.validation.constraints.NotNull;
@@ -11,6 +12,10 @@ import java.util.Map;
 public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
 
     T getValue();
+
+    default JSONObject getOptions() {
+        return null;
+    }
 
     RenderType getRenderType();
 
@@ -51,6 +56,6 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     enum RenderType {
-        lines, comm, table, string
+        lines, comm, table, string, editor
     }
 }

@@ -33,6 +33,11 @@ public interface BundleSettingPluginStatus extends BundleSettingPlugin<BundleSet
     }
 
     @Override
+    default Class<BundleSettingPluginStatus.BundleStatusInfo> getType() {
+        return BundleSettingPluginStatus.BundleStatusInfo.class;
+    }
+
+    @Override
     default String getDefaultValue() {
         return Status.UNKNOWN.name();
     }
@@ -63,7 +68,7 @@ public interface BundleSettingPluginStatus extends BundleSettingPlugin<BundleSet
 
         public NotificationEntityJSON toNotification(String bundleId) {
             return new NotificationEntityJSON(bundleId + "-status").setNotificationType(getNotificationType())
-                    .setName(bundleId).setDescription(defaultIfEmpty(message, status.name()));
+                    .setName(bundleId).setValue(defaultIfEmpty(message, status.name()));
         }
 
         @Override

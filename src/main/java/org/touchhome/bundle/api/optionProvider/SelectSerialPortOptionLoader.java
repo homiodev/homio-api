@@ -11,6 +11,6 @@ public class SelectSerialPortOptionLoader implements DynamicOptionLoader {
 
     @Override
     public List<Option> loadOptions(Object parameter, BaseEntity baseEntity, EntityContext entityContext) {
-        return Option.listOfPorts();
+        return Option.listOfPorts(true);
     }
 }

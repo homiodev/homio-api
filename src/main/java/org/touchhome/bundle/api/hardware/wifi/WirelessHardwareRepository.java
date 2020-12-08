@@ -83,9 +83,6 @@ public interface WirelessHardwareRepository {
     @CurlQuery(value = "http://ip-api.com/json/:ip", cache = true, ignoreOnError = true)
     IpGeoLocation getIpGeoLocation(@HQueryParam("ip") String ip);
 
-    @HardwareQuery("hostname -i")
-    String getLinuxIPAddress();
-
     @CurlQuery(value = "https://geocode.xyz/:city?json=1", cache = true, ignoreOnError = true)
     CityToGeoLocation findCityGeolocation(@HQueryParam("city") String city);
 
@@ -127,7 +124,7 @@ public interface WirelessHardwareRepository {
     @SneakyThrows
     default String getIPAddress() {
         if (SystemUtils.IS_OS_LINUX) {
-            return getLinuxIPAddress();
+            return getNetworkDescription().getInet();
         }
         Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
         for (NetworkInterface networkInterface : Collections.list(nets)) {
