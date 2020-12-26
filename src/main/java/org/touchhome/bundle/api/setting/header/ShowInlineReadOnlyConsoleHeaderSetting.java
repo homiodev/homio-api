@@ -1,8 +1,8 @@
 package org.touchhome.bundle.api.setting.header;
 
-import org.touchhome.bundle.api.setting.BundleSettingPluginToggle;
+import org.touchhome.bundle.api.setting.SettingPluginToggle;
 
-public class ShowInlineReadOnlyConsoleHeaderSetting implements BundleHeaderSettingPlugin<Boolean>, BundleSettingPluginToggle {
+public class ShowInlineReadOnlyConsoleHeaderSetting implements HeaderSettingPlugin<Boolean>, SettingPluginToggle {
 
     @Override
     public String getIcon() {

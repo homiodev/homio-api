@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface EntityContextBGP {
     EntityContext getEntityContext();
@@ -24,11 +25,21 @@ public interface EntityContextBGP {
 
     void runOnceOnInternetUp(String name, ThrowingRunnable<Exception> command);
 
-    default ThreadContext<Void> runWithProgress(String key, ThrowingConsumer<String, Exception> command) {
+    default ThreadContext<Void> runWithProgress(String key, ThrowingConsumer<String, Exception> command) throws Exception {
         return runWithProgress(key, command, null);
     }
 
-    default ThreadContext<Void> runWithProgress(String key, ThrowingConsumer<String, Exception> command, Runnable finallyBlock) {
+    default ThreadContext<Void> runWithProgress(String key, ThrowingConsumer<String, Exception> command, Runnable finallyBlock) throws Exception {
+        return runWithProgress(key, command, finallyBlock, null);
+    }
+
+    default ThreadContext<Void> runWithProgress(String key, ThrowingConsumer<String, Exception> command, Runnable finallyBlock, Supplier<Exception> throwIfExists) throws Exception {
+        if (throwIfExists != null && isThreadExists(key, true)) {
+            Exception exception = throwIfExists.get();
+            if (exception != null) {
+                throw exception;
+            }
+        }
         return run(key, () -> {
             getEntityContext().ui().progress(key, 0, key);
             try {
@@ -45,7 +56,7 @@ public interface EntityContextBGP {
 
     <T> ThreadContext<T> run(String name, ThrowingSupplier<T, Exception> command, boolean showOnUI);
 
-    boolean isThreadExists(String name);
+    boolean isThreadExists(String name, boolean checkOnlyRunningThreads);
 
     void cancelThread(String name);
 

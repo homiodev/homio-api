@@ -17,12 +17,19 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RestTemplate;
+import org.touchhome.bundle.api.EntityContext;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.function.Consumer;
+
+import static org.apache.commons.io.FileUtils.ONE_MB_BI;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -47,9 +54,67 @@ public final class Curl {
     }
 
     @SneakyThrows
+    public static void downloadWithProgress(String urlStr, Path targetPath, String progressKey, EntityContext entityContext) {
+        entityContext.ui().progress(progressKey, 1, "Checking file size...");
+        URL url = new URL(urlStr);
+        double fileSize = getFileSize(url);
+        // download without progress if less then 2 megabytes
+        if (fileSize / 1000 < 2) {
+            download(urlStr, targetPath);
+            return;
+        }
+        int maxMb = (int) (fileSize / ONE_MB_BI.intValue());
+        URLConnection connection = url.openConnection();
+        connection.setConnectTimeout(60000);
+        connection.setReadTimeout(60000);
+        InputStream input = connection.getInputStream();
+        FileUtils.copyInputStreamToFile(new FilterInputStream(input) {
+            int readBytes = 0;
+            Consumer<Integer> progressHandler = new Consumer<Integer>() {
+                int nextStep = 1;
+
+                @Override
+                public void accept(Integer num) {
+                    readBytes += num;
+                    if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
+                        nextStep++;
+                        entityContext.ui().progress(progressKey, (readBytes / fileSize * 100) * 0.9, // max 90%
+                                "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
+                    }
+                }
+            };
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                int read = super.read(b, off, len);
+                progressHandler.accept(read);
+                return read;
+            }
+        }, targetPath.toFile());
+    }
+
+    public static int getFileSize(URL url) {
+        URLConnection conn = null;
+        try {
+            conn = url.openConnection();
+            if (conn instanceof HttpURLConnection) {
+                ((HttpURLConnection) conn).setRequestMethod("HEAD");
+            }
+            conn.getInputStream();
+            return conn.getContentLength();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (conn instanceof HttpURLConnection) {
+                ((HttpURLConnection) conn).disconnect();
+            }
+        }
+    }
+
+    @SneakyThrows
     public static <T> T getWithTimeout(String command, Class<T> returnType, int timeoutInSec) {
         CloseableHttpResponse response = createApacheHttpClient(timeoutInSec).execute(new HttpGet(command));
-        HttpMessageConverterExtractor<T> responseExtractor = new HttpMessageConverterExtractor<T>(returnType, restTemplate.getMessageConverters());
+        HttpMessageConverterExtractor<T> responseExtractor = new HttpMessageConverterExtractor<>(returnType, restTemplate.getMessageConverters());
         return responseExtractor.extractData(new ClientHttpResponse() {
             @Override
             public HttpStatus getStatusCode() {

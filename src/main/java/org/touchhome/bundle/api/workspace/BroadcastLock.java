@@ -1,7 +1,5 @@
 package org.touchhome.bundle.api.workspace;
 
-import org.touchhome.bundle.api.scratch.WorkspaceBlock;
-
 import java.util.concurrent.TimeUnit;
 
 public interface BroadcastLock<T> {

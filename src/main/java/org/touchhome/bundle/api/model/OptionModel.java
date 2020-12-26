@@ -49,12 +49,8 @@ public class OptionModel implements Comparable<OptionModel> {
         return optionModel;
     }
 
-    public void addChild(OptionModel child) {
-        if (this.children == null) {
-            children = new ArrayList<>();
-        }
-        child.key = this.key + "~~~" + child.key;
-        children.add(child);
+    public static OptionModel separator() {
+        return OptionModel.key("~~~sep~~~");
     }
 
     public static OptionModel of(String key, String title) {
@@ -122,6 +118,14 @@ public class OptionModel implements Comparable<OptionModel> {
             optionModels.add(optionModel);
         }
         return optionModels;
+    }
+
+    public void addChild(OptionModel child) {
+        if (this.children == null) {
+            children = new ArrayList<>();
+        }
+        child.key = this.key + "~~~" + child.key;
+        children.add(child);
     }
 
     public OptionModel json(Consumer<JSONObject> consumer) {

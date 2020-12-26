@@ -1,0 +1,26 @@
+package org.touchhome.bundle.api.setting.header;
+
+import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.setting.SettingPlugin;
+
+public interface HeaderSettingPlugin<T> extends SettingPlugin<T> {
+
+    @Override
+    default boolean isVisible(EntityContext entityContext) {
+        return false;
+    }
+
+    @Override
+    default boolean transientState() {
+        return true;
+    }
+
+    default String[] fireActionsBeforeChange() {
+        return null;
+    }
+
+    @Override
+    default int order() {
+        return 0;
+    }
+}

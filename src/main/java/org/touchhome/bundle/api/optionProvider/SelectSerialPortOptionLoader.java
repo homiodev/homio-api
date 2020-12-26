@@ -1,12 +1,11 @@
 package org.touchhome.bundle.api.optionProvider;
 
-import org.touchhome.bundle.api.ui.action.DynamicOptionLoader;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.model.OptionModel;
+import org.touchhome.bundle.api.ui.action.DynamicOptionLoader;
 
 import java.util.Collection;
-import java.util.List;
 
 public class SelectSerialPortOptionLoader implements DynamicOptionLoader {
 

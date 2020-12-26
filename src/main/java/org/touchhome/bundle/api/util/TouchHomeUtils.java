@@ -34,7 +34,9 @@ import java.util.function.Predicate;
 @Log4j2
 public class TouchHomeUtils {
 
-    public static final String RED_COLOR = "#E65100";
+    public static final String PRIMARY_COLOR = "primary";
+    public static final String DANGER_COLOR = "danger";
+
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final String[] SYSTEM_BUNDLES = {"arduino", "raspberry", "telegram", "zigbee", "cloud", "bluetooth", "xaomi"};
     public static final String ADMIN_ROLE = "ROLE_ADMIN";

@@ -3,13 +3,11 @@ package org.touchhome.bundle.api;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.lang.Nullable;
 import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.exception.UserException;
-import org.touchhome.bundle.api.manager.En;
-import org.touchhome.bundle.api.setting.BundleSettingPluginButton;
+import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
@@ -43,6 +41,10 @@ public interface EntityContextUI {
 
     default <T extends ConsolePlugin<?>> void openConsole(T consolePlugin) {
         sendGlobal(GlobalSendType.openConsole, consolePlugin.getEntityID(), null);
+    }
+
+    default <T extends ConsolePlugin<?>> void reloadWindow(String reason) {
+        sendGlobal(GlobalSendType.reload, reason, null);
     }
 
     default void progress(String key, double progress, String status) {
@@ -93,16 +95,16 @@ public interface EntityContextUI {
                 .put("value", value).putOpt("title", title));
     }
 
-    enum GlobalSendType {
-        popup, json, setting, progress, headerNotification, headerButton, openConsole, confirmation
-    }
-
-    void showAlwaysOnViewNotification(String entityID, String title, String icon, String color, Integer duration, Class<? extends BundleSettingPluginButton> stopAction);
+    void showAlwaysOnViewNotification(String entityID, String title, String icon, String color, Integer duration, Class<? extends SettingPluginButton> stopAction);
 
     void hideAlwaysOnViewNotification(String entityID);
 
     default void sendErrorMessage(String message) {
         sendErrorMessage(null, message, null, null);
+    }
+
+    default void sendErrorMessage(Exception ex) {
+        sendErrorMessage(null, null, null, ex);
     }
 
     default void sendErrorMessage(String message, Exception ex) {
@@ -166,7 +168,7 @@ public interface EntityContextUI {
     }
 
     default void sendJsonMessage(String title, Object json, FlowMap messageParam) {
-        title = title == null ? null : En.getServerMessage(title, messageParam);
+        title = title == null ? null : Lang.getServerMessage(title, messageParam);
         sendGlobal(GlobalSendType.json, null, json, title);
     }
 
@@ -187,14 +189,22 @@ public interface EntityContextUI {
     }
 
     default void sendMessage(String title, String message, NotificationLevel type, FlowMap messageParam, Exception ex) {
-        title = title == null ? null : En.getServerMessage(title, messageParam);
+        title = title == null ? null : Lang.getServerMessage(title, messageParam);
         String text = "";
         if (ex instanceof UserException) {
-            text = En.getServerMessage(ex.getMessage(), ((UserException) ex).getMessageParam() == null ? messageParam : ((UserException) ex).getMessageParam());
+            text = Lang.getServerMessage(ex.getMessage(), ((UserException) ex).getMessageParam() == null ? messageParam : ((UserException) ex).getMessageParam());
         } else {
-            message = message == null ? null : En.getServerMessage(message, messageParam);
-            text = StringUtils.defaultString(message, "") + (ex == null ? "" : "Cause: " + TouchHomeUtils.getErrorMessage(ex));
+            text = message == null ? ex == null ? "Unknown error" : ex.getMessage() : message;
+            if (text == null) {
+                text = TouchHomeUtils.getErrorMessage(ex);
+            }
+            // try cast text to lang
+            text = Lang.getServerMessage(text, messageParam);
         }
         sendGlobal(GlobalSendType.popup, null, text, title, new JSONObject().put("level", type));
+    }
+
+    enum GlobalSendType {
+        popup, json, setting, progress, headerNotification, headerButton, openConsole, confirmation, reload
     }
 }

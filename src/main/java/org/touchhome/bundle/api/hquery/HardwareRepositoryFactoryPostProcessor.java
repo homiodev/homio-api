@@ -49,37 +49,6 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
     private static final Constructor<MethodHandles.Lookup> lookupConstructor;
     private static final Map<String, ProcessCache> cache = new HashMap<>();
 
-    @RequiredArgsConstructor
-    private static class StreamReader implements Runnable {
-
-        private final BlockingQueue<HardwareProcessIO> queue;
-
-        @Override
-        public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
-                HardwareProcessIO context = null;
-                try {
-                    context = queue.take();
-                    Process process = context.process;
-
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(context.inputStreamFn.apply(process)))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            log.log(context.logLevel, line);
-                            context.lines.add(line);
-                        }
-                    }
-                } catch (Exception ex) {
-                    log.error("Hardware error occurs while take io stream");
-                } finally {
-                    if (context != null) {
-                        context.sem.release();
-                    }
-                }
-            }
-        }
-    }
-
     static {
         try {
             lookupConstructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
@@ -96,7 +65,6 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
 
     private final String basePackages;
     private HardwareRepositoryFactoryPostHandler handler;
-
     HardwareRepositoryFactoryPostProcessor(String basePackages, HardwareRepositoryFactoryPostHandler handler) {
         this.basePackages = basePackages;
         this.handler = handler;
@@ -515,13 +483,44 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
     }
 
     @RequiredArgsConstructor
+    private static class StreamReader implements Runnable {
+
+        private final BlockingQueue<HardwareProcessIO> queue;
+
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()) {
+                HardwareProcessIO context = null;
+                try {
+                    context = queue.take();
+                    Process process = context.process;
+
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(context.inputStreamFn.apply(process)))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            log.log(context.logLevel, line);
+                            context.lines.add(line);
+                        }
+                    }
+                } catch (Exception ex) {
+                    log.error("Hardware error occurs while take io stream");
+                } finally {
+                    if (context != null) {
+                        context.sem.release();
+                    }
+                }
+            }
+        }
+    }
+
+    @RequiredArgsConstructor
     private static class ProcessCache {
+        final int cacheValidInSec;
         int retValue;
         List<String> errors;
         List<String> inputs;
         Object response;
         long executedTime = System.currentTimeMillis();
-        final int cacheValidInSec;
     }
 
     private class HardwareProcessIO {

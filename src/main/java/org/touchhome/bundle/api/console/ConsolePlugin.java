@@ -2,7 +2,7 @@ package org.touchhome.bundle.api.console;
 
 import org.json.JSONObject;
 import org.touchhome.bundle.api.BundleEntryPoint;
-import org.touchhome.bundle.api.setting.header.BundleHeaderSettingPlugin;
+import org.touchhome.bundle.api.setting.header.HeaderSettingPlugin;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
@@ -34,7 +34,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     /**
      * Uses when need header buttons for whole plugin
      */
-    default Map<String, Class<? extends BundleHeaderSettingPlugin<?>>> getHeaderActions() {
+    default Map<String, Class<? extends HeaderSettingPlugin<?>>> getHeaderActions() {
         return null;
     }
 

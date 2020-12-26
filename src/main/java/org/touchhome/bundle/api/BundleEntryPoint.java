@@ -2,7 +2,7 @@ package org.touchhome.bundle.api;
 
 import lombok.SneakyThrows;
 import org.touchhome.bundle.api.model.NotificationModel;
-import org.touchhome.bundle.api.setting.BundleSettingPluginStatus;
+import org.touchhome.bundle.api.setting.SettingPluginStatus;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.validation.constraints.NotNull;
@@ -65,7 +65,7 @@ public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
     /**
      * Get main bundle status setting. Will be shown on header ui
      */
-    default Class<? extends BundleSettingPluginStatus> getBundleStatusSetting() {
+    default Class<? extends SettingPluginStatus> getBundleStatusSetting() {
         return null;
     }
 

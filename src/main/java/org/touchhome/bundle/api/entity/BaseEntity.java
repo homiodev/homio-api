@@ -1,7 +1,6 @@
 package org.touchhome.bundle.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -66,17 +65,17 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
         return (T) this;
     }
 
-    public T setName(@ApiParam("name") String name) {
+    public T setName(String name) {
         this.name = name;
         return (T) this;
     }
 
-    public T setCreationTime(@ApiParam("creationTime") Date creationTime) {
+    public T setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
         return (T) this;
     }
 
-    public T setDescription(@ApiParam("description") String description) {
+    public T setDescription(String description) {
         this.description = description;
         return (T) this;
     }
@@ -170,7 +169,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
         return getEntityID(false);
     }
 
-    public T setEntityID(@ApiParam("entityID") String entityID) {
+    public T setEntityID(String entityID) {
         this.entityID = entityID;
         return (T) this;
     }

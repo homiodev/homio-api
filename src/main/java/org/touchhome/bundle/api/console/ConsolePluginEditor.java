@@ -9,7 +9,7 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.model.FileContentType;
 import org.touchhome.bundle.api.model.FileModel;
-import org.touchhome.bundle.api.setting.header.BundleHeaderSettingPlugin;
+import org.touchhome.bundle.api.setting.header.HeaderSettingPlugin;
 
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 
@@ -48,7 +48,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
         return new JSONObject().put("contentType", getContentType()).put("accept", accept()).putOpt("glyph", getGlyphAction());
     }
 
-    default Class<? extends BundleHeaderSettingPlugin<?>> getFileNameHeaderAction() {
+    default Class<? extends HeaderSettingPlugin<?>> getFileNameHeaderAction() {
         return null;
     }
 

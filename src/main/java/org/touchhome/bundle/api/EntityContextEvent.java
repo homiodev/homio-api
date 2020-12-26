@@ -1,6 +1,5 @@
 package org.touchhome.bundle.api;
 
-import org.touchhome.bundle.api.manager.En;
 import org.touchhome.bundle.api.util.FlowMap;
 
 import java.util.function.Consumer;
@@ -37,7 +36,7 @@ public interface EntityContextEvent {
     String addEvent(String key, String name);
 
     default String addEvent(String key, String name, FlowMap nameParams) {
-        return addEvent(key, En.getServerMessage(name, nameParams));
+        return addEvent(key, Lang.getServerMessage(name, nameParams));
     }
 
     /**
@@ -49,7 +48,7 @@ public interface EntityContextEvent {
      * Add event and fire it immediately
      */
     default String addEventAndFire(String key, String name, FlowMap nameParams, Object value) {
-        return addEventAndFire(key, En.getServerMessage(name, nameParams), value);
+        return addEventAndFire(key, Lang.getServerMessage(name, nameParams), value);
     }
 
     /**

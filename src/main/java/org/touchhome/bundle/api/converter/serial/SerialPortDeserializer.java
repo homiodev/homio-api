@@ -12,11 +12,6 @@ import java.io.IOException;
 @Log4j2
 public class SerialPortDeserializer extends JsonDeserializer<SerialPort> {
 
-    @Override
-    public SerialPort deserialize(JsonParser jp, DeserializationContext ctx) throws IOException {
-        return getSerialPort(jp.getText());
-    }
-
     public static SerialPort getSerialPort(String systemPortName) {
         if (StringUtils.isEmpty(systemPortName)) {
             return null;
@@ -27,5 +22,10 @@ public class SerialPortDeserializer extends JsonDeserializer<SerialPort> {
             log.warn("Unable to find serial port: {}", systemPortName);
             return null;
         }
+    }
+
+    @Override
+    public SerialPort deserialize(JsonParser jp, DeserializationContext ctx) throws IOException {
+        return getSerialPort(jp.getText());
     }
 }

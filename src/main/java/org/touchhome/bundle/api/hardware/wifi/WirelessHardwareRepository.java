@@ -10,7 +10,10 @@ import org.touchhome.bundle.api.hquery.api.*;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.lang.reflect.Field;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -98,18 +101,6 @@ public interface WirelessHardwareRepository {
         return cityGeolocation;
     }
 
-    @Getter
-    class CityToGeoLocation {
-        private String longt;
-        private String latt;
-        private Error error;
-
-        @Setter
-        private static class Error {
-            private String description;
-        }
-    }
-
     default boolean pingAddress(String ipAddress, int port, int timeout) {
         try {
             try (Socket socket = new Socket()) {
@@ -161,6 +152,18 @@ public interface WirelessHardwareRepository {
     default NetworkDescription getNetworkDescription() {
         return !EntityContext.isLinuxEnvironment() ? null :
                 getNetworkDescription(getActiveNetworkInterface());
+    }
+
+    @Getter
+    class CityToGeoLocation {
+        private String longt;
+        private String latt;
+        private Error error;
+
+        @Setter
+        private static class Error {
+            private String description;
+        }
     }
 
     class NetStatGatewayParser implements RawParse.RawParseHandler {

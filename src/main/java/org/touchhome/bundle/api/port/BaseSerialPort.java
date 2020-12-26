@@ -31,31 +31,24 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
      * True to enable RTS / CTS flow control
      */
     protected final PortFlowControl flowControl;
-
+    protected final String coordinator;
+    protected final EntityContext entityContext;
+    protected final Runnable portUnavailableListener;
+    protected final Consumer<SerialPort> portOpenSuccessListener;
     /**
      * The portName portName.
      */
     @Getter
     protected SerialPort serialPort;
-
     /**
      * The serial port input stream.
      */
     protected InputStream inputStream;
-
     /**
      * The serial port output stream.
      */
     @Getter
     protected OutputStream outputStream;
-
-    protected final String coordinator;
-
-    protected final EntityContext entityContext;
-
-    protected final Runnable portUnavailableListener;
-
-    protected final Consumer<SerialPort> portOpenSuccessListener;
 
     public BaseSerialPort(String coordinator,
                           EntityContext entityContext,
