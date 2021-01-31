@@ -5,7 +5,11 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import net.lingala.zip4j.ZipFile;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.json.JSONObject;
@@ -16,14 +20,13 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.touchhome.bundle.api.EntityContext;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -31,14 +34,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static org.apache.commons.io.FileUtils.ONE_MB_BI;
+
 @Log4j2
 public class TouchHomeUtils {
+
+    public static OsName OS_NAME = detectOs();
 
     public static final String PRIMARY_COLOR = "primary";
     public static final String DANGER_COLOR = "danger";
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    public static final String[] SYSTEM_BUNDLES = {"arduino", "raspberry", "telegram", "zigbee", "cloud", "bluetooth", "xaomi"};
+    public static final String[] SYSTEM_BUNDLES = {"arduino", "raspberry", "telegram", "zigbee", "cloud", "bluetooth", "xaomi", "camera"};
     public static final String ADMIN_ROLE = "ROLE_ADMIN";
     public static final String PRIVILEGED_USER_ROLE = "ROLE_PRIVILEGED_USER";
     public static final String GUEST_ROLE = "ROLE_GUEST";
@@ -46,7 +53,13 @@ public class TouchHomeUtils {
     @Getter
     private static final Path filesPath;
     @Getter
+    private static final Path installPath;
+    @Getter
+    private static final Path externalJarClassPath;
+    @Getter
     private static final Path bundlePath;
+    @Getter
+    private static final Path mediaPath;
     @Getter
     private static final Path sshPath;
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -59,9 +72,12 @@ public class TouchHomeUtils {
         } else {
             rootPath = Paths.get("/opt/touchhome");
         }
+        installPath = getOrCreatePath("installs");
         filesPath = getOrCreatePath("asm_files");
+        externalJarClassPath = getOrCreatePath("external_jars");
         sshPath = getOrCreatePath("ssh");
         bundlePath = getOrCreatePath("bundles");
+        mediaPath = getOrCreatePath("media");
     }
 
     public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {
@@ -253,6 +269,7 @@ public class TouchHomeUtils {
         return properties;
     }
 
+    // consume file name with thymaleaf...
     public static TemplateBuilder templateBuilder(String templateName) {
         return new TemplateBuilder(templateName);
     }
@@ -264,7 +281,11 @@ public class TouchHomeUtils {
     @SneakyThrows
     public static <T> T newInstance(Class<T> clazz) {
         Constructor<T> constructor = findObjectConstructor(clazz);
-        return constructor == null ? null : constructor.newInstance();
+        if (constructor != null) {
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        }
+        return null;
     }
 
     @SneakyThrows
@@ -279,6 +300,23 @@ public class TouchHomeUtils {
             }
         }
         return null;
+    }
+
+    public static boolean isValidZipArchive(File archive) {
+        if (!archive.exists() || !archive.canRead()) {
+            return false;
+        }
+        switch (FilenameUtils.getExtension(archive.getName())) {
+            case "zip":
+                return new ZipFile(archive).isValidZipFile();
+            case "7z":
+                try {
+                    new SevenZFile(archive);
+                    return true;
+                } catch (IOException ignored) {
+                }
+        }
+        return false;
     }
 
     public static class TemplateBuilder {
@@ -303,6 +341,124 @@ public class TouchHomeUtils {
             StringWriter stringWriter = new StringWriter();
             templateEngine.process("templates/" + templateName, context, stringWriter);
             return stringWriter.toString();
+        }
+    }
+
+ /*   @SneakyThrows
+    public static void tempDir(Consumer<Path> consumer) {
+        Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
+        Files.createDirectories(tmpDir);
+        try {
+            consumer.accept(tmpDir);
+        } finally {
+            if (!Files.deleteIfExists(tmpDir)) {
+                log.error("Unable to delete tmpDir: <{}>", tmpDir);
+            }
+        }
+    }*/
+
+    public static void unzip(Path file, Path destination) {
+        unzip(file, destination, null, null, null);
+    }
+
+    @SneakyThrows
+    public static void unzip(Path file, Path destination, String password, EntityContext entityContext, String progressKey) {
+        if (progressKey != null) {
+            entityContext.ui().progress(progressKey, 0, "Unzip files. Calculate size...");
+        }
+        if (file.getFileName().toString().endsWith(".zip")) {
+            ZipFile zipFile = new ZipFile(file.toFile());
+            zipFile.extractAll(destination.toString());
+        } else if (file.getFileName().toString().endsWith(".7z")) {
+            double fileSize = progressKey == null ? 1D : getZipFileSize(file);
+
+            int maxMb = (int) (fileSize / ONE_MB_BI.intValue());
+            byte[] oneMBBuff = new byte[ONE_MB_BI.intValue()];
+            SevenZFile sevenZFile = new SevenZFile(file.toFile(), password == null ? null : password.toCharArray());
+            SevenZArchiveEntry entry;
+
+            int nextStep = 1;
+            int readBytes = 0;
+            while ((entry = sevenZFile.getNextEntry()) != null) {
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                Path curFile = destination.resolve(entry.getName());
+                Path parent = curFile.getParent();
+                Files.createDirectories(parent);
+                FileOutputStream out = new FileOutputStream(curFile.toFile());
+
+                int bytesToRead = (int) entry.getSize();
+                while (bytesToRead > 0) {
+                    long bytes = Math.min(bytesToRead, ONE_MB_BI.intValue());
+                    byte[] content = bytes == ONE_MB_BI.intValue() ? oneMBBuff : new byte[(int) bytes];
+                    sevenZFile.read(content);
+                    out.write(content);
+                    bytesToRead -= bytes;
+                    readBytes += bytes;
+
+                    if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
+                        nextStep++;
+                        if (progressKey != null) {
+                            entityContext.ui().progress(progressKey, (readBytes / fileSize * 100) * 0.99, // max 99%
+                                    "Extract " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
+                        }
+                    }
+                }
+                out.close();
+            }
+            sevenZFile.close();
+        }
+        if (progressKey != null) {
+            entityContext.ui().progress(progressKey, 99, "Unzip files done.");
+        }
+    }
+
+    public static long getZipFileSize(Path file) throws IOException {
+        SevenZFile sevenZFile = new SevenZFile(file.toFile(), new char[0]);
+        long fullSize = 0;
+        for (SevenZArchiveEntry sevenZArchiveEntry : sevenZFile.getEntries()) {
+            fullSize += sevenZArchiveEntry.getSize();
+        }
+        sevenZFile.close();
+        return fullSize;
+    }
+
+    private static OsName detectOs() {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return SystemUtils.OS_ARCH.equals("x64") ? OsName.Windows_x64 : OsName.Windows_x86;
+        } else if (SystemUtils.IS_OS_LINUX) {
+            switch (SystemUtils.OS_ARCH) {
+                case "x86":
+                    return OsName.Linux_x86;
+                case "x64":
+                    return OsName.Linux_x64;
+                case "ARMv6":
+                    return OsName.Linux_ARMv6;
+                case "ARMv7":
+                    return OsName.Linux_ARMv7;
+                case "ARMv8":
+                    return OsName.Linux_ARMv8;
+            }
+        }
+        throw new RuntimeException("Unable to detect OS");
+    }
+
+    public enum OsName {
+        Windows_x86,
+        Windows_x64,
+        Linux_x86,
+        Linux_x64,
+        Linux_ARMv6,
+        Linux_ARMv7,
+        Linux_ARMv8;
+
+        public boolean isLinux() {
+            return this.name().startsWith("Linux");
+        }
+
+        public boolean isWindows() {
+            return this.name().startsWith("Windows");
         }
     }
 }

@@ -56,6 +56,8 @@ public interface EntityContextBGP {
 
     <T> ThreadContext<T> run(String name, ThrowingSupplier<T, Exception> command, boolean showOnUI);
 
+    ThreadContext<Void> runInfinite(String name, ThrowingRunnable<Exception> command, boolean showOnUI, int delay, boolean stopOnException);
+
     boolean isThreadExists(String name, boolean checkOnlyRunningThreads);
 
     void cancelThread(String name);

@@ -14,6 +14,7 @@ import org.touchhome.bundle.api.util.SslUtil;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
@@ -24,6 +25,9 @@ public class UserEntity extends BaseEntity<UserEntity> {
     public static final String PREFIX = "u_";
 
     public static final String ADMIN_USER = PREFIX + "user";
+
+    public static final UserEntity ANONYMOUS_USER = new UserEntity()
+            .setRoles(Collections.emptySet());
 
     @Getter
     @Setter

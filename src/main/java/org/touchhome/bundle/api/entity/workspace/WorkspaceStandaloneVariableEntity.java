@@ -13,7 +13,7 @@ import javax.persistence.Entity;
 @Accessors(chain = true)
 public class WorkspaceStandaloneVariableEntity extends BaseEntity<WorkspaceStandaloneVariableEntity> {
 
-    public static final String PREFIX = "wsv_";
+    public static final String PREFIX = "wssv_";
 
     @Setter
     @Column(nullable = false)

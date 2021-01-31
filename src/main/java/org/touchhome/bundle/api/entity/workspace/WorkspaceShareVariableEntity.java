@@ -15,7 +15,7 @@ import javax.persistence.Lob;
 @Accessors(chain = true)
 public class WorkspaceShareVariableEntity extends BaseEntity<WorkspaceShareVariableEntity> {
 
-    public static final String PREFIX = "wsve_";
+    public static final String PREFIX = "wssve_";
     public static final String NAME = "share_variables";
 
     @Lob

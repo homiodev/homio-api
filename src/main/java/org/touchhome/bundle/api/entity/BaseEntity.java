@@ -29,6 +29,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     @Getter
     private Integer id;
 
+    @Version
+    private Integer version;
+
     @NaturalId
     @Column(name = "entityID", unique = true, nullable = false)
     private String entityID;

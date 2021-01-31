@@ -16,7 +16,7 @@ import java.util.Set;
 @Accessors(chain = true)
 public class WorkspaceVariableGroupEntity extends BaseEntity<WorkspaceVariableGroupEntity> {
 
-    public static final String PREFIX = "wvg_";
+    public static final String PREFIX = "wsvg_";
 
     @Setter
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "workspaceVariableGroupEntity", cascade = CascadeType.ALL)

@@ -3,6 +3,8 @@ package org.touchhome.bundle.api.measure;
 import lombok.Getter;
 
 public class StringType implements State {
+    public static StringType EMPTY = new StringType("");
+
     @Getter
     private final String value;
 

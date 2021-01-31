@@ -6,6 +6,10 @@ public interface State {
 
     int intValue();
 
+    default String toFullString() {
+        return stringValue();
+    }
+
     default long longValue() {
         return intValue();
     }

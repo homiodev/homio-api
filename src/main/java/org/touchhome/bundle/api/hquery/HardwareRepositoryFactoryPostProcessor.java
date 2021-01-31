@@ -65,6 +65,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
 
     private final String basePackages;
     private HardwareRepositoryFactoryPostHandler handler;
+
     HardwareRepositoryFactoryPostProcessor(String basePackages, HardwareRepositoryFactoryPostHandler handler) {
         this.basePackages = basePackages;
         this.handler = handler;
@@ -169,7 +170,11 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                     regexp = ((HQueryParam) apiParams[i][0]).value();
                 }
 
-                str = str.replaceAll(regexp == null ? ":([^\\s]+)" : ":" + regexp, String.valueOf(arg));
+                String text = "";
+                while (!text.equals(str)) {
+                    text = str;
+                    str = str.replace(regexp == null ? ":([^\\s]+)" : ":" + regexp, String.valueOf(arg));
+                }
             }
         }
         return str;

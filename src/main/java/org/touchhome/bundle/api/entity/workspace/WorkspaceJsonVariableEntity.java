@@ -17,7 +17,7 @@ import javax.persistence.Lob;
 @Accessors(chain = true)
 public class WorkspaceJsonVariableEntity extends BaseEntity<WorkspaceJsonVariableEntity> {
 
-    public static final String PREFIX = "wjv_";
+    public static final String PREFIX = "wsjv_";
 
     @Lob
     @Setter

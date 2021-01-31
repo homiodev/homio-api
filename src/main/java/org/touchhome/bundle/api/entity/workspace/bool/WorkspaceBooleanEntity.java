@@ -15,7 +15,7 @@ import javax.persistence.ManyToOne;
 @Accessors(chain = true)
 public class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> {
 
-    public static final String PREFIX = "wbo_";
+    public static final String PREFIX = "wsbo_";
 
     @Setter
     @Column(nullable = false)

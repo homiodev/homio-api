@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-@Converter
+@Converter(autoApply = true)
 public class JSONObjectConverter implements AttributeConverter<JSONObject, String> {
     @Override
     public String convertToDatabaseColumn(JSONObject jsonData) {

@@ -13,7 +13,7 @@ import java.util.Set;
 @Accessors(chain = true)
 public class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> {
 
-    public static final String PREFIX = "wv_";
+    public static final String PREFIX = "wsv_";
 
     @Setter
     @Column(nullable = false)

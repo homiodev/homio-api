@@ -9,7 +9,10 @@ import org.touchhome.bundle.api.hquery.api.HardwareRepositoryAnnotation;
 import java.nio.file.Path;
 
 @HardwareRepositoryAnnotation(stringValueOnDisable = "N/A")
-public interface LinuxHardwareRepository {
+public interface MachineHardwareRepository {
+
+    @HardwareQuery(value = ":command", win = ":command")
+    String execute(@HQueryParam("command") String command);
 
     @HardwareQuery("df -m / | sed -e /^Filesystem/d")
     HardwareMemory getSDCardMemory();
@@ -41,10 +44,10 @@ public interface LinuxHardwareRepository {
     @HardwareQuery("chmod :mode -R :path")
     void setPermissions(@HQueryParam("path") Path path, @HQueryParam("mode") int mode);
 
-    @HardwareQuery(value = "apt-get install :soft", echo = "Install software")
+    @HardwareQuery(value = "apt-get install :soft", echo = "Install software", printOutput = true)
     void installSoftware(@HQueryParam("soft") String soft);
 
-    @HardwareQuery("which :soft")
+    @HardwareQuery(value = "which :soft", win = "where :soft")
     boolean isSoftwareInstalled(@HQueryParam("soft") String soft);
 
     default String getDeviceModel() {

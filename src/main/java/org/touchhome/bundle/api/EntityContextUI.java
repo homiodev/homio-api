@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import org.json.JSONObject;
 import org.springframework.lang.Nullable;
 import org.touchhome.bundle.api.console.ConsolePlugin;
-import org.touchhome.bundle.api.exception.UserException;
+import org.touchhome.bundle.api.exception.ServerException;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.NotificationLevel;
@@ -191,8 +191,8 @@ public interface EntityContextUI {
     default void sendMessage(String title, String message, NotificationLevel type, FlowMap messageParam, Exception ex) {
         title = title == null ? null : Lang.getServerMessage(title, messageParam);
         String text = "";
-        if (ex instanceof UserException) {
-            text = Lang.getServerMessage(ex.getMessage(), ((UserException) ex).getMessageParam() == null ? messageParam : ((UserException) ex).getMessageParam());
+        if (ex instanceof ServerException) {
+            text = Lang.getServerMessage(ex.getMessage(), ((ServerException) ex).getMessageParam() == null ? messageParam : ((ServerException) ex).getMessageParam());
         } else {
             text = message == null ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {

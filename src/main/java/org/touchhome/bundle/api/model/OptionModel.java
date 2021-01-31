@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fazecast.jSerialComm.SerialPort;
@@ -77,6 +78,10 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> enumList(Class<? extends Enum> enumClass) {
+        if (HasDescription.class.isAssignableFrom(enumClass)) {
+            return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString())
+                    .json(json -> json.put("description", ((HasDescription) n).getDescription()))).collect(Collectors.toList());
+        }
         return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString())).collect(Collectors.toList());
     }
 
@@ -120,12 +125,56 @@ public class OptionModel implements Comparable<OptionModel> {
         return optionModels;
     }
 
-    public void addChild(OptionModel child) {
-        if (this.children == null) {
-            children = new ArrayList<>();
+    @JsonIgnore
+    public String getTitleOrKey() {
+        return title == null ? key : title;
+    }
+
+    @JsonIgnore
+    public boolean hasChildren() {
+        return children != null && !children.isEmpty();
+    }
+
+    public void addChildIfHasSubChildren(OptionModel child) {
+        if (child != null && child.hasChildren()) {
+            addChild(child);
         }
-        child.key = this.key + "~~~" + child.key;
-        children.add(child);
+    }
+
+    public OptionModel findByKey(String key) {
+        if (this.key.equals(key)) {
+            return this;
+        }
+        if (this.children != null) {
+            for (OptionModel child : this.children) {
+                OptionModel found = child.findByKey(key);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void addChild(OptionModel child) {
+        if (child != null) {
+            if (this.children == null) {
+                children = new ArrayList<>();
+            }
+            child.key = this.key + "~~~" + child.key;
+            children.add(child);
+
+            modifyChildrenKeys(this.key, child);
+        }
+    }
+
+    public void modifyChildrenKeys(String key, OptionModel child) {
+        if (child.children != null) {
+            for (OptionModel optionModel : child.children) {
+                optionModel.key = key + "~~~" + optionModel.key;
+                modifyChildrenKeys(key, optionModel);
+            }
+        }
     }
 
     public OptionModel json(Consumer<JSONObject> consumer) {

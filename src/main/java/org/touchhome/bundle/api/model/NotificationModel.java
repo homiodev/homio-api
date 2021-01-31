@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.model;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.util.NotificationLevel;
 
 import javax.validation.constraints.NotNull;
@@ -72,7 +73,8 @@ public class NotificationModel implements Comparable<NotificationModel> {
     @Override
     public int compareTo(@NotNull NotificationModel other) {
         int i = this.level.name().compareTo(other.level.name());
-        return i == 0 ? this.title.compareTo(other.title) : i;
+        return i == 0 ? StringUtils.defaultString(this.title, this.entityID)
+                .compareTo(StringUtils.defaultString(other.title, other.entityID)) : i;
     }
 
     @Override

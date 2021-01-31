@@ -25,7 +25,7 @@ import java.util.List;
 })
 public class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> {
 
-    public static final String PREFIX = "wb_";
+    public static final String PREFIX = "wsbp_";
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)

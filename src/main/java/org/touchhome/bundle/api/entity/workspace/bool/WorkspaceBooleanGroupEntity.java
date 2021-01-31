@@ -16,7 +16,7 @@ import java.util.Set;
 @Accessors(chain = true)
 public class WorkspaceBooleanGroupEntity extends BaseEntity<WorkspaceBooleanGroupEntity> {
 
-    public static final String PREFIX = "wbog_";
+    public static final String PREFIX = "wsbog_";
 
     @Setter
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "workspaceBooleanGroupEntity", cascade = CascadeType.ALL)

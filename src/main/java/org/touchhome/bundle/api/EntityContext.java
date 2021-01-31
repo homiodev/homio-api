@@ -139,14 +139,18 @@ public interface EntityContext {
     <T> Map<String, Collection<T>> getBeansOfTypeByBundles(Class<T> clazz);
 
     default boolean isAdminUserOrNone() {
-        UserEntity user = getUser();
+        UserEntity user = getUser(false);
         return user == null || user.isAdmin();
     }
 
-    default UserEntity getUser() {
+    default UserEntity getUser(boolean anonymousIfNotFound) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            return getEntity((String) authentication.getCredentials());
+            UserEntity entity = getEntity((String) authentication.getCredentials());
+            if (entity == null && anonymousIfNotFound) {
+                entity = UserEntity.ANONYMOUS_USER;
+            }
+            return entity;
         }
         return null;
     }
@@ -154,4 +158,6 @@ public interface EntityContext {
     Collection<AbstractRepository> getRepositories();
 
     <T> List<Class<? extends T>> getClassesWithAnnotation(Class<? extends Annotation> annotation);
+
+    <T> List<Class<? extends T>> getClassesWithParent(Class<T> baseClass, String... packages);
 }

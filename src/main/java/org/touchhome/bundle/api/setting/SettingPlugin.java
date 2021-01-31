@@ -127,9 +127,13 @@ public interface SettingPlugin<T> {
      * Values of settings with transient state doesn't save to db
      */
     default boolean transientState() {
-        return (this.getSettingType() == SettingType.Button && this.getParameters(null, null) == null)
-                || this.getSettingType() == SettingType.Info
-                || !this.isStorable();
+        if (this.getSettingType() == SettingType.Button) {
+            JSONObject parameters = this.getParameters(null, null);
+            if (parameters == null || parameters.length() == 1 && parameters.has("confirm")) {
+                return true;
+            }
+        }
+        return this.getSettingType() == SettingType.Info || !this.isStorable();
     }
 
     int order();

@@ -90,6 +90,21 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
         return jsonData.optInt(key, defaultValue);
     }
 
+    protected <T extends Enum> T getJsonDataEnum(String key, T defaultValue) {
+        String jsonData = getJsonData(key);
+
+        for (Enum enumValue : defaultValue.getClass().getEnumConstants()) {
+            if (enumValue.name().equals(jsonData)) {
+                return (T) enumValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    protected <T extends Enum> void setJsonDataEnum(String key, T value) {
+        setJsonData("cameraType", value == null ? "" : value.name());
+    }
+
     protected Boolean getJsonData(String key, boolean defaultValue) {
         return jsonData.optBoolean(key, defaultValue);
     }

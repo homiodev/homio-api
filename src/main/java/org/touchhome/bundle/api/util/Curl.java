@@ -18,6 +18,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.exception.ServerException;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -103,7 +104,7 @@ public final class Curl {
             conn.getInputStream();
             return conn.getContentLength();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ServerException(e);
         } finally {
             if (conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).disconnect();

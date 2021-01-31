@@ -22,6 +22,6 @@ public @interface UISidebarMenu {
     int order() default 1000;
 
     enum TopSidebarMenu {
-        HARDWARE, ITEMS
+        HARDWARE, ITEMS, MEDIA
     }
 }

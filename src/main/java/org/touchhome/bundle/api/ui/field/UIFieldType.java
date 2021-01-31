@@ -3,6 +3,10 @@ package org.touchhome.bundle.api.ui.field;
 public enum UIFieldType {
     Slider,
 
+    IpAddress,
+    Port,
+    Password, // shows *** for users without admin rights
+
     Selection,
     TextSelectBoxDynamic, // text input type with ability to select values from server
 
