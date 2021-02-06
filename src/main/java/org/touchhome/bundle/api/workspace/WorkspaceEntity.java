@@ -13,7 +13,7 @@ import javax.persistence.Lob;
 @Setter
 @Entity
 @Accessors(chain = true)
-public class WorkspaceEntity extends BaseEntity<WorkspaceEntity> implements Comparable<WorkspaceEntity> {
+public final class WorkspaceEntity extends BaseEntity<WorkspaceEntity> implements Comparable<WorkspaceEntity> {
 
     public static final String PREFIX = "ws_";
 
@@ -31,5 +31,10 @@ public class WorkspaceEntity extends BaseEntity<WorkspaceEntity> implements Comp
         if (getName() == null || getName().length() < 2 || getName().length() > 10) {
             throw new IllegalStateException("Workspace tab name must be between 2..10 characters");
         }
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 }

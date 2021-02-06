@@ -26,8 +26,16 @@ public class FlowMap {
         return new FlowMap(name, value, null, null, null, null, null, null);
     }
 
+    public static FlowMap of(String name, int value) {
+        return new FlowMap(name, String.valueOf(value), null, null, null, null, null, null);
+    }
+
     public static FlowMap of(String name, String value, String name1, String value1) {
         return new FlowMap(name, value, name1, value1, null, null, null, null);
+    }
+
+    public static FlowMap of(String name, int value, String name1, int value1) {
+        return new FlowMap(name, String.valueOf(value), name1, String.valueOf(value1), null, null, null, null);
     }
 
     public static FlowMap of(String name, String value, String name1, String value1, String name2, String value2) {

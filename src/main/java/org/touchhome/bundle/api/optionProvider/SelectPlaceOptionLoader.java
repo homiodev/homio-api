@@ -11,7 +11,7 @@ import java.util.List;
 public class SelectPlaceOptionLoader implements DynamicOptionLoader {
 
     @Override
-    public List<OptionModel> loadOptions(Object parameter, BaseEntity baseEntity, EntityContext entityContext) {
+    public List<OptionModel> loadOptions(BaseEntity baseEntity, EntityContext entityContext) {
         return OptionModel.list(entityContext.findAll(PlaceEntity.class));
     }
 }

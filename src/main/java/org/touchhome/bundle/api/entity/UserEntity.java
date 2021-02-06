@@ -10,8 +10,8 @@ import org.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.converter.StringSetConverter;
+import org.touchhome.bundle.api.util.Constants;
 import org.touchhome.bundle.api.util.SslUtil;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;
 import java.util.Collections;
@@ -20,7 +20,7 @@ import java.util.Set;
 
 @Entity
 @Accessors(chain = true)
-public class UserEntity extends BaseEntity<UserEntity> {
+public final class UserEntity extends BaseEntity<UserEntity> {
 
     public static final String PREFIX = "u_";
 
@@ -98,7 +98,12 @@ public class UserEntity extends BaseEntity<UserEntity> {
     }
 
     public boolean isAdmin() {
-        return this.userType == UserType.REGULAR && this.roles != null && this.roles.contains(TouchHomeUtils.ADMIN_ROLE);
+        return this.userType == UserType.REGULAR && this.roles != null && this.roles.contains(Constants.ADMIN_ROLE);
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 
     public enum UserType {

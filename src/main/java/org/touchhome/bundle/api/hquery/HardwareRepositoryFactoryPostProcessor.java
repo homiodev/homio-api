@@ -79,6 +79,9 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
         List<Class<?>> classes = getClassesWithAnnotation();
         for (Class<?> aClass : classes) {
             beanFactory.registerSingleton(aClass.getSimpleName(), Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{aClass}, (proxy, method, args) -> {
+                if (method.getName().equals("toString")) {
+                    return aClass.getSimpleName() + ":" + aClass.getDeclaredAnnotation(HardwareRepositoryAnnotation.class).description();
+                }
                 Class<?> returnType = method.getReturnType();
                 List<Object> results = null;
                 for (HardwareQuery hardwareQuery : method.getDeclaredAnnotationsByType(HardwareQuery.class)) {
@@ -269,7 +272,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
             }
         }
 
-        if (retValue != 0) {
+        if (retValue != 0 && !hardwareQuery.redirectErrorsToInputs()) {
             throwErrors(errorsHandler, errors);
             if (errorsHandler != null) {
                 String error = errors.isEmpty() ? errorsHandler.onRetCodeError() : String.join("; ", errors);
@@ -288,10 +291,14 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                 }
             }
         } else {
-            for (String error : errors) {
-                if (!error.isEmpty()) {
-                    log.warn("Error <{}>", error);
+            if (!hardwareQuery.redirectErrorsToInputs()) {
+                for (String error : errors) {
+                    if (!error.isEmpty()) {
+                        log.warn("Error <{}>", error);
+                    }
                 }
+            } else {
+                inputs.addAll(errors);
             }
             inputs = inputs.stream().map(String::trim).collect(Collectors.toList());
             ListParse listParse = method.getAnnotation(ListParse.class);
@@ -408,7 +415,8 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
     }
 
     private Object handleBucket(List<String> inputs, RawParse rawParse, Field field) {
-        return TouchHomeUtils.newInstance(rawParse.value()).handle(inputs, field);
+        return TouchHomeUtils.OS_NAME.isLinux() ? TouchHomeUtils.newInstance(rawParse.nix()).handle(inputs, field) :
+                TouchHomeUtils.newInstance(rawParse.win()).handle(inputs, field);
     }
 
     private Object handleType(String value, Class<?> type) {

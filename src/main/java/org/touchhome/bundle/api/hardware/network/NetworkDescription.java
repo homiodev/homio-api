@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.hardware.wifi;
+package org.touchhome.bundle.api.hardware.network;
 
 import lombok.Getter;
 import lombok.Setter;

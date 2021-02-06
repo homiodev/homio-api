@@ -40,12 +40,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     @Getter
     private String name;
 
-    @Lob
-    @UIField(order = 15, hideOnEmpty = true)
-    @Column(length = 1048576)
-    @Getter
-    private String description;
-
     @Column(nullable = false)
     @UIField(order = 16, readOnly = true, type = StaticDate)
     @Getter
@@ -57,11 +51,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
 
     @Transient
     private String entityIDSupplierStr;
-
-    public static BaseEntity of(String entityID, String name) {
-        return new BaseEntity() {
-        }.setName(name).setEntityID(entityID);
-    }
 
     public T setId(Integer id) {
         this.id = id;
@@ -75,11 +64,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
 
     public T setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
-        return (T) this;
-    }
-
-    public T setDescription(String description) {
-        this.description = description;
         return (T) this;
     }
 
@@ -128,11 +112,26 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
         this.validate();
     }
 
+    //firest before persist
     protected void beforePersist() {
 
     }
 
+    // fires before persist/update
     protected void validate() {
+
+    }
+
+    protected void beforeUpdate() {
+
+    }
+
+    protected void beforeRemove() {
+
+    }
+
+    // fires after fetch from db/cache
+    public void afterFetch(EntityContext entityContext) {
 
     }
 
@@ -143,17 +142,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
         this.validate();
     }
 
-    protected void beforeUpdate() {
-
-    }
-
     @PreRemove
     private void preRemove() {
         this.beforeRemove();
-    }
-
-    protected void beforeRemove() {
-
     }
 
     public String refreshName() {
@@ -188,7 +179,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
                 }
                 simpleId = name + "_" + System.currentTimeMillis();
             }
-            this.entityID = simpleId.startsWith(repo.getPrefix()) ? simpleId : repo.getPrefix() + simpleId;
+            this.entityID = simpleId.startsWith(getEntityPrefix()) ? simpleId : getEntityPrefix() + simpleId;
         }
         return this.entityID;
     }
@@ -212,7 +203,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
 
     public void merge(T entity) {
         this.name = entity.getName();
-        this.description = entity.getDescription();
     }
 
     @JsonIgnore
@@ -220,4 +210,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     public EntityContext getEntityContext() {
         return ApplicationContextHolder.getBean(EntityContext.class);
     }
+
+    public abstract String getEntityPrefix();
 }

@@ -12,7 +12,9 @@ import java.util.List;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface RawParse {
-    Class<? extends RawParseHandler> value();
+    Class<? extends RawParseHandler> nix();
+
+    Class<? extends RawParseHandler> win();
 
     interface RawParseHandler {
         Object handle(List<String> inputs, @Nullable Field field);

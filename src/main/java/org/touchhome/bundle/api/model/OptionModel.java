@@ -109,8 +109,12 @@ public class OptionModel implements Comparable<OptionModel> {
         return map.entrySet().stream().map(e -> OptionModel.of(e.getKey(), e.getValue())).collect(Collectors.toList());
     }
 
-    public static <T extends BaseEntity> List<OptionModel> list(Collection<T> list) {
-        return list.stream().map(e -> OptionModel.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle()))).collect(Collectors.toList());
+    public static List<OptionModel> list(Collection<? extends BaseEntity>... lists) {
+        List<OptionModel> res = new ArrayList<>();
+        for (Collection<? extends BaseEntity> list : lists) {
+            res.addAll(list.stream().map(e -> OptionModel.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle()))).collect(Collectors.toList()));
+        }
+        return res;
     }
 
     public static List<OptionModel> simpleNamelist(Collection list) {

@@ -1,6 +1,6 @@
 {
-  "MC": {
-    "FOUND_CONTROLLER_RESULT": "Found {{COUNT}} controller devices",
-    "SCAN_CONTROLLER_ERROR": "Error while scan for controllers: {{MSG}}"
+  "SCAN": {
+    "RESULT": "Found {{NEW}} new items\nFound {{OLD}} existed items",
+    "ERROR": "Error while scan: {{MSG}}"
   }
 }

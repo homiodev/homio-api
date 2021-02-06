@@ -15,25 +15,32 @@ import java.util.regex.Pattern;
 @Entity
 @Getter
 @Setter
-public class ImageEntity extends BaseEntity<ImageEntity> {
+public final class ImageEntity extends BaseEntity<ImageEntity> {
 
     private static final Pattern TRANSLATE = Pattern.compile(".*translate(\\d+,\\d+)");
     @Column
     private String path;
+
     @Column(nullable = false)
     private Integer originalWidth;
+
     @Column(nullable = false)
     private Integer originalHeight;
+
     @Column(nullable = false)
     private String color;
+
     @Column
     private String fileSystem;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ImageType imageType = ImageType.PNG;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.CommonType;
+
     @Lob
     @Column(length = 1048576)
     @JsonIgnore
@@ -63,6 +70,11 @@ public class ImageEntity extends BaseEntity<ImageEntity> {
 
     public String getMimeType() {
         return getEntityID().length() > 3 ? ("image/" + getEntityID().substring(getEntityID().length() - 3)) : "";
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return "img_";
     }
 
     /*public String getSvgImageAsString(DevicePlugin devicePlugin, Integer width, Integer height, Float scale) {

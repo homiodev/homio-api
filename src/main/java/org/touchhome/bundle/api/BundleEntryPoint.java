@@ -1,8 +1,8 @@
 package org.touchhome.bundle.api;
 
 import lombok.SneakyThrows;
-import org.touchhome.bundle.api.model.NotificationModel;
 import org.touchhome.bundle.api.setting.SettingPluginStatus;
+import org.touchhome.bundle.api.ui.BellNotification;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.validation.constraints.NotNull;
@@ -58,7 +58,7 @@ public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
     /**
      * Notifications that visible in ui header
      */
-    default Set<NotificationModel> getNotifications() {
+    default Set<BellNotification> getBellNotifications() {
         return null;
     }
 

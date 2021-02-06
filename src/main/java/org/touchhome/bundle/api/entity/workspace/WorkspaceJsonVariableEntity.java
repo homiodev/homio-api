@@ -15,7 +15,7 @@ import javax.persistence.Lob;
 @Entity
 @Getter
 @Accessors(chain = true)
-public class WorkspaceJsonVariableEntity extends BaseEntity<WorkspaceJsonVariableEntity> {
+public final class WorkspaceJsonVariableEntity extends BaseEntity<WorkspaceJsonVariableEntity> {
 
     public static final String PREFIX = "wsjv_";
 
@@ -34,5 +34,10 @@ public class WorkspaceJsonVariableEntity extends BaseEntity<WorkspaceJsonVariabl
     public void merge(WorkspaceJsonVariableEntity entity) {
         super.merge(entity);
         this.value = entity.getValue();
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 }

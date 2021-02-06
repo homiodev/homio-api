@@ -189,12 +189,14 @@ public interface SettingPlugin<T> {
         SelectBoxDynamic,
         // Just a text
         Text,
+        Chips, // https://material.angular.io/components/chips/examples
         // Input text with additional button that able to fetch values from server
         TextSelectBoxDynamic,
         // Button that fires server action
         Button,
         Toggle,
         Info,
-        Upload
+        Upload,
+        TextArea
     }
 }

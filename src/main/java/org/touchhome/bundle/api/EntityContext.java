@@ -4,13 +4,14 @@ import org.apache.commons.lang3.SystemUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.entity.DeviceBaseEntity;
 import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
+import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public interface EntityContext {
@@ -70,6 +71,10 @@ public interface EntityContext {
 
     <T extends HasEntityIdentifier> void updateDelayed(T entity, Consumer<T> fieldUpdateConsumer);
 
+    default <T extends DeviceBaseEntity> void updateDeviceStatus(T entity, Status status, String message) {
+        updateDelayed(entity, t -> t.setStatus(status).setStatusMessage(message));
+    }
+
     <T extends HasEntityIdentifier> void save(T entity);
 
     <T extends BaseEntity> T save(T entity);
@@ -91,36 +96,6 @@ public interface EntityContext {
     AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(String repositoryPrefix);
 
     <T extends BaseEntity> T getEntityByName(String name, Class<T> entityClass);
-
-    default <T extends BaseEntity> void addEntityUpdateListener(String entityID, Consumer<T> listener) {
-        this.addEntityUpdateListener(entityID, (t, t2) -> listener.accept((T) t));
-    }
-
-    <T extends BaseEntity> void addEntityUpdateListener(String entityID, BiConsumer<T, T> listener);
-
-    /**
-     * Listen any changes fot BaseEntity of concrete type.
-     *
-     * @param entityClass type to listen
-     * @param listener    handler invoke when entity update
-     */
-    default <T extends BaseEntity> void addEntityUpdateListener(Class<T> entityClass, Consumer<T> listener) {
-        this.addEntityUpdateListener(entityClass, (t, t2) -> listener.accept(t));
-    }
-
-    /**
-     * Listen any changes fot BaseEntity of concrete type.
-     *
-     * @param entityClass type to listen
-     * @param listener    handler invoke when entity update. OldValue/NewValue
-     */
-    <T extends BaseEntity> void addEntityUpdateListener(Class<T> entityClass, BiConsumer<T, T> listener);
-
-    <T extends BaseEntity> void addEntityRemovedListener(Class<T> entityClass, Consumer<T> listener);
-
-    <T extends BaseEntity> void addEntityRemovedListener(String entityID, Consumer<T> listener);
-
-    <T extends BaseEntity> void removeEntityUpdateListener(String entityID, BiConsumer<T, T> listener);
 
     void setFeatureState(String feature, boolean state);
 
@@ -160,4 +135,8 @@ public interface EntityContext {
     <T> List<Class<? extends T>> getClassesWithAnnotation(Class<? extends Annotation> annotation);
 
     <T> List<Class<? extends T>> getClassesWithParent(Class<T> baseClass, String... packages);
+
+    interface EntityUpdateListener<T> {
+        void entityUpdated(T newValue, T oldValue);
+    }
 }

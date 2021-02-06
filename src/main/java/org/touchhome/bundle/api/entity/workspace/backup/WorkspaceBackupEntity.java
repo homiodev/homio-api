@@ -23,7 +23,7 @@ import java.util.List;
         @NamedQuery(name = "WorkspaceBackupEntity.fetchMinDate",
                 query = "SELECT MIN(e.creationTime) FROM WorkspaceBackupValueCrudEntity e WHERE e.workspaceBackupEntity = :source GROUP BY e.workspaceBackupEntity")
 })
-public class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> {
+public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> {
 
     public static final String PREFIX = "wsbp_";
 
@@ -44,5 +44,10 @@ public class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> {
     public void merge(WorkspaceBackupEntity entity) {
         super.merge(entity);
         this.values = entity.getValues();
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 }

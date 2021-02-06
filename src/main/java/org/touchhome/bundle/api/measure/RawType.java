@@ -18,14 +18,6 @@ public class RawType implements State {
         this.mimeType = mimeType;
     }
 
-    public byte[] getBytes() {
-        return bytes;
-    }
-
-    public String getMimeType() {
-        return mimeType;
-    }
-
     public static RawType valueOf(String value) {
         int idx, idx2;
         if (value.isEmpty()) {
@@ -36,6 +28,14 @@ public class RawType implements State {
             throw new IllegalArgumentException("Missing MIME type in argument " + value);
         }
         return new RawType(Base64.getDecoder().decode(value.substring(idx + 1)), value.substring(5, idx2));
+    }
+
+    public byte[] getBytes() {
+        return bytes;
+    }
+
+    public String getMimeType() {
+        return mimeType;
     }
 
     @Override

@@ -13,7 +13,7 @@ import javax.persistence.ManyToOne;
 @Entity
 @Getter
 @Accessors(chain = true)
-public class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> {
+public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> {
 
     public static final String PREFIX = "wsbo_";
 
@@ -34,6 +34,11 @@ public class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> {
     public void merge(WorkspaceBooleanEntity entity) {
         super.merge(entity);
         this.value = entity.value;
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 
     public WorkspaceBooleanEntity inverseValue() {

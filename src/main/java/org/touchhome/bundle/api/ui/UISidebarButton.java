@@ -1,6 +1,6 @@
 package org.touchhome.bundle.api.ui;
 
-import org.touchhome.bundle.api.ui.action.UISidebarButtonHandler;
+import org.touchhome.bundle.api.ui.action.UIActionHandler;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,5 +24,5 @@ public @interface UISidebarButton {
     /**
      * Target class for handle button
      */
-    Class<? extends UISidebarButtonHandler> handlerClass();
+    Class<? extends UIActionHandler> handlerClass();
 }

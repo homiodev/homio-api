@@ -4,13 +4,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.touchhome.bundle.api.entity.UserEntity;
 
-import static org.touchhome.bundle.api.entity.UserEntity.PREFIX;
-
 @Repository
 public class UserRepository extends AbstractRepository<UserEntity> {
 
     public UserRepository() {
-        super(UserEntity.class, PREFIX);
+        super(UserEntity.class);
     }
 
     @Transactional(readOnly = true)

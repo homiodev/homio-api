@@ -15,13 +15,12 @@ public @interface UIField {
     // disable editing
     boolean readOnly() default false;
 
+    boolean advanced() default false;
+
     /**
      * Should be available only in editMode. If true - readOnly flag ignored
      */
     boolean onlyEdit() default false;
-
-    // override field name
-    String label() default "";
 
     UIFieldType type() default UIFieldType.AutoDetect;
 
@@ -35,11 +34,8 @@ public @interface UIField {
     // able to edit field directly from view mode (now works only in console)
     boolean inlineEdit() default false;
 
-    /**
-     * Determine if this field should be ignored at all
-     * Userfull if need hide field in sub class
-     */
-    boolean transparent() default false;
+    // override field name
+    String label() default "";
 
     // override for field name, useful in methods
     String name() default "";

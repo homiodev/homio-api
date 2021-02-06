@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * Uses for load option.
  */
-public interface DynamicOptionLoader<T> {
+public interface DynamicOptionLoader {
 
-    Collection<OptionModel> loadOptions(T parameter, BaseEntity baseEntity, EntityContext entityContext);
+    Collection<OptionModel> loadOptions(BaseEntity baseEntity, EntityContext entityContext);
 }

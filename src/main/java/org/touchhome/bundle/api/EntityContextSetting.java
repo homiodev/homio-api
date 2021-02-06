@@ -2,8 +2,8 @@ package org.touchhome.bundle.api;
 
 import org.touchhome.bundle.api.setting.SettingPlugin;
 import org.touchhome.bundle.api.setting.SettingPluginOptions;
-import org.touchhome.bundle.api.setting.header.dynamic.DynamicHeaderContainerSettingPlugin;
-import org.touchhome.bundle.api.setting.header.dynamic.DynamicHeaderSettingPlugin;
+import org.touchhome.bundle.api.setting.console.header.dynamic.DynamicConsoleHeaderContainerSettingPlugin;
+import org.touchhome.bundle.api.setting.console.header.dynamic.DynamicConsoleHeaderSettingPlugin;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -19,8 +19,8 @@ public interface EntityContextSetting {
     /**
      * Update setting components on ui. Uses for updating dynamic settings
      */
-    void reloadSettings(Class<? extends DynamicHeaderContainerSettingPlugin> dynamicSettingPluginClass,
-                        List<? extends DynamicHeaderSettingPlugin> dynamicSettings);
+    void reloadSettings(Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass,
+                        List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
 
     <T> T getValue(Class<? extends SettingPlugin<T>> settingClass);
 

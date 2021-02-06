@@ -15,14 +15,14 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-public class WidgetTabEntity extends BaseEntity<WidgetTabEntity> implements Comparable<WidgetTabEntity> {
+public final class WidgetTabEntity extends BaseEntity<WidgetTabEntity> implements Comparable<WidgetTabEntity> {
     public static final String PREFIX = "wt_";
     public static final String GENERAL_WIDGET_TAB_NAME = "main";
 
     @Getter
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "widgetTabEntity")
-    private Set<WidgetBaseEntity> widgetBaseEntities;
+    private Set<WidgetBaseEntityAndSeries> widgetBaseEntities;
 
     @Override
     public int compareTo(@NotNull WidgetTabEntity o) {
@@ -44,5 +44,10 @@ public class WidgetTabEntity extends BaseEntity<WidgetTabEntity> implements Comp
         if (!widgetBaseEntities.isEmpty()) {
             throw new ServerException("ERROR.REMOVE_NON_EMPTY_TAB");
         }
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 }

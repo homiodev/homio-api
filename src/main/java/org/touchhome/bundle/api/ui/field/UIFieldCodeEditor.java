@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldCodeEditor {
 
@@ -16,5 +16,4 @@ public @interface UIFieldCodeEditor {
     enum CodeEditorType {
         javascript, json
     }
-
 }

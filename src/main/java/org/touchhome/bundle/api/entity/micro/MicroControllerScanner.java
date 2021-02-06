@@ -1,11 +1,9 @@
 package org.touchhome.bundle.api.entity.micro;
 
-import lombok.experimental.Accessors;
+import org.touchhome.bundle.api.service.scan.ItemDiscoverySupport;
 
 /**
  * Interface that micro controller type must implement for searching running devices
  */
-@Accessors(chain = true)
-public interface MicroControllerScanner {
-    int scan();
+public interface MicroControllerScanner extends ItemDiscoverySupport {
 }

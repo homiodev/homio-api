@@ -1,25 +1,30 @@
 package org.touchhome.bundle.api.entity.widget;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.exception.ServerException;
+import org.touchhome.bundle.api.entity.HasJsonData;
 import org.touchhome.bundle.api.model.HasPosition;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
+import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
 
 import javax.persistence.*;
-import java.util.Set;
 
 @Getter
 @Setter
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @UISidebarMenu(icon = "fas fa-tachometer-alt", bg = "#107d6b")
 @Accessors(chain = true)
-public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseEntity<T> implements HasPosition<WidgetBaseEntity> {
+@NoArgsConstructor
+public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseEntity<T>
+        implements HasPosition<WidgetBaseEntity>, HasJsonData<T> {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WidgetTabEntity widgetTabEntity;
@@ -43,46 +48,20 @@ public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseE
     @Getter
     private String fieldFetchType;
 
-    @Override
-    @UIField(order = 3, transparent = true)
-    public String getDescription() {
-        return super.getDescription();
-    }
+    @Lob
+    @Column(length = 1048576)
+    @Convert(converter = JSONObjectConverter.class)
+    private JSONObject jsonData = new JSONObject();
 
     @Override
-    @UIField(order = 3, transparent = true)
+    @UIFieldIgnore
     public String getName() {
         return super.getName();
     }
 
     public abstract String getImage();
 
-    public abstract boolean updateRelations(EntityContext entityContext);
-
-    protected boolean validateSeries(Set<? extends BaseEntity> series, EntityContext entityContext) {
-        boolean updated = false;
-        for (BaseEntity item : series) {
-            String dataSource = ((HasWidgetDataSource) item).getDataSource();
-            if (dataSource != null) {
-                BaseEntity entity = entityContext.getEntity(dataSource);
-                if (entity == null) {
-                    updated = true;
-                    ((HasWidgetDataSource) item).setDataSource(null);
-                }
-            }
-        }
-        return updated;
-    }
-
-    @Override
-    protected void beforePersist() {
-        if (widgetTabEntity == null) {
-            throw new ServerException("Unable to save widget without attach to tab");
-        }
-    }
-
-    @Override
-    protected void beforeUpdate() {
-        super.beforeUpdate();
+    public boolean updateRelations(EntityContext entityContext) {
+        return false;
     }
 }

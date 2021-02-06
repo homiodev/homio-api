@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Entity
 @Accessors(chain = true)
 @Table(indexes = {@Index(columnList = "creationTime")})
-public class WorkspaceVariableBackupValueCrudEntity extends CrudEntity<WorkspaceVariableBackupValueCrudEntity> {
+public final class WorkspaceVariableBackupValueCrudEntity extends CrudEntity<WorkspaceVariableBackupValueCrudEntity> {
 
     @Column(nullable = false)
     private float value;

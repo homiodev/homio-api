@@ -11,7 +11,10 @@ import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
@@ -20,17 +23,19 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.model.ProgressBar;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -39,16 +44,7 @@ import static org.apache.commons.io.FileUtils.ONE_MB_BI;
 @Log4j2
 public class TouchHomeUtils {
 
-    public static OsName OS_NAME = detectOs();
-
-    public static final String PRIMARY_COLOR = "primary";
-    public static final String DANGER_COLOR = "danger";
-
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    public static final String[] SYSTEM_BUNDLES = {"arduino", "raspberry", "telegram", "zigbee", "cloud", "bluetooth", "xaomi", "camera"};
-    public static final String ADMIN_ROLE = "ROLE_ADMIN";
-    public static final String PRIVILEGED_USER_ROLE = "ROLE_PRIVILEGED_USER";
-    public static final String GUEST_ROLE = "ROLE_GUEST";
     private static final Path TMP_FOLDER = Paths.get(FileUtils.getTempDirectoryPath());
     @Getter
     private static final Path filesPath;
@@ -62,9 +58,15 @@ public class TouchHomeUtils {
     private static final Path mediaPath;
     @Getter
     private static final Path sshPath;
+    public static OsName OS_NAME = detectOs();
+    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private static Path rootPath;
     private static Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
+
+    // map for store different statuses
+    @Getter
+    private static Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
 
     static {
         if (SystemUtils.IS_OS_WINDOWS) {
@@ -81,7 +83,7 @@ public class TouchHomeUtils {
     }
 
     public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {
-        if (key != null && value != null) {
+        if (StringUtils.isNotEmpty(key) && value != null) {
             jsonObject.put(key, value);
         }
         return jsonObject;
@@ -150,7 +152,7 @@ public class TouchHomeUtils {
 
     public static List<String> readFile(String fileName) {
         try {
-            return IOUtils.readLines(TouchHomeUtils.class.getClassLoader().getResourceAsStream(fileName));
+            return IOUtils.readLines(TouchHomeUtils.class.getClassLoader().getResourceAsStream(fileName), Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(TouchHomeUtils.getErrorMessage(ex), ex);
 
@@ -160,7 +162,7 @@ public class TouchHomeUtils {
 
     @SneakyThrows
     public static String getResourceAsString(String bundle, String resource) {
-        return IOUtils.toString(getResource(bundle, resource));
+        return IOUtils.toString(getResource(bundle, resource), Charset.defaultCharset());
     }
 
     @SneakyThrows
@@ -319,29 +321,8 @@ public class TouchHomeUtils {
         return false;
     }
 
-    public static class TemplateBuilder {
-        private final Context context = new Context();
-        private final TemplateEngine templateEngine;
-        private final String templateName;
-
-        TemplateBuilder(String templateName) {
-            this.templateName = templateName;
-            this.templateEngine = new TemplateEngine();
-            ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-            templateResolver.setTemplateMode(TemplateMode.HTML);
-            templateEngine.setTemplateResolver(templateResolver);
-        }
-
-        public TemplateBuilder set(String key, Object value) {
-            context.setVariable(key, value);
-            return this;
-        }
-
-        public String build() {
-            StringWriter stringWriter = new StringWriter();
-            templateEngine.process("templates/" + templateName, context, stringWriter);
-            return stringWriter.toString();
-        }
+    public static void unzip(Path file, Path destination) {
+        unzip(file, destination, null, null);
     }
 
  /*   @SneakyThrows
@@ -357,20 +338,17 @@ public class TouchHomeUtils {
         }
     }*/
 
-    public static void unzip(Path file, Path destination) {
-        unzip(file, destination, null, null, null);
-    }
-
     @SneakyThrows
-    public static void unzip(Path file, Path destination, String password, EntityContext entityContext, String progressKey) {
-        if (progressKey != null) {
-            entityContext.ui().progress(progressKey, 0, "Unzip files. Calculate size...");
+    public static void unzip(@NotNull Path file, @NotNull Path destination,
+                             @Nullable String password, @Nullable ProgressBar progressBar) {
+        if (progressBar != null) {
+            progressBar.progress(0, "Unzip files. Calculate size...");
         }
         if (file.getFileName().toString().endsWith(".zip")) {
             ZipFile zipFile = new ZipFile(file.toFile());
             zipFile.extractAll(destination.toString());
         } else if (file.getFileName().toString().endsWith(".7z")) {
-            double fileSize = progressKey == null ? 1D : getZipFileSize(file);
+            double fileSize = progressBar == null ? 1D : getZipFileSize(file);
 
             int maxMb = (int) (fileSize / ONE_MB_BI.intValue());
             byte[] oneMBBuff = new byte[ONE_MB_BI.intValue()];
@@ -399,8 +377,8 @@ public class TouchHomeUtils {
 
                     if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
                         nextStep++;
-                        if (progressKey != null) {
-                            entityContext.ui().progress(progressKey, (readBytes / fileSize * 100) * 0.99, // max 99%
+                        if (progressBar != null) {
+                            progressBar.progress((readBytes / fileSize * 100) * 0.99, // max 99%
                                     "Extract " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
                         }
                     }
@@ -409,8 +387,8 @@ public class TouchHomeUtils {
             }
             sevenZFile.close();
         }
-        if (progressKey != null) {
-            entityContext.ui().progress(progressKey, 99, "Unzip files done.");
+        if (progressBar != null) {
+            progressBar.progress(99, "Unzip files done.");
         }
     }
 
@@ -459,6 +437,31 @@ public class TouchHomeUtils {
 
         public boolean isWindows() {
             return this.name().startsWith("Windows");
+        }
+    }
+
+    public static class TemplateBuilder {
+        private final Context context = new Context();
+        private final TemplateEngine templateEngine;
+        private final String templateName;
+
+        TemplateBuilder(String templateName) {
+            this.templateName = templateName;
+            this.templateEngine = new TemplateEngine();
+            ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+            templateResolver.setTemplateMode(TemplateMode.HTML);
+            templateEngine.setTemplateResolver(templateResolver);
+        }
+
+        public TemplateBuilder set(String key, Object value) {
+            context.setVariable(key, value);
+            return this;
+        }
+
+        public String build() {
+            StringWriter stringWriter = new StringWriter();
+            templateEngine.process("templates/" + templateName, context, stringWriter);
+            return stringWriter.toString();
         }
     }
 }

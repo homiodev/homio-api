@@ -13,4 +13,7 @@ public @interface HardwareRepositoryAnnotation {
     int intValueOnDisable() default -1;
 
     boolean boolValueOnDisable() default false;
+
+    // uses for logical description. Uses in toString() method
+    String description() default "";
 }

@@ -1,9 +1,9 @@
-package org.touchhome.bundle.api.setting.header;
+package org.touchhome.bundle.api.setting.console.header;
 
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.setting.SettingPlugin;
 
-public interface HeaderSettingPlugin<T> extends SettingPlugin<T> {
+public interface ConsoleHeaderSettingPlugin<T> extends SettingPlugin<T> {
 
     @Override
     default boolean isVisible(EntityContext entityContext) {

@@ -3,194 +3,321 @@ package org.touchhome.bundle.api;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import lombok.SneakyThrows;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-import org.springframework.lang.Nullable;
 import org.touchhome.bundle.api.console.ConsolePlugin;
+import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.exception.ServerException;
+import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
+@SuppressWarnings("unused")
 public interface EntityContextUI {
 
+    EntityContext getEntityContext();
+
     @SneakyThrows
-    default <T> T runWithProgressAndGet(String progressKey, ThrowingFunction<String, T, Exception> process,
-                                        @Nullable Runnable finallyBlock) {
+    default <T> T runWithProgressAndGet(@NotNull String progressKey, boolean cancellable,
+                                        @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
+                                        @Nullable Consumer<Exception> finallyBlock) {
+        ProgressBar progressBar = (progress, message) -> progress(progressKey, progress, message, cancellable);
+        Exception exception = null;
         try {
-            progress(progressKey, 0, progressKey);
-            return process.apply(progressKey);
+            progressBar.progress(0, progressKey);
+            return process.apply(progressBar);
+        } catch (Exception ex) {
+            exception = ex;
+            throw ex;
         } finally {
-            progressDone(progressKey);
+            progressBar.done();
             if (finallyBlock != null) {
-                finallyBlock.run();
+                finallyBlock.accept(exception);
             }
         }
     }
 
     @SneakyThrows
-    default <T> void runWithProgress(String progressKey, ThrowingConsumer<String, Exception> process,
-                                     @Nullable Runnable finallyBlock) {
-        runWithProgressAndGet(progressKey, s -> {
-            process.accept(s);
+    default void runWithProgress(@NotNull String progressKey, boolean cancellable, @NotNull ThrowingConsumer<ProgressBar, Exception> process,
+                                 @Nullable Consumer<Exception> finallyBlock) {
+        runWithProgressAndGet(progressKey, cancellable, progressBar -> {
+            process.accept(progressBar);
             return null;
         }, finallyBlock);
     }
 
-    default <T extends ConsolePlugin<?>> void openConsole(T consolePlugin) {
+    /**
+     * Fire open console window to UI
+     */
+    default <T extends ConsolePlugin<?>> void openConsole(@NotNull T consolePlugin) {
         sendGlobal(GlobalSendType.openConsole, consolePlugin.getEntityID(), null);
     }
 
-    default <T extends ConsolePlugin<?>> void reloadWindow(String reason) {
+    /**
+     * Request to reload window to UI
+     */
+    default void reloadWindow(@NotNull String reason) {
         sendGlobal(GlobalSendType.reload, reason, null);
     }
 
-    default void progress(String key, double progress, String status) {
-        sendGlobal(GlobalSendType.progress, key, progress, status);
+    /**
+     * Send reload item on UI if related page are opened
+     */
+    default void updateItem(@NotNull BaseEntity<?> baseEntity) {
+        sendGlobal(GlobalSendType.addItem, baseEntity.getEntityID(), baseEntity);
     }
 
-    default void progressDone(String key) {
-        sendGlobal(GlobalSendType.progress, key, 100);
+    void progress(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
+
+    /**
+     * Send confirmation message to ui with back handler
+     *
+     * @param headerButtonAttachTo - if set - attach confirm message to header button
+     */
+    void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
+                          @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo);
+
+    /**
+     * Add message to 'bell' header select box
+     */
+    void addBellNotification(@NotNull String entityID, @NotNull String name, @NotNull String value,
+                             @NotNull NotificationLevel notificationLevel);
+
+    /**
+     * Add message to 'bell' header select box
+     */
+    default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
+        addBellNotification(entityID, name, description, NotificationLevel.info);
     }
 
-    void sendConfirmation(String key, String title, Runnable confirmHandler, String... messages);
-
-    default void sendConfirmation(String key, String title, Runnable confirmHandler, Collection<String> messages) {
-        sendConfirmation(key, title, confirmHandler, messages.toArray(new String[0]));
+    /**
+     * Add message to 'bell' header select box
+     */
+    default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
+        addBellNotification(entityID, name, description, NotificationLevel.warning);
     }
 
-    void addHeaderNotification(String entityID, String name, String value, NotificationLevel notificationLevel);
-
-    default void addHeaderInfoNotification(String entityID, String name, String description) {
-        addHeaderNotification(entityID, name, description, NotificationLevel.info);
+    /**
+     * Add message to 'bell' header select box
+     */
+    default void addBellErrorNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
+        addBellNotification(entityID, name, description, NotificationLevel.error);
     }
 
-    default void addHeaderWarningNotification(String entityID, String name, String description) {
-        addHeaderNotification(entityID, name, description, NotificationLevel.warning);
-    }
+    /**
+     * Remove message from 'bell' header select box
+     */
+    void removeBellNotification(@NotNull String entityID);
 
-    default void addHeaderErrorNotification(String entityID, String name, String description) {
-        addHeaderNotification(entityID, name, description, NotificationLevel.error);
-    }
+    // raw
+    void sendNotification(@NotNull String destination, @NotNull String param);
 
-    void removeHeaderNotification(String entityID);
+    // raw
+    void sendNotification(@NotNull String destination, @NotNull JSONObject param);
 
-    void sendNotification(String destination, Object param);
-
-    default void sendGlobal(GlobalSendType type, String entityID, Object value) {
+    default void sendGlobal(@NotNull GlobalSendType type, @NotNull String entityID, @Nullable Object value) {
         sendGlobal(type, entityID, value, null, null);
     }
 
-    default void sendGlobal(GlobalSendType type, String entityID, Object value, String title) {
+    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value, @Nullable String title) {
         sendGlobal(type, entityID, value, title, null);
     }
 
-    default void sendGlobal(GlobalSendType type, String entityID, Object value, String title, JSONObject jsonObject) {
+    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value, @Nullable String title, @Nullable JSONObject jsonObject) {
         if (jsonObject == null) {
             jsonObject = new JSONObject();
         }
         sendNotification("-global", jsonObject.put("entityID", entityID).put("type", type.name())
-                .put("value", value).putOpt("title", title));
+                .putOpt("value", value).putOpt("title", title));
     }
 
-    void showAlwaysOnViewNotification(String entityID, String title, String icon, String color, Integer duration, Class<? extends SettingPluginButton> stopAction);
+    /**
+     * Add button to ui header
+     */
+    void addHeaderButton(@NotNull String entityID, @Nullable String title, @NotNull String icon, @NotNull String color,
+                         boolean rotate, @Nullable Class<? extends SettingPluginButton> hideAction);
 
-    void hideAlwaysOnViewNotification(String entityID);
+    /**
+     * Add button to ui header
+     */
+    void addHeaderButton(@NotNull String entityID, @Nullable String title, @NotNull String color,
+                         int duration, @Nullable Class<? extends SettingPluginButton> hideAction);
 
-    default void sendErrorMessage(String message) {
+    /**
+     * Remove button from ui header.
+     * Header button will be removed only if has no attached elements
+     */
+    default void removeHeaderButton(@NotNull String entityID) {
+        removeHeaderButton(entityID, null, false);
+    }
+
+    /**
+     * Remove header button on ui
+     *
+     * @param entityID    - id
+     * @param icon        - changed icon if btn has attached elements
+     * @param forceRemove - force remove even if header button has attached elements
+     */
+    void removeHeaderButton(@NotNull String entityID, @Nullable String icon, boolean forceRemove);
+
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@NotNull String message) {
         sendErrorMessage(null, message, null, null);
     }
 
-    default void sendErrorMessage(Exception ex) {
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@NotNull Exception ex) {
         sendErrorMessage(null, null, null, ex);
     }
 
-    default void sendErrorMessage(String message, Exception ex) {
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@NotNull String message, @NotNull Exception ex) {
         sendErrorMessage(null, message, null, ex);
     }
 
-    default void sendErrorMessage(String title, String message) {
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@NotNull String title, @NotNull String message) {
         sendErrorMessage(title, message, null, null);
     }
 
-    default void sendErrorMessage(String title, String message, Exception ex) {
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@NotNull String title, @NotNull String message, @NotNull Exception ex) {
         sendErrorMessage(title, message, null, ex);
     }
 
-    default void sendErrorMessage(String message, FlowMap messageParam, Exception ex) {
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@NotNull String message, @NotNull FlowMap messageParam, @NotNull Exception ex) {
         sendErrorMessage(null, message, messageParam, ex);
     }
 
-    default void sendErrorMessage(String message, FlowMap messageParam) {
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@NotNull String message, @NotNull FlowMap messageParam) {
         sendErrorMessage(null, message, messageParam, null);
     }
 
-    default void sendErrorMessage(String title, String message, FlowMap messageParam, Exception ex) {
+    /**
+     * Show error toastr message to ui
+     */
+    default void sendErrorMessage(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam, @Nullable Exception ex) {
         sendMessage(title, message, NotificationLevel.error, messageParam, ex);
     }
 
-    default void sendInfoMessage(String message) {
+    /**
+     * Show info toastr message to ui
+     */
+    default void sendInfoMessage(@NotNull String message) {
         sendInfoMessage(null, message, null);
     }
 
-    default void sendInfoMessage(String title, String message) {
+    /**
+     * Show info toastr message to ui
+     */
+    default void sendInfoMessage(@NotNull String title, @NotNull String message) {
         sendInfoMessage(title, message, null);
     }
 
-    default void sendInfoMessage(String message, FlowMap messageParam) {
+    /**
+     * Show info toastr message to ui
+     */
+    default void sendInfoMessage(@NotNull String message, @NotNull FlowMap messageParam) {
         sendInfoMessage(null, message, messageParam);
     }
 
-    default void sendInfoMessage(String title, String message, FlowMap messageParam) {
+    /**
+     * Show info toastr message to ui
+     */
+    default void sendInfoMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
         sendMessage(title, message, NotificationLevel.info, messageParam, null);
     }
 
-    default void sendSuccessMessage(String message) {
+    /**
+     * Show success(green) toastr message to ui
+     */
+    default void sendSuccessMessage(@NotNull String message) {
         sendSuccessMessage(null, message, null);
     }
 
-    default void sendSuccessMessage(String title, String message) {
+    /**
+     * Show success(green) toastr message to ui
+     */
+    default void sendSuccessMessage(@NotNull String title, @NotNull String message) {
         sendSuccessMessage(title, message, null);
     }
 
-    default void sendSuccessMessage(String message, FlowMap messageParam) {
+    /**
+     * Show success(green) toastr message to ui
+     */
+    default void sendSuccessMessage(@NotNull String message, @NotNull FlowMap messageParam) {
         sendSuccessMessage(null, message, messageParam);
     }
 
-    default void sendSuccessMessage(String title, String message, FlowMap messageParam) {
+    /**
+     * Show success(green) toastr message to ui
+     */
+    default void sendSuccessMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
         sendMessage(title, message, NotificationLevel.success, messageParam, null);
     }
 
-    default void sendJsonMessage(String title, Object json) {
+    /**
+     * Show warning(yellow) toastr message to ui
+     */
+    default void sendWarningMessage(@NotNull String message) {
+        sendWarningMessage(null, message, null);
+    }
+
+    /**
+     * Show warning(yellow) toastr message to ui
+     */
+    default void sendWarningMessage(@NotNull String title, @NotNull String message) {
+        sendWarningMessage(title, message, null);
+    }
+
+    /**
+     * Show warning(yellow) toastr message to ui
+     */
+    default void sendWarningMessage(@NotNull String message, @NotNull FlowMap messageParam) {
+        sendWarningMessage(null, message, messageParam);
+    }
+
+    /**
+     * Show warning(yellow) toastr message to ui
+     */
+    default void sendWarningMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
+        sendMessage(title, message, NotificationLevel.warning, messageParam, null);
+    }
+
+    default void sendJsonMessage(@NotNull String title, @NotNull Object json) {
         sendJsonMessage(title, json, null);
     }
 
-    default void sendJsonMessage(String title, Object json, FlowMap messageParam) {
+    default void sendJsonMessage(@Nullable String title, @NotNull Object json, @Nullable FlowMap messageParam) {
         title = title == null ? null : Lang.getServerMessage(title, messageParam);
         sendGlobal(GlobalSendType.json, null, json, title);
     }
 
-    default void sendWarningMessage(String message) {
-        sendWarningMessage(null, message, null);
-    }
-
-    default void sendWarningMessage(String title, String message) {
-        sendWarningMessage(title, message, null);
-    }
-
-    default void sendWarningMessage(String message, FlowMap messageParam) {
-        sendWarningMessage(null, message, messageParam);
-    }
-
-    default void sendWarningMessage(String title, String message, FlowMap messageParam) {
-        sendMessage(title, message, NotificationLevel.warning, messageParam, null);
-    }
-
-    default void sendMessage(String title, String message, NotificationLevel type, FlowMap messageParam, Exception ex) {
+    default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel type, @Nullable FlowMap messageParam, @Nullable Exception ex) {
         title = title == null ? null : Lang.getServerMessage(title, messageParam);
-        String text = "";
+        String text;
         if (ex instanceof ServerException) {
             text = Lang.getServerMessage(ex.getMessage(), ((ServerException) ex).getMessageParam() == null ? messageParam : ((ServerException) ex).getMessageParam());
         } else {
@@ -205,6 +332,6 @@ public interface EntityContextUI {
     }
 
     enum GlobalSendType {
-        popup, json, setting, progress, headerNotification, headerButton, openConsole, confirmation, reload
+        popup, json, setting, progress, bell, headerButton, openConsole, confirmation, reload, addItem
     }
 }

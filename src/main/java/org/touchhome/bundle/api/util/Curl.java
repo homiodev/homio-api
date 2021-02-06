@@ -10,6 +10,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
@@ -17,8 +19,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RestTemplate;
-import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.exception.ServerException;
+import org.touchhome.bundle.api.model.ProgressBar;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -34,29 +36,30 @@ import static org.apache.commons.io.FileUtils.ONE_MB_BI;
 
 @Log4j2
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public final class Curl {
     private static final RestTemplate restTemplate = new RestTemplate();
 
-    public static <T> T get(String url, Class<T> responseType, Object... uriVariables) {
+    public static <T> T get(@NotNull String url, @NotNull Class<T> responseType, Object... uriVariables) {
         return restTemplate.getForObject(url, responseType, uriVariables);
     }
 
-    public static <T> T post(String url, Object request, Class<T> responseType, Object... uriVariables) {
+    public static <T> T post(@NotNull String url, @Nullable Object request, @NotNull Class<T> responseType, Object... uriVariables) {
         return restTemplate.postForObject(url, request, responseType, uriVariables);
     }
 
-    public static void delete(String url, Object... uriVariables) {
+    public static void delete(@NotNull String url, Object... uriVariables) {
         restTemplate.delete(url, uriVariables);
     }
 
     @SneakyThrows
-    public static void download(String url, Path targetPath) {
+    public static void download(@NotNull String url, @NotNull Path targetPath) {
         FileUtils.copyURLToFile(new URL(url), targetPath.toFile(), 60000, 60000);
     }
 
     @SneakyThrows
-    public static void downloadWithProgress(String urlStr, Path targetPath, String progressKey, EntityContext entityContext) {
-        entityContext.ui().progress(progressKey, 1, "Checking file size...");
+    public static void downloadWithProgress(@NotNull String urlStr, @NotNull Path targetPath, @NotNull ProgressBar progressBar) {
+        progressBar.progress(1, "Checking file size...");
         URL url = new URL(urlStr);
         double fileSize = getFileSize(url);
         // download without progress if less then 2 megabytes
@@ -79,7 +82,7 @@ public final class Curl {
                     readBytes += num;
                     if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
                         nextStep++;
-                        entityContext.ui().progress(progressKey, (readBytes / fileSize * 100) * 0.9, // max 90%
+                        progressBar.progress((readBytes / fileSize * 100) * 0.9, // max 90%
                                 "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
                     }
                 }
@@ -94,7 +97,7 @@ public final class Curl {
         }, targetPath.toFile());
     }
 
-    public static int getFileSize(URL url) {
+    public static int getFileSize(@NotNull URL url) {
         URLConnection conn = null;
         try {
             conn = url.openConnection();
@@ -113,7 +116,7 @@ public final class Curl {
     }
 
     @SneakyThrows
-    public static <T> T getWithTimeout(String command, Class<T> returnType, int timeoutInSec) {
+    public static <T> T getWithTimeout(@NotNull String command, @NotNull Class<T> returnType, int timeoutInSec) {
         CloseableHttpResponse response = createApacheHttpClient(timeoutInSec).execute(new HttpGet(command));
         HttpMessageConverterExtractor<T> responseExtractor = new HttpMessageConverterExtractor<>(returnType, restTemplate.getMessageConverters());
         return responseExtractor.extractData(new ClientHttpResponse() {

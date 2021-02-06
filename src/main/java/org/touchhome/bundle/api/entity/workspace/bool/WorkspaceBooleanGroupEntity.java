@@ -14,11 +14,16 @@ import java.util.Set;
 @Entity
 @Getter
 @Accessors(chain = true)
-public class WorkspaceBooleanGroupEntity extends BaseEntity<WorkspaceBooleanGroupEntity> {
+public final class WorkspaceBooleanGroupEntity extends BaseEntity<WorkspaceBooleanGroupEntity> {
 
     public static final String PREFIX = "wsbog_";
 
     @Setter
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "workspaceBooleanGroupEntity", cascade = CascadeType.ALL)
     private Set<WorkspaceBooleanEntity> workspaceBooleanEntities;
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
+    }
 }

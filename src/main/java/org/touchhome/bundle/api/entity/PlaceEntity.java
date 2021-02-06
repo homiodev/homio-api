@@ -11,12 +11,17 @@ import java.util.Set;
 
 @Entity
 @UISidebarMenu(icon = "fas fa-map-marker-alt", order = 3, bg = "#2894ed", allowCreateNewItems = true)
-public class PlaceEntity extends BaseEntity<PlaceEntity> {
+public final class PlaceEntity extends BaseEntity<PlaceEntity> {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerPlace")
     @JsonIgnore
     @Getter
     private Set<DeviceBaseEntity> deviceEntities;
+
+    @Override
+    public String getEntityPrefix() {
+        return "pl_";
+    }
 }
 
 

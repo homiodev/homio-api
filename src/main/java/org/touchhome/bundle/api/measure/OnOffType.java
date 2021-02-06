@@ -3,6 +3,10 @@ package org.touchhome.bundle.api.measure;
 public enum OnOffType implements State {
     ON, OFF;
 
+    public static OnOffType valueOf(boolean value) {
+        return value ? ON : OFF;
+    }
+
     @Override
     public String toString() {
         return this.name();

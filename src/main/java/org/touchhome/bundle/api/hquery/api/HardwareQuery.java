@@ -17,6 +17,11 @@ public @interface HardwareQuery {
 
     boolean ignoreOnError() default false;
 
+    /**
+     * Set this to true if you want parse error from commands. This value also set ignoreOnError as true
+     */
+    boolean redirectErrorsToInputs() default false;
+
     String echo() default "";
 
     boolean cache() default false;

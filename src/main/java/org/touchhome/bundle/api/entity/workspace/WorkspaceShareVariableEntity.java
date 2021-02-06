@@ -13,7 +13,7 @@ import javax.persistence.Lob;
 @Setter
 @Entity
 @Accessors(chain = true)
-public class WorkspaceShareVariableEntity extends BaseEntity<WorkspaceShareVariableEntity> {
+public final class WorkspaceShareVariableEntity extends BaseEntity<WorkspaceShareVariableEntity> {
 
     public static final String PREFIX = "wssve_";
     public static final String NAME = "share_variables";
@@ -26,5 +26,10 @@ public class WorkspaceShareVariableEntity extends BaseEntity<WorkspaceShareVaria
     public void merge(WorkspaceShareVariableEntity entity) {
         super.merge(entity);
         this.content = entity.getContent();
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 }

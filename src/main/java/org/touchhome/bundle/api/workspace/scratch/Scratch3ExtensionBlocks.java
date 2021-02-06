@@ -1,12 +1,11 @@
 package org.touchhome.bundle.api.workspace.scratch;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.json.JSONObject;
 import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
@@ -69,9 +68,8 @@ public abstract class Scratch3ExtensionBlocks {
         sendWorkspaceChangeValue(entityContext, baseEntity, "WorkspaceBackupValue", node -> node.put("value", value));
     }
 
-    private static void sendWorkspaceChangeValue(EntityContext entityContext, BaseEntity baseEntity, String type, Consumer<ObjectNode> fn) {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode node = mapper.createObjectNode().put("block", baseEntity.getEntityID()).put("type", type);
+    private static void sendWorkspaceChangeValue(EntityContext entityContext, BaseEntity baseEntity, String type, Consumer<JSONObject> fn) {
+        JSONObject node = new JSONObject().put("block", baseEntity.getEntityID()).put("type", type);
         fn.accept(node);
         entityContext.ui().sendNotification("-workspace-value", node);
     }

@@ -4,7 +4,6 @@ public enum UIFieldType {
     Slider,
 
     IpAddress,
-    Port,
     Password, // shows *** for users without admin rights
 
     Selection,
@@ -13,7 +12,6 @@ public enum UIFieldType {
     Float,
     Duration,
     StaticDate,
-    Image,
 
     String,
     Boolean,

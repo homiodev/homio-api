@@ -11,7 +11,7 @@ import java.util.Set;
 @Entity
 @Getter
 @Accessors(chain = true)
-public class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> {
+public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> {
 
     public static final String PREFIX = "wsv_";
 
@@ -36,5 +36,10 @@ public class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity>
     public void merge(WorkspaceVariableEntity entity) {
         super.merge(entity);
         this.value = entity.getValue();
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 }

@@ -26,7 +26,8 @@ import java.util.Set;
 @UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#51145e")
 @NoArgsConstructor
 @Accessors(chain = true)
-public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T> implements HasPosition<DeviceBaseEntity> {
+public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
+        implements HasPosition<DeviceBaseEntity>, HasJsonData<T> {
 
     @UIField(readOnly = true, order = 100)
     @Getter
@@ -61,6 +62,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     private Status joined = Status.UNKNOWN;
 
     @Lob
+    @Getter
     @Column(length = 1048576)
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData = new JSONObject();
@@ -80,50 +82,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Getter
     @Setter
     private int bh = 1;
-
-    protected <P> T setJsonData(String key, P value) {
-        jsonData.put(key, value);
-        return (T) this;
-    }
-
-    protected Integer getJsonData(String key, int defaultValue) {
-        return jsonData.optInt(key, defaultValue);
-    }
-
-    protected <T extends Enum> T getJsonDataEnum(String key, T defaultValue) {
-        String jsonData = getJsonData(key);
-
-        for (Enum enumValue : defaultValue.getClass().getEnumConstants()) {
-            if (enumValue.name().equals(jsonData)) {
-                return (T) enumValue;
-            }
-        }
-        return defaultValue;
-    }
-
-    protected <T extends Enum> void setJsonDataEnum(String key, T value) {
-        setJsonData("cameraType", value == null ? "" : value.name());
-    }
-
-    protected Boolean getJsonData(String key, boolean defaultValue) {
-        return jsonData.optBoolean(key, defaultValue);
-    }
-
-    protected String getJsonData(String key, String defaultValue) {
-        return jsonData.optString(key, defaultValue);
-    }
-
-    protected Long getJsonData(String key, long defaultValue) {
-        return jsonData.optLong(key, defaultValue);
-    }
-
-    protected String getJsonData(String key) {
-        return jsonData.optString(key);
-    }
-
-    protected Double getJsonData(String key, double defaultValue) {
-        return jsonData.optDouble(key, defaultValue);
-    }
 
     public String getShortTitle() {
         return "";

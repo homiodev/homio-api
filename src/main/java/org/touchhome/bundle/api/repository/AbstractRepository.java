@@ -1,6 +1,5 @@
 package org.touchhome.bundle.api.repository;
 
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.Hibernate;
@@ -8,11 +7,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.ui.field.UIField;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -24,16 +25,14 @@ import java.util.stream.Stream;
 public class AbstractRepository<T extends BaseEntity> implements PureRepository<T> {
 
     private final Class<T> clazz;
+    private final String prefix;
 
     @PersistenceContext
     protected EntityManager em;
 
-    @Getter
-    private String prefix;
-
-    public AbstractRepository(Class<T> clazz, String prefix) {
+    public AbstractRepository(Class<T> clazz) {
         this.clazz = clazz;
-        this.prefix = prefix;
+        this.prefix = Modifier.isAbstract(clazz.getModifiers()) ? null : TouchHomeUtils.newInstance(clazz).getEntityPrefix();
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +42,7 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
 
     /**
      * Warning!!!
-     * Must be called only from EntityManager
+     * Must be called only from EntityManager. That's why it's not transactional
      */
     public T save(T entity) {
         entity.getEntityID(true); // verify entityID exists
@@ -88,6 +87,7 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
         return query.getResultList();
     }
 
+    @Transactional(readOnly = true)
     public Long size() {
         return em.createQuery("SELECT count(t.id) FROM " + getEntityClass().getSimpleName() + " as t", Long.class).getSingleResult();
     }
@@ -146,11 +146,6 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
     }
 
     public boolean isMatch(String entityID) {
-        return entityID.startsWith(prefix);
-    }
-
-    @Transactional
-    public void updateEntityAfterFetch(T entity) {
-
+        return prefix != null && entityID.startsWith(prefix);
     }
 }

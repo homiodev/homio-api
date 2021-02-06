@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 @Entity
 @Getter
 @Accessors(chain = true)
-public class WorkspaceStandaloneVariableEntity extends BaseEntity<WorkspaceStandaloneVariableEntity> {
+public final class WorkspaceStandaloneVariableEntity extends BaseEntity<WorkspaceStandaloneVariableEntity> {
 
     public static final String PREFIX = "wssv_";
 
@@ -28,5 +28,10 @@ public class WorkspaceStandaloneVariableEntity extends BaseEntity<WorkspaceStand
     public void merge(WorkspaceStandaloneVariableEntity entity) {
         super.merge(entity);
         this.value = entity.getValue();
+    }
+
+    @Override
+    public String getEntityPrefix() {
+        return PREFIX;
     }
 }

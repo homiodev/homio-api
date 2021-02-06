@@ -1,31 +1,30 @@
-package org.touchhome.bundle.api.hardware.wifi;
+package org.touchhome.bundle.api.hardware.network;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.hquery.api.*;
+import org.touchhome.bundle.api.service.scan.BaseItemsDiscovery;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.lang.reflect.Field;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @HardwareRepositoryAnnotation(stringValueOnDisable = "N/A")
-public interface WirelessHardwareRepository {
+public interface NetworkHardwareRepository {
     @HardwareQuery(echo = "Switch hotspot", value = "autohotspot swipe", printOutput = true)
     void switchHotSpot();
 
@@ -76,7 +75,7 @@ public interface WirelessHardwareRepository {
     String getWifiPassword();
 
     @HardwareQuery(value = "netstat -nr", win = "netstat -nr", cacheValid = 3600, ignoreOnError = true, valueOnError = "n/a")
-    @RawParse(value = NetStatGatewayParser.class)
+    @RawParse(nix = NetStatGatewayParser.class, win = NetStatGatewayParser.class)
     String getGatewayIpAddress();
 
     @CurlQuery(value = "http://checkip.amazonaws.com", cacheValid = 3600, ignoreOnError = true,
@@ -101,6 +100,32 @@ public interface WirelessHardwareRepository {
         return cityGeolocation;
     }
 
+    default Map<String, Callable<Integer>> buildPingIpAddressTasks(Logger log, Set<Integer> ports, int timeout, BiConsumer<String, Integer> handler) {
+        String gatewayIpAddress = getGatewayIpAddress();
+        Map<String, Callable<Integer>> tasks = new HashMap<>();
+        BaseItemsDiscovery.DeviceScannerResult result = new BaseItemsDiscovery.DeviceScannerResult();
+        if (gatewayIpAddress != null) {
+            String scanIp = gatewayIpAddress.substring(0, gatewayIpAddress.lastIndexOf(".") + 1);
+
+            for (Integer port : ports) {
+                log.info("Checking ip address {}:{}", gatewayIpAddress, port);
+                for (int i = 0; i < 255; i++) {
+                    int ipSuffix = i;
+                    tasks.put("check-ip-" + ipSuffix + "-port-" + port, () -> {
+                        String ipAddress = scanIp + ipSuffix;
+                        log.debug("Check ip: {}:{}", ipAddress, port);
+                        if (pingAddress(ipAddress, port, timeout)) {
+                            handler.accept(ipAddress, port);
+                            return ipSuffix;
+                        }
+                        return null;
+                    });
+                }
+            }
+        }
+        return tasks;
+    }
+
     default boolean pingAddress(String ipAddress, int port, int timeout) {
         try {
             try (Socket socket = new Socket()) {
@@ -117,15 +142,23 @@ public interface WirelessHardwareRepository {
         if (SystemUtils.IS_OS_LINUX) {
             return getNetworkDescription().getInet();
         }
-        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-        for (NetworkInterface networkInterface : Collections.list(nets)) {
-            for (InetAddress inetAddress : Collections.list(networkInterface.getInetAddresses())) {
-                if (inetAddress.isSiteLocalAddress()) {
-                    return inetAddress.getHostAddress();
+        String ipAddress = null;
+        try {
+            for (Enumeration<NetworkInterface> enumNetworks = NetworkInterface.getNetworkInterfaces(); enumNetworks
+                    .hasMoreElements(); ) {
+                NetworkInterface networkInterface = enumNetworks.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = networkInterface.getInetAddresses(); enumIpAddr
+                        .hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress.getHostAddress().length() < 18
+                            && inetAddress.isSiteLocalAddress()) {
+                        ipAddress = inetAddress.getHostAddress();
+                    }
                 }
             }
+        } catch (SocketException ignored) {
         }
-        return null;
+        return ipAddress;
     }
 
     @SneakyThrows
