@@ -1,9 +1,12 @@
 package org.touchhome.bundle.api.workspace;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -20,8 +23,18 @@ public interface WorkspaceBlock {
 
     <P> P getMenuValue(String key, MenuBlock menuBlock, Class<P> type);
 
+    default <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type) {
+        return getMenuValues(key, menuBlock, type, "~~~");
+    }
+
+    <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type, String delimiter);
+
     default String getMenuValue(String key, MenuBlock.ServerMenuBlock menuBlock) {
         return getMenuValue(key, menuBlock, String.class);
+    }
+
+    default <T extends BaseEntity> T getMenuValueEntity(String key, MenuBlock.ServerMenuBlock menuBlock) {
+        return getEntityContext().getEntity(getMenuValue(key, menuBlock, String.class));
     }
 
     default <P> P getMenuValue(String key, MenuBlock.StaticMenuBlock<P> menuBlock) {
@@ -63,6 +76,10 @@ public interface WorkspaceBlock {
     Float getInputFloat(String key);
 
     String getInputString(String key);
+
+    default String getInputString(String key, String defaultValue) {
+        return StringUtils.defaultIfEmpty(getInputString(key), defaultValue);
+    }
 
     boolean getInputBoolean(String key);
 

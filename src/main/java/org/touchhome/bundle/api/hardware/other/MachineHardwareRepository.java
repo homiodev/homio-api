@@ -11,43 +11,43 @@ import java.nio.file.Path;
 @HardwareRepositoryAnnotation(stringValueOnDisable = "N/A")
 public interface MachineHardwareRepository {
 
-    @HardwareQuery(value = ":command", win = ":command")
+    @HardwareQuery(name = "Execute general command", value = ":command", win = ":command")
     String execute(@HQueryParam("command") String command);
 
-    @HardwareQuery("df -m / | sed -e /^Filesystem/d")
+    @HardwareQuery(name = "Get SD card memory", value = "df -m / | sed -e /^Filesystem/d")
     HardwareMemory getSDCardMemory();
 
-    @HardwareQuery("top -bn1 | grep load | awk '{printf \"%.2f%%\", $(NF-2)}'")
+    @HardwareQuery(name = "Get cpu load", value = "top -bn1 | grep load | awk '{printf \"%.2f%%\", $(NF-2)}'")
     String getCpuLoad();
 
-    @HardwareQuery("free -m | awk 'NR==2{printf \"%s/%sMB\", $3,$2 }'")
+    @HardwareQuery(name = "Get memory", value = "free -m | awk 'NR==2{printf \"%s/%sMB\", $3,$2 }'")
     String getMemory();
 
-    @HardwareQuery("uptime -p | cut -d 'p' -f 2 | awk '{ printf \"%s\", $0 }'")
+    @HardwareQuery(name = "Get uptime", value = "uptime -p | cut -d 'p' -f 2 | awk '{ printf \"%s\", $0 }'")
     String getUptime();
 
-    @HardwareQuery(value = "cat /proc/device-tree/model", cache = true)
+    @HardwareQuery(name = "Get device model", value = "cat /proc/device-tree/model", cacheValid = Integer.MAX_VALUE)
     String catDeviceModel();
 
-    @HardwareQuery("iwgetid -r")
+    @HardwareQuery(name = "Get wifi name", value = "iwgetid -r")
     String getWifiName();
 
-    @HardwareQuery("systemctl is-active :serviceName")
+    @HardwareQuery(name = "Get service status", value = "systemctl is-active :serviceName")
     int getServiceStatus(@HQueryParam("serviceName") String serviceName);
 
-    @HardwareQuery(echo = "Reboot device", value = "reboot")
+    @HardwareQuery(name = "Reboot device", value = "reboot")
     void reboot();
 
-    @HardwareQuery(value = "cat /etc/os-release", cache = true)
+    @HardwareQuery(name = "Get OS name", value = "cat /etc/os-release", cacheValid = Integer.MAX_VALUE)
     HardwareOs getOs();
 
-    @HardwareQuery("chmod :mode -R :path")
+    @HardwareQuery(name = "Change file permission", value = "chmod :mode -R :path")
     void setPermissions(@HQueryParam("path") Path path, @HQueryParam("mode") int mode);
 
-    @HardwareQuery(value = "apt-get install :soft", echo = "Install software", printOutput = true)
+    @HardwareQuery(name = "Install software", value = "apt-get install :soft", printOutput = true)
     void installSoftware(@HQueryParam("soft") String soft);
 
-    @HardwareQuery(value = "which :soft", win = "where :soft")
+    @HardwareQuery(name = "Check software installed", value = "which :soft", win = "where :soft", cacheValid = 60)
     boolean isSoftwareInstalled(@HQueryParam("soft") String soft);
 
     default String getDeviceModel() {

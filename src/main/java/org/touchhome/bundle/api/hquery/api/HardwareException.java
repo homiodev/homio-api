@@ -10,4 +10,9 @@ import java.util.List;
 public class HardwareException extends RuntimeException {
     private List<String> inputs;
     private int retValue;
+
+    @Override
+    public String getMessage() {
+        return "ret: " + retValue + "Msg: " + String.join(", ", inputs);
+    }
 }

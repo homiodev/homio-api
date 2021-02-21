@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.measure;
+package org.touchhome.bundle.api.state;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

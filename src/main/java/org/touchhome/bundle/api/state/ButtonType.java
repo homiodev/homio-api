@@ -1,11 +1,11 @@
-package org.touchhome.bundle.api.measure;
+package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ButtonState implements State {
+public class ButtonType implements State {
     private final ButtonPressType buttonPressType;
 
     @Override

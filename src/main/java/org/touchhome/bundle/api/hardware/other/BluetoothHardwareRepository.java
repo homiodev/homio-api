@@ -6,8 +6,8 @@ import org.touchhome.bundle.api.hquery.api.HardwareRepositoryAnnotation;
 @HardwareRepositoryAnnotation
 public interface BluetoothHardwareRepository {
 
-    @HardwareQuery(value = "test -f /etc/machine-info && echo true || echo false", printOutput = true)
-    boolean isBluethothFileNameExists();
+    @HardwareQuery(name = "Check if bluetooth file exists", value = "test -f /etc/machine-info && echo true || echo false", printOutput = true)
+    boolean isBluetoothFileNameExists();
 }
 
 

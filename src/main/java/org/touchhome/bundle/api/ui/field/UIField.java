@@ -42,4 +42,13 @@ public @interface UIField {
 
     // specify field color for ui
     String color() default "";
+
+    // specify color for UI row
+    String bg() default "";
+
+    // if set - show content on full width
+    boolean fullWidth() default false;
+
+    // if set - hide field label on full width content
+    boolean hideLabelInFullWidth() default true;
 }

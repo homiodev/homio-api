@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public interface SettingPluginPackageInstall extends SettingPlugin<JSONObject> {
+public interface SettingPluginPackageInstall extends SettingPluginButton {
 
     @Override
     default String getIcon() {

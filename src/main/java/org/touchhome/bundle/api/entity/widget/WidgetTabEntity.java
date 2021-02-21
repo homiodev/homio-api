@@ -22,7 +22,7 @@ public final class WidgetTabEntity extends BaseEntity<WidgetTabEntity> implement
     @Getter
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "widgetTabEntity")
-    private Set<WidgetBaseEntityAndSeries> widgetBaseEntities;
+    private Set<WidgetBaseEntity> widgetBaseEntities;
 
     @Override
     public int compareTo(@NotNull WidgetTabEntity o) {
@@ -37,7 +37,7 @@ public final class WidgetTabEntity extends BaseEntity<WidgetTabEntity> implement
     }
 
     @Override
-    protected void beforeRemove() {
+    protected void beforeDelete() {
         if (this.getName().equals(GENERAL_WIDGET_TAB_NAME)) {
             throw new ServerException("ERROR.REMOVE_MAIN_TAB");
         }

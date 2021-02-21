@@ -99,7 +99,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     }
 
     @PrePersist
-    public final void prePersist() {
+    private void prePersist() {
         if (this.creationTime == null) {
             this.creationTime = new Date();
         }
@@ -112,29 +112,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
         this.validate();
     }
 
-    //firest before persist
-    protected void beforePersist() {
-
-    }
-
-    // fires before persist/update
-    protected void validate() {
-
-    }
-
-    protected void beforeUpdate() {
-
-    }
-
-    protected void beforeRemove() {
-
-    }
-
-    // fires after fetch from db/cache
-    public void afterFetch(EntityContext entityContext) {
-
-    }
-
     @PreUpdate
     private void preUpdate() {
         this.updateTime = new Date();
@@ -143,8 +120,39 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     }
 
     @PreRemove
-    private void preRemove() {
-        this.beforeRemove();
+    private void preDelete() {
+        this.beforeDelete();
+    }
+
+    // fires before persist/update
+    protected void validate() {
+
+    }
+
+    //fires before persist
+    protected void beforePersist() {
+
+    }
+
+    protected void beforeUpdate() {
+
+    }
+
+    protected void beforeDelete() {
+
+    }
+
+    public void afterDelete(EntityContext entityContext) {
+
+    }
+
+    public void afterUpdate(EntityContext entityContext) {
+
+    }
+
+    // fires after fetch from db/cache
+    public void afterFetch(EntityContext entityContext) {
+
     }
 
     public String refreshName() {
@@ -212,4 +220,13 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     }
 
     public abstract String getEntityPrefix();
+
+    public static BaseEntity fakeEntity(String entityID) {
+        return new BaseEntity() {
+            @Override
+            public String getEntityPrefix() {
+                return "";
+            }
+        }.setEntityID(entityID);
+    }
 }

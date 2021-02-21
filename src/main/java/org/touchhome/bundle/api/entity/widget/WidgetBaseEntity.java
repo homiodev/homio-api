@@ -20,7 +20,7 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@UISidebarMenu(icon = "fas fa-tachometer-alt", bg = "#107d6b")
+@UISidebarMenu(icon = "fas fa-tachometer-alt", bg = "#107d6b", overridePath = "widgets")
 @Accessors(chain = true)
 @NoArgsConstructor
 public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseEntity<T>
@@ -43,10 +43,16 @@ public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseE
 
     @Getter
     @UIField(order = 20)
-    private boolean autoScale = true;
+    private boolean autoScale;
 
-    @Getter
-    private String fieldFetchType;
+    public String getFieldFetchType() {
+        return getJsonData("fieldFetchType", null);
+    }
+
+    public T setFieldFetchType(String value) {
+        jsonData.put("fieldFetchType", value);
+        return (T) this;
+    }
 
     @Lob
     @Column(length = 1048576)

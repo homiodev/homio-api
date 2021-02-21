@@ -47,6 +47,10 @@ public class ActionInputParameter {
         }
     }
 
+    public static ActionInputParameter text(String name, String defaultValue) {
+        return new ActionInputParameter(name, UIActionInput.Type.text, null, defaultValue);
+    }
+
     public static ActionInputParameter ip(String name, String defaultIpAddress) {
         return new ActionInputParameter(name, UIActionInput.Type.text,
                 Collections.singleton(UIActionInput.Validator.ip.name()), defaultIpAddress);

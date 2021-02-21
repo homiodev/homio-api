@@ -19,6 +19,8 @@ public enum UIFieldType {
     Color,
     Json,
 
+    Chips, // https://material.angular.io/components/chips/examples
+
     // special type (default for detect field type by java type)
     AutoDetect
 }

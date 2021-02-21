@@ -1,6 +1,11 @@
 package org.touchhome.bundle.api.entity;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface HasJsonData<T> {
 
@@ -18,9 +23,10 @@ public interface HasJsonData<T> {
     default <E extends Enum> E getJsonDataEnum(String key, E defaultValue) {
         String jsonData = getJsonData(key);
 
-        for (Enum enumValue : defaultValue.getClass().getEnumConstants()) {
+        E[] enumConstants = (E[]) defaultValue.getDeclaringClass().getEnumConstants();
+        for (E enumValue : enumConstants) {
             if (enumValue.name().equals(jsonData)) {
-                return (E) enumValue;
+                return enumValue;
             }
         }
         return defaultValue;
@@ -37,6 +43,15 @@ public interface HasJsonData<T> {
 
     default String getJsonData(String key, String defaultValue) {
         return getJsonData().optString(key, defaultValue);
+    }
+
+    default List<String> getJsonDataList(String key) {
+        return getJsonDataList(key, "~~~");
+    }
+
+    default List<String> getJsonDataList(String key, String delimiter) {
+        return Stream.of(getJsonData().optString(key, "").split(delimiter))
+                .filter(StringUtils::isNotEmpty).collect(Collectors.toList());
     }
 
     default Long getJsonData(String key, long defaultValue) {

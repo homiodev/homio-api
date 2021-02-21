@@ -5,6 +5,10 @@ import org.touchhome.bundle.api.setting.SettingPlugin;
 
 public interface ConsoleHeaderSettingPlugin<T> extends SettingPlugin<T> {
 
+    default String getIcon() {
+        return "";
+    }
+
     @Override
     default boolean isVisible(EntityContext entityContext) {
         return false;

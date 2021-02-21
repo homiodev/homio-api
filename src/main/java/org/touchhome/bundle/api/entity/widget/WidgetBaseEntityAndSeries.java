@@ -1,28 +1,22 @@
 package org.touchhome.bundle.api.entity.widget;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.exception.ServerException;
-import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
 
 import javax.persistence.*;
 import java.util.Set;
 
-@Getter
-@Setter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@UISidebarMenu(icon = "fas fa-tachometer-alt", bg = "#107D6B")
-@Accessors(chain = true)
-@NoArgsConstructor
 public abstract class WidgetBaseEntityAndSeries<T extends WidgetBaseEntityAndSeries, S extends WidgetSeriesEntity<T>>
         extends WidgetBaseEntity<T> {
 
+    @Getter
+    @Setter
     @OrderBy("priority asc")
     @UIField(order = 30, onlyEdit = true)
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "widgetEntity",

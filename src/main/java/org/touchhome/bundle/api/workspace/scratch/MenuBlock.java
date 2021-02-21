@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.KeyValueEnum;
 
 import java.util.ArrayList;
@@ -16,9 +19,14 @@ import java.util.stream.Stream;
 
 @Getter
 @RequiredArgsConstructor
-public class MenuBlock {
+public abstract class MenuBlock {
     @JsonIgnore
     private final String name;
+
+    protected boolean multiSelect;
+    protected String uiDelimiter;
+
+    public abstract Object getDefaultValue();
 
     public static ServerMenuBlock ofServer(String name, String url, String firstKey, String firstValue, Integer... clusters) {
         return new ServerMenuBlock(name, url, firstKey, firstValue, clusters);
@@ -30,6 +38,14 @@ public class MenuBlock {
 
     public static ServerMenuBlock ofServer(String name, String url) {
         return new ServerMenuBlock(name, url, "-", "-", null);
+    }
+
+    public static ServerMenuBlock ofServerItems(String name, Class<? extends BaseEntity> itemClass) {
+        return new ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), "-", "-", null);
+    }
+
+    public static ServerMenuBlock ofServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey, String firstValue) {
+        return new ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), firstKey, firstValue, null);
     }
 
     public static <T extends Enum> StaticMenuBlock<T> ofStatic(String name, Class<T> enumClass, T defaultValue) {
@@ -44,17 +60,36 @@ public class MenuBlock {
         return new StaticMenuBlock(name, null, enumClass).addEnum(enumClass, filter).setDefaultValue(defaultValue);
     }
 
-    public static StaticMenuBlock<String> ofStaticList(String name, Map<String, String> items) {
-        return new StaticMenuBlock(name, items, String.class);
+    public static StaticMenuBlock<String> ofStaticList(String name, Map<String, String> items, String defaultValue) {
+        return new StaticMenuBlock(name, items, String.class).setDefaultValue(defaultValue);
     }
 
     @Getter
+    @Accessors(chain = true)
     public static class ServerMenuBlock extends MenuBlock {
         private final boolean acceptReporters = true;
         private final boolean async = true;
         private final MenuBlockFunction items;
         @JsonIgnore
         private final Integer[] clusters;
+
+        public <T extends BaseEntity> ServerMenuBlock setDefault(T defaultEntity) {
+            if (defaultEntity != null) {
+                this.items.firstKV[0] = defaultEntity.getTitle();
+                this.items.firstKV[1] = defaultEntity.getEntityID();
+            }
+            return this;
+        }
+
+        public ServerMenuBlock setMultiSelect(String uiDelimiter) {
+            this.multiSelect = true;
+            return setUIDelimiter(uiDelimiter);
+        }
+
+        public ServerMenuBlock setUIDelimiter(String uiDelimiter) {
+            this.uiDelimiter = uiDelimiter;
+            return this;
+        }
 
         ServerMenuBlock(String name, String url, String keyName, String valueName, String firstKey, String firstValue, Integer[] clusters) {
             super(name);
@@ -71,6 +106,11 @@ public class MenuBlock {
             return this;
         }
 
+        @Override
+        public Object getDefaultValue() {
+            return this.items.firstKV[1];
+        }
+
         @Getter
         @RequiredArgsConstructor
         static class MenuBlockFunction {
@@ -83,12 +123,20 @@ public class MenuBlock {
     }
 
     @Getter
+    @Accessors(chain = true)
     public static class StaticMenuBlock<T> extends MenuBlock {
         private boolean acceptReporters = true;
         private List<StaticMenuItem> items = new ArrayList<>();
         private Map<String, List> subMenu;
+        @Setter
         private Object defaultValue;
         private Class<T> typeClass;
+
+        public StaticMenuBlock<T> setMultiSelect(String uiDelimiter) {
+            this.multiSelect = true;
+            this.uiDelimiter = uiDelimiter;
+            return this;
+        }
 
         StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
             super(name);
@@ -138,11 +186,6 @@ public class MenuBlock {
 
         public String getFirstValue() {
             return this.items.isEmpty() ? null : this.items.get(0).getText();
-        }
-
-        public StaticMenuBlock setDefaultValue(Object defaultValue) {
-            this.defaultValue = defaultValue;
-            return this;
         }
 
         @Getter

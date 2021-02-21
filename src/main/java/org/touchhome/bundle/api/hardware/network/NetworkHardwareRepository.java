@@ -25,10 +25,10 @@ import java.util.stream.Stream;
 
 @HardwareRepositoryAnnotation(stringValueOnDisable = "N/A")
 public interface NetworkHardwareRepository {
-    @HardwareQuery(echo = "Switch hotspot", value = "autohotspot swipe", printOutput = true)
+    @HardwareQuery(name = "Switch hotspot", value = "autohotspot swipe", printOutput = true)
     void switchHotSpot();
 
-    @HardwareQuery("iwlist :iface scan")
+    @HardwareQuery(name = "Scan networks", value = "iwlist :iface scan")
     @ErrorsHandler(onRetCodeError = "Got some major errors from our scan command",
             notRecognizeError = "Got some errors from our scan command",
             errorHandlers = {
@@ -38,18 +38,18 @@ public interface NetworkHardwareRepository {
     @ListParse(delimiter = ".*Cell \\d\\d.*", clazz = Network.class)
     List<Network> scan(@HQueryParam("iface") String iface);
 
-    @HardwareQuery("iwconfig :iface")
+    @HardwareQuery(name = "Network stat", value = "iwconfig :iface")
     @ErrorsHandler(onRetCodeError = "Error getting wireless devices information", errorHandlers = {})
     NetworkStat stat(@HQueryParam("iface") String iface);
 
-    @HardwareQuery("ifconfig :iface down")
+    @HardwareQuery(name = "Disable network", value = "ifconfig :iface down")
     @ErrorsHandler(onRetCodeError = "There was an unknown error disabling the interface", notRecognizeError = "There was an error disabling the interface", errorHandlers = {})
     void disable(@HQueryParam("iface") String iface);
 
-    @HardwareQuery(echo = "Restart network interface", value = "/etc/init.d/networking restart", printOutput = true)
+    @HardwareQuery(name = "Restart network interface", value = "/etc/init.d/networking restart", printOutput = true)
     void restartNetworkInterface();
 
-    @HardwareQuery("ifconfig :iface up")
+    @HardwareQuery(name = "Enable network", value = "ifconfig :iface up")
     @ErrorsHandler(onRetCodeError = "There was an unknown error enabling the interface",
             notRecognizeError = "There was an error enabling the interface",
             errorHandlers = {
@@ -58,23 +58,23 @@ public interface NetworkHardwareRepository {
             })
     void enable(@HQueryParam("iface") String iface);
 
-    @HardwareQuery("iwconfig :iface essid ':essid' key :PASSWORD")
+    @HardwareQuery(name = "Connect wep", value = "iwconfig :iface essid ':essid' key :PASSWORD")
     void connect_wep(@HQueryParam("iface") String iface, @HQueryParam("essid") String essid, @HQueryParam("password") String password);
 
     @ErrorsHandler(onRetCodeError = "Shit is broken TODO", errorHandlers = {})
-    @HardwareQuery("wpa_passphrase ':essid' ':password' > wpa-temp.conf && sudo wpa_supplicant -D wext -i :iface -c wpa-temp.conf && rm wpa-temp.conf")
+    @HardwareQuery(name = "Connect wpa", value = "wpa_passphrase ':essid' ':password' > wpa-temp.conf && sudo wpa_supplicant -D wext -i :iface -c wpa-temp.conf && rm wpa-temp.conf")
     void connect_wpa(@HQueryParam("iface") String iface, @HQueryParam("essid") String essid, @HQueryParam("password") String password);
 
-    @HardwareQuery("iwconfig :iface essid ':essid'")
+    @HardwareQuery(name = "Connect open", value = "iwconfig :iface essid ':essid'")
     void connect_open(@HQueryParam("iface") String iface, @HQueryParam("essid") String essid);
 
-    @HardwareQuery(value = "ifconfig :iface", ignoreOnError = true)
+    @HardwareQuery(name = "Get network description", value = "ifconfig :iface", ignoreOnError = true)
     NetworkDescription getNetworkDescription(@HQueryParam("iface") String iface);
 
-    @HardwareQuery("grep -r 'psk=' /etc/wpa_supplicant/wpa_supplicant.conf | cut -d = -f 2 | cut -d \\\" -f 2")
+    @HardwareQuery(name = "Get wifi password", value = "grep -r 'psk=' /etc/wpa_supplicant/wpa_supplicant.conf | cut -d = -f 2 | cut -d \\\" -f 2")
     String getWifiPassword();
 
-    @HardwareQuery(value = "netstat -nr", win = "netstat -nr", cacheValid = 3600, ignoreOnError = true, valueOnError = "n/a")
+    @HardwareQuery(name = "Get gateway ip address", value = "netstat -nr", win = "netstat -nr", cacheValid = 3600, ignoreOnError = true, valueOnError = "n/a")
     @RawParse(nix = NetStatGatewayParser.class, win = NetStatGatewayParser.class)
     String getGatewayIpAddress();
 
@@ -142,6 +142,7 @@ public interface NetworkHardwareRepository {
         if (SystemUtils.IS_OS_LINUX) {
             return getNetworkDescription().getInet();
         }
+
         String ipAddress = null;
         try {
             for (Enumeration<NetworkInterface> enumNetworks = NetworkInterface.getNetworkInterfaces(); enumNetworks
@@ -170,16 +171,16 @@ public interface NetworkHardwareRepository {
         Files.write(Paths.get("/etc/wpa_supplicant/wpa_supplicant.conf"), value.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
     }
 
-    @HardwareQuery("ip addr | awk '/state UP/ {print $2}' | sed 's/.$//'")
+    @HardwareQuery(name = "Get active network interface", value = "ip addr | awk '/state UP/ {print $2}' | sed 's/.$//'")
     String getActiveNetworkInterface();
 
-    @HardwareQuery(echo = "Set wifi power save off", value = "iw :iface set power_save off")
+    @HardwareQuery(name = "Set wifi power save off", value = "iw :iface set power_save off")
     void setWifiPowerSaveOff(@HQueryParam("iface") String iface);
 
-    @HardwareQuery(echo = "Check ssh keys exists", value = "test -f ~/.ssh/id_rsa", cache = true)
+    @HardwareQuery(name = "Check ssh keys exists", value = "test -f ~/.ssh/id_rsa", cacheValid = 3600)
     boolean isSshGenerated();
 
-    @HardwareQuery(echo = "Generate ssh keys", value = "cat /dev/zero | ssh-keygen -q -N \"\"")
+    @HardwareQuery(name = "Generate ssh keys", value = "cat /dev/zero | ssh-keygen -q -N \"\"")
     void generateSSHKeys();
 
     default NetworkDescription getNetworkDescription() {

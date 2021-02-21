@@ -23,23 +23,75 @@ import java.util.function.Supplier;
 public interface EntityContextBGP {
     EntityContext getEntityContext();
 
+    /**
+     * Schedule tasks
+     *
+     * @param name     - task name
+     * @param timeout  - repeat timeout
+     * @param timeUnit - time unit of timeout
+     * @param command  - command to execute
+     * @param showOnUI - show this task on UI in console tab
+     */
     default ThreadContext<Void> schedule(@NotNull String name, int timeout, @NotNull TimeUnit timeUnit,
                                          @NotNull ThrowingRunnable<Exception> command, boolean showOnUI) {
         return schedule(name, timeout, timeUnit, command, showOnUI, false);
     }
 
-    ThreadContext<Void> schedule(@NotNull String name, int timeout, @NotNull TimeUnit timeUnit,
+    default ThreadContext<Void> schedule(@NotNull String name, @NotNull String cron, @NotNull ThrowingRunnable<Exception> command,
+                                         boolean showOnUI, boolean hideOnUIAfterCancel) {
+        return schedule(name, cron, voidThreadContext -> {
+            command.run();
+            return null;
+        }, showOnUI, hideOnUIAfterCancel);
+    }
+
+    <T> ThreadContext<T> schedule(@NotNull String name, @NotNull String cron, @NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command,
+                                  boolean showOnUI, boolean hideOnUIAfterCancel);
+
+    default ThreadContext<Void> schedule(@NotNull String name, int timeout, @NotNull TimeUnit timeUnit,
+                                         @NotNull ThrowingRunnable<Exception> command,
+                                         boolean showOnUI, boolean hideOnUIAfterCancel) {
+        return schedule(name, 0, timeout, timeUnit, command, showOnUI, hideOnUIAfterCancel);
+    }
+
+    ThreadContext<Void> schedule(@NotNull String name, int initialDelay, int timeout, @NotNull TimeUnit timeUnit,
                                  @NotNull ThrowingRunnable<Exception> command,
                                  boolean showOnUI, boolean hideOnUIAfterCancel);
 
     default ThreadContext<Void> run(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, boolean showOnUI) {
-        return runAndGet(name, () -> {
-            command.run();
+        return run(name, command, null, showOnUI);
+    }
+
+    default ThreadContext<Void> run(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command, boolean showOnUI) {
+        return run(name, initialDelayInMillis, command, null, showOnUI);
+    }
+
+    default ThreadContext<Void> run(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
+        return run(name, 0, command, finallyBlock, showOnUI);
+    }
+
+    default ThreadContext<Void> run(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
+        return runAndGet(name, initialDelayInMillis, () -> {
+            Exception exception = null;
+            try {
+                command.run();
+            } catch (Exception ex) {
+                exception = ex;
+                throw ex;
+            } finally {
+                if (finallyBlock != null) {
+                    finallyBlock.accept(exception);
+                }
+            }
             return null;
         }, showOnUI);
     }
 
-    <T> ThreadContext<T> runAndGet(@NotNull String name, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI);
+    default <T> ThreadContext<T> runAndGet(@NotNull String name, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI) {
+        return runAndGet(name, 0, command, showOnUI);
+    }
+
+    <T> ThreadContext<T> runAndGet(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI);
 
 
     void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);

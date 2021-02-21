@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.measure;
+package org.touchhome.bundle.api.state;
 
 import lombok.extern.log4j.Log4j2;
 import tec.uom.se.AbstractUnit;

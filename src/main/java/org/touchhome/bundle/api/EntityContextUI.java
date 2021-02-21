@@ -73,6 +73,11 @@ public interface EntityContextUI {
         sendGlobal(GlobalSendType.addItem, baseEntity.getEntityID(), baseEntity);
     }
 
+    /**
+     * Fire update to ui that entity was changed.
+     */
+    <T extends BaseEntity> void sendEntityUpdated(T entity);
+
     void progress(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
 
     /**

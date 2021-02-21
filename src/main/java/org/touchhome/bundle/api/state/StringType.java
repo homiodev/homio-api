@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.measure;
+package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
 
@@ -19,16 +19,16 @@ public class StringType implements State {
 
     @Override
     public float floatValue() {
-        throw new IllegalStateException("Unable to fetch float value from string");
+        return Float.parseFloat(value);
     }
 
     @Override
     public int intValue() {
-        throw new IllegalStateException("Unable to fetch int value from string");
+        return Integer.parseInt(value);
     }
 
     @Override
     public boolean boolValue() {
-        throw new IllegalStateException("Unable to fetch boolean value from String type");
+        return value.equals("1") || value.equalsIgnoreCase("true");
     }
 }

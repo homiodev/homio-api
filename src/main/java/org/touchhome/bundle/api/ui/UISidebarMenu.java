@@ -21,6 +21,8 @@ public @interface UISidebarMenu {
 
     int order() default 1000;
 
+    String overridePath() default "";
+
     enum TopSidebarMenu {
         HARDWARE, ITEMS, MEDIA
     }

@@ -21,7 +21,6 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
         return SettingType.SelectBoxButton;
     }
 
-    @Override
     default String getIcon() {
         return "fas fa-folder-open";
     }

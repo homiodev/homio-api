@@ -238,11 +238,10 @@ public class TouchHomeUtils {
         return relativePath;
     }
 
-    @SneakyThrows
-    private static Path createDirectoriesIfNotExists(Path path) {
+    public static Path createDirectoriesIfNotExists(Path path) {
         if (Files.notExists(path)) {
             try {
-                Files.createDirectory(path);
+                Files.createDirectories(path);
             } catch (Exception ex) {
                 log.error("Unable to create path: <{}>", path.toAbsolutePath().toString());
             }
@@ -250,7 +249,6 @@ public class TouchHomeUtils {
         return path;
     }
 
-    @SneakyThrows
     public static Map<String, String> readPropertiesMerge(String path) {
         Map<String, String> map = new HashMap<>();
         readProperties(path).forEach(map::putAll);
@@ -462,6 +460,22 @@ public class TouchHomeUtils {
             StringWriter stringWriter = new StringWriter();
             templateEngine.process("templates/" + templateName, context, stringWriter);
             return stringWriter.toString();
+        }
+    }
+
+    public static boolean deleteDirectory(Path path) {
+        try {
+            FileUtils.deleteDirectory(path.toFile());
+            return true;
+        } catch (IOException ex) {
+            log.error("Unable to delete directory: <{}>", path, ex);
+        }
+        return false;
+    }
+
+    public static void addToListSafe(List<String> list, String value) {
+        if (!value.isEmpty()) {
+            list.add(value);
         }
     }
 }

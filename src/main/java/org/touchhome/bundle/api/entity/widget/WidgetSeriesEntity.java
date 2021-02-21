@@ -24,7 +24,7 @@ public abstract class WidgetSeriesEntity<T extends WidgetBaseEntityAndSeries> ex
     private int priority;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = WidgetBaseEntityAndSeries.class)
     private T widgetEntity;
 
     @Lob

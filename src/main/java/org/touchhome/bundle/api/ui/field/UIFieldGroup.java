@@ -5,10 +5,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
+/**
+ * Uses to grouping fields. Grouped fields has border
+ */
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldName {
-
-    // override field name
+public @interface UIFieldGroup {
+    /**
+     * Group name
+     */
     String value();
+
+    /**
+     * Define border color
+     */
+    String borderColor() default "";
 }

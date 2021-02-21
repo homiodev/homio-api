@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.measure;
+package org.touchhome.bundle.api.state;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -56,6 +56,11 @@ public class RawType implements State {
     @Override
     public boolean boolValue() {
         throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public byte[] byteArrayValue() {
+        return bytes;
     }
 
     @Override

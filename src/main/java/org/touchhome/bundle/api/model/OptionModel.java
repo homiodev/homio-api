@@ -30,6 +30,8 @@ public class OptionModel implements Comparable<OptionModel> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private String key;
+
+    @Setter
     private String title;
 
     @Setter
@@ -52,6 +54,10 @@ public class OptionModel implements Comparable<OptionModel> {
 
     public static OptionModel separator() {
         return OptionModel.key("~~~sep~~~");
+    }
+
+    public static OptionModel of(String key) {
+        return new OptionModel(key, key);
     }
 
     public static OptionModel of(String key, String title) {
@@ -91,6 +97,10 @@ public class OptionModel implements Comparable<OptionModel> {
 
     public static List<OptionModel> list(String... values) {
         return Stream.of(values).map(v -> OptionModel.of(v, v)).collect(Collectors.toList());
+    }
+
+    public static List<OptionModel> list(Collection<String> values) {
+        return values.stream().map(v -> OptionModel.of(v, v)).collect(Collectors.toList());
     }
 
     public static List<OptionModel> list(OptionModel... optionModels) {
@@ -165,7 +175,7 @@ public class OptionModel implements Comparable<OptionModel> {
             if (this.children == null) {
                 children = new ArrayList<>();
             }
-            child.key = this.key + "~~~" + child.key;
+            child.key = this.key == null ? child.key : this.key + "~~~" + child.key;
             children.add(child);
 
             modifyChildrenKeys(this.key, child);

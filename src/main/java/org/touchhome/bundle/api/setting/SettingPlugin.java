@@ -22,10 +22,6 @@ public interface SettingPlugin<T> {
         return null;
     }
 
-    default String getIcon() {
-        return "";
-    }
-
     default String getIconColor() {
         return "";
     }

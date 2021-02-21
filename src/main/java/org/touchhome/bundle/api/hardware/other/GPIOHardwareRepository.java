@@ -6,16 +6,16 @@ import org.touchhome.bundle.api.hquery.api.HardwareRepositoryAnnotation;
 
 @HardwareRepositoryAnnotation
 public interface GPIOHardwareRepository {
-    @HardwareQuery(echo = "Printing wiring PI info", value = "gpio readall", printOutput = true)
+    @HardwareQuery(name = "Printing wiring PI info", value = "gpio readall", printOutput = true)
     boolean printWiringPiInfo();
 
-    @HardwareQuery(echo = "Install GPIO", value = "$PM install wiringpi", printOutput = true, ignoreOnError = true)
+    @HardwareQuery(name = "Install GPIO", value = "$PM install wiringpi", printOutput = true, ignoreOnError = true)
     void installWiringPiAuto();
 
-    @HardwareQuery("mkdir buildWiringPi")
-    @HardwareQuery("cp :sysDir/WiringPi-master.zip buildWiringPi/")
-    @HardwareQuery("unzip buildWiringPi/WiringPi-master.zip -d buildWiringPi/")
-    @HardwareQuery(value = "./build", dir = ":tomcatDir/buildWiringPi/WiringPi-master")
-    @HardwareQuery("rm -rf buildWiringPi")
+    @HardwareQuery(name = "MkDir pi", value = "mkdir buildWiringPi")
+    @HardwareQuery(name = "Copy files", value = "cp :sysDir/WiringPi-master.zip buildWiringPi/")
+    @HardwareQuery(name = "Unzip files", value = "unzip buildWiringPi/WiringPi-master.zip -d buildWiringPi/")
+    @HardwareQuery(name = "Fire build", value = "./build", dir = ":tomcatDir/buildWiringPi/WiringPi-master")
+    @HardwareQuery(name = "Remove files", value = "rm -rf buildWiringPi")
     void installWiringPiManually(@HQueryParam("sysDir") String sysDir, @HQueryParam("tomcatDir") String tomcatDir);
 }

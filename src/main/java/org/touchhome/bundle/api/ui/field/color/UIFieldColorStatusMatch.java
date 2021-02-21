@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation on org.touchhome.bundle.api.model.Status field for showing color depend on value
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorStatusMatch {
     String online() default "#1F8D2D";

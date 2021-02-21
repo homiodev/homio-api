@@ -6,6 +6,8 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Repeatable(HardwareQueries.class)
 public @interface HardwareQuery {
+    String name();
+
     String[] value();
 
     int maxSecondsTimeout() default 60;
@@ -22,13 +24,9 @@ public @interface HardwareQuery {
      */
     boolean redirectErrorsToInputs() default false;
 
-    String echo() default "";
-
-    boolean cache() default false;
-
     String[] win() default "";
 
-    // how long cache valid in sec. if set and > 0 than cache - true
+    // how long cache valid in sec
     int cacheValid() default 0;
 
     String valueOnError() default "";

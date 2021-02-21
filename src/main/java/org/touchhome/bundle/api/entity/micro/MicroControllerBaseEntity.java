@@ -10,7 +10,7 @@ import static org.touchhome.bundle.api.entity.micro.MicroControllerBaseEntity.Mi
 
 @Log4j2
 @UISidebarMenu(icon = "fas fa-microchip", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, order = 5,
-        bg = "#7482d0", allowCreateNewItems = true)
+        bg = "#7482d0", allowCreateNewItems = true, overridePath = "controllers")
 @UISidebarButton(buttonIcon = "fas fa-qrcode", confirm = "MC.SCAN_CONTROLLERS", buttonIconColor = "#7482D0",
         buttonTitle = "TITLE.SCAN_CONTROLLERS", handlerClass = MicroControllersDiscovery.class)
 public abstract class MicroControllerBaseEntity<T extends MicroControllerBaseEntity> extends DeviceBaseEntity<T> {

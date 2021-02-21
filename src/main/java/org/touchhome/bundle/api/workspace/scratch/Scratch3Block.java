@@ -100,22 +100,18 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 
+    public ArgumentTypeDescription addArgument(String argumentName, Float defaultValue) {
+        return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
+    }
+
     public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type, String defaultValue) {
         ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(type, defaultValue, null);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, MenuBlock.StaticMenuBlock menu) {
-        Object defaultValue = menu.getDefaultValue();
-        String defStr = defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
-        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(ArgumentType.string, defStr, menu.getName(), menu);
-        this.arguments.put(argumentName, argumentTypeDescription);
-        return argumentTypeDescription;
-    }
-
-    public ArgumentTypeDescription addArgument(String argumentName, MenuBlock.ServerMenuBlock menu) {
-        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(ArgumentType.string, menu.getItems().getFirstKV()[1], menu.getName(), menu);
+    public ArgumentTypeDescription addArgument(String argumentName, MenuBlock menu) {
+        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(ArgumentType.string, menu);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;
     }
@@ -207,6 +203,24 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
                 this.menu = null;
                 this.menuBlock = null;
             }
+        }
+
+        ArgumentTypeDescription(ArgumentType type, MenuBlock menuBlock) {
+            this.type = type;
+            this.menu = menuBlock.getName();
+            this.menuBlock = menuBlock;
+            this.defaultValue = null;
+        }
+
+        public String getDefaultValue() {
+            if (defaultValue != null) {
+                return defaultValue;
+            }
+            if (menuBlock != null) {
+                Object defaultValue = menuBlock.getDefaultValue();
+                return defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
+            }
+            return null;
         }
     }
 

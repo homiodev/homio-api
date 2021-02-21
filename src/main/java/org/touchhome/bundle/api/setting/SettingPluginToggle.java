@@ -2,6 +2,8 @@ package org.touchhome.bundle.api.setting;
 
 public interface SettingPluginToggle extends SettingPlugin<Boolean> {
 
+    String getIcon();
+
     String getToggleIcon();
 
     @Override

@@ -22,17 +22,32 @@ public interface EntityContextSetting {
     void reloadSettings(Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass,
                         List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
 
+    /**
+     * Get setting value by class name
+     */
     <T> T getValue(Class<? extends SettingPlugin<T>> settingClass);
 
+    /**
+     * Get unparsed setting value by class name
+     */
     <T> String getRawValue(Class<? extends SettingPlugin<T>> settingClass);
 
+    /**
+     * Get setting value by class name or default value if null
+     */
     default <T> T getValue(Class<? extends SettingPlugin<T>> settingClass, T defaultValue) {
         T value = getValue(settingClass);
         return value == null ? defaultValue : value;
     }
 
+    /**
+     * Subscribe for setting changes. Key requires to able to unsubscribe
+     */
     <T> void listenValueAsync(Class<? extends SettingPlugin<T>> settingClass, String key, Consumer<T> listener);
 
+    /**
+     * Subscribe for setting changes. listener fires in separate thread
+     */
     default <T> void listenValueAsync(Class<? extends SettingPlugin<T>> settingClass, String key, Runnable listener) {
         listenValueAsync(settingClass, key, t -> listener.run());
     }

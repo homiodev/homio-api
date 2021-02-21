@@ -16,6 +16,8 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
         return "ACTION_CONFIRM_MESSAGE";
     }
 
+    String getIcon();
+
     @Override
     default Class<JSONObject> getType() {
         return JSONObject.class;

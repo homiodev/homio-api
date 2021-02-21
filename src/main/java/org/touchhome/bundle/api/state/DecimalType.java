@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.measure;
+package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -17,24 +17,24 @@ public class DecimalType extends Number implements State, Comparable<DecimalType
     @Getter
     private BigDecimal value;
 
+    public DecimalType(BigDecimal value) {
+        this.value = value;
+    }
+
     public DecimalType(long value) {
-        this.value = BigDecimal.valueOf(value);
+        this(BigDecimal.valueOf(value));
     }
 
     public DecimalType(double value) {
-        this.value = BigDecimal.valueOf(value);
+        this(BigDecimal.valueOf(value));
     }
 
     public DecimalType(float value) {
-        this.value = BigDecimal.valueOf(value);
+        this(BigDecimal.valueOf(value));
     }
 
     public DecimalType(String value) {
-        this.value = new BigDecimal(value);
-    }
-
-    public DecimalType(BigDecimal value) {
-        this.value = value;
+        this(new BigDecimal(value));
     }
 
     @Override

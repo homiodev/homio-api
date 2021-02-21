@@ -10,6 +10,11 @@ import org.touchhome.bundle.api.setting.SettingPlugin;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface ConsoleSettingPlugin<T> extends SettingPlugin<T> {
+
+    default String getIcon() {
+        return null;
+    }
+
     /**
      * @return list of console page names where this setting enabled
      */

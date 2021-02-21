@@ -10,7 +10,8 @@ import javax.persistence.OneToMany;
 import java.util.Set;
 
 @Entity
-@UISidebarMenu(icon = "fas fa-map-marker-alt", order = 3, bg = "#2894ed", allowCreateNewItems = true)
+@UISidebarMenu(icon = "fas fa-map-marker-alt", order = 3, bg = "#2894ed",
+        allowCreateNewItems = true, overridePath = "places")
 public final class PlaceEntity extends BaseEntity<PlaceEntity> {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerPlace")

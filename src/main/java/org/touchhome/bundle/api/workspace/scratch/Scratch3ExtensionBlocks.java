@@ -20,6 +20,7 @@ public abstract class Scratch3ExtensionBlocks {
 
     public static final String EVENT = "EVENT";
     public static final String VALUE = "VALUE";
+    public static final String ENTITY = "ENTITY";
 
     protected final EntityContext entityContext;
     private final String id;
@@ -31,6 +32,12 @@ public abstract class Scratch3ExtensionBlocks {
     private String blockIconURI;
     private Scratch3Color scratch3Color;
 
+    /**
+     * Uses for grouping extensions inside select box
+     */
+    @Setter
+    private String parent;
+
     public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint) {
         this(color, entityContext, bundleEntryPoint, null);
     }
@@ -38,6 +45,7 @@ public abstract class Scratch3ExtensionBlocks {
     @SneakyThrows
     public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint, String idSuffix) {
         this.id = bundleEntryPoint == null ? idSuffix : bundleEntryPoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
+        this.parent = bundleEntryPoint == null ? null : bundleEntryPoint.getBundleId();
         this.entityContext = entityContext;
         if (color != null) {
             URL resource = getImage(bundleEntryPoint);
@@ -91,12 +99,15 @@ public abstract class Scratch3ExtensionBlocks {
         return resource;
     }
 
-    @SneakyThrows
-    public void postConstruct(Object... additionalExtensions) {
-        assembleFields(this);
-        for (Object additionalExtension : additionalExtensions) {
-            assembleFields(additionalExtension);
+    public void init() {
+        if (blocksMap.isEmpty()) {
+            this.postConstruct();
         }
+    }
+
+    @SneakyThrows
+    private void postConstruct() {
+        assembleFields(this);
         postUpdateBlocks(blocks);
     }
 
@@ -121,6 +132,9 @@ public abstract class Scratch3ExtensionBlocks {
 
     private void assembleFields(Object extensionObject) throws IllegalAccessException {
         for (Field field : FieldUtils.getAllFields(extensionObject.getClass())) {
+            if (InlineExtensionBlocks.class.isAssignableFrom(field.getType())) {
+                assembleFields(FieldUtils.readField(field, extensionObject, true));
+            }
             if (Scratch3Block.class.isAssignableFrom(field.getType())) {
                 blocks.add((Scratch3Block) FieldUtils.readField(field, extensionObject, true));
             } else if (MenuBlock.class.isAssignableFrom(field.getType())) {

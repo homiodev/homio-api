@@ -4,7 +4,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.DeviceBaseEntity;
+import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.model.Status;
@@ -71,8 +71,11 @@ public interface EntityContext {
 
     <T extends HasEntityIdentifier> void updateDelayed(T entity, Consumer<T> fieldUpdateConsumer);
 
-    default <T extends DeviceBaseEntity> void updateDeviceStatus(T entity, Status status, String message) {
-        updateDelayed(entity, t -> t.setStatus(status).setStatusMessage(message));
+    default <T extends BaseEntity & HasStatusAndMsg> void updateStatus(T entity, Status status, String message) {
+        updateDelayed(entity, t -> {
+            t.setStatus(status);
+            t.setStatusMessage(message);
+        });
     }
 
     <T extends HasEntityIdentifier> void save(T entity);
@@ -81,6 +84,11 @@ public interface EntityContext {
 
     default <T extends BaseEntity> T delete(T entity) {
         return (T) delete(entity.getEntityID());
+    }
+
+    default <T extends BaseEntity> T findAny(Class<T> clazz) {
+        List<T> list = findAll(clazz);
+        return list.isEmpty() ? null : list.iterator().next();
     }
 
     <T extends BaseEntity> List<T> findAll(Class<T> clazz);
