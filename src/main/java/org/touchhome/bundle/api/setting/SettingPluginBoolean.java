@@ -1,5 +1,7 @@
 package org.touchhome.bundle.api.setting;
 
+import org.touchhome.bundle.api.ui.field.UIFieldType;
+
 public interface SettingPluginBoolean extends SettingPlugin<Boolean> {
 
     default boolean defaultValue() {
@@ -17,7 +19,7 @@ public interface SettingPluginBoolean extends SettingPlugin<Boolean> {
     }
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Boolean;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Boolean;
     }
 }

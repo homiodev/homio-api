@@ -8,9 +8,7 @@ import org.touchhome.bundle.api.model.OptionModel;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 @RequiredArgsConstructor
@@ -22,7 +20,7 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
     private final boolean supportRoot;
     private WeakReference<byte[]> content;
     @Getter
-    private Map<String, CachedFileSystem> children = new HashMap<>();
+    private Map<String, S> children = new HashMap<>();
 
     public boolean isOutdated(D driver) {
         if (getParent() == null && !supportRoot) { // root
@@ -35,22 +33,59 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
     protected abstract T readFileFromServer(D driver);
 
     public void updateCache(D driver) {
+        Set<String> itemsToRemove = new HashSet<>(children.keySet());
         for (T serverSource : searchForChildren(source, driver)) {
-            fillFromServer(serverSource, driver);
+            fillFromServer(serverSource, driver, 0);
+            itemsToRemove.remove(serverSource.getId());
         }
+        children.keySet().removeAll(itemsToRemove);
         source.setLastModifiedTime(System.currentTimeMillis());
+    }
+
+    protected int getFSMaxLevel() {
+        return 10;
     }
 
     protected abstract S newInstance(T source, S parent);
 
     protected abstract Collection<T> searchForChildren(T serverSource, D driver);
 
-    public S findFile(String id) {
+    public S findFileByPath(String[] path) {
+        return findFileById(path[path.length - 1]);
+    }
+
+    public S findFileByPath(String path) {
+        return findFileByPath(path.split("/"));
+    }
+
+    public S findFileByIdOrName(String nameOrId, boolean recursively) {
+        if (this.source.getId().equals(nameOrId) || this.source.getName().equals(nameOrId)) {
+            return (S) this;
+        }
+        for (Map.Entry<String, S> entry : children.entrySet()) {
+            if (entry.getKey().equals(nameOrId)) {
+                return entry.getValue();
+            }
+            if (recursively) {
+                S result = (S) entry.getValue().findFileByIdOrName(nameOrId, recursively);
+                if (result != null) {
+                    return result;
+                }
+            } else {
+                return children.values().stream()
+                        .filter(c -> c.getSource().getId().equals(nameOrId) || c.getSource().getName().equals(nameOrId))
+                        .findAny().orElse(null);
+            }
+        }
+        return null;
+    }
+
+    public S findFileById(String id) {
         if (this.source.getId().equals(id)) {
             return (S) this;
         }
-        for (CachedFileSystem child : children.values()) {
-            CachedFileSystem folder = child.findFile(id);
+        for (S child : children.values()) {
+            CachedFileSystem folder = child.findFileById(id);
             if (folder != null) {
                 return (S) folder;
             }
@@ -58,19 +93,21 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
         return null;
     }
 
-    private void fillFromServer(T serverSource, D driver) {
+    private void fillFromServer(T serverSource, D driver, int level) {
+        if (level > getFSMaxLevel()) {
+            return;
+        }
         CachedFileSystem cachedFileSystem = children.get(serverSource.getName());
-        boolean b = cachedFileSystem == null || cachedFileSystem.source.getLastModifiedTime() != serverSource.getLastModifiedTime();
-        if (b) {
+        if (cachedFileSystem == null || cachedFileSystem.source.getLastModifiedTime() != serverSource.getLastModifiedTime()) {
             cachedFileSystem = this.newInstance(serverSource, (S) this);
 
             if (content != null) {
                 content.clear();
             }
-            children.put(serverSource.getName(), cachedFileSystem);
+            children.put(serverSource.getName(), (S) cachedFileSystem);
             if (serverSource.isFolder() && serverSource.fillDeeper()) {
                 for (T child : this.searchForChildren(serverSource, driver)) {
-                    cachedFileSystem.fillFromServer(child, driver);
+                    cachedFileSystem.fillFromServer(child, driver, level + 1);
                 }
             }
         }

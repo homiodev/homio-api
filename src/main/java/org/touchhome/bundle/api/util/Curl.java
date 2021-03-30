@@ -4,12 +4,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +34,7 @@ import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.touchhome.bundle.api.exception.ServerException;
 import org.touchhome.bundle.api.model.ProgressBar;
+import org.touchhome.bundle.api.state.RawType;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -33,6 +47,9 @@ import java.util.Collections;
 import java.util.function.Consumer;
 
 import static org.apache.commons.io.FileUtils.ONE_MB_BI;
+import static org.apache.commons.io.IOUtils.DEFAULT_BUFFER_SIZE;
+import static org.apache.commons.io.IOUtils.EOF;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -55,6 +72,91 @@ public final class Curl {
     @SneakyThrows
     public static void download(@NotNull String url, @NotNull Path targetPath) {
         FileUtils.copyURLToFile(new URL(url), targetPath.toFile(), 60000, 60000);
+    }
+
+    @SneakyThrows
+    public static RawType download(@NotNull String path, int maxSize) {
+        return download(path, maxSize, null, null);
+    }
+
+    /**
+     * Download file to byte array. Throw error if downloading exceeded maxSize
+     */
+    @SneakyThrows
+    public static RawType download(@NotNull String path, Integer maxSize, String user, String password) {
+        HttpGet request = new HttpGet(path);
+        if (user == null || password == null) {
+            try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+                 CloseableHttpResponse response = httpClient.execute(request)) {
+                return download(response, path, maxSize);
+            }
+        }
+        // request.addHeader(AUTHORIZATION, "Basic " + Base64Utils.encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8)));
+        HttpHost target = new HttpHost(request.getURI().getHost(), request.getURI().getPort(), request.getURI().getScheme());
+
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        provider.setCredentials(
+                new AuthScope(target.getHostName(), target.getPort()),
+                new UsernamePasswordCredentials(user, password));
+
+        AuthCache authCache = new BasicAuthCache();
+        authCache.put(target, new BasicScheme());
+
+        HttpClientContext localContext = HttpClientContext.create();
+        localContext.setAuthCache(authCache);
+
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create()
+                .setDefaultCredentialsProvider(provider)
+                .build();
+             CloseableHttpResponse response = httpClient.execute(target, request, localContext)) {
+
+            // 401 if wrong user/password
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new RuntimeException("Error while download from <" + path + ">. Code: " +
+                        response.getStatusLine().getStatusCode() + ". Msg: " + response.getStatusLine().getReasonPhrase());
+            }
+
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                return download(response, path, maxSize);
+            }
+        }
+        return null;
+    }
+
+    @SneakyThrows
+    private static RawType download(CloseableHttpResponse response, String path, Integer maxSize) {
+        if (response.getStatusLine().getStatusCode() != 200) {
+            throw new RuntimeException("Error while download from <" + path + ">. Code: " + response.getStatusLine().getStatusCode() + ". Msg: " + response.getStatusLine().getReasonPhrase());
+        }
+        String name = FilenameUtils.getName(path);
+        if (maxSize != null) {
+            try (final InputStream input = response.getEntity().getContent()) {
+                try (final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                    int count = 0, n;
+                    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+                    while (EOF != (n = input.read(buffer))) {
+                        output.write(buffer, 0, n);
+                        count += n;
+                        if (count > maxSize) {
+                            throw new IllegalArgumentException("Exceeded max length " + maxSize);
+                        }
+                    }
+                    return new RawType(output.toByteArray(), response.getFirstHeader(CONTENT_TYPE).getValue(), name);
+                }
+            }
+        } else {
+            return new RawType(EntityUtils.toByteArray(response.getEntity()), response.getFirstHeader(CONTENT_TYPE).getValue(), name);
+        }
+    }
+
+    public static RawType download(@NotNull String path) {
+        return download(path, null, null);
+    }
+
+    @SneakyThrows
+    public static RawType download(@NotNull String path, String user, String password) {
+        return download(path, null, user, password);
     }
 
     @SneakyThrows

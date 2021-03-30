@@ -3,19 +3,21 @@ package org.touchhome.bundle.api.fs;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collection;
 
-public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>, E extends BaseFileSystemEntity> {
+@Log4j2
+public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>, E extends BaseEntity & BaseFileSystemEntity> {
     @Setter
     @Getter
     private D drive;
 
-    @Setter
     @Getter
     private E entity;
 
@@ -28,9 +30,17 @@ public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>,
     protected final EntityContext entityContext;
 
     public VendorFileSystem(E entity, EntityContext entityContext) {
+        log.warn("Create FS: <{}> for entity: <{}>", getClass().getSimpleName(), entity.getTitle());
         this.entity = entity;
         this.entityContext = entityContext;
     }
+
+    public void setEntity(E entity) {
+        this.entity = entity;
+        this.onEntityUpdated();
+    }
+
+    protected abstract void onEntityUpdated();
 
     @SneakyThrows
     public D getDrive() {
@@ -48,7 +58,7 @@ public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>,
 
     public abstract long getUsedSpace();
 
-    public abstract <P> void upload(String[] parentPath, String fileName, byte[] content, P extraParameter) throws Exception;
+    public abstract void upload(String[] parentPath, String fileName, byte[] content, boolean append) throws Exception;
 
     public abstract boolean delete(String[] path) throws Exception;
 
@@ -76,27 +86,32 @@ public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>,
 
     public byte[] download(String[] path, boolean tryUpdateCache) throws Exception {
         if (tryUpdateCache) {
-            updateCache();
+            updateCache(false);
         }
-        return root.findFile(path[path.length - 1]).download(getDrive());
+        FS fileToDownload = root.findFileByIdOrName(path[path.length - 1], true);
+        return fileToDownload == null ? downloadNotFoundedFile(path[path.length - 1]) : fileToDownload.download(getDrive());
     }
 
-    public void updateCache() {
-        if (root.isOutdated(getDrive())) {
+    protected byte[] downloadNotFoundedFile(String fileId) {
+        throw new RuntimeException("Not implemented for downloading: " + fileId);
+    }
+
+    public void updateCache(boolean force) {
+        if (force || root.isOutdated(getDrive())) {
             root.updateCache(getDrive());
         }
     }
 
     public Collection<OptionModel> getAllFiles(boolean tryUpdateCache) {
         if (tryUpdateCache) {
-            this.updateCache();
+            this.updateCache(false);
         }
         return root.getAllFiles();
     }
 
     public Collection<OptionModel> getAllFolders(boolean tryUpdateCache) {
         if (tryUpdateCache) {
-            this.updateCache();
+            this.updateCache(false);
         }
         return root.getAllFolders();
     }

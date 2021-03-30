@@ -1,26 +1,91 @@
 package org.touchhome.bundle.api.ui.field;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.SneakyThrows;
+import org.touchhome.bundle.api.state.JsonType;
+import org.touchhome.bundle.api.state.State;
+
+import java.util.function.Function;
+
+@Getter
+@AllArgsConstructor
 public enum UIFieldType {
-    Slider,
+    // Description type uses for showing text inside setting panel on whole width
+    Description(Object::toString),
+    SelectBoxButton(Object::toString),
 
-    IpAddress,
-    Password, // shows *** for users without admin rights
+    // Select box with options fetched from server
+    SelectBoxDynamic(Object::toString),
+    // Just a text
+    Text(Object::toString),
 
-    Selection,
-    TextSelectBoxDynamic, // text input type with ability to select values from server
+    // Button that fires server action
+    Button(Object::toString),
+    Toggle(Object::toString),
+    Info(Object::toString),
+    Upload(Object::toString),
+    TextArea(Object::toString),
 
-    Float,
-    Duration,
-    StaticDate,
+    // Slider with min/max/step parameters
+    Slider(o -> {
+        if (o instanceof State) {
+            return ((State) o).intValue();
+        }
+        return java.lang.Integer.parseInt(o.toString());
+    }),
 
-    String,
-    Boolean,
-    Integer, // for integer we may set metadata as min, max
-    Color,
-    Json,
+    IpAddress(Object::toString),
+    Password(Object::toString), // shows *** for users without admin rights
 
-    Chips, // https://material.angular.io/components/chips/examples
+    SelectBox(Object::toString),
+    // Input text with additional button that able to fetch values from server
+    TextSelectBoxDynamic(Object::toString), // text input type with ability to select values from server
+
+    Float(o -> {
+        if (o instanceof State) {
+            return ((State) o).floatValue();
+        }
+        return java.lang.Float.parseFloat(o.toString());
+    }),
+    Duration(Object::toString),
+    StaticDate(Object::toString),
+
+    String(Object::toString),
+    Boolean(o -> {
+        if (o instanceof State) {
+            return ((State) o).boolValue();
+        }
+        return java.lang.Boolean.parseBoolean(o.toString());
+
+    }),
+    Integer(o -> {
+        if (o instanceof State) {
+            return ((State) o).intValue();
+        }
+        return java.lang.Integer.parseInt(o.toString());
+    }), // for integer we may set metadata as min, max
+    ColorPicker(Object::toString),
+    Json(new Function<Object, Object>() {
+        @SneakyThrows
+        @Override
+        public Object apply(Object o) {
+            if (o instanceof JsonNode) {
+                return o;
+            }
+            if (o instanceof JsonType) {
+                return ((JsonType) o).getJsonNode();
+            }
+            return new ObjectMapper().readValue(o.toString(), JsonNode.class);
+        }
+    }),
+
+    Chips(Object::toString), // https://material.angular.io/components/chips/examples
 
     // special type (default for detect field type by java type)
-    AutoDetect
+    AutoDetect(Object::toString);
+
+    private final Function<Object, Object> convertToObject;
 }

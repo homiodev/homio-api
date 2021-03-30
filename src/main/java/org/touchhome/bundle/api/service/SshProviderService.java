@@ -3,7 +3,7 @@ package org.touchhome.bundle.api.service;
 import lombok.Getter;
 import lombok.Setter;
 
-public interface SshProvider {
+public interface SshProviderService {
     SshSession openSshSession();
 
     void closeSshSession(String token);

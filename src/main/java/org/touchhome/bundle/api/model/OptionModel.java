@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fazecast.jSerialComm.SerialPort;
 import lombok.Getter;
@@ -42,7 +43,7 @@ public class OptionModel implements Comparable<OptionModel> {
     private Collection<OptionModel> children;
 
     private OptionModel(Object key, Object title) {
-        this.key = String.valueOf(key);
+        this.key = key == null ? null : key.toString();
         this.title = String.valueOf(title);
     }
 
@@ -50,6 +51,11 @@ public class OptionModel implements Comparable<OptionModel> {
         OptionModel optionModel = new OptionModel();
         optionModel.key = key;
         return optionModel;
+    }
+
+    @JsonIgnore
+    public Collection<OptionModel> getOrCreateChildren() {
+        return children == null ? Collections.emptyList() : children;
     }
 
     public static OptionModel separator() {
@@ -105,6 +111,14 @@ public class OptionModel implements Comparable<OptionModel> {
 
     public static List<OptionModel> list(OptionModel... optionModels) {
         return Stream.of(optionModels).collect(Collectors.toList());
+    }
+
+    public static List<OptionModel> list(JsonNode jsonNode) {
+        List<OptionModel> list = new ArrayList<>();
+        for (JsonNode child : jsonNode) {
+            list.add(OptionModel.key(child.asText()));
+        }
+        return list;
     }
 
     public static List<OptionModel> range(int min, int max) {

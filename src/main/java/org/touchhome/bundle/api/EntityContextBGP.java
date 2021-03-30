@@ -54,7 +54,7 @@ public interface EntityContextBGP {
         return schedule(name, 0, timeout, timeUnit, command, showOnUI, hideOnUIAfterCancel);
     }
 
-    ThreadContext<Void> schedule(@NotNull String name, int initialDelay, int timeout, @NotNull TimeUnit timeUnit,
+    ThreadContext<Void> schedule(@NotNull String name, int initialDelayInMillis, int timeout, @NotNull TimeUnit timeUnit,
                                  @NotNull ThrowingRunnable<Exception> command,
                                  boolean showOnUI, boolean hideOnUIAfterCancel);
 

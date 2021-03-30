@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.service.scan;
 import lombok.RequiredArgsConstructor;
 import org.touchhome.bundle.api.EntityContext;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,9 +17,12 @@ public abstract class BaseBeansItemsDiscovery extends BaseItemsDiscovery {
 
     @Override
     protected List<DevicesScanner> getScanners(EntityContext entityContext) {
-        return entityContext.getBeansOfType(declaredBeanClass).stream()
-                .map(bean -> new DevicesScanner(bean.getName(), bean::scan))
-                .collect(Collectors.toList());
+        List<DevicesScanner> list = new ArrayList<>();
+        for (ItemDiscoverySupport bean : entityContext.getBeansOfType(declaredBeanClass)) {
+            DevicesScanner devicesScanner = new DevicesScanner(bean.getName(), bean::scan);
+            list.add(devicesScanner);
+        }
+        return list;
     }
 
     @Override

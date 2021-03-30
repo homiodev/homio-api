@@ -1,19 +1,21 @@
 package org.touchhome.bundle.api.setting;
 
+import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.exception.NotFoundException;
 import org.touchhome.bundle.api.model.OptionModel;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 import java.util.Collection;
 
 public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
     @Override
-    default SettingType getSettingType() {
-        return SettingType.SelectBoxDynamic;
+    default UIFieldType getSettingType() {
+        return UIFieldType.SelectBoxDynamic;
     }
 
     @Override
-    default Collection<OptionModel> getOptions(EntityContext entityContext) {
+    default Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
         return OptionModel.simpleNamelist(entityContext.getBeansOfType(getType()));
     }
 

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
 
 import java.util.List;
@@ -24,8 +25,8 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     }
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Button;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Button;
     }
 
     default List<ActionInputParameter> getInputParameters(EntityContext entityContext, String value) {

@@ -67,7 +67,7 @@ public class SecureString implements CharSequence {
      */
     @Override
     public String toString() {
-        return "Secure:XXXXX";
+        return this.length() == 0 ? "" : "Secure:XXXXX";
     }
 
     /**
@@ -84,8 +84,8 @@ public class SecureString implements CharSequence {
     /**
      * Randomly pad the characters to not store the real character in memory.
      *
-     * @param start start of the {@code CharSequence}
-     * @param length length of the {@code CharSequence}
+     * @param start      start of the {@code CharSequence}
+     * @param length     length of the {@code CharSequence}
      * @param characters the {@code CharSequence} to scramble
      */
     private void scramble(final int start, final int length, final CharSequence characters) {

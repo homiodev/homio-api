@@ -113,6 +113,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                 }
 
                 if (method.isDefault()) {
+                    // java 11: MethodHandles.privateLookupIn(aClass, MethodHandles.lookup())
                     return lookupConstructor.newInstance(aClass)
                             .in(aClass)
                             .unreflectSpecial(method, aClass)

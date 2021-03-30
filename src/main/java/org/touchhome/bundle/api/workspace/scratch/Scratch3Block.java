@@ -19,14 +19,13 @@ import java.util.function.Predicate;
 
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
-    public static final String SUBSTACK = "SUBSTACK";
     public static final String CONDITION = "CONDITION";
 
     @JsonIgnore
     private int order;
     private String opcode;
     private BlockType blockType;
-    private String text;
+    Object text;
     private Map<String, ArgumentTypeDescription> arguments = new HashMap<>();
     @JsonIgnore
     private Scratch3BlockHandler handler;
@@ -43,7 +42,7 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     @JsonIgnore
     private LinkGeneratorHandler linkGenerator;
 
-    protected Scratch3Block(int order, String opcode, BlockType blockType, String text, Scratch3BlockHandler handler, Scratch3BlockEvaluateHandler evaluateHandler) {
+    protected Scratch3Block(int order, String opcode, BlockType blockType, Object text, Scratch3BlockHandler handler, Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
         this.opcode = opcode;
         this.blockType = blockType;
@@ -52,8 +51,20 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         this.evaluateHandler = evaluateHandler;
     }
 
+    public static Scratch3ConditionalBlock ofConditional(int order, String opcode, String text, Scratch3BlockHandler handler) {
+        return new Scratch3ConditionalBlock(order, opcode, BlockType.conditional, text, handler, null);
+    }
+
+    public static Scratch3Block ofHat(int order, String opcode, String text, Scratch3BlockHandler handler) {
+        return new Scratch3Block(order, opcode, BlockType.hat, text, handler, null);
+    }
+
     public static Scratch3Block ofHandler(int order, String opcode, BlockType blockType, String text, Scratch3BlockHandler handler) {
         return new Scratch3Block(order, opcode, blockType, text, handler, null);
+    }
+
+    public static Scratch3Block ofCommand(int order, String opcode, String text, Scratch3BlockHandler handler) {
+        return ofHandler(order, opcode, BlockType.command, text, handler);
     }
 
     @SneakyThrows
@@ -66,23 +77,31 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return new Scratch3Block(0, opcode, blockType, null, handler, null);
     }
 
-    public static Scratch3Block ofEvaluate(int order, String opcode, BlockType blockType, String text, Scratch3BlockEvaluateHandler evalHandler) {
-        return new Scratch3Block(order, opcode, blockType, text, null, evalHandler);
+    public static Scratch3Block ofReporter(int order, String opcode, String text, Scratch3BlockEvaluateHandler evalHandler) {
+        return new Scratch3Block(order, opcode, BlockType.reporter, text, null, evalHandler);
+    }
+
+    public static Scratch3Block ofBoolean(int order, String opcode, String text, Scratch3BlockEvaluateHandler evalHandler) {
+        return new Scratch3Block(order, opcode, BlockType.Boolean, text, null, evalHandler);
     }
 
     @SneakyThrows
-    public static <T extends Scratch3Block> T ofEvaluate(int order, String opcode, BlockType blockType,
+    public static <T extends Scratch3Block> T ofReporter(int order, String opcode,
                                                          String text, Scratch3BlockEvaluateHandler evalHandler, Class<T> targetClass) {
         Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class, Scratch3BlockHandler.class, Scratch3BlockEvaluateHandler.class);
-        return constructor.newInstance(order, opcode, blockType, text, null, evalHandler);
+        return constructor.newInstance(order, opcode, BlockType.reporter, text, null, evalHandler);
     }
 
-    public static Scratch3Block ofEvaluate(String opcode, BlockType blockType, Scratch3BlockEvaluateHandler evalHandler) {
-        return new Scratch3Block(0, opcode, blockType, null, null, evalHandler);
+    public static Scratch3Block ofReporter(String opcode, Scratch3BlockEvaluateHandler evalHandler) {
+        return new Scratch3Block(0, opcode, BlockType.reporter, null, null, evalHandler);
     }
 
     public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type) {
         return addArgument(argumentName, type, "");
+    }
+
+    public ArgumentTypeDescription addArgument(String argumentName, boolean defaultValue) {
+        return addArgument(argumentName, ArgumentType.checkbox, Boolean.toString(defaultValue));
     }
 
     /**
@@ -101,6 +120,10 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     public ArgumentTypeDescription addArgument(String argumentName, Float defaultValue) {
+        return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
+    }
+
+    public ArgumentTypeDescription addArgument(String argumentName, Double defaultValue) {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 

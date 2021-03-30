@@ -1,19 +1,21 @@
 package org.touchhome.bundle.api.setting;
 
+import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.KeyValueEnum;
 import org.touchhome.bundle.api.model.OptionModel;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface SettingPluginOptionsEnum<T extends Enum<T>> extends SettingPluginOptions<T> {
     @Override
-    default SettingType getSettingType() {
-        return SettingType.SelectBox;
+    default UIFieldType getSettingType() {
+        return UIFieldType.SelectBox;
     }
 
     @Override
-    default List<OptionModel> getOptions(EntityContext entityContext) {
+    default Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
         if (KeyValueEnum.class.isAssignableFrom(getType())) {
             return OptionModel.list((Class<? extends KeyValueEnum>) getType());
         }

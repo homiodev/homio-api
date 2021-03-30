@@ -2,14 +2,15 @@ package org.touchhome.bundle.api.setting;
 
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
 
 public interface SettingPluginInteger extends SettingPlugin<Integer> {
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Integer;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Integer;
     }
 
     default Integer getMin() {

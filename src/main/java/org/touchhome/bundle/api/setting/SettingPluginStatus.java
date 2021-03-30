@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.Status;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
@@ -13,6 +14,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.BundleStatusInfo> {
 
     BundleStatusInfo ONLINE = new BundleStatusInfo(Status.ONLINE, null);
+    BundleStatusInfo OFFLINE = new BundleStatusInfo(Status.OFFLINE, null);
     BundleStatusInfo UNKNOWN = new BundleStatusInfo(Status.UNKNOWN, null);
 
     static BundleStatusInfo of(Status status, String message) {
@@ -28,8 +30,8 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     }
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Info;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Info;
     }
 
     @Override

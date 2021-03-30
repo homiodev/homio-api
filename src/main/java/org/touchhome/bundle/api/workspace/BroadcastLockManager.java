@@ -16,15 +16,15 @@ public interface BroadcastLockManager {
         signalAll(key, null);
     }
 
-    <T> BroadcastLock<T> getOrCreateLock(WorkspaceBlock workspaceBlock);
+    BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock);
 
-    <T> BroadcastLock<T> getOrCreateLock(WorkspaceBlock workspaceBlock, String key);
+    BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock, String key);
 
-    <T> BroadcastLock<T> getOrCreateLock(WorkspaceBlock workspaceBlock, String key, T expectedValue);
+    BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
 
     /**
      * Creates BroadcastLock and attach it to thread that check supplier once per second
      * If supplier return true - signal broadcast lock
      */
-    <T> BroadcastLock<T> listenEvent(WorkspaceBlock workspaceBlock, Supplier<Boolean> supplier);
+    BroadcastLock listenEvent(WorkspaceBlock workspaceBlock, Supplier<Boolean> supplier);
 }

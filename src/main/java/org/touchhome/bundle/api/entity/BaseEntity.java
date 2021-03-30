@@ -7,13 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
 import org.json.JSONPropertyIgnore;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -22,7 +20,7 @@ import static org.touchhome.bundle.api.ui.field.UIFieldType.StaticDate;
 
 @Log4j2
 @MappedSuperclass
-public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdentifier, Serializable {
+public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIdentifier<T> {
 
     @Id
     @GeneratedValue
@@ -67,11 +65,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
         return (T) this;
     }
 
-    public String getTitle() {
-        String name = getName();
-        return name == null || name.trim().length() == 0 ? getEntityID() : name;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -92,10 +85,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     @Override
     public String toString() {
         return "{'entityID':'" + getEntityID(false) + "'\'}";
-    }
-
-    public String getType() {
-        return this.getClass().getSimpleName();
     }
 
     @PrePersist
@@ -140,23 +129,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
 
     protected void beforeDelete() {
 
-    }
-
-    public void afterDelete(EntityContext entityContext) {
-
-    }
-
-    public void afterUpdate(EntityContext entityContext) {
-
-    }
-
-    // fires after fetch from db/cache
-    public void afterFetch(EntityContext entityContext) {
-
-    }
-
-    public String refreshName() {
-        return null;
     }
 
     public T computeEntityID(Supplier<String> entityIDSupplier) {
@@ -218,8 +190,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements HasEntityIdent
     public EntityContext getEntityContext() {
         return ApplicationContextHolder.getBean(EntityContext.class);
     }
-
-    public abstract String getEntityPrefix();
 
     public static BaseEntity fakeEntity(String entityID) {
         return new BaseEntity() {

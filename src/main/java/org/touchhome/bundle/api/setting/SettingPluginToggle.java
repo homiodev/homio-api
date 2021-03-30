@@ -1,5 +1,7 @@
 package org.touchhome.bundle.api.setting;
 
+import org.touchhome.bundle.api.ui.field.UIFieldType;
+
 public interface SettingPluginToggle extends SettingPlugin<Boolean> {
 
     String getIcon();
@@ -12,7 +14,7 @@ public interface SettingPluginToggle extends SettingPlugin<Boolean> {
     }
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Toggle;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Toggle;
     }
 }

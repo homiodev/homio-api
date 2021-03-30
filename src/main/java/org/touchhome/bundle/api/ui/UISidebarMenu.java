@@ -21,6 +21,9 @@ public @interface UISidebarMenu {
 
     int order() default 1000;
 
+    /**
+     * Path uses in ui as navigation link
+     */
     String overridePath() default "";
 
     enum TopSidebarMenu {

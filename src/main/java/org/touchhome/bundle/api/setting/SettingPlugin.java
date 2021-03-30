@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.KeyValueEnum;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 import java.nio.file.Paths;
 import java.util.stream.Stream;
@@ -52,7 +53,7 @@ public interface SettingPlugin<T> {
         return parameters;
     }
 
-    SettingType getSettingType();
+    UIFieldType getSettingType();
 
     // if secured - users without admin privileges can't see values
     default boolean isSecuredValue() {
@@ -123,13 +124,13 @@ public interface SettingPlugin<T> {
      * Values of settings with transient state doesn't save to db
      */
     default boolean transientState() {
-        if (this.getSettingType() == SettingType.Button) {
+        if (this.getSettingType() == UIFieldType.Button) {
             JSONObject parameters = this.getParameters(null, null);
             if (parameters == null || parameters.length() == 1 && parameters.has("confirm")) {
                 return true;
             }
         }
-        return this.getSettingType() == SettingType.Info || !this.isStorable();
+        return this.getSettingType() == UIFieldType.Info || !this.isStorable();
     }
 
     int order();
@@ -168,31 +169,5 @@ public interface SettingPlugin<T> {
             }
         }
         return (T) parseValue;
-    }
-
-    enum SettingType {
-        // Description type uses for showing text inside setting panel on whole width
-        Description,
-        ColorPicker,
-        Float,
-        Boolean,
-        Integer,
-        SelectBox,
-        SelectBoxButton,
-        // Slider with min/max/step parameters
-        Slider,
-        // Select box with options fetched from server
-        SelectBoxDynamic,
-        // Just a text
-        Text,
-        Chips, // https://material.angular.io/components/chips/examples
-        // Input text with additional button that able to fetch values from server
-        TextSelectBoxDynamic,
-        // Button that fires server action
-        Button,
-        Toggle,
-        Info,
-        Upload,
-        TextArea
     }
 }

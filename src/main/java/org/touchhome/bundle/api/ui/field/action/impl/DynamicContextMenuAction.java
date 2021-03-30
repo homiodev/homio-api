@@ -22,6 +22,7 @@ public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAc
     private final int order;
     private String icon;
     private String iconColor;
+    private boolean disabled;
     private JSONObject metadata;
     private List<ActionInputParameter> parameters = new ArrayList<>();
 
@@ -40,7 +41,7 @@ public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAc
 
     @Override
     public int compareTo(DynamicContextMenuAction other) {
-        return Integer.compare(this.order, other.order);
+        return Double.compare((this.order + (1D / this.name.hashCode())), (other.order + (1D / other.name.hashCode())));
     }
 
     @Override

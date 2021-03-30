@@ -34,6 +34,8 @@ public @interface UIField {
     // able to edit field directly from view mode (now works only in console)
     boolean inlineEdit() default false;
 
+    boolean inlineEditWhenEmpty() default false;
+
     // override field name
     String label() default "";
 

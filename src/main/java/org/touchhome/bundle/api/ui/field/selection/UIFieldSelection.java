@@ -14,4 +14,6 @@ public @interface UIFieldSelection {
      * Target class for selection(for enums). see: ItemController.loadSelectOptions
      */
     Class<? extends DynamicOptionLoader> value();
+
+    String[] staticParameters() default {};
 }

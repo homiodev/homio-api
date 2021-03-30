@@ -2,9 +2,9 @@ package org.touchhome.bundle.api.workspace;
 
 import java.util.concurrent.TimeUnit;
 
-public interface BroadcastLock<T> {
+public interface BroadcastLock {
 
-    T getValue();
+    Object getValue();
 
     /**
      * Await for events from lock.
@@ -23,7 +23,7 @@ public interface BroadcastLock<T> {
     }
 
     // signal all broadcast locks with specified value
-    void signalAll(T value);
+    void signalAll(Object value);
 
     void addReleaseListener(String key, Runnable listener);
 }

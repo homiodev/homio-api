@@ -147,4 +147,14 @@ public interface EntityContext {
     interface EntityUpdateListener<T> {
         void entityUpdated(T newValue, T oldValue);
     }
+
+    default String getEnv(String key) {
+        return getEnv(key, String.class, null);
+    }
+
+    default String getEnv(String key, String defaultValue) {
+        return getEnv(key, String.class, defaultValue);
+    }
+
+    <T> T getEnv(String key, Class<T> classType, T defaultValue);
 }

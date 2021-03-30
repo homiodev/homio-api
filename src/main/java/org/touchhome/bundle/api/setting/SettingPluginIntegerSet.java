@@ -1,6 +1,7 @@
 package org.touchhome.bundle.api.setting;
 
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,7 +41,7 @@ public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
     }
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Chips;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Chips;
     }
 }

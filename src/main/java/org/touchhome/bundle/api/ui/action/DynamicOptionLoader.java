@@ -11,5 +11,5 @@ import java.util.Collection;
  */
 public interface DynamicOptionLoader {
 
-    Collection<OptionModel> loadOptions(BaseEntity baseEntity, EntityContext entityContext);
+    Collection<OptionModel> loadOptions(BaseEntity baseEntity, EntityContext entityContext, String[] staticParameters);
 }

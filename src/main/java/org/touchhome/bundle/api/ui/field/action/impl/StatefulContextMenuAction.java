@@ -8,8 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @Getter
 @Setter
@@ -17,17 +17,27 @@ import java.util.function.Supplier;
 @Accessors(chain = true)
 public class StatefulContextMenuAction extends DynamicContextMenuAction {
     private final UIFieldType type;
-    private String value;
-    private final Supplier<String> getter;
+    private final String group;
+    private final String subGroup;
+    private final boolean collapseGroup;
+    private final String collapseGroupIcon;
+    private Object value;
+    private final Map<String, Consumer<StatefulContextMenuAction>> updateHandlers;
 
-    public StatefulContextMenuAction(String name, int order, String icon, String iconColor, UIFieldType type,
-                                     Consumer<String> action, JSONObject metadata, Supplier<String> getter) {
-        super(name, order, jsonObject -> action.accept(jsonObject.getString("value")));
+    public StatefulContextMenuAction(String name, String group, String subGroup, boolean collapseGroup,
+                                     String collapseGroupIcon, int order, String icon, String iconColor, UIFieldType type,
+                                     Consumer<String> action, JSONObject metadata,
+                                     Map<String, Consumer<StatefulContextMenuAction>> updateHandlers) {
+        super(name, order, jsonObject -> action.accept(jsonObject.optString("value")));
         this.setIcon(icon);
         this.setIconColor(iconColor);
         this.setMetadata(metadata);
+        this.group = group;
         this.type = type;
-        this.getter = getter;
+        this.updateHandlers = updateHandlers;
+        this.subGroup = subGroup;
+        this.collapseGroup = collapseGroup;
+        this.collapseGroupIcon = collapseGroupIcon;
     }
 
     public void addButton(String name, String icon) {

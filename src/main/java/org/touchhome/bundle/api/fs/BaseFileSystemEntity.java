@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.Lang;
+import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.entity.BaseEntityIdentifier;
+import org.touchhome.bundle.api.entity.HasJsonData;
 import org.touchhome.bundle.api.entity.HasStatusAndMsg;
-import org.touchhome.bundle.api.entity.MiscEntity;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIField;
@@ -17,53 +19,47 @@ import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 
 import java.util.Map;
 
-public abstract class BaseFileSystemEntity<T extends BaseFileSystemEntity, FS extends VendorFileSystem>
-        extends MiscEntity<T> implements HasDynamicContextMenuActions, HasStatusAndMsg<T> {
+public interface BaseFileSystemEntity<T extends BaseFileSystemEntity, FS extends VendorFileSystem>
+        extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData<T> {
 
-    public abstract boolean requireConfigure();
+    boolean requireConfigure();
 
-    public abstract FS getFileSystem(EntityContext entityContext);
+    FS getFileSystem(EntityContext entityContext);
 
     @JsonIgnore
-    public abstract Map<String, FS> getFileSystemMap();
+    Map<String, FS> getFileSystemMap();
 
-    public abstract long getConnectionHashCode();
-
-    public abstract String getDefaultName();
-
-    @Override
-    public String getName() {
-        return StringUtils.defaultString(super.getName(), getDefaultName());
-    }
+    long getConnectionHashCode();
 
     @UIField(order = 1, required = true, readOnly = true, hideOnEmpty = true, fullWidth = true, bg = "#334842")
     @UIFieldRenderAsHTML
-    public String getDescription() {
-        return requireConfigure() ? Lang.getServerMessage(getEntityPrefix().substring(0, getEntityPrefix().length() - 1) + ".description") : null;
+    default String getDescription() {
+        String prefix = getEntityPrefix();
+        return requireConfigure() ? Lang.getServerMessage(prefix.substring(0, prefix.length() - 1) + ".description") : null;
     }
 
     @UIField(order = 70, readOnly = true)
     @UIFieldColorStatusMatch
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    public Status getStatus() {
+    default Status getStatus() {
         return getJsonDataEnum("st", Status.UNKNOWN);
     }
 
-    public T setStatus(Status value) {
+    default T setStatus(Status value) {
         return setJsonDataEnum("st", value);
     }
 
     @UIField(order = 80, readOnly = true, hideOnEmpty = true)
-    public String getStatusMessage() {
+    default String getStatusMessage() {
         return getJsonData("sm");
     }
 
-    public T setStatusMessage(String value) {
+    default T setStatusMessage(String value) {
         return setJsonData("sm", value);
     }
 
     @UIContextMenuAction(value = "RESTART", icon = "fas fa-power-off")
-    public ActionResponseModel restart(EntityContext entityContext) {
+    default ActionResponseModel restart(EntityContext entityContext) {
         if (this.getFileSystem(entityContext).restart(true)) {
             return ActionResponseModel.showSuccess("Success restarted");
         } else {
@@ -72,13 +68,13 @@ public abstract class BaseFileSystemEntity<T extends BaseFileSystemEntity, FS ex
     }
 
     @Override
-    public void afterDelete(EntityContext entityContext) {
+    default void afterDelete(EntityContext entityContext) {
         this.getFileSystem(entityContext).dispose();
         getFileSystemMap().remove(getEntityID());
     }
 
     @Override
-    public void afterUpdate(EntityContext entityContext) {
-        this.getFileSystem(entityContext).setEntity(this);
+    default void afterUpdate(EntityContext entityContext) {
+        this.getFileSystem(entityContext).setEntity((BaseEntity) this);
     }
 }

@@ -23,6 +23,11 @@ public enum OnOffType implements State {
     }
 
     @Override
+    public RawType toRawType() {
+        return null;
+    }
+
+    @Override
     public boolean boolValue() {
         return this == ON;
     }

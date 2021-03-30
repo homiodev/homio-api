@@ -9,5 +9,5 @@ import java.util.Set;
  * For BaseItems that wants dynamic context menu items
  */
 public interface HasDynamicContextMenuActions {
-    Set<DynamicContextMenuAction> getActions(EntityContext entityContext);
+    Set<? extends DynamicContextMenuAction> getActions(EntityContext entityContext);
 }

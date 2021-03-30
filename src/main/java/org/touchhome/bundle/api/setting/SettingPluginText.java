@@ -1,5 +1,7 @@
 package org.touchhome.bundle.api.setting;
 
+import org.touchhome.bundle.api.ui.field.UIFieldType;
+
 public interface SettingPluginText extends SettingPlugin<String> {
     @Override
     default Class<String> getType() {
@@ -7,7 +9,7 @@ public interface SettingPluginText extends SettingPlugin<String> {
     }
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Text;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Text;
     }
 }

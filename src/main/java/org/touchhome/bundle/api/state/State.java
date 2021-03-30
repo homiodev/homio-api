@@ -20,6 +20,10 @@ public interface State {
         return intValue();
     }
 
+    default RawType toRawType() {
+        return RawType.ofPlainText(stringValue());
+    }
+
     default boolean boolValue() {
         String value = stringValue();
         return value.equals("1") || value.equalsIgnoreCase("true");

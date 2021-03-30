@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.ProgressBar;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,8 +34,8 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     }
 
     @Override
-    default SettingType getSettingType() {
-        return SettingType.Button;
+    default UIFieldType getSettingType() {
+        return UIFieldType.Button;
     }
 
     PackageContext allPackages(EntityContext entityContext) throws Exception;

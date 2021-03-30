@@ -16,6 +16,7 @@ public class UIActionResponse {
     private String icon;
     @Setter
     private String iconColor;
+    private Boolean disabled;
     // inputs, ref, value, type, etc...
     private JSONObject metadata = new JSONObject();
 
@@ -27,12 +28,25 @@ public class UIActionResponse {
         this.name = action.getName();
         this.icon = action.getIcon();
         this.iconColor = action.getIconColor();
+        this.disabled = action.isDisabled() ? true : null;
+        if (!action.getMetadata().isEmpty()) {
+            for (String key : JSONObject.getNames(action.getMetadata())) {
+                metadata.put(key, action.getMetadata().get(key));
+            }
+        }
+
         if (!action.getParameters().isEmpty()) {
             this.metadata.put("inputs", action.getParameters());
         }
         if (action instanceof StatefulContextMenuAction) {
-            action.getMetadata().put("uiActionType", ((StatefulContextMenuAction) action).getType());
-            action.getMetadata().put("value", ((StatefulContextMenuAction) action).getValue());
+            this.metadata.put("uiActionType", ((StatefulContextMenuAction) action).getType());
+            putOpt("value", ((StatefulContextMenuAction) action).getValue());
+            putOpt("group", ((StatefulContextMenuAction) action).getGroup());
+            putOpt("subGroup", ((StatefulContextMenuAction) action).getSubGroup());
+            putOpt("collapseGroupIcon", ((StatefulContextMenuAction) action).getCollapseGroupIcon());
+            if (((StatefulContextMenuAction) action).isCollapseGroup()) {
+                this.metadata.put("collapseGroup", true);
+            }
         }
     }
 
