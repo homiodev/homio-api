@@ -46,7 +46,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
     }
 
     @Override
-    public ActionResponseModel apply(EntityContext entityContext, JSONObject jsonObject) {
+    public ActionResponseModel handleAction(EntityContext entityContext, JSONObject ignore) {
         List<DevicesScanner> scanners = getScanners(entityContext);
         if (scanners.isEmpty()) {
             return ActionResponseModel.showWarn("SCAN.NO_PROCESSES");
@@ -56,7 +56,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         String headerButtonKey = "SCAN." + getBatchName();
 
         // show scan button on header. All scan results may attach confirm actions to it.
-        entityContext.ui().addHeaderButton(headerButtonKey, null, getHeaderIcon(), getHeaderIconColor(), true, null);
+        entityContext.ui().addHeaderButton(headerButtonKey, getHeaderIconColor(), null, getHeaderIcon());
 
         entityContext.bgp().runInBatch(getBatchName(), getMaxTimeToWaitInSeconds(), scanners,
                 scanner -> {

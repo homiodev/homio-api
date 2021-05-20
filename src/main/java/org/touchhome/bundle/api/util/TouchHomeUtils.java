@@ -63,7 +63,6 @@ public class TouchHomeUtils {
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private static Path rootPath;
     private static Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
-
     // map for store different statuses
     @Getter
     private static Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
@@ -323,19 +322,6 @@ public class TouchHomeUtils {
         unzip(file, destination, null, null);
     }
 
- /*   @SneakyThrows
-    public static void tempDir(Consumer<Path> consumer) {
-        Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
-        Files.createDirectories(tmpDir);
-        try {
-            consumer.accept(tmpDir);
-        } finally {
-            if (!Files.deleteIfExists(tmpDir)) {
-                log.error("Unable to delete tmpDir: <{}>", tmpDir);
-            }
-        }
-    }*/
-
     @SneakyThrows
     public static void unzip(@NotNull Path file, @NotNull Path destination,
                              @Nullable String password, @Nullable ProgressBar progressBar) {
@@ -390,6 +376,19 @@ public class TouchHomeUtils {
         }
     }
 
+ /*   @SneakyThrows
+    public static void tempDir(Consumer<Path> consumer) {
+        Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
+        Files.createDirectories(tmpDir);
+        try {
+            consumer.accept(tmpDir);
+        } finally {
+            if (!Files.deleteIfExists(tmpDir)) {
+                log.error("Unable to delete tmpDir: <{}>", tmpDir);
+            }
+        }
+    }*/
+
     public static long getZipFileSize(Path file) throws IOException {
         SevenZFile sevenZFile = new SevenZFile(file.toFile(), new char[0]);
         long fullSize = 0;
@@ -420,6 +419,22 @@ public class TouchHomeUtils {
         throw new RuntimeException("Unable to detect OS");
     }
 
+    public static boolean deleteDirectory(Path path) {
+        try {
+            FileUtils.deleteDirectory(path.toFile());
+            return true;
+        } catch (IOException ex) {
+            log.error("Unable to delete directory: <{}>", path, ex);
+        }
+        return false;
+    }
+
+    public static void addToListSafe(List<String> list, String value) {
+        if (!value.isEmpty()) {
+            list.add(value);
+        }
+    }
+
     public enum OsName {
         Windows_x86,
         Windows_x64,
@@ -436,6 +451,11 @@ public class TouchHomeUtils {
         public boolean isWindows() {
             return this.name().startsWith("Windows");
         }
+    }
+
+    public static class Colors {
+        public static final String RED = "#BD3500";
+        public static final String GREEN = "#17A328";
     }
 
     public static class TemplateBuilder {
@@ -460,22 +480,6 @@ public class TouchHomeUtils {
             StringWriter stringWriter = new StringWriter();
             templateEngine.process("templates/" + templateName, context, stringWriter);
             return stringWriter.toString();
-        }
-    }
-
-    public static boolean deleteDirectory(Path path) {
-        try {
-            FileUtils.deleteDirectory(path.toFile());
-            return true;
-        } catch (IOException ex) {
-            log.error("Unable to delete directory: <{}>", path, ex);
-        }
-        return false;
-    }
-
-    public static void addToListSafe(List<String> list, String value) {
-        if (!value.isEmpty()) {
-            list.add(value);
         }
     }
 }

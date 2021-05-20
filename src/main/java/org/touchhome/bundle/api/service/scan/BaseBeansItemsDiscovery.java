@@ -5,7 +5,6 @@ import org.touchhome.bundle.api.EntityContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * BaseItemsDiscovery successor that creates list of DevicesScanner based on declared beans

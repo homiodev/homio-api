@@ -1,7 +1,6 @@
 package org.touchhome.bundle.api.setting;
 
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.OptionModel;
@@ -31,24 +30,36 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
         return 1;
     }
 
-    default boolean visitFile(Path path, BasicFileAttributes attrs) {
+    /**
+     * Write file to UI
+     */
+    default boolean writeFile(Path path, BasicFileAttributes attrs) {
         if (Files.exists(path) && Files.isReadable(path)) {
+            if (!allowSelectFiles() && Files.isRegularFile(path)) {
+                return false;
+            }
             String name = path.getFileName() == null ? path.toString() : path.getFileName().toString();
             return !name.startsWith("$") && !name.startsWith(".");
         }
         return false;
     }
 
+    /**
+     * Write directory to UI
+     */
+    default boolean writeDirectory(Path dir) {
+        return true;
+    }
+
+    /**
+     * Visit directory and all children
+     */
     default boolean visitDirectory(Path dir, BasicFileAttributes attrs) {
         if (Files.isReadable(dir)) {
             String name = dir.getFileName() == null ? dir.toString() : dir.getFileName().toString();
             return !name.startsWith("$") && !name.startsWith(".");
         }
         return false;
-    }
-
-    default boolean pushDirectory(Path dir) {
-        return true;
     }
 
     @Override
@@ -61,10 +72,10 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
         if (levels() > 3) {
             throw new RuntimeException("Unable to scan files more that 3 levels");
         }
-        return getFilePath(false, params == null || !params.has("param0") ? null : Paths.get(params.getString("param0")));
+        return getFilePath(params == null || !params.has("param0") ? null : Paths.get(params.getString("param0")));
     }
 
-    default List<OptionModel> getFilePath(boolean includePath, Path rootPath) {
+    default List<OptionModel> getFilePath(Path rootPath) {
         try {
             final Path root = rootPath == null ? rootPath() : rootPath;
             if (root == null) {
@@ -76,7 +87,7 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                     Math.max(levels(), 1), new SimpleFileVisitor<Path>() {
                         @Override
                         public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-                            if (SettingPluginOptionsFileExplorer.this.visitFile(path, attrs)) {
+                            if (SettingPluginOptionsFileExplorer.this.writeFile(path, attrs)) {
                                 handlePath(path);
                             }
                             return FileVisitResult.CONTINUE;
@@ -85,7 +96,9 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
                             if (visitDirectory(dir, attrs)) {
-                                if (pushDirectory(dir)) {
+                                if (writeDirectory(dir)) {
+                                    handlePath(dir);
+                                } else if (dir.equals(root) && skipRootInTreeStructure()) { // handleDir anyway if it root
                                     handlePath(dir);
                                 }
                                 return FileVisitResult.CONTINUE;
@@ -109,28 +122,27 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
 
                         @SneakyThrows
                         private OptionModel createOptionModelFromPath(Path path) {
-                            String key = path.getFileName() == null ? path.toString() : path.getFileName().toString();
-                            if (skipRootInTreeStructure() && path.equals(root)) {
-                                key = null;
-                            }
-                            OptionModel model = OptionModel.of(key);
+                            OptionModel model = OptionModel.of(buildKey(path, root), buildTitle(path));
                             boolean isDirectory = Files.isDirectory(path);
-                            if (includePath || (allowRequestNextLevel() && isDirectory)) {
-                                model.getJson().put("path", path.toString());
-                                if (isDirectory) {
-                                    if (Files.list(path).findAny().isPresent()) {
-                                        model.getJson().put("dir", true);
-                                    } else {
-                                        model.getJson().put("emptyDir", true);
-                                    }
+                            // 1 - file, 2 - directory, 3 - empty directory
+                            if (isDirectory) {
+                                if (Files.list(path).findAny().isPresent()) {
+                                    model.getJson().put("type", 2);
+                                    model.setImage("fas fa-folder");
+                                } else {
+                                    model.getJson().put("type", 3);
+                                    model.setImage("fas fa-folder-minus");
                                 }
+                            } else {
+                                model.setImage("fas fa-file-alt");
+                                model.getJson().put("type", 1);
                             }
                             return model;
                         }
                     });
             List<OptionModel> result = new ArrayList<>(flatStructure() ? fs.values() : fs.containsKey(root) ?
                     fs.get(root).getOrCreateChildren() : Collections.emptyList());
-            if (allowRequestNextLevel()) {
+            if (lazyLoading()) {
                 handleRequestNextPath(result);
             }
             result.sort(pathComparator());
@@ -140,10 +152,22 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
         }
     }
 
+    default String buildKey(Path path, Path root) {
+        String key = path.toString();
+        if (skipRootInTreeStructure() && path.equals(root)) {
+            key = null;
+        }
+        return key;
+    }
+
+    default String buildTitle(Path path) {
+        return path.toString();
+    }
+
     default void handleRequestNextPath(Collection<OptionModel> result) {
         for (OptionModel model : result) {
             if (model.getChildren() == null) {
-                if (model.getJson().has("dir")) {
+                if (model.getJson().has("type") && model.getJson().getInt("type") == 2) {
                     model.getJson().put("requestNext", true);
                 }
             } else {
@@ -152,15 +176,35 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
         }
     }
 
+    /**
+     * Does allow select directories on UI.
+     */
+    default boolean allowSelectDirs() {
+        return true;
+    }
+
+    /**
+     * Does allow select files on UI.
+     */
+    default boolean allowSelectFiles() {
+        return true;
+    }
+
     default boolean skipRootInTreeStructure() {
         return true;
     }
 
+    /**
+     * Show all entries as a list or tree
+     */
     default boolean flatStructure() {
         return false;
     }
 
-    default boolean allowRequestNextLevel() {
+    /**
+     * Lazy loading next level
+     */
+    default boolean lazyLoading() {
         return false;
     }
 
@@ -177,20 +221,6 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
 
     @Override
     default Path parseValue(EntityContext entityContext, String value) {
-        OptionModel foundModel = findOptionModelByKey(value);
-        String path = foundModel == null ? value : foundModel.getJson().getString("path");
-        return StringUtils.isEmpty(path) ? null : Paths.get(path);
-    }
-
-    default OptionModel findOptionModelByKey(String value) {
-        List<OptionModel> optionModels = getFilePath(true, null);
-        for (OptionModel optionModel : optionModels) {
-            OptionModel foundModel = optionModel.findByKey(value);
-            if (foundModel != null) {
-                return foundModel;
-            }
-        }
-
-        return null;
+        return Paths.get(value);
     }
 }

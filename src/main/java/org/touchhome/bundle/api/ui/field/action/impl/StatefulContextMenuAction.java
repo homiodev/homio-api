@@ -21,8 +21,8 @@ public class StatefulContextMenuAction extends DynamicContextMenuAction {
     private final String subGroup;
     private final boolean collapseGroup;
     private final String collapseGroupIcon;
-    private Object value;
     private final Map<String, Consumer<StatefulContextMenuAction>> updateHandlers;
+    private Object value;
 
     public StatefulContextMenuAction(String name, String group, String subGroup, boolean collapseGroup,
                                      String collapseGroupIcon, int order, String icon, String iconColor, UIFieldType type,

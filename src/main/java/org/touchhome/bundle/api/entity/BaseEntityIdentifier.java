@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
@@ -8,6 +9,7 @@ import java.io.Serializable;
 
 public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializable {
 
+    @JsonIgnore
     default String getDefaultName() {
         return null;
     }
@@ -35,9 +37,11 @@ public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializab
 
     }
 
+    @JsonIgnore
     default String refreshName() {
         return null;
     }
 
+    @JsonIgnore
     String getEntityPrefix();
 }

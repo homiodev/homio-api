@@ -1,8 +1,7 @@
-package org.touchhome.bundle.api.fs;
+package org.touchhome.bundle.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.Lang;
 import org.touchhome.bundle.api.entity.BaseEntity;
@@ -12,14 +11,14 @@ import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIField;
-import org.touchhome.bundle.api.ui.field.UIFieldRenderAsHTML;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.action.HasDynamicContextMenuActions;
 import org.touchhome.bundle.api.ui.field.action.UIContextMenuAction;
 import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 
 import java.util.Map;
 
-public interface BaseFileSystemEntity<T extends BaseFileSystemEntity, FS extends VendorFileSystem>
+public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends VendorFileSystem>
         extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData<T> {
 
     boolean requireConfigure();
@@ -31,8 +30,7 @@ public interface BaseFileSystemEntity<T extends BaseFileSystemEntity, FS extends
 
     long getConnectionHashCode();
 
-    @UIField(order = 1, required = true, readOnly = true, hideOnEmpty = true, fullWidth = true, bg = "#334842")
-    @UIFieldRenderAsHTML
+    @UIField(order = 1, required = true, readOnly = true, hideOnEmpty = true, fullWidth = true, bg = "#334842", type = UIFieldType.HTML)
     default String getDescription() {
         String prefix = getEntityPrefix();
         return requireConfigure() ? Lang.getServerMessage(prefix.substring(0, prefix.length() - 1) + ".description") : null;

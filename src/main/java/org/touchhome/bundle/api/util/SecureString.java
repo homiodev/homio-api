@@ -96,4 +96,16 @@ public class SecureString implements CharSequence {
             chars[i] = pad[i] ^ charAt;
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        String val2 = obj.toString();
+        if (obj instanceof SecureString) {
+            val2 = ((SecureString) obj).asString();
+        }
+        return this.asString().equals(val2);
+    }
 }

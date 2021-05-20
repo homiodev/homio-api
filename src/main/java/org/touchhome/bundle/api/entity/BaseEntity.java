@@ -50,6 +50,15 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     @Transient
     private String entityIDSupplierStr;
 
+    public static BaseEntity fakeEntity(String entityID) {
+        return new BaseEntity() {
+            @Override
+            public String getEntityPrefix() {
+                return "";
+            }
+        }.setEntityID(entityID);
+    }
+
     public T setId(Integer id) {
         this.id = id;
         return (T) this;
@@ -66,7 +75,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -189,14 +198,5 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     @JSONPropertyIgnore
     public EntityContext getEntityContext() {
         return ApplicationContextHolder.getBean(EntityContext.class);
-    }
-
-    public static BaseEntity fakeEntity(String entityID) {
-        return new BaseEntity() {
-            @Override
-            public String getEntityPrefix() {
-                return "";
-            }
-        }.setEntityID(entityID);
     }
 }

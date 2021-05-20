@@ -20,14 +20,13 @@ import java.util.function.Consumer;
 public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAction> {
     private final String name;
     private final int order;
+    @JsonIgnore
+    private final Consumer<JSONObject> action;
     private String icon;
     private String iconColor;
     private boolean disabled;
     private JSONObject metadata;
     private List<ActionInputParameter> parameters = new ArrayList<>();
-
-    @JsonIgnore
-    private final Consumer<JSONObject> action;
 
     public DynamicContextMenuAction(String name, int order, Consumer<JSONObject> action) {
         this.name = name;

@@ -1,8 +1,7 @@
-package org.touchhome.bundle.api.fs;
+package org.touchhome.bundle.api.entity.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.util.MimeTypeUtils;
 import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
@@ -11,8 +10,6 @@ import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.bundle.api.workspace.scratch.*;
-
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntryPoint, E extends BaseEntity & BaseFileSystemEntity>
         extends Scratch3ExtensionBlocks {
@@ -69,12 +66,6 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         this.deleteFile.addArgument("FILE", this.fileMenu);
     }
 
-    @RequiredArgsConstructor
-    private enum Unit {
-        B(1), KB(1024), MP(1024 * 1024), GB(1024 * 1024 * 1024);
-        private final double divider;
-    }
-
     public void init() {
         this.fsEntityMenu.setDefault(entityContext.findAny(entityClass));
         super.init();
@@ -105,7 +96,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     }
 
     private E getDrive(WorkspaceBlock workspaceBlock) {
-        return workspaceBlock.getMenuValueEntity(ENTITY, this.fsEntityMenu);
+        return workspaceBlock.getMenuValueEntityRequired(ENTITY, this.fsEntityMenu);
     }
 
     private RawType getFieldContent(WorkspaceBlock workspaceBlock) throws Exception {
@@ -119,26 +110,28 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
 
     @SneakyThrows
     private void sendFileHandle(WorkspaceBlock workspaceBlock) {
-        String fileName = workspaceBlock.getInputString("NAME");
+        String fileName = workspaceBlock.getInputStringRequired("NAME", "Send file block requires file name");
         byte[] value = workspaceBlock.getInputByteArray(VALUE);
 
         String folderId = workspaceBlock.getMenuValue("PARENT", this.folderMenu);
-        if (isNotEmpty(fileName)) {
-            String[] parentPath = folderId.contains("~~~") ? folderId.split("~~~") : folderId.split("/");
-            try {
-                VendorFileSystem fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
-                fileSystem.upload(parentPath, fileName, value, workspaceBlock.getInputBoolean("APPEND"));
-                fileSystem.updateCache(true);
-            } catch (Exception ex) {
-                workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());
-            }
-        } else {
-            workspaceBlock.logErrorAndThrow("Send file block requires file name");
+        String[] parentPath = folderId.contains("~~~") ? folderId.split("~~~") : folderId.split("/");
+        try {
+            VendorFileSystem fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
+            fileSystem.upload(parentPath, fileName, value, workspaceBlock.getInputBoolean("APPEND"));
+            fileSystem.updateCache(true);
+        } catch (Exception ex) {
+            workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());
         }
     }
 
     private Scratch3Block ofDrive(Scratch3Block scratch3Block) {
         scratch3Block.addArgument(ENTITY, this.fsEntityMenu);
         return scratch3Block;
+    }
+
+    @RequiredArgsConstructor
+    private enum Unit {
+        B(1), KB(1024), MP(1024 * 1024), GB(1024 * 1024 * 1024);
+        private final double divider;
     }
 }

@@ -47,6 +47,9 @@ public interface MachineHardwareRepository {
     @HardwareQuery(name = "Install software", value = "apt-get install :soft", printOutput = true)
     void installSoftware(@HQueryParam("soft") String soft);
 
+    @HardwareQuery(name = "apt-get update", value = "apt-get update", printOutput = true)
+    void update();
+
     @HardwareQuery(name = "Check software installed", value = "which :soft", win = "where :soft", cacheValid = 60)
     boolean isSoftwareInstalled(@HQueryParam("soft") String soft);
 

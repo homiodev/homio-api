@@ -36,7 +36,10 @@ public class OptionModel implements Comparable<OptionModel> {
     private String title;
 
     @Setter
-    private String imageRef;
+    private String image;
+
+    @Setter
+    private String color;
 
     private JSONObject json = new JSONObject();
 
@@ -51,11 +54,6 @@ public class OptionModel implements Comparable<OptionModel> {
         OptionModel optionModel = new OptionModel();
         optionModel.key = key;
         return optionModel;
-    }
-
-    @JsonIgnore
-    public Collection<OptionModel> getOrCreateChildren() {
-        return children == null ? Collections.emptyList() : children;
     }
 
     public static OptionModel separator() {
@@ -151,6 +149,11 @@ public class OptionModel implements Comparable<OptionModel> {
             optionModels.add(optionModel);
         }
         return optionModels;
+    }
+
+    @JsonIgnore
+    public Collection<OptionModel> getOrCreateChildren() {
+        return children == null ? Collections.emptyList() : children;
     }
 
     @JsonIgnore

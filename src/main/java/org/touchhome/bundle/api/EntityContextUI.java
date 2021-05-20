@@ -145,14 +145,17 @@ public interface EntityContextUI {
     /**
      * Add button to ui header
      */
-    void addHeaderButton(@NotNull String entityID, @Nullable String title, @NotNull String icon, @NotNull String color,
-                         boolean rotate, @Nullable Class<? extends SettingPluginButton> hideAction);
+    void addHeaderButton(@NotNull String entityID, @NotNull String color, @Nullable String title, @Nullable String icon,
+                         boolean rotate, boolean border, @Nullable Integer duration,
+                         @Nullable Class<? extends BaseEntity> page, @Nullable Class<? extends SettingPluginButton> hideAction);
 
-    /**
-     * Add button to ui header
-     */
-    void addHeaderButton(@NotNull String entityID, @Nullable String title, @NotNull String color,
-                         int duration, @Nullable Class<? extends SettingPluginButton> hideAction);
+    default void addHeaderButton(@NotNull String entityID, @NotNull String color, @Nullable String title, @Nullable String icon) {
+        addHeaderButton(entityID, color, title, icon, false, true, null, null, null);
+    }
+
+    default void addHeaderButton(@NotNull String entityID, @NotNull String color, int duration, @Nullable String title) {
+        addHeaderButton(entityID, color, title, null, false, true, duration, null, null);
+    }
 
     /**
      * Remove button from ui header.

@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.fs;
+package org.touchhome.bundle.api.entity.storage;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -155,6 +155,11 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
         return getParent() == null ? Paths.get("/") : getParent().getPath().resolve(getSource().getId());
     }
 
+    @Override
+    public String toString() {
+        return source.getName();
+    }
+
     public interface SourceFileCapability {
         String getId();
 
@@ -169,10 +174,5 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
         default boolean fillDeeper() {
             return true;
         }
-    }
-
-    @Override
-    public String toString() {
-        return source.getName();
     }
 }

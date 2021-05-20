@@ -44,6 +44,10 @@ public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseE
     @Getter
     @UIField(order = 20)
     private boolean autoScale;
+    @Lob
+    @Column(length = 1048576)
+    @Convert(converter = JSONObjectConverter.class)
+    private JSONObject jsonData = new JSONObject();
 
     public String getFieldFetchType() {
         return getJsonData("fieldFetchType", null);
@@ -53,11 +57,6 @@ public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseE
         jsonData.put("fieldFetchType", value);
         return (T) this;
     }
-
-    @Lob
-    @Column(length = 1048576)
-    @Convert(converter = JSONObjectConverter.class)
-    private JSONObject jsonData = new JSONObject();
 
     @Override
     @UIFieldIgnore

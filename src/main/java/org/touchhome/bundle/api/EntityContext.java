@@ -13,6 +13,7 @@ import org.touchhome.bundle.api.repository.AbstractRepository;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface EntityContext {
 
@@ -115,6 +116,14 @@ public interface EntityContext {
 
     <T> T getBean(Class<T> clazz);
 
+    default <T> T getBean(Class<T> clazz, Supplier<T> defaultValueSupplier) {
+        try {
+            return getBean(clazz);
+        } catch (Exception ex) {
+            return defaultValueSupplier.get();
+        }
+    }
+
     <T> Collection<T> getBeansOfType(Class<T> clazz);
 
     <T> Map<String, T> getBeansOfTypeWithBeanName(Class<T> clazz);
@@ -144,10 +153,6 @@ public interface EntityContext {
 
     <T> List<Class<? extends T>> getClassesWithParent(Class<T> baseClass, String... packages);
 
-    interface EntityUpdateListener<T> {
-        void entityUpdated(T newValue, T oldValue);
-    }
-
     default String getEnv(String key) {
         return getEnv(key, String.class, null);
     }
@@ -157,4 +162,8 @@ public interface EntityContext {
     }
 
     <T> T getEnv(String key, Class<T> classType, T defaultValue);
+
+    interface EntityUpdateListener<T> {
+        void entityUpdated(T newValue, T oldValue);
+    }
 }

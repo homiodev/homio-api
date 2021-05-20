@@ -20,10 +20,6 @@ public class RawType implements State {
     @Getter
     protected String mimeType;
 
-    public static RawType ofPlainText(String value) {
-        return new RawType((value == null ? "" : value).getBytes(), MimeTypeUtils.TEXT_PLAIN_VALUE);
-    }
-
     public RawType(byte[] bytes) {
         this(bytes, new Tika().detect(bytes), null);
     }
@@ -41,6 +37,10 @@ public class RawType implements State {
         this.name = name;
     }
 
+    public static RawType ofPlainText(String value) {
+        return new RawType((value == null ? "" : value).getBytes(), MimeTypeUtils.TEXT_PLAIN_VALUE);
+    }
+
     public static RawType valueOf(String value) {
         int idx, idx2;
         if (value.isEmpty()) {
@@ -53,16 +53,16 @@ public class RawType implements State {
         return new RawType(Base64.getDecoder().decode(value.substring(idx + 1)), value.substring(5, idx2));
     }
 
-    @Override
-    public String toString() {
-        return RawType.detectByteToString(bytes);
-    }
-
     public static String detectByteToString(byte[] bytes) {
         CharsetDetector detector = new CharsetDetector();
         detector.setText(bytes);
         detector.detect();
         return detector.getString(bytes, "UTF-8");
+    }
+
+    @Override
+    public String toString() {
+        return RawType.detectByteToString(bytes);
     }
 
     @Override
@@ -90,7 +90,8 @@ public class RawType implements State {
         if (mimeType.startsWith("image/")) {
             return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
         }
-        return Base64.getEncoder().encodeToString(bytes);
+        return toString();
+        // return Base64.getEncoder().encodeToString(bytes);
     }
 
     @Override

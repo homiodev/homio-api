@@ -21,6 +21,8 @@ public enum UIFieldType {
     SelectBoxDynamic(Object::toString),
     // Just a text
     Text(Object::toString),
+    HTML(Object::toString), // Draw as html
+    Markdown(Object::toString), // Draw as Markdown
 
     // Button that fires server action
     Button(Object::toString),

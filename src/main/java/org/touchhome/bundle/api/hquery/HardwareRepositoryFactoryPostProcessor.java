@@ -519,6 +519,10 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
         return foundClasses;
     }
 
+    public interface HardwareRepositoryThreadPool {
+        Future<?> submit(String name, Runnable runnable);
+    }
+
     @RequiredArgsConstructor
     private static class LinesReader implements Runnable {
 
@@ -547,14 +551,10 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
     @RequiredArgsConstructor
     private static class ProcessCache {
         final int cacheValidInSec;
-        int retValue;
         final List<String> errors = new ArrayList<>();
         final List<String> inputs = new ArrayList<>();
+        int retValue;
         Object response;
         long executedTime = System.currentTimeMillis();
-    }
-
-    public interface HardwareRepositoryThreadPool {
-        Future<?> submit(String name, Runnable runnable);
     }
 }

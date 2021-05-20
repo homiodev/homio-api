@@ -20,12 +20,11 @@ import java.util.function.Predicate;
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
     public static final String CONDITION = "CONDITION";
-
+    Object text;
     @JsonIgnore
     private int order;
     private String opcode;
     private BlockType blockType;
-    Object text;
     private Map<String, ArgumentTypeDescription> arguments = new HashMap<>();
     @JsonIgnore
     private Scratch3BlockHandler handler;

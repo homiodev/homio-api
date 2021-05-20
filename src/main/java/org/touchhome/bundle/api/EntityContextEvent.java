@@ -15,6 +15,14 @@ public interface EntityContextEvent {
     void setListener(String key, Consumer<Object> listener);
 
     /**
+     * Add event and fire it immediately
+     */
+    default void fireEvent(String key, String name, FlowMap nameParams, Object value, boolean compareValues) {
+        addEvent(key, name, nameParams);
+        fireEvent(key, value, compareValues);
+    }
+
+    /**
      * Fire event with key
      */
     default void fireEvent(String key) {
@@ -31,7 +39,7 @@ public interface EntityContextEvent {
     /**
      * Fire event with key and value
      */
-    void fireEvent(String key, Object value);
+    void fireEvent(String key, Object value, boolean compareValues);
 
     // return key
     String addEvent(String key, String name);
@@ -40,23 +48,12 @@ public interface EntityContextEvent {
         return addEvent(key, Lang.getServerMessage(name, nameParams));
     }
 
-    /**
-     * Add event and fire it immediately
-     */
-    String addEventAndFire(String key, String name, Object value);
-
-    /**
-     * Add event and fire it immediately
-     */
-    default String addEventAndFire(String key, String name, FlowMap nameParams, Object value) {
-        return addEventAndFire(key, Lang.getServerMessage(name, nameParams), value);
+    default void fireEvent(String key, Object value) {
+        fireEvent(key, null, null, value, true);
     }
 
-    /**
-     * Add event and fire it immediately
-     */
-    default String addEventAndFire(String key, String name) {
-        return addEventAndFire(key, name, null);
+    default void fireEvent(String key, String name, String value) {
+        fireEvent(key, name, null, value, true);
     }
 
     <T extends BaseEntity> void addEntityUpdateListener(String entityID, String key, Consumer<T> listener);

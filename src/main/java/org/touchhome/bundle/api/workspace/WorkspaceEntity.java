@@ -18,7 +18,7 @@ public final class WorkspaceEntity extends BaseEntity<WorkspaceEntity> implement
     public static final String PREFIX = "ws_";
 
     @Lob
-    @Column(length = 1048576)
+    @Column(length = 10485760) // 10MB
     private String content;
 
     @Override

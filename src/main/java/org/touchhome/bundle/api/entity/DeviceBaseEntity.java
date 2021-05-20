@@ -48,24 +48,10 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Enumerated(EnumType.STRING)
     @Column(length = 32)
     private Status status;
-
-    @Override
-    public T setStatus(Status status) {
-        this.status = status;
-        return (T) this;
-    }
-
     @Getter
     @UIField(order = 23, readOnly = true, hideOnEmpty = true)
     @Column(length = 512)
     private String statusMessage;
-
-    @Override
-    public T setStatusMessage(String statusMessage) {
-        this.statusMessage = statusMessage;
-        return (T) this;
-    }
-
     @Getter
     @Setter
     @UIField(order = 22, readOnly = true)
@@ -73,28 +59,35 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @UIFieldColorStatusMatch
     @Column(length = 32)
     private Status joined = Status.UNKNOWN;
-
     @Lob
     @Getter
-    @Column(length = 1048576)
+    @Column(length = 3145728) // 3MB
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData = new JSONObject();
-
     @Getter
     @Setter
     private int xb = 0;
-
     @Getter
     @Setter
     private int yb = 0;
-
     @Getter
     @Setter
     private int bw = 1;
-
     @Getter
     @Setter
     private int bh = 1;
+
+    @Override
+    public T setStatus(Status status) {
+        this.status = status;
+        return (T) this;
+    }
+
+    @Override
+    public T setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+        return (T) this;
+    }
 
     public String getShortTitle() {
         return "";

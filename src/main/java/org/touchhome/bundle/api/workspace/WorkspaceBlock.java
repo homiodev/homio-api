@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.workspace;
 
 import com.pivovarit.function.ThrowingConsumer;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
@@ -10,7 +11,6 @@ import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.util.Curl;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +21,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface WorkspaceBlock {
+    Set<String> MEDIA_EXTENSIONS = new HashSet<>(Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif",
+            ".jfi", ".webp", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg",
+            ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx", ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm",
+            ".html", ".7z", ".zip", ".tar.gz", ".gz", ".js", ".mp3"));
+
     void logError(String message, Object... params);
 
     void logErrorAndThrow(String message, Object... params);
@@ -43,6 +48,16 @@ public interface WorkspaceBlock {
 
     default <T extends BaseEntity> T getMenuValueEntity(String key, MenuBlock.ServerMenuBlock menuBlock) {
         return getEntityContext().getEntity(getMenuValue(key, menuBlock, String.class));
+    }
+
+    default <T extends BaseEntity> T getMenuValueEntityRequired(String key, MenuBlock.ServerMenuBlock menuBlock) {
+        String entityID = getMenuValue(key, menuBlock, String.class);
+        T entity = getEntityContext().getEntity(entityID);
+        if (entity == null) {
+            logErrorAndThrow("Unable to find entity for block: {}. Value: {}", key, entityID);
+        }
+
+        return entity;
     }
 
     default <P> P getMenuValue(String key, MenuBlock.StaticMenuBlock<P> menuBlock) {
@@ -132,6 +147,18 @@ public interface WorkspaceBlock {
         return getInputString(key, "");
     }
 
+    default String getInputStringRequired(String key) {
+        return getInputStringRequired(key, "<" + key + "> is mandatory field");
+    }
+
+    default String getInputStringRequired(String key, String errorMessage) {
+        String value = getInputString(key);
+        if (StringUtils.isEmpty(value)) {
+            logErrorAndThrow(errorMessage);
+        }
+        return value;
+    }
+
     default byte[] getInputByteArray(String key) {
         return getInputByteArray(key, new byte[0]);
     }
@@ -206,11 +233,6 @@ public interface WorkspaceBlock {
         return child;
     }
 
-    Set<String> MEDIA_EXTENSIONS = new HashSet<>(Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif",
-            ".jfi", ".webp", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg",
-            ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx", ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm",
-            ".html", ".7z", ".zip", ".tar.gz", ".gz", ".js", ".mp3"));
-
     default RawType getInputRawType(String key) {
         return getInputRawType(key, 10 * 1024 * 1024); // 10mb by default
     }
@@ -225,12 +247,8 @@ public interface WorkspaceBlock {
             if (mediaURL.startsWith("http")) {
                 // max 10mb
                 return Curl.download(mediaURL, maxDownloadSize);
-            } else if (mediaURL.startsWith("file:") || MEDIA_EXTENSIONS.stream().anyMatch(mediaURL::endsWith)) {
-                String temp = mediaURL;
-                if (!mediaURL.startsWith("file:")) {
-                    temp = "file://" + mediaURL;
-                }
-                Path path = Paths.get(new URL(temp).getPath());
+            } else if (Files.isRegularFile(Paths.get(mediaURL))) {
+                Path path = Paths.get(mediaURL);
                 content = Files.readAllBytes(path);
                 name = path.getFileName().toString();
             } /*else if (mediaURL.startsWith("data:")) {

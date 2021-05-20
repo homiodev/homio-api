@@ -58,6 +58,8 @@ public interface EntityContextSetting {
 
     <T> void listenValue(Class<? extends SettingPlugin<T>> settingClass, String key, Consumer<T> listener);
 
+    <T> void unListenValue(Class<? extends SettingPlugin<T>> settingClass, String key);
+
     default <T> void listenValueAndGet(Class<? extends SettingPlugin<T>> settingClass, String key, Consumer<T> listener) {
         listenValue(settingClass, key, listener);
         listener.accept(getValue(settingClass));

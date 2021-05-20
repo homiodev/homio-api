@@ -26,8 +26,6 @@ public abstract class MenuBlock {
     protected boolean multiSelect;
     protected String uiDelimiter;
 
-    public abstract Object getDefaultValue();
-
     public static ServerMenuBlock ofServer(String name, String url, String firstKey, String firstValue, Integer... clusters) {
         return new ServerMenuBlock(name, url, firstKey, firstValue, clusters);
     }
@@ -64,6 +62,8 @@ public abstract class MenuBlock {
         return new StaticMenuBlock(name, items, String.class).setDefaultValue(defaultValue);
     }
 
+    public abstract Object getDefaultValue();
+
     @Getter
     @Accessors(chain = true)
     public static class ServerMenuBlock extends MenuBlock {
@@ -72,6 +72,16 @@ public abstract class MenuBlock {
         private final MenuBlockFunction items;
         @JsonIgnore
         private final Integer[] clusters;
+
+        ServerMenuBlock(String name, String url, String keyName, String valueName, String firstKey, String firstValue, Integer[] clusters) {
+            super(name);
+            this.clusters = clusters;
+            this.items = new MenuBlockFunction(url, keyName, valueName, new String[]{firstKey, firstValue});
+        }
+
+        ServerMenuBlock(String name, String url, String firstKey, String firstValue, Integer[] clusters) {
+            this(name, url, null, null, firstKey, firstValue, clusters);
+        }
 
         public <T extends BaseEntity> ServerMenuBlock setDefault(T defaultEntity) {
             if (defaultEntity != null) {
@@ -89,16 +99,6 @@ public abstract class MenuBlock {
         public ServerMenuBlock setUIDelimiter(String uiDelimiter) {
             this.uiDelimiter = uiDelimiter;
             return this;
-        }
-
-        ServerMenuBlock(String name, String url, String keyName, String valueName, String firstKey, String firstValue, Integer[] clusters) {
-            super(name);
-            this.clusters = clusters;
-            this.items = new MenuBlockFunction(url, keyName, valueName, new String[]{firstKey, firstValue});
-        }
-
-        ServerMenuBlock(String name, String url, String firstKey, String firstValue, Integer[] clusters) {
-            this(name, url, null, null, firstKey, firstValue, clusters);
         }
 
         public ServerMenuBlock setDependency(MenuBlock... dependencies) {
@@ -132,12 +132,6 @@ public abstract class MenuBlock {
         private Object defaultValue;
         private Class<T> typeClass;
 
-        public StaticMenuBlock<T> setMultiSelect(String uiDelimiter) {
-            this.multiSelect = true;
-            this.uiDelimiter = uiDelimiter;
-            return this;
-        }
-
         StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
             super(name);
             this.typeClass = typeClass;
@@ -146,6 +140,12 @@ public abstract class MenuBlock {
                     this.items.add(new StaticMenuItem(entry.getKey(), entry.getValue()));
                 }
             }
+        }
+
+        public StaticMenuBlock<T> setMultiSelect(String uiDelimiter) {
+            this.multiSelect = true;
+            this.uiDelimiter = uiDelimiter;
+            return this;
         }
 
         public StaticMenuBlock add(String key, Object value) {

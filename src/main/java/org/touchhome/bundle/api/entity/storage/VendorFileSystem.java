@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.fs;
+package org.touchhome.bundle.api.entity.storage;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,20 +14,16 @@ import java.util.Collection;
 
 @Log4j2
 public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>, E extends BaseEntity & BaseFileSystemEntity> {
+    protected final EntityContext entityContext;
     @Setter
     @Getter
     private D drive;
-
     @Getter
     private E entity;
-
     @Getter
     @Setter
     private FS root;
-
     private long connectionHashCode;
-
-    protected final EntityContext entityContext;
 
     public VendorFileSystem(E entity, EntityContext entityContext) {
         log.warn("Create FS: <{}> for entity: <{}>", getClass().getSimpleName(), entity.getTitle());
