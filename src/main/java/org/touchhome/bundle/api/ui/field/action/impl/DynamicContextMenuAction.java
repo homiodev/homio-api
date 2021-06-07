@@ -25,7 +25,7 @@ public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAc
     private String icon;
     private String iconColor;
     private boolean disabled;
-    private JSONObject metadata;
+    private JSONObject metadata = new JSONObject();
     private List<ActionInputParameter> parameters = new ArrayList<>();
 
     public DynamicContextMenuAction(String name, int order, Consumer<JSONObject> action) {
@@ -53,5 +53,11 @@ public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAc
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    public void setMetadata(JSONObject metadata) {
+        if (metadata != null) {
+            this.metadata = metadata;
+        }
     }
 }

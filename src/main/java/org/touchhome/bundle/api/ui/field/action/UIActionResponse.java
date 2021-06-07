@@ -29,7 +29,7 @@ public class UIActionResponse {
         this.icon = action.getIcon();
         this.iconColor = action.getIconColor();
         this.disabled = action.isDisabled() ? true : null;
-        if (!action.getMetadata().isEmpty()) {
+        if (action.getMetadata() != null && !action.getMetadata().isEmpty()) {
             for (String key : JSONObject.getNames(action.getMetadata())) {
                 metadata.put(key, action.getMetadata().get(key));
             }

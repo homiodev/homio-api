@@ -26,6 +26,7 @@ public class ActionInputParameter {
     private final Set<String> validators;
     private final String value;
     private String description;
+    private String style;
 
     public ActionInputParameter(UIActionInput input) {
         this.name = input.name();
@@ -49,6 +50,14 @@ public class ActionInputParameter {
 
     public static ActionInputParameter text(String name, String defaultValue) {
         return new ActionInputParameter(name, UIActionInput.Type.text, null, defaultValue);
+    }
+
+    public static ActionInputParameter bool(String name, boolean defaultValue) {
+        return new ActionInputParameter(name, UIActionInput.Type.bool, null, String.valueOf(defaultValue));
+    }
+
+    public static ActionInputParameter message(String message) {
+        return new ActionInputParameter(message, UIActionInput.Type.info, null, null);
     }
 
     public static ActionInputParameter ip(String name, String defaultIpAddress) {

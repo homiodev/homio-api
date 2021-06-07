@@ -11,12 +11,16 @@ import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.exception.ServerException;
 import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
+import org.touchhome.bundle.api.ui.DialogModel;
+import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
 import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public interface EntityContextUI {
@@ -80,13 +84,50 @@ public interface EntityContextUI {
 
     void progress(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
 
+    default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
+                                  @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
+        sendConfirmation(key, title, responseType -> {
+            if (responseType == DialogResponseType.Accepted) {
+                confirmHandler.run();
+            }
+        }, messages, 0, headerButtonAttachTo);
+    }
+
     /**
      * Send confirmation message to ui with back handler
      *
      * @param headerButtonAttachTo - if set - attach confirm message to header button
      */
-    void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
-                          @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo);
+    default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Consumer<DialogResponseType> confirmHandler,
+                                  @NotNull Collection<String> messages, int maxTimeoutInSec, @Nullable String headerButtonAttachTo) {
+        sendDialogRequest(key, title, (responseType, pressedButton, parameters) ->
+                confirmHandler.accept(responseType), dialogModel -> {
+            List<ActionInputParameter> inputs = messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
+            dialogModel.headerButtonAttachTo(headerButtonAttachTo)
+                    .submitButton("Confirm", button -> {
+                    }).group("General", inputs);
+        });
+    }
+
+    /**
+     * Send request dialog to ui
+     */
+    void sendDialogRequest(@NotNull DialogModel dialogModel);
+
+    default void sendDialogRequest(@NotNull String key, @NotNull String title, DialogRequestHandler actionHandler,
+                                   Consumer<DialogModel> dialogBuilderSupplier) {
+        DialogModel dialogModel = new DialogModel(key, title, actionHandler);
+        dialogBuilderSupplier.accept(dialogModel);
+        sendDialogRequest(dialogModel);
+    }
+
+    interface DialogRequestHandler {
+        void handle(DialogResponseType responseType, String pressedButton, JSONObject parameters);
+    }
+
+    enum DialogResponseType {
+        Cancelled, Timeout, Accepted
+    }
 
     /**
      * Add message to 'bell' header select box
@@ -340,6 +381,6 @@ public interface EntityContextUI {
     }
 
     enum GlobalSendType {
-        popup, json, setting, progress, bell, headerButton, openConsole, confirmation, reload, addItem
+        popup, json, setting, progress, bell, headerButton, openConsole, reload, addItem, dialog
     }
 }

@@ -221,6 +221,6 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
 
     @Override
     default Path parseValue(EntityContext entityContext, String value) {
-        return Paths.get(value);
+        return value == null ? null : Paths.get(value);
     }
 }

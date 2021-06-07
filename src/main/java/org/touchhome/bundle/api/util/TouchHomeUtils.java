@@ -187,8 +187,9 @@ public class TouchHomeUtils {
         if (ex == null) {
             return null;
         }
-        if (ex instanceof NullPointerException || ex.getCause() instanceof NullPointerException) {
-            return ex.getStackTrace()[0].toString();
+        if (ex.getCause() instanceof NullPointerException || (ex.getCause() == null
+                && ex instanceof NullPointerException)) {
+            return "Unexpected NullPointerException at line: " + ex.getStackTrace()[0].toString();
         }
         return ex.getCause() == null ? ex.toString() : ex.getCause().toString();
     }

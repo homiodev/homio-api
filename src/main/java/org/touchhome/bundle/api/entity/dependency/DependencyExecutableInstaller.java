@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.hardware.other.MachineHardwareRepository;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.setting.SettingPluginOptionsFileExplorer;
@@ -15,11 +16,20 @@ import java.nio.file.Path;
 
 import static org.touchhome.bundle.api.util.Curl.downloadWithProgress;
 
-public interface DependencyExecutableInstaller extends UIActionHandler {
+public abstract class DependencyExecutableInstaller implements UIActionHandler {
 
-    String getName();
+    protected Boolean requireInstall;
 
-    default void installDependency(EntityContext entityContext, ProgressBar progressBar) throws Exception {
+    public abstract String getName();
+
+    protected abstract Path installDependencyInternal(EntityContext entityContext, ProgressBar progressBar) throws Exception;
+
+    protected void afterDependencyInstalled(EntityContext entityContext, Path path) {
+
+    }
+
+    public void installDependency(EntityContext entityContext, ProgressBar progressBar) throws Exception {
+        requireInstall = null;
         Path path = installDependencyInternal(entityContext, progressBar);
         if (path != null) {
             entityContext.setting().setValue(getDependencyPluginSettingClass(), path);
@@ -29,21 +39,40 @@ public interface DependencyExecutableInstaller extends UIActionHandler {
             throw new RuntimeException("Something went wrong after install dependency. Executable file still required");
         }
         progressBar.progress(99, "Installing finished");
-        afterDependencyInstalled();
+        afterDependencyInstalled(entityContext, path);
         entityContext.event().fireEvent(getName() + "-dependency-installed", true, false);
     }
 
-    boolean isRequireInstallDependencies(EntityContext entityContext, boolean useCacheIfPossible);
+    public synchronized boolean isRequireInstallDependencies(EntityContext entityContext, boolean useCacheIfPossible) {
+        if (requireInstall == null || !useCacheIfPossible) {
+            requireInstall = true;
+            MachineHardwareRepository repository = entityContext.getBean(MachineHardwareRepository.class);
+            if (repository.isSoftwareInstalled(getName())) {
+                requireInstall = false;
+            } else {
+                requireInstall = checkDependencyInstalled(entityContext, repository);
+            }
+        }
+        return requireInstall;
+    }
 
-    Path installDependencyInternal(EntityContext entityContext, ProgressBar progressBar) throws Exception;
+    public boolean checkDependencyInstalled(EntityContext entityContext, MachineHardwareRepository repository) {
+        Path targetPath = entityContext.setting().getValue(getDependencyPluginSettingClass());
+        if (Files.isRegularFile(targetPath)) {
+            return checkWinDependencyInstalled(repository, targetPath);
+        }
+        return true;
+    }
 
-    void afterDependencyInstalled();
+    public boolean checkWinDependencyInstalled(MachineHardwareRepository repository, Path targetPath) {
+        return !repository.execute(targetPath + " -version").startsWith(getName() + " version");
+    }
 
     /**
      * Just an utility methodUISidebarButton
      */
     @SneakyThrows
-    default Path downloadAndExtract(String url, String archiveType, String folderName, ProgressBar progressBar, Logger log) {
+    public Path downloadAndExtract(String url, String archiveType, String folderName, ProgressBar progressBar, Logger log) {
         log.info("Downloading <{}> from url <{}>", folderName, url);
         Path targetFolder = TouchHomeUtils.getInstallPath().resolve(folderName);
         Path archiveFile = targetFolder.resolve(folderName + "." + archiveType);
@@ -55,15 +84,15 @@ public interface DependencyExecutableInstaller extends UIActionHandler {
         return targetFolder;
     }
 
-    Class<? extends SettingPluginOptionsFileExplorer> getDependencyPluginSettingClass();
+    public abstract Class<? extends SettingPluginOptionsFileExplorer> getDependencyPluginSettingClass();
 
     @Override
-    default boolean isEnabled(EntityContext entityContext) {
+    public boolean isEnabled(EntityContext entityContext) {
         return isRequireInstallDependencies(entityContext, true);
     }
 
     @Override
-    default ActionResponseModel handleAction(EntityContext entityContext, JSONObject ignore) {
+    public ActionResponseModel handleAction(EntityContext entityContext, JSONObject ignore) {
         if (isRequireInstallDependencies(entityContext, false)) {
             entityContext.bgp().runWithProgress("install-deps-" + getClass().getSimpleName(), false,
                     progressBar -> installDependency(entityContext, progressBar), null,

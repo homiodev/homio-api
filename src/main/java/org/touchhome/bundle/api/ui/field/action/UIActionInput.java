@@ -29,7 +29,7 @@ public @interface UIActionInput {
     Pattern pattern() default @Pattern(regexp = ".*");
 
     enum Type {
-        text, json, textarea, password, number
+        text, json, textarea, password, number, info, bool
     }
 
     enum Validator {
