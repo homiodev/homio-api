@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.entity;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.touchhome.bundle.api.util.SecureString;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,6 +61,14 @@ public interface HasJsonData<T> {
 
     default String getJsonData(String key) {
         return getJsonData().optString(key);
+    }
+
+    default SecureString getJsonSecure(String key) {
+        return new SecureString(getJsonData(key));
+    }
+
+    default SecureString getJsonSecure(String key, String defaultValue) {
+        return new SecureString(getJsonData(key, defaultValue));
     }
 
     default Double getJsonData(String key, double defaultValue) {

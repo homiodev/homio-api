@@ -1,6 +1,7 @@
 package org.touchhome.bundle.api.workspace;
 
 import com.pivovarit.function.ThrowingConsumer;
+import com.pivovarit.function.ThrowingRunnable;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -139,9 +140,32 @@ public interface WorkspaceBlock {
 
     Object evaluate();
 
-    Integer getInputInteger(String key);
+    default Integer getInputInteger(String key) {
+        return getInputInteger(key, 0);
+    }
 
-    Float getInputFloat(String key);
+    default Integer getInputInteger(String key, Integer defaultValue) {
+        Float value = getInputFloat(key, null);
+        return value == null ? defaultValue : value.intValue();
+    }
+
+    default Integer getInputIntegerRequired(String key) {
+        return getInputFloatRequired(key, "<" + key + "> is mandatory field").intValue();
+    }
+
+    default Float getInputFloat(String key) {
+        return getInputFloat(key, 0F);
+    }
+
+    Float getInputFloat(String key, Float defaultValue);
+
+    default Float getInputFloatRequired(String key, String errorMessage) {
+        Float value = getInputFloat(key);
+        if (value == null) {
+            logErrorAndThrow(errorMessage);
+        }
+        return value;
+    }
 
     default String getInputString(String key) {
         return getInputString(key, "");
@@ -215,7 +239,7 @@ public interface WorkspaceBlock {
 
     EntityContext getEntityContext();
 
-    void onRelease(Runnable listener);
+    void onRelease(ThrowingRunnable<Exception> listener);
 
     default WorkspaceBlock getNextOrThrow() {
         WorkspaceBlock next = getNext();

@@ -150,7 +150,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
                     log.error("Error while execute curl command <{}>. Msg: <{}>", command, ex.getMessage());
                     processCache.errors.add(TouchHomeUtils.getErrorMessage(ex));
                     if (!curlQuery.ignoreOnError()) {
-                        throw new HardwareException(processCache.errors, -1);
+                        throw new HardwareException(processCache.errors, processCache.inputs, -1);
                     } else if (!curlQuery.valueOnError().isEmpty()) {
                         return Optional.of(new AtomicReference<>(curlQuery.valueOnError()));
                     }
@@ -309,7 +309,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
             } else {
                 log.error("Error while execute command <{}>. Code: <{}>, Msg: <{}>", command, retValue, String.join(", ", errors));
                 if (!hardwareQuery.ignoreOnError()) {
-                    throw new HardwareException(errors, retValue);
+                    throw new HardwareException(errors, inputs, retValue);
                 } else if (!hardwareQuery.valueOnError().isEmpty()) {
                     return hardwareQuery.valueOnError();
                 }
@@ -439,7 +439,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
     }
 
     private Object handleBucket(List<String> inputs, RawParse rawParse, Field field) {
-        return TouchHomeUtils.OS_NAME.isLinux() ? TouchHomeUtils.newInstance(rawParse.nix()).handle(inputs, field) :
+        return TouchHomeUtils.OS.isLinux() ? TouchHomeUtils.newInstance(rawParse.nix()).handle(inputs, field) :
                 TouchHomeUtils.newInstance(rawParse.win()).handle(inputs, field);
     }
 

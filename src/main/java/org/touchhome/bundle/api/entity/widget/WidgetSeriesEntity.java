@@ -39,6 +39,15 @@ public abstract class WidgetSeriesEntity<T extends WidgetBaseEntityAndSeries> ex
         return this;
     }
 
+    public Object setDynamicParameterFieldsHolder(JSONObject value) {
+        setJsonData("dsp", value);
+        return this;
+    }
+
+    public JSONObject getDynamicParameterFieldsHolder() {
+        return getJsonData().optJSONObject("dsp");
+    }
+
     @Override
     public void getAllRelatedEntities(Set<BaseEntity> set) {
         set.add(widgetEntity);

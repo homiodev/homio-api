@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.entity.widget.HasDisplaySeries;
+import org.touchhome.bundle.api.entity.widget.HasGaugeSeries;
+import org.touchhome.bundle.api.entity.widget.HasSliderSeries;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -11,7 +14,8 @@ import java.util.Set;
 @Entity
 @Getter
 @Accessors(chain = true)
-public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> {
+public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> implements HasSliderSeries,
+        HasDisplaySeries, HasGaugeSeries {
 
     public static final String PREFIX = "wsv_";
 
@@ -41,5 +45,25 @@ public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableE
     @Override
     public String getEntityPrefix() {
         return PREFIX;
+    }
+
+    @Override
+    public float getSliderValue() {
+        return getValue();
+    }
+
+    @Override
+    public void setSliderValue(float value) {
+        setValue(value);
+    }
+
+    @Override
+    public Object getDisplayValue() {
+        return getValue();
+    }
+
+    @Override
+    public float getGaugeValue() {
+        return getValue();
     }
 }

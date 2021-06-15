@@ -35,6 +35,8 @@ public interface EntityContext {
         return SystemUtils.IS_OS_LINUX && !isDevEnvironment();
     }
 
+    EntityContextWidget widget();
+
     EntityContextUI ui();
 
     EntityContextEvent event();

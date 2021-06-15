@@ -16,8 +16,8 @@ import java.util.Set;
 @Setter
 @Entity
 public final class WidgetTabEntity extends BaseEntity<WidgetTabEntity> implements Comparable<WidgetTabEntity> {
-    public static final String PREFIX = "wt_";
-    public static final String GENERAL_WIDGET_TAB_NAME = "main";
+    public static final String PREFIX = "wtab_";
+    public static final String GENERAL_WIDGET_TAB_NAME = PREFIX + "main";
 
     @Getter
     @JsonIgnore
@@ -38,7 +38,7 @@ public final class WidgetTabEntity extends BaseEntity<WidgetTabEntity> implement
 
     @Override
     protected void beforeDelete() {
-        if (this.getName().equals(GENERAL_WIDGET_TAB_NAME)) {
+        if (this.getEntityID().equals(GENERAL_WIDGET_TAB_NAME)) {
             throw new ServerException("ERROR.REMOVE_MAIN_TAB");
         }
         if (!widgetBaseEntities.isEmpty()) {

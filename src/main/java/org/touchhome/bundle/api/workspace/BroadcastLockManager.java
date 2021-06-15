@@ -20,6 +20,14 @@ public interface BroadcastLockManager {
 
     BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock, String key);
 
+    /**
+     * Create lock.
+     *
+     * @param workspaceBlock
+     * @param key
+     * @param expectedValue  - any value. If Pattern - than checks if value match pattern
+     * @return
+     */
     BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
 
     /**

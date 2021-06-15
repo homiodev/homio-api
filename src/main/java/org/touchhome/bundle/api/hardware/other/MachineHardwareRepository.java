@@ -14,6 +14,9 @@ public interface MachineHardwareRepository {
     @HardwareQuery(name = "Execute general command", value = ":command", win = ":command")
     String execute(@HQueryParam("command") String command);
 
+    @HardwareQuery(name = "Execute general command", value = ":command", win = ":command", printOutput = true)
+    String executeEcho(@HQueryParam("command") String command);
+
     @HardwareQuery(name = "Execute general command", value = ":command", win = ":command", maxSecondsTimeout = Integer.MAX_VALUE)
     String executeInfinite(@HQueryParam("command") String command);
 
@@ -47,8 +50,19 @@ public interface MachineHardwareRepository {
     @HardwareQuery(name = "Change file permission", value = "chmod :mode -R :path")
     void setPermissions(@HQueryParam("path") Path path, @HQueryParam("mode") int mode);
 
-    @HardwareQuery(name = "Install software", value = "apt-get install :soft", printOutput = true)
+    @HardwareQuery(name = "Install software", value = "apt-get install -y :soft", printOutput = true)
     void installSoftware(@HQueryParam("soft") String soft);
+
+    @HardwareQuery(name = "Enable systemctl", value = "systemctl enable :soft", printOutput = true)
+    void enableSystemCtl(@HQueryParam("soft") String soft);
+
+    @HardwareQuery(name = "Start systemctl", value = "systemctl start :soft", printOutput = true)
+    void startSystemCtl(@HQueryParam("soft") String soft);
+
+    default void enableAndStartSystemctl(String soft) {
+        enableSystemCtl(soft);
+        startSystemCtl(soft);
+    }
 
     @HardwareQuery(name = "apt-get update", value = "apt-get update", printOutput = true)
     void update();

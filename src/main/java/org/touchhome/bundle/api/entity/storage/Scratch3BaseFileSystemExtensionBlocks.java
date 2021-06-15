@@ -11,11 +11,15 @@ import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.bundle.api.workspace.scratch.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntryPoint, E extends BaseEntity & BaseFileSystemEntity>
         extends Scratch3ExtensionBlocks {
 
     private final Class<E> entityClass;
 
+    private final MenuBlock.StaticMenuBlock<UploadOptions> uploadOptionsMenu;
     private final MenuBlock.ServerMenuBlock fsEntityMenu;
     private final MenuBlock.ServerMenuBlock fileMenu;
     private final MenuBlock.ServerMenuBlock folderMenu;
@@ -34,8 +38,8 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
 
         // menu
         this.fsEntityMenu = MenuBlock.ofServerItems(ENTITY, entityClass);
+        this.uploadOptionsMenu = MenuBlock.ofStatic("uploadOptionsMenu", UploadOptions.class, UploadOptions.Append).setMultiSelect(" | ");
         this.unitMenu = MenuBlock.ofStatic("UNIT", Unit.class, Unit.B);
-        String bundleId = bundleEntryPoint.getBundleId();
         this.fileMenu = MenuBlock.ofServer("FILE", "rest/fs/file").setDependency(this.fsEntityMenu)
                 .setUIDelimiter("/");
         this.folderMenu = MenuBlock.ofServer("FOLDER", "rest/fs/folder", "/", "/").setDependency(this.fsEntityMenu)
@@ -43,12 +47,12 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
 
         // blocks
         this.sendFile = ofDrive(Scratch3Block.ofHandler(10, "send_file", BlockType.command,
-                name + " upload [VALUE] as [NAME] to [PARENT] of [ENTITY] | Append: [APPEND]", this::sendFileHandle));
+                name + " upload [VALUE] as [NAME] to [PARENT] of [ENTITY] | Options: [OPTIONS]", this::sendFileHandle));
         this.sendFile.addArgument(VALUE, ArgumentType.string, "body to upload");
         this.sendFile.addArgument("NAME", "test.txt");
         this.sendFile.addArgument("PARENT", this.folderMenu);
         this.sendFile.addArgument("CONTENT", ArgumentType.string);
-        this.sendFile.addArgument("APPEND", ArgumentType.checkbox);
+        this.sendFile.addArgument("OPTIONS", this.uploadOptionsMenu);
 
         this.getFileContent = ofDrive(Scratch3Block.ofReporter(20, "get_file_content",
                 name + " get [FILE] of [ENTITY]", this::getFieldContent));
@@ -117,7 +121,17 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         String[] parentPath = folderId.contains("~~~") ? folderId.split("~~~") : folderId.split("/");
         try {
             VendorFileSystem fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
-            fileSystem.upload(parentPath, fileName, value, workspaceBlock.getInputBoolean("APPEND"));
+            List<UploadOptions> properties = workspaceBlock.getMenuValues("OPTIONS", this.uploadOptionsMenu, UploadOptions.class, "~~~");
+
+            if (properties.contains(UploadOptions.PrependNewLine)) {
+                value = addAll("\n".getBytes(), value);
+            }
+            if (properties.contains(UploadOptions.AppendNewLine)) {
+                value = addAll(value, "\n".getBytes());
+            }
+
+            fileSystem.upload(parentPath, fileName, value, properties.contains(UploadOptions.Append),
+                    properties.contains(UploadOptions.Truncate));
             fileSystem.updateCache(true);
         } catch (Exception ex) {
             workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());
@@ -133,5 +147,15 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     private enum Unit {
         B(1), KB(1024), MP(1024 * 1024), GB(1024 * 1024 * 1024);
         private final double divider;
+    }
+
+    private enum UploadOptions {
+        Truncate, Append, PrependNewLine, AppendNewLine
+    }
+
+    public static byte[] addAll(final byte[] array1, byte[] array2) {
+        byte[] joinedArray = Arrays.copyOf(array1, array1.length + array2.length);
+        System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
+        return joinedArray;
     }
 }

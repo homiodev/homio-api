@@ -54,7 +54,7 @@ public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>,
 
     public abstract long getUsedSpace();
 
-    public abstract void upload(String[] parentPath, String fileName, byte[] content, boolean append) throws Exception;
+    public abstract void upload(String[] parentPath, String fileName, byte[] content, boolean append, boolean truncate) throws Exception;
 
     public abstract boolean delete(String[] path) throws Exception;
 

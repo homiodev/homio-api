@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.entity.widget;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.exception.ServerException;
@@ -33,7 +34,7 @@ public abstract class WidgetBaseEntityAndSeries<T extends WidgetBaseEntityAndSer
         if (series != null) {
             for (S item : series) {
                 String dataSource = item.getDataSource();
-                if (dataSource != null) {
+                if (StringUtils.isNotEmpty(dataSource)) {
                     BaseEntity entity = entityContext.getEntity(dataSource);
                     if (entity == null) {
                         updated = true;

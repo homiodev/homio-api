@@ -3,6 +3,7 @@ package org.touchhome.bundle.api;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -370,7 +371,7 @@ public interface EntityContextUI {
         if (ex instanceof ServerException) {
             text = Lang.getServerMessage(ex.getMessage(), ((ServerException) ex).getMessageParam() == null ? messageParam : ((ServerException) ex).getMessageParam());
         } else {
-            text = message == null ? ex == null ? "Unknown error" : ex.getMessage() : message;
+            text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {
                 text = TouchHomeUtils.getErrorMessage(ex);
             }

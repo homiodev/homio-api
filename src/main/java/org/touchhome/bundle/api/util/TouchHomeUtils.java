@@ -58,7 +58,7 @@ public class TouchHomeUtils {
     private static final Path mediaPath;
     @Getter
     private static final Path sshPath;
-    public static OsName OS_NAME = detectOs();
+    public static OsName OS = detectOs();
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private static Path rootPath;
