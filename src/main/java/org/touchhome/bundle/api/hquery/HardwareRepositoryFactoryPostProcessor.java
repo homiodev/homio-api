@@ -283,7 +283,9 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
         return null;
     }
 
-    private Object handleCommandResult(HardwareQuery hardwareQuery, Method method, ErrorsHandler errorsHandler, String command, int retValue, List<String> inputs, List<String> errors) throws IllegalAccessException, InstantiationException {
+    private Object handleCommandResult(HardwareQuery hardwareQuery, Method method, ErrorsHandler errorsHandler,
+                                       String command, int retValue,
+                                       List<String> inputs, List<String> errors) throws IllegalAccessException, InstantiationException {
         Class<?> returnType = method.getReturnType();
 
         // in case we expect return num we ignore any errors
@@ -324,7 +326,7 @@ public class HardwareRepositoryFactoryPostProcessor implements BeanFactoryPostPr
             } else {
                 inputs.addAll(errors);
             }
-            inputs = inputs.stream().map(String::trim).collect(Collectors.toList());
+            inputs = Collections.unmodifiableCollection(inputs).stream().map(String::trim).collect(Collectors.toList());
             ListParse listParse = method.getAnnotation(ListParse.class);
             ListParse.LineParse lineParse = method.getAnnotation(ListParse.LineParse.class);
             ListParse.BooleanLineParse booleanParse = method.getAnnotation(ListParse.BooleanLineParse.class);

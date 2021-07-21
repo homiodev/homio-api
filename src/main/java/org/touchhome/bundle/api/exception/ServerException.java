@@ -1,6 +1,8 @@
 package org.touchhome.bundle.api.exception;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
+import org.touchhome.bundle.api.Lang;
 import org.touchhome.bundle.api.util.FlowMap;
 
 public class ServerException extends RuntimeException {
@@ -22,5 +24,18 @@ public class ServerException extends RuntimeException {
     public ServerException(String message, FlowMap messageParam) {
         super(message);
         this.messageParam = messageParam;
+    }
+
+    public ServerException(String message, String param0, String value0) {
+        this(message, FlowMap.of(param0, value0));
+    }
+
+    @Override
+    public String toString() {
+        return toString(null);
+    }
+
+    public String toString(@Nullable FlowMap messageParam) {
+        return Lang.getServerMessage(getMessage(), this.messageParam == null ? messageParam : this.messageParam);
     }
 }

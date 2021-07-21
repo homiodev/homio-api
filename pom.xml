@@ -79,6 +79,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.fathzer</groupId>
+            <artifactId>javaluator</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>tec.uom</groupId>
             <artifactId>uom-se</artifactId>
             <scope>provided</scope>

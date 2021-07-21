@@ -36,26 +36,6 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
         return requireConfigure() ? Lang.getServerMessage(prefix.substring(0, prefix.length() - 1) + ".description") : null;
     }
 
-    @UIField(order = 70, readOnly = true)
-    @UIFieldColorStatusMatch
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    default Status getStatus() {
-        return getJsonDataEnum("st", Status.UNKNOWN);
-    }
-
-    default T setStatus(Status value) {
-        return setJsonDataEnum("st", value);
-    }
-
-    @UIField(order = 80, readOnly = true, hideOnEmpty = true)
-    default String getStatusMessage() {
-        return getJsonData("sm");
-    }
-
-    default T setStatusMessage(String value) {
-        return setJsonData("sm", value);
-    }
-
     @UIContextMenuAction(value = "RESTART", icon = "fas fa-power-off")
     default ActionResponseModel restart(EntityContext entityContext) {
         if (this.getFileSystem(entityContext).restart(true)) {

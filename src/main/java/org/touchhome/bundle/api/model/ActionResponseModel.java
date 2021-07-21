@@ -57,6 +57,10 @@ public class ActionResponseModel {
         return new ActionResponseModel(value, ResponseAction.error);
     }
 
+    public static ActionResponseModel success() {
+        return new ActionResponseModel("ACTION.SUCCESS", ResponseAction.success);
+    }
+
     public static ActionResponseModel showSuccess(Object value) {
         return new ActionResponseModel(value, ResponseAction.success);
     }

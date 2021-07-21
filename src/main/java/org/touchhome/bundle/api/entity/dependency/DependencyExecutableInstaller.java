@@ -7,6 +7,7 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.hardware.other.MachineHardwareRepository;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.model.ProgressBar;
+import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.setting.SettingPluginOptionsFileExplorer;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
@@ -21,6 +22,13 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
     protected Boolean requireInstall;
 
     public abstract String getName();
+
+
+    /**
+     * If set - scan DependencyExecutableInstaller and listen when button fires on ui
+     * and handle installation
+     */
+    public abstract Class<? extends SettingPluginButton> getInstallButton();
 
     protected abstract Path installDependencyInternal(EntityContext entityContext, ProgressBar progressBar) throws Exception;
 

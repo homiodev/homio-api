@@ -7,8 +7,6 @@ import lombok.extern.log4j.Log4j2;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.OptionModel;
-import org.touchhome.bundle.api.model.Status;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collection;
 
@@ -54,7 +52,7 @@ public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>,
 
     public abstract long getUsedSpace();
 
-    public abstract void upload(String[] parentPath, String fileName, byte[] content, boolean append, boolean truncate) throws Exception;
+    public abstract void upload(String[] parentPath, String fileName, byte[] content, boolean append) throws Exception;
 
     public abstract boolean delete(String[] path) throws Exception;
 
@@ -65,11 +63,11 @@ public abstract class VendorFileSystem<D, FS extends CachedFileSystem<FS, ?, D>,
             }
             dispose();
             reloadFS();
-            entityContext.updateStatus(getEntity(), Status.ONLINE, null);
+            getEntity().setStatusOnline();
             connectionHashCode = getEntity().getConnectionHashCode();
             return true;
         } catch (Exception ex) {
-            entityContext.updateStatus(getEntity(), Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
+            getEntity().setStatusError(ex);
             return false;
         }
     }

@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -102,25 +103,25 @@ public interface NetworkHardwareRepository {
 
     default Map<String, Callable<Integer>> buildPingIpAddressTasks(Logger log, Set<Integer> ports, int timeout, BiConsumer<String, Integer> handler) {
         String gatewayIpAddress = getGatewayIpAddress();
+        if (gatewayIpAddress == null) {
+            throw new IllegalStateException("Unable to proceed due ip address not found. Please check you connected to Router");
+        }
         Map<String, Callable<Integer>> tasks = new HashMap<>();
-        BaseItemsDiscovery.DeviceScannerResult result = new BaseItemsDiscovery.DeviceScannerResult();
-        if (gatewayIpAddress != null) {
-            String scanIp = gatewayIpAddress.substring(0, gatewayIpAddress.lastIndexOf(".") + 1);
+        String scanIp = gatewayIpAddress.substring(0, gatewayIpAddress.lastIndexOf(".") + 1);
 
-            for (Integer port : ports) {
-                log.info("Checking ip address {}:{}", gatewayIpAddress, port);
-                for (int i = 0; i < 255; i++) {
-                    int ipSuffix = i;
-                    tasks.put("check-ip-" + ipSuffix + "-port-" + port, () -> {
-                        String ipAddress = scanIp + ipSuffix;
-                        log.debug("Check ip: {}:{}", ipAddress, port);
-                        if (pingAddress(ipAddress, port, timeout)) {
-                            handler.accept(ipAddress, port);
-                            return ipSuffix;
-                        }
-                        return null;
-                    });
-                }
+        for (Integer port : ports) {
+            log.info("Checking ip address {}:{}", gatewayIpAddress, port);
+            for (int i = 0; i < 255; i++) {
+                int ipSuffix = i;
+                tasks.put("check-ip-" + ipSuffix + "-port-" + port, () -> {
+                    String ipAddress = scanIp + ipSuffix;
+                    log.debug("Check ip: {}:{}", ipAddress, port);
+                    if (pingAddress(ipAddress, port, timeout)) {
+                        handler.accept(ipAddress, port);
+                        return ipSuffix;
+                    }
+                    return null;
+                });
             }
         }
         return tasks;
@@ -207,7 +208,9 @@ public interface NetworkHardwareRepository {
             String ipString = inputs.stream().filter(i -> i.contains("0.0.0.0")).findAny().orElse(null);
             if (ipString != null) {
                 List<String> list = Stream.of(ipString.split(" ")).filter(s -> !s.isEmpty()).collect(Collectors.toList());
-                return list.get(2);
+                if (Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$").matcher(list.get(2)).matches()) {
+                    return list.get(2);
+                }
             }
             return null;
         }

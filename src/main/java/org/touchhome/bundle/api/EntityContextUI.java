@@ -14,13 +14,16 @@ import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.ui.DialogModel;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
+import org.touchhome.bundle.api.ui.field.action.impl.DynamicContextMenuAction;
 import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -134,27 +137,27 @@ public interface EntityContextUI {
      * Add message to 'bell' header select box
      */
     void addBellNotification(@NotNull String entityID, @NotNull String name, @NotNull String value,
-                             @NotNull NotificationLevel notificationLevel);
+                             @NotNull NotificationLevel notificationLevel, @Nullable Supplier<Set<DynamicContextMenuAction>> actionSupplier);
 
     /**
      * Add message to 'bell' header select box
      */
     default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellNotification(entityID, name, description, NotificationLevel.info);
+        addBellNotification(entityID, name, description, NotificationLevel.info, null);
     }
 
     /**
      * Add message to 'bell' header select box
      */
     default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellNotification(entityID, name, description, NotificationLevel.warning);
+        addBellNotification(entityID, name, description, NotificationLevel.warning, null);
     }
 
     /**
      * Add message to 'bell' header select box
      */
     default void addBellErrorNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellNotification(entityID, name, description, NotificationLevel.error);
+        addBellNotification(entityID, name, description, NotificationLevel.error, null);
     }
 
     /**
@@ -369,7 +372,7 @@ public interface EntityContextUI {
         title = title == null ? null : Lang.getServerMessage(title, messageParam);
         String text;
         if (ex instanceof ServerException) {
-            text = Lang.getServerMessage(ex.getMessage(), ((ServerException) ex).getMessageParam() == null ? messageParam : ((ServerException) ex).getMessageParam());
+            text = ((ServerException) ex).toString(messageParam);
         } else {
             text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {

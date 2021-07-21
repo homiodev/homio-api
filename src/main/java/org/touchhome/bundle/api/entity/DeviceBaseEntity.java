@@ -1,7 +1,6 @@
 package org.touchhome.bundle.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,17 +41,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     private PlaceEntity ownerPlace;
 
     @Getter
-    @UIField(order = 22, readOnly = true, hideOnEmpty = true)
-    @UIFieldColorStatusMatch
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Enumerated(EnumType.STRING)
-    @Column(length = 32)
-    private Status status;
-    @Getter
-    @UIField(order = 23, readOnly = true, hideOnEmpty = true)
-    @Column(length = 512)
-    private String statusMessage;
-    @Getter
     @Setter
     @UIField(order = 22, readOnly = true)
     @Enumerated(EnumType.STRING)
@@ -76,18 +64,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Getter
     @Setter
     private int bh = 1;
-
-    @Override
-    public T setStatus(Status status) {
-        this.status = status;
-        return (T) this;
-    }
-
-    @Override
-    public T setStatusMessage(String statusMessage) {
-        this.statusMessage = statusMessage;
-        return (T) this;
-    }
 
     public String getShortTitle() {
         return "";

@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.workspace;
 
+import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
 import lombok.SneakyThrows;
@@ -10,6 +11,7 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.util.Curl;
+import org.touchhome.bundle.api.util.SpringUtils;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 
 import java.nio.file.Files;
@@ -20,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static org.apache.commons.lang3.StringUtils.defaultString;
 
 public interface WorkspaceBlock {
     Set<String> MEDIA_EXTENSIONS = new HashSet<>(Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif",
@@ -77,7 +81,11 @@ public interface WorkspaceBlock {
 
     boolean hasField(String fieldName);
 
-    void setValue(Object value);
+    void setValue(String key, Object value);
+
+    default void setValue(Object value) {
+        setValue("value", value);
+    }
 
     void handle();
 
@@ -175,6 +183,29 @@ public interface WorkspaceBlock {
         return getInputStringRequired(key, "<" + key + "> is mandatory field");
     }
 
+    default String getInputStringRequiredWithContext(String key) {
+        return getInputStringRequiredWithContext(key, "<" + key + "> is mandatory field");
+    }
+
+    default String getInputStringRequiredWithContext(String key, String errorMessage) {
+        String value = getInputString(key);
+        if (StringUtils.isEmpty(value)) {
+            logErrorAndThrow(errorMessage);
+        } else {
+            value = SpringUtils.replaceEnvValues(value, (text, defValue) ->
+                    defaultString(String.valueOf(getValue(text)), defValue));
+            DoubleEvaluator eval = new DoubleEvaluator();
+            value = SpringUtils.replaceHashValues(value, (text, defValue) -> {
+                try {
+                    return String.valueOf(eval.evaluate(text));
+                } catch (Exception ignore) {
+                    return StringUtils.defaultString(defValue, text);
+                }
+            });
+        }
+        return value;
+    }
+
     default String getInputStringRequired(String key, String errorMessage) {
         String value = getInputString(key);
         if (StringUtils.isEmpty(value)) {
@@ -190,6 +221,8 @@ public interface WorkspaceBlock {
     byte[] getInputByteArray(String key, byte[] defaultValue);
 
     String getInputString(String key, String defaultValue);
+
+    Object getValue(String key);
 
     default JSONObject getInputJSON(String key) {
         return getInputJSON(key, null);

@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.thymeleaf.TemplateEngine;
@@ -24,6 +25,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.touchhome.bundle.api.model.ProgressBar;
+import org.touchhome.bundle.api.model.Status;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -38,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static org.apache.commons.io.FileUtils.ONE_MB_BI;
 
@@ -46,6 +49,8 @@ public class TouchHomeUtils {
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Path TMP_FOLDER = Paths.get(FileUtils.getTempDirectoryPath());
+    public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();
+
     @Getter
     private static final Path filesPath;
     @Getter

@@ -2,19 +2,18 @@ package org.touchhome.bundle.api;
 
 import lombok.SneakyThrows;
 import org.touchhome.bundle.api.setting.SettingPluginStatus;
-import org.touchhome.bundle.api.ui.BellNotification;
+import org.touchhome.bundle.api.ui.builder.BellNotificationBuilder;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.validation.constraints.NotNull;
 import java.net.URL;
-import java.util.Set;
 
 public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
     String BUNDLE_PREFIX = "org.touchhome.bundle.";
 
     static String getBundleName(Class clazz) {
         String name = clazz.getName();
-        if (name.startsWith(BUNDLE_PREFIX)) {
+        if (name.startsWith(BUNDLE_PREFIX) && !name.startsWith(BUNDLE_PREFIX + ".api.")) {
             return name.substring(BUNDLE_PREFIX.length(), name.indexOf('.', BUNDLE_PREFIX.length()));
         }
         return null;
@@ -58,8 +57,7 @@ public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
     /**
      * Notifications that visible in ui header
      */
-    default Set<BellNotification> getBellNotifications() {
-        return null;
+    default void assembleBellNotifications(BellNotificationBuilder bellNotificationBuilder) {
     }
 
     /**

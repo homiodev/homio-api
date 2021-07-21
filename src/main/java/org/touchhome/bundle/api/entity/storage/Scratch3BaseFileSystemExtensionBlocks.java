@@ -130,8 +130,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
                 value = addAll(value, "\n".getBytes());
             }
 
-            fileSystem.upload(parentPath, fileName, value, properties.contains(UploadOptions.Append),
-                    properties.contains(UploadOptions.Truncate));
+            fileSystem.upload(parentPath, fileName, value, properties.contains(UploadOptions.Append));
             fileSystem.updateCache(true);
         } catch (Exception ex) {
             workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());
@@ -150,7 +149,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     }
 
     private enum UploadOptions {
-        Truncate, Append, PrependNewLine, AppendNewLine
+        Append, PrependNewLine, AppendNewLine
     }
 
     public static byte[] addAll(final byte[] array1, byte[] array2) {

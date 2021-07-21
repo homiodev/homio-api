@@ -199,4 +199,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     public EntityContext getEntityContext() {
         return ApplicationContextHolder.getBean(EntityContext.class);
     }
+
+    // uses for different purposes. i.e. for fetching entity image from UI if entity belongs to extra bundle
+    @Transient
+    @Getter
+    private String bundle;
+
+    public T setBundle(String bundle) {
+        this.bundle = bundle;
+        return (T) this;
+    }
 }

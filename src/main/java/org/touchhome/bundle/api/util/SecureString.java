@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.util;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * This is not a string but a CharSequence that can be cleared of its memory.
@@ -33,6 +34,10 @@ public class SecureString implements CharSequence {
     @Override
     public int length() {
         return chars.length;
+    }
+
+    public boolean isEmpty() {
+        return length() == 0;
     }
 
     @Override
@@ -107,5 +112,10 @@ public class SecureString implements CharSequence {
             val2 = ((SecureString) obj).asString();
         }
         return this.asString().equals(val2);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.asString());
     }
 }

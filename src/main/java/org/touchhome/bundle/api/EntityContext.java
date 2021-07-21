@@ -4,10 +4,8 @@ import org.apache.commons.lang3.SystemUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
-import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 
 import java.lang.annotation.Annotation;
@@ -73,13 +71,6 @@ public interface EntityContext {
     <T extends HasEntityIdentifier> void createDelayed(T entity);
 
     <T extends HasEntityIdentifier> void updateDelayed(T entity, Consumer<T> fieldUpdateConsumer);
-
-    default <T extends BaseEntity & HasStatusAndMsg> void updateStatus(T entity, Status status, String message) {
-        updateDelayed(entity, t -> {
-            t.setStatus(status);
-            t.setStatusMessage(message);
-        });
-    }
 
     <T extends HasEntityIdentifier> void save(T entity);
 
