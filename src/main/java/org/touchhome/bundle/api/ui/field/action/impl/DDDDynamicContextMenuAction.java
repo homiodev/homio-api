@@ -13,11 +13,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+// TODO:  ???????????????
 @Getter
 @Setter
 @Log4j2
 @Accessors(chain = true)
-public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAction> {
+public class DDDDynamicContextMenuAction implements Comparable<DDDDynamicContextMenuAction> {
     private final String name;
     private final int order;
     @JsonIgnore
@@ -28,7 +29,7 @@ public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAc
     private JSONObject metadata = new JSONObject();
     private List<ActionInputParameter> parameters = new ArrayList<>();
 
-    public DynamicContextMenuAction(String name, int order, Consumer<JSONObject> action) {
+    public DDDDynamicContextMenuAction(String name, int order, Consumer<JSONObject> action) {
         this.name = name;
         this.order = order;
         this.action = action;
@@ -39,7 +40,7 @@ public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAc
     }
 
     @Override
-    public int compareTo(DynamicContextMenuAction other) {
+    public int compareTo(DDDDynamicContextMenuAction other) {
         return Double.compare((this.order + (1D / this.name.hashCode())), (other.order + (1D / other.name.hashCode())));
     }
 
@@ -47,7 +48,7 @@ public class DynamicContextMenuAction implements Comparable<DynamicContextMenuAc
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        return name.equals(((DynamicContextMenuAction) o).name);
+        return name.equals(((DDDDynamicContextMenuAction) o).name);
     }
 
     @Override

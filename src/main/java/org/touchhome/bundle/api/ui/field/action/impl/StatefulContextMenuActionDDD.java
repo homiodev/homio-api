@@ -11,23 +11,24 @@ import org.touchhome.bundle.api.ui.field.UIFieldType;
 import java.util.Map;
 import java.util.function.Consumer;
 
+// TODO:  ???????????????
 @Getter
 @Setter
 @Log4j2
 @Accessors(chain = true)
-public class StatefulContextMenuAction extends DynamicContextMenuAction {
+public class StatefulContextMenuActionDDD extends DDDDynamicContextMenuAction {
     private final UIFieldType type;
     private final String group;
     private final String subGroup;
     private final boolean collapseGroup;
     private final String collapseGroupIcon;
-    private final Map<String, Consumer<StatefulContextMenuAction>> updateHandlers;
+    private final Map<String, Consumer<StatefulContextMenuActionDDD>> updateHandlers;
     private Object value;
 
-    public StatefulContextMenuAction(String name, String group, String subGroup, boolean collapseGroup,
-                                     String collapseGroupIcon, int order, String icon, String iconColor, UIFieldType type,
-                                     Consumer<String> action, JSONObject metadata,
-                                     Map<String, Consumer<StatefulContextMenuAction>> updateHandlers) {
+    public StatefulContextMenuActionDDD(String name, String group, String subGroup, boolean collapseGroup,
+                                        String collapseGroupIcon, int order, String icon, String iconColor, UIFieldType type,
+                                        Consumer<String> action, JSONObject metadata,
+                                        Map<String, Consumer<StatefulContextMenuActionDDD>> updateHandlers) {
         super(name, order, jsonObject -> action.accept(jsonObject.optString("value")));
         this.setIcon(icon);
         this.setIconColor(iconColor);
@@ -38,6 +39,10 @@ public class StatefulContextMenuAction extends DynamicContextMenuAction {
         this.subGroup = subGroup;
         this.collapseGroup = collapseGroup;
         this.collapseGroupIcon = collapseGroupIcon;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
     }
 
     public void addButton(String name, String icon) {

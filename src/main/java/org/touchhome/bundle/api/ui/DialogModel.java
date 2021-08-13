@@ -98,6 +98,19 @@ public class DialogModel {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DialogModel that = (DialogModel) o;
+        return entityID.equals(that.entityID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityID);
+    }
+
     @Getter
     @Setter
     @Accessors(chain = true)
@@ -113,18 +126,5 @@ public class DialogModel {
         private enum ButtonType {
             submit, cancel, extra
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DialogModel that = (DialogModel) o;
-        return entityID.equals(that.entityID);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(entityID);
     }
 }

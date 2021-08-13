@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
 
+// TODO:  ???????????????
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -34,9 +35,9 @@ public class ActionInputParameter {
         this.value = input.value();
         this.description = input.description();
         this.validators = new HashSet<>();
-        for (UIActionInput.Validator validator : input.validators()) {
+        /*for (UIActionInput.Validator validator : input.validators()) {
             this.validators.add(validator.name());
-        }
+        }*/
         if (input.max() < Integer.MAX_VALUE) {
             this.validators.add("max:" + input.max());
         }
@@ -62,7 +63,7 @@ public class ActionInputParameter {
 
     public static ActionInputParameter ip(String name, String defaultIpAddress) {
         return new ActionInputParameter(name, UIActionInput.Type.text,
-                Collections.singleton(UIActionInput.Validator.ip.name()), defaultIpAddress);
+                null, defaultIpAddress);
     }
 
     public static ActionInputParameter textarea(String name, String value) {

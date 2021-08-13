@@ -15,9 +15,9 @@ public @interface UIActionInput {
 
     Type type() default Type.text;
 
-    Validator[] validators() default {};
-
     String description() default "";
+
+    boolean required() default false;
 
     // for numbers or for text length
     int min() default Integer.MIN_VALUE;
@@ -29,10 +29,6 @@ public @interface UIActionInput {
     Pattern pattern() default @Pattern(regexp = ".*");
 
     enum Type {
-        text, json, textarea, password, number, info, bool
-    }
-
-    enum Validator {
-        ip, password, email, required
+        text, json, textarea, password, number, info, bool, ip, email
     }
 }

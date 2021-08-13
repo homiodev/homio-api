@@ -14,22 +14,22 @@ import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.ui.DialogModel;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
-import org.touchhome.bundle.api.ui.field.action.impl.DynamicContextMenuAction;
+import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public interface EntityContextUI {
 
     EntityContext getEntityContext();
+
+    UIInputBuilder inputBuilder();
 
     @SneakyThrows
     default <T> T runWithProgressAndGet(@NotNull String progressKey, boolean cancellable,
@@ -137,7 +137,7 @@ public interface EntityContextUI {
      * Add message to 'bell' header select box
      */
     void addBellNotification(@NotNull String entityID, @NotNull String name, @NotNull String value,
-                             @NotNull NotificationLevel notificationLevel, @Nullable Supplier<Set<DynamicContextMenuAction>> actionSupplier);
+                             @NotNull NotificationLevel notificationLevel, @Nullable Consumer<UIInputBuilder> actionBuilder);
 
     /**
      * Add message to 'bell' header select box
