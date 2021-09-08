@@ -36,7 +36,7 @@ public class OptionModel implements Comparable<OptionModel> {
     private String title;
 
     @Setter
-    private String image;
+    private String icon;
 
     @Setter
     private String color;

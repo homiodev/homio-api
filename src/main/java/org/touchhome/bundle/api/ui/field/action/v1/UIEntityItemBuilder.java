@@ -1,10 +1,18 @@
 package org.touchhome.bundle.api.ui.field.action.v1;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface UIEntityItemBuilder<Owner, Value> extends UIEntityBuilder {
+
+    String getStyle();
 
     Owner setValue(Value value);
 
+    Owner setTitle(String title);
+
     Owner setDisabled(boolean disabled);
+
+    Owner setDescription(String description);
 
     Owner setOrder(int order);
 
@@ -16,7 +24,9 @@ public interface UIEntityItemBuilder<Owner, Value> extends UIEntityBuilder {
 
     Owner setColor(String color);
 
-    Owner setStyle(String style);
+    Owner appendStyle(@NotNull String style, @NotNull String value);
+
+    Owner setOuterClass(String outerClass);
 
     Owner addFetchValueHandler(String key, Runnable fetchValueHandler);
 }

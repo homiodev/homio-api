@@ -5,8 +5,11 @@ import lombok.Getter;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
+import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+
+import java.util.function.Consumer;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -48,6 +51,10 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     default BundleStatusInfo parseValue(EntityContext entityContext, String value) {
         String[] split = value.split("#~#", -1);
         return split.length == 0 ? UNKNOWN : new BundleStatusInfo(Status.valueOf(split[0]), split.length > 1 ? split[1] : null);
+    }
+
+    default void setActions(UIInputBuilder actionSupplier) {
+
     }
 
     @Override

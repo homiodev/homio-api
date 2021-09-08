@@ -37,14 +37,6 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         return 10 * 60;
     }
 
-    protected String getHeaderIcon() {
-        return "fas fa-hourglass-end";
-    }
-
-    protected String getHeaderIconColor() {
-        return "#C6241F";
-    }
-
     @Override
     public ActionResponseModel handleAction(EntityContext entityContext, JSONObject ignore) {
         List<DevicesScanner> scanners = getScanners(entityContext);
@@ -54,9 +46,6 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
 
         log.info("Start batch scanning for <{}>", getBatchName());
         String headerButtonKey = "SCAN." + getBatchName();
-
-        // show scan button on header. All scan results may attach confirm actions to it.
-        entityContext.ui().addHeaderButton(headerButtonKey, getHeaderIconColor(), null, getHeaderIcon());
 
         entityContext.bgp().runInBatch(getBatchName(), getMaxTimeToWaitInSeconds(), scanners,
                 scanner -> {
@@ -92,8 +81,6 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
                         foundOldCount += deviceScannerResult.existedCount.get();
                     }
                     entityContext.ui().sendInfoMessage("SCAN.RESULT", FlowMap.of("OLD", foundOldCount, "NEW", foundNewCount));
-                    // re-show header button without rotation
-                    entityContext.ui().removeHeaderButton(headerButtonKey, "fas fa-poll-h", false);
                     log.info("Done batch scanning for <{}>", getBatchName());
                 });
         return ActionResponseModel.showSuccess("SCAN.STARTED");

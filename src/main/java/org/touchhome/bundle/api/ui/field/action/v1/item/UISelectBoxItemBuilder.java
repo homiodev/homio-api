@@ -7,6 +7,10 @@ import java.util.Collection;
 
 public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxItemBuilder, String> {
 
+    boolean isAsButton();
+
+    UISelectBoxItemBuilder setAsButton(boolean asButton);
+
     UISelectBoxItemBuilder setOptions(Collection<OptionModel> options);
 
     UISelectBoxItemBuilder addOption(OptionModel option);
@@ -15,4 +19,11 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
         setValue(selected);
         return this;
     }
+
+    // uses if want replace dimmer with select box from min:
+    UISelectBoxItemBuilder setSelectReplacer(int min, int max, String selectReplacer);
+
+    String getSelectReplacer();
+
+    Collection<OptionModel> getOptions();
 }

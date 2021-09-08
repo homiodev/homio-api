@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.PRIMARY_COLOR;
+
 @Component
 @RequiredArgsConstructor
 public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
@@ -36,7 +38,7 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
     }
 
     public void add(String value, boolean error) {
-        ComplexString complexString = ComplexString.of(value, System.currentTimeMillis(), error ? "#E65100" : null, null);
+        ComplexString complexString = ComplexString.of(value, System.currentTimeMillis(), error ? PRIMARY_COLOR : null, null);
         values.add(complexString);
         entityContext.ui().sendNotification("-lines-icl", complexString.toString());
     }

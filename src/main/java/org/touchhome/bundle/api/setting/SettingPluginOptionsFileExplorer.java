@@ -128,13 +128,13 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                             if (isDirectory) {
                                 if (Files.list(path).findAny().isPresent()) {
                                     model.getJson().put("type", 2);
-                                    model.setImage("fas fa-folder");
+                                    model.setIcon("fas fa-folder");
                                 } else {
                                     model.getJson().put("type", 3);
-                                    model.setImage("fas fa-folder-minus");
+                                    model.setIcon("fas fa-folder-minus");
                                 }
                             } else {
-                                model.setImage("fas fa-file-alt");
+                                model.setIcon("fas fa-file-alt");
                                 model.getJson().put("type", 1);
                             }
                             return model;

@@ -40,13 +40,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static org.apache.commons.io.FileUtils.ONE_MB_BI;
 
 @Log4j2
 public class TouchHomeUtils {
 
+    public static final String PRIMARY_COLOR = "#E65100";
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Path TMP_FOLDER = Paths.get(FileUtils.getTempDirectoryPath());
     public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();

@@ -143,21 +143,36 @@ public interface EntityContextUI {
      * Add message to 'bell' header select box
      */
     default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellNotification(entityID, name, description, NotificationLevel.info, null);
+        addBellInfoNotification(entityID, name, description, null);
+    }
+
+    default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
+                                            @Nullable Consumer<UIInputBuilder> actionBuilder) {
+        addBellNotification(entityID, name, description, NotificationLevel.info, actionBuilder);
     }
 
     /**
      * Add message to 'bell' header select box
      */
     default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellNotification(entityID, name, description, NotificationLevel.warning, null);
+        addBellWarningNotification(entityID, name, description, null);
+    }
+
+    default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
+                                          @Nullable Consumer<UIInputBuilder> actionBuilder) {
+        addBellNotification(entityID, name, description, NotificationLevel.warning, actionBuilder);
     }
 
     /**
      * Add message to 'bell' header select box
      */
     default void addBellErrorNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellNotification(entityID, name, description, NotificationLevel.error, null);
+        addBellErrorNotification(entityID, name, description, null);
+    }
+
+    default void addBellErrorNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
+                                          @Nullable Consumer<UIInputBuilder> actionBuilder) {
+        addBellNotification(entityID, name, description, NotificationLevel.error, actionBuilder);
     }
 
     /**
@@ -191,15 +206,15 @@ public interface EntityContextUI {
      * Add button to ui header
      */
     void addHeaderButton(@NotNull String entityID, @NotNull String color, @Nullable String title, @Nullable String icon,
-                         boolean rotate, boolean border, @Nullable Integer duration,
+                         boolean rotate, @Nullable Integer border, @Nullable Integer duration,
                          @Nullable Class<? extends BaseEntity> page, @Nullable Class<? extends SettingPluginButton> hideAction);
 
     default void addHeaderButton(@NotNull String entityID, @NotNull String color, @Nullable String title, @Nullable String icon) {
-        addHeaderButton(entityID, color, title, icon, false, true, null, null, null);
+        addHeaderButton(entityID, color, title, icon, false, null, null, null, null);
     }
 
     default void addHeaderButton(@NotNull String entityID, @NotNull String color, int duration, @Nullable String title) {
-        addHeaderButton(entityID, color, title, null, false, true, duration, null, null);
+        addHeaderButton(entityID, color, title, null, false, null, duration, null, null);
     }
 
     /**
