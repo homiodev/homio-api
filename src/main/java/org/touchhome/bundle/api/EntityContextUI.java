@@ -394,12 +394,14 @@ public interface EntityContextUI {
                 text = TouchHomeUtils.getErrorMessage(ex);
             }
             // try cast text to lang
+
+
             text = Lang.getServerMessage(text, messageParam);
         }
         sendGlobal(GlobalSendType.popup, null, text, title, new JSONObject().put("level", type));
     }
 
     enum GlobalSendType {
-        popup, json, setting, progress, bell, headerButton, openConsole, reload, addItem, dialog
+        popup, json, setting, progress, bell, headerButton, openConsole, reload, addItem, dialog, audio
     }
 }

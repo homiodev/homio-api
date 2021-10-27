@@ -77,6 +77,8 @@ public interface WorkspaceBlock {
 
     String getField(String fieldName);
 
+    boolean getFieldBoolean(String fieldName);
+
     String getFieldId(String fieldName);
 
     boolean hasField(String fieldName);
@@ -108,6 +110,13 @@ public interface WorkspaceBlock {
         if (child != null) {
             childConsumer.accept(child);
         }
+    }
+
+    @SneakyThrows
+
+    default void handleAndRelease(ThrowingRunnable<Exception> runHandler, ThrowingRunnable<Exception> releaseHandler) {
+        runHandler.run();
+        onRelease(releaseHandler);
     }
 
     default <T> void subscribeToLock(BroadcastLock lock, Runnable handler) {

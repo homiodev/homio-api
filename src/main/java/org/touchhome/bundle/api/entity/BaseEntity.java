@@ -6,8 +6,8 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
 import org.json.JSONPropertyIgnore;
+import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.repository.AbstractRepository;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
 
@@ -159,16 +159,25 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     public String getEntityID(boolean create) {
         if (create && this.entityID == null) {
-            AbstractRepository repo = getEntityContext().getRepository(getClass());
+            String sn = getClass().getSimpleName();
+
             String simpleId = entityIDSupplierStr;
             if (simpleId == null) {
-                String name = getClass().getSimpleName();
+                String name = sn;
                 if (name.endsWith("DeviceEntity")) {
                     name = name.substring(0, name.length() - "DeviceEntity".length());
                 }
                 simpleId = name + "_" + System.currentTimeMillis();
             }
             this.entityID = simpleId.startsWith(getEntityPrefix()) ? simpleId : getEntityPrefix() + simpleId;
+            if (this.entityID.length() > 30) {
+                if (this.entityID.contains(sn)) {
+                    int diff = this.entityID.length() - 30;
+                    this.entityID = this.entityID.replace(sn, sn.substring(0, sn.length() - diff));
+                } else {
+                    this.entityID = getEntityPrefix() + System.currentTimeMillis();
+                }
+            }
         }
         return this.entityID;
     }
@@ -200,13 +209,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         return ApplicationContextHolder.getBean(EntityContext.class);
     }
 
-    // uses for different purposes. i.e. for fetching entity image from UI if entity belongs to extra bundle
-    @Transient
-    @Getter
-    private String bundle;
-
-    public T setBundle(String bundle) {
-        this.bundle = bundle;
-        return (T) this;
+    public String getBundle() {
+        return BundleEntryPoint.getBundleName(getClass());
     }
 }

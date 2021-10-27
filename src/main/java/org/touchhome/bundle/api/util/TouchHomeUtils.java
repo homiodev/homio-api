@@ -26,7 +26,13 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.model.Status;
+import org.w3c.dom.Document;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URI;
@@ -62,6 +68,11 @@ public class TouchHomeUtils {
     @Getter
     private static final Path mediaPath;
     @Getter
+    private static final Path audioPath;
+    @Getter
+    private static final Path imagePath;
+
+    @Getter
     private static final Path sshPath;
     public static OsName OS = detectOs();
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
@@ -83,7 +94,10 @@ public class TouchHomeUtils {
         externalJarClassPath = getOrCreatePath("external_jars");
         sshPath = getOrCreatePath("ssh");
         bundlePath = getOrCreatePath("bundles");
+
         mediaPath = getOrCreatePath("media");
+        imagePath = getOrCreatePath("media/image");
+        audioPath = getOrCreatePath("media/audio");
     }
 
     public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {
@@ -196,7 +210,12 @@ public class TouchHomeUtils {
                 && ex instanceof NullPointerException)) {
             return "Unexpected NullPointerException at line: " + ex.getStackTrace()[0].toString();
         }
-        return ex.getCause() == null ? ex.toString() : ex.getCause().toString();
+        Throwable cause = ex;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+
+        return StringUtils.defaultString(cause.getMessage(), cause.toString());
     }
 
     public static String toTmpFile(String uniqueID, String suffix, ByteArrayOutputStream outputStream) throws IOException {
@@ -311,7 +330,7 @@ public class TouchHomeUtils {
         if (!archive.exists() || !archive.canRead()) {
             return false;
         }
-        switch (FilenameUtils.getExtension(archive.getName())) {
+        switch (StringUtils.defaultString(FilenameUtils.getExtension(archive.getName()), "")) {
             case "zip":
                 return new ZipFile(archive).isValidZipFile();
             case "7z":
@@ -423,6 +442,21 @@ public class TouchHomeUtils {
             }
         }
         throw new RuntimeException("Unable to detect OS");
+    }
+
+    @SneakyThrows
+    public static String toString(Document document) {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        transformer.transform(new DOMSource(document), new StreamResult(new OutputStreamWriter(out, "UTF-8")));
+        return out.toString();
     }
 
     public static boolean deleteDirectory(Path path) {

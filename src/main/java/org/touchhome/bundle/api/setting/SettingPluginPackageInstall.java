@@ -63,7 +63,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
         private String name;
 
         private String title;
-        private String image;
+        private String icon;
         private String readme;
         private String author;
         private String website;

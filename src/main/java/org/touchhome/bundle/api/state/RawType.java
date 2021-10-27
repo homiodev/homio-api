@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.state;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.springframework.util.MimeTypeUtils;
@@ -136,5 +137,13 @@ public class RawType implements State {
             }
         }
         return true;
+    }
+
+    public boolean isImage() {
+        return StringUtils.defaultString(mimeType, "").startsWith("image/");
+    }
+
+    public boolean isVideo() {
+        return StringUtils.defaultString(mimeType, "").startsWith("video/");
     }
 }

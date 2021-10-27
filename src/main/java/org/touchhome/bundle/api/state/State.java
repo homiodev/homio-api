@@ -8,6 +8,10 @@ import java.nio.charset.Charset;
 
 public interface State {
 
+    default boolean equalToOldValue() {
+        throw new IllegalStateException("Unable to invoke equality for non state class");
+    }
+
     float floatValue();
 
     int intValue();

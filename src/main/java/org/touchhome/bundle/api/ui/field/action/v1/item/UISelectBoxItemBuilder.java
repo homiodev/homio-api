@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.ui.field.action.v1.item;
 
+import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.ui.field.action.v1.UIEntityItemBuilder;
 
@@ -9,7 +10,10 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
 
     boolean isAsButton();
 
-    UISelectBoxItemBuilder setAsButton(boolean asButton);
+    /**
+     * icon or text should be not null
+     */
+    UISelectBoxItemBuilder setAsButton(@Nullable String icon, @Nullable String iconColor, @Nullable String text);
 
     UISelectBoxItemBuilder setOptions(Collection<OptionModel> options);
 

@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.util.SecureString;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 
 public interface HasJsonData<T> {
 
+    @JsonIgnore
     JSONObject getJsonData();
 
     default <P> T setJsonData(String key, P value) {

@@ -1,9 +1,11 @@
 package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Log4j2
 public class DecimalType extends Number implements State, Comparable<DecimalType> {
@@ -17,8 +19,22 @@ public class DecimalType extends Number implements State, Comparable<DecimalType
     @Getter
     private BigDecimal value;
 
+    @Getter
+    @Setter
+    private BigDecimal oldValue;
+
+    @Override
+    public boolean equalToOldValue() {
+        return Objects.equals(value, oldValue);
+    }
+
     public DecimalType(BigDecimal value) {
         this.value = value;
+    }
+
+    public DecimalType(BigDecimal value, BigDecimal oldValue) {
+        this.value = value;
+        this.oldValue = oldValue;
     }
 
     public DecimalType(long value) {
@@ -31,6 +47,10 @@ public class DecimalType extends Number implements State, Comparable<DecimalType
 
     public DecimalType(float value) {
         this(BigDecimal.valueOf(value));
+    }
+
+    public DecimalType(float value, Float oldValue) {
+        this(BigDecimal.valueOf(value), oldValue == null ? null : BigDecimal.valueOf(oldValue));
     }
 
     public DecimalType(String value) {

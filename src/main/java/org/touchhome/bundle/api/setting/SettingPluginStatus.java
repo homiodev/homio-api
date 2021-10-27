@@ -1,7 +1,9 @@
 package org.touchhome.bundle.api.setting;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
@@ -9,6 +11,7 @@ import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
@@ -43,14 +46,17 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     }
 
     @Override
-    default String getDefaultValue() {
-        return Status.UNKNOWN.name();
-    }
-
-    @Override
     default BundleStatusInfo parseValue(EntityContext entityContext, String value) {
         String[] split = value.split("#~#", -1);
-        return split.length == 0 ? UNKNOWN : new BundleStatusInfo(Status.valueOf(split[0]), split.length > 1 ? split[1] : null);
+        try {
+            return split.length == 0 ? null : new BundleStatusInfo(Status.valueOf(split[0]), split.length > 1 ? split[1] : null);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    default List<BundleStatusInfo> getTransientStatuses(EntityContext entityContext) {
+        return null;
     }
 
     default void setActions(UIInputBuilder actionSupplier) {
@@ -62,12 +68,17 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
         return value == null ? "" : value.status.name() + "#~#" + defaultIfEmpty(value.message, "");
     }
 
-    @AllArgsConstructor
+    @RequiredArgsConstructor
+    @Accessors(chain = true)
     class BundleStatusInfo {
         private final Status status;
 
         @Getter
         private final String message;
+
+        @Setter
+        @Getter
+        private Consumer<UIInputBuilder> actionHandler;
 
         public boolean isOnline() {
             return status == Status.ONLINE;

@@ -1,6 +1,8 @@
 package org.touchhome.bundle.api.setting;
 
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.OptionModel;
@@ -11,6 +13,10 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRemovable<Path> {
 
@@ -31,20 +37,6 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
     }
 
     /**
-     * Write file to UI
-     */
-    default boolean writeFile(Path path, BasicFileAttributes attrs) {
-        if (Files.exists(path) && Files.isReadable(path)) {
-            if (!allowSelectFiles() && Files.isRegularFile(path)) {
-                return false;
-            }
-            String name = path.getFileName() == null ? path.toString() : path.getFileName().toString();
-            return !name.startsWith("$") && !name.startsWith(".");
-        }
-        return false;
-    }
-
-    /**
      * Write directory to UI
      */
     default boolean writeDirectory(Path dir) {
@@ -55,6 +47,10 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
      * Visit directory and all children
      */
     default boolean visitDirectory(Path dir, BasicFileAttributes attrs) {
+        return visitDirectoryDefault(dir, attrs);
+    }
+
+    static boolean visitDirectoryDefault(Path dir, BasicFileAttributes attrs) {
         if (Files.isReadable(dir)) {
             String name = dir.getFileName() == null ? dir.toString() : dir.getFileName().toString();
             return !name.startsWith("$") && !name.startsWith(".");
@@ -76,18 +72,36 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
     }
 
     default List<OptionModel> getFilePath(Path rootPath) {
+        return getFilePath(rootPath == null ? rootPath() : rootPath, levels(),
+                flatStructure(), lazyLoading(), skipRootInTreeStructure(), pathComparator(),
+                this::visitDirectory, this::writeDirectory, this::writeFile, this::buildKey, this::buildTitle);
+    }
+
+    static List<OptionModel> getFilePath(Path root, int levels,
+                                         boolean flatStructure,
+                                         boolean lazyLoading,
+                                         boolean skipRootInTreeStructure,
+                                         @Nullable Comparator<OptionModel> pathComparator,
+                                         @Nullable BiPredicate<Path, BasicFileAttributes> visitDirectory,
+                                         @Nullable Predicate<Path> writeDirectory,
+                                         @Nullable BiPredicate<Path, BasicFileAttributes> writeFile,
+                                         @Nullable BiFunction<Path, Path, String> buildKey,
+                                         @Nullable Function<Path, String> buildTitle) {
         try {
-            final Path root = rootPath == null ? rootPath() : rootPath;
             if (root == null) {
                 return Collections.emptyList();
             }
+            BiPredicate<Path, BasicFileAttributes> visitDirectoryTest = visitDirectory == null ?
+                    SettingPluginOptionsFileExplorer::visitDirectoryDefault : visitDirectory;
+            Predicate<Path> writeDirectoryTest = writeDirectory == null ? path -> true : writeDirectory;
+
             Map<Path, OptionModel> fs = new HashMap<>();
             Files.walkFileTree(root,
                     new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
-                    Math.max(levels(), 1), new SimpleFileVisitor<Path>() {
+                    Math.max(levels, 1), new SimpleFileVisitor<Path>() {
                         @Override
                         public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-                            if (SettingPluginOptionsFileExplorer.this.writeFile(path, attrs)) {
+                            if (writeFile == null || writeFile.test(path, attrs)) {
                                 handlePath(path);
                             }
                             return FileVisitResult.CONTINUE;
@@ -95,10 +109,10 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
 
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                            if (visitDirectory(dir, attrs)) {
-                                if (writeDirectory(dir)) {
+                            if (visitDirectoryTest.test(dir, attrs)) {
+                                if (writeDirectoryTest.test(dir)) {
                                     handlePath(dir);
-                                } else if (dir.equals(root) && skipRootInTreeStructure()) { // handleDir anyway if it root
+                                } else if (dir.equals(root) && skipRootInTreeStructure) { // handleDir anyway if it root
                                     handlePath(dir);
                                 }
                                 return FileVisitResult.CONTINUE;
@@ -114,7 +128,7 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                         private void handlePath(Path path) {
                             Path parent = path.getParent();
                             OptionModel model = createOptionModelFromPath(path);
-                            if (!flatStructure() && parent != null && fs.containsKey(parent)) {
+                            if (!flatStructure && parent != null && fs.containsKey(parent)) {
                                 fs.get(parent).addChild(model);
                             }
                             fs.put(path, model);
@@ -122,7 +136,9 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
 
                         @SneakyThrows
                         private OptionModel createOptionModelFromPath(Path path) {
-                            OptionModel model = OptionModel.of(buildKey(path, root), buildTitle(path));
+                            String key = StringUtils.defaultString(buildKey == null ? null : buildKey.apply(path, root), buildKeyDefault(skipRootInTreeStructure, path, root));
+                            String title = StringUtils.defaultString(buildTitle == null ? null : buildTitle.apply(path), path.toString());
+                            OptionModel model = OptionModel.of(key, title);
                             boolean isDirectory = Files.isDirectory(path);
                             // 1 - file, 2 - directory, 3 - empty directory
                             if (isDirectory) {
@@ -140,21 +156,55 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                             return model;
                         }
                     });
-            List<OptionModel> result = new ArrayList<>(flatStructure() ? fs.values() : fs.containsKey(root) ?
+            List<OptionModel> result = new ArrayList<>(flatStructure ? fs.values() : fs.containsKey(root) ?
                     fs.get(root).getOrCreateChildren() : Collections.emptyList());
-            if (lazyLoading()) {
-                handleRequestNextPath(result);
+            if (lazyLoading) {
+                SettingPluginOptionsFileExplorer.handleRequestNextPath(result);
             }
-            result.sort(pathComparator());
+            result.sort(pathComparator == null ? Comparator.comparing(OptionModel::getTitleOrKey) : pathComparator);
             return result;
         } catch (Exception ex) {
             throw new RuntimeException("Unable to fetch " + TouchHomeUtils.getErrorMessage(ex));
         }
     }
 
+    static void handleRequestNextPath(Collection<OptionModel> result) {
+        for (OptionModel model : result) {
+            if (model.getChildren() == null) {
+                if (model.getJson().has("type") && model.getJson().getInt("type") == 2) {
+                    model.getJson().put("requestNext", true);
+                }
+            } else {
+                SettingPluginOptionsFileExplorer.handleRequestNextPath(model.getChildren());
+            }
+        }
+    }
+
+    default boolean writeFile(Path path, BasicFileAttributes attrs) {
+        return SettingPluginOptionsFileExplorer.writeFile(path, attrs, allowSelectFiles());
+    }
+
+    /**
+     * Write file to UI
+     */
+    static boolean writeFile(Path path, BasicFileAttributes attrs, boolean allowSelectFiles) {
+        if (Files.exists(path) && Files.isReadable(path)) {
+            if (!allowSelectFiles && Files.isRegularFile(path)) {
+                return false;
+            }
+            String name = path.getFileName() == null ? path.toString() : path.getFileName().toString();
+            return !name.startsWith("$") && !name.startsWith(".");
+        }
+        return false;
+    }
+
     default String buildKey(Path path, Path root) {
+        return null;
+    }
+
+    static String buildKeyDefault(boolean skipRootInTreeStructure, Path path, Path root) {
         String key = path.toString();
-        if (skipRootInTreeStructure() && path.equals(root)) {
+        if (skipRootInTreeStructure && path.equals(root)) {
             key = null;
         }
         return key;
@@ -162,18 +212,6 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
 
     default String buildTitle(Path path) {
         return path.toString();
-    }
-
-    default void handleRequestNextPath(Collection<OptionModel> result) {
-        for (OptionModel model : result) {
-            if (model.getChildren() == null) {
-                if (model.getJson().has("type") && model.getJson().getInt("type") == 2) {
-                    model.getJson().put("requestNext", true);
-                }
-            } else {
-                handleRequestNextPath(model.getChildren());
-            }
-        }
     }
 
     /**

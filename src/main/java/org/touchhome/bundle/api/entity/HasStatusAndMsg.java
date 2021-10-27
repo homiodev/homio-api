@@ -32,7 +32,6 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
         return setStatus(Status.ONLINE, null);
     }
 
-
     default T setStatusError(@NotNull Exception ex) {
         return setStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
     }

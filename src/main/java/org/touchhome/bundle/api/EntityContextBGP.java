@@ -7,10 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.model.ProgressBar;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -67,10 +64,10 @@ public interface EntityContextBGP {
     }
 
     default ThreadContext<Void> run(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
-        return run(name, 0, command, finallyBlock, showOnUI);
+        return run(name, null, command, finallyBlock, showOnUI);
     }
 
-    default ThreadContext<Void> run(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
+    default ThreadContext<Void> run(@NotNull String name, @Nullable Long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
         return runAndGet(name, initialDelayInMillis, () -> {
             Exception exception = null;
             try {
@@ -88,11 +85,10 @@ public interface EntityContextBGP {
     }
 
     default <T> ThreadContext<T> runAndGet(@NotNull String name, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI) {
-        return runAndGet(name, 0, command, showOnUI);
+        return runAndGet(name, null, command, showOnUI);
     }
 
-    <T> ThreadContext<T> runAndGet(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI);
-
+    <T> ThreadContext<T> runAndGet(@NotNull String name, @Nullable Long initialDelayInMillis, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI);
 
     void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
 
@@ -178,6 +174,16 @@ public interface EntityContextBGP {
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);
 
     void cancelThread(@NotNull String name);
+
+    void registerThreadsPuller(String entityID, Consumer<ThreadPuller> threadPullerConsumer);
+
+    interface ThreadPuller {
+        ThreadPuller addThread(String name, String description, Date creationTime, String state, String errorMessage,
+                               String bigDescription);
+
+        ThreadPuller addScheduler(String name, String description, Date creationTime, String state, String errorMessage,
+                                  int period, int runCount, String bigDescription);
+    }
 
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
                                                        int maxTerminateTimeoutInSeconds,

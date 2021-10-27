@@ -53,4 +53,6 @@ public @interface UIField {
 
     // if set - hide field label on full width content
     boolean hideLabelInFullWidth() default true;
+
+    String style() default "";
 }

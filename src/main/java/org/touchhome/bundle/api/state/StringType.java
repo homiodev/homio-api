@@ -1,6 +1,9 @@
 package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Objects;
 
 public class StringType implements State {
     public static StringType EMPTY = new StringType("");
@@ -8,8 +11,21 @@ public class StringType implements State {
     @Getter
     private final String value;
 
+    @Getter
+    @Setter
+    private String oldValue;
+
     public StringType(String value) {
         this.value = value != null ? value : "";
+    }
+
+    public StringType(int value) {
+        this.value = String.valueOf(value);
+    }
+
+    @Override
+    public boolean equalToOldValue() {
+        return Objects.equals(value, oldValue);
     }
 
     @Override

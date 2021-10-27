@@ -87,11 +87,17 @@ public abstract class Scratch3ExtensionBlocks {
         if (bundleEntryPoint != null) {
             resource = bundleEntryPoint.getResource(this.id + ".png");
             if (resource == null) {
+                resource = bundleEntryPoint.getResource("image/" + this.id + ".png");
+            }
+            if (resource == null) {
                 resource = bundleEntryPoint.getResource("image.png");
             }
         }
         if (resource == null) {
             resource = getClass().getClassLoader().getResource(this.id + ".png");
+            if (resource == null) {
+                resource = getClass().getClassLoader().getResource("image/" + this.id + ".png");
+            }
             if (resource == null) {
                 resource = getClass().getClassLoader().getResource("image.png");
             }
