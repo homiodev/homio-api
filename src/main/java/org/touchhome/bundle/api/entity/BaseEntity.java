@@ -39,11 +39,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     private String name;
 
     @Column(nullable = false)
-    @UIField(order = 16, readOnly = true, type = StaticDate)
+    @UIField(order = 20, readOnly = true, type = StaticDate)
     @Getter
     private Date creationTime;
 
-    @UIField(order = 17, readOnly = true, type = StaticDate)
+    @UIField(order = 30, readOnly = true, type = StaticDate)
     @Getter
     private Date updateTime;
 

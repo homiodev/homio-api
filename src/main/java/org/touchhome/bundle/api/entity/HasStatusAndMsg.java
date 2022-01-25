@@ -10,22 +10,26 @@ import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import java.util.Optional;
 
 public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
 
     Pair<Status, String> DEFAULT_STATUS = Pair.of(Status.UNKNOWN, "");
 
-    @UIField(order = 22, readOnly = true)
+    @UIField(order = 10, readOnly = true, hideOnEmpty = true)
     @UIFieldColorStatusMatch
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Enumerated(EnumType.STRING)
-    @Column(length = 32)
     default Status getStatus() {
         String entityID = ((T) this).getEntityID();
-        return entityID == null ? Status.UNKNOWN : TouchHomeUtils.STATUS_MAP.getOrDefault(((T) this).getEntityID(), DEFAULT_STATUS).getFirst();
+        return entityID == null ? Status.UNKNOWN : TouchHomeUtils.STATUS_MAP.getOrDefault(entityID, DEFAULT_STATUS).getFirst();
+    }
+
+    @UIField(order = 11, readOnly = true, hideOnEmpty = true)
+    @UIFieldColorStatusMatch
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    default Status getJoined() {
+        String entityID = ((T) this).getEntityID();
+        return Optional.ofNullable(TouchHomeUtils.STATUS_MAP.get(entityID + "_joined")).map(Pair::getFirst).orElse(null);
     }
 
     default T setStatusOnline() {
@@ -40,13 +44,17 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
         return setStatus(status, status == Status.ONLINE ? null : getStatusMessage());
     }
 
+    default T setJoined(@NotNull Status status) {
+        TouchHomeUtils.STATUS_MAP.put(((T) this).getEntityID() + "_joined", Pair.of(status, ""));
+        return (T) this;
+    }
+
     default T setStatus(@NotNull Status status, @Nullable String msg) {
         TouchHomeUtils.STATUS_MAP.put(((T) this).getEntityID(), Pair.of(status, msg == null ? "" : msg));
         return (T) this;
     }
 
     @UIField(order = 23, readOnly = true, hideOnEmpty = true)
-    @Column(length = 512)
     default String getStatusMessage() {
         String entityID = ((T) this).getEntityID();
         return entityID == null ? null : TouchHomeUtils.STATUS_MAP.getOrDefault(entityID, DEFAULT_STATUS).getSecond();

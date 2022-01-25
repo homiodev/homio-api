@@ -1,6 +1,5 @@
 package org.touchhome.bundle.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,12 +7,10 @@ import lombok.experimental.Accessors;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.model.HasPosition;
-import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.optionProvider.SelectPlaceOptionLoader;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
-import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 import org.touchhome.bundle.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.touchhome.bundle.api.ui.field.selection.UIFieldSelection;
 
@@ -28,39 +25,36 @@ import java.util.Set;
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
         implements HasPosition<DeviceBaseEntity>, HasJsonData<T>, HasStatusAndMsg<T> {
 
-    @UIField(readOnly = true, order = 100)
+    @UIField(readOnly = true, order = 5)
     @Getter
     private String ieeeAddress;
 
     @Setter
-    @Getter
+    @Getter()
     @ManyToOne(fetch = FetchType.LAZY)
-    @UIField(order = 20, type = UIFieldType.SelectBox)
+    @UIField(order = 50, type = UIFieldType.SelectBox)
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994")
     private PlaceEntity ownerPlace;
 
-    @Getter
-    @Setter
-    @UIField(order = 22, readOnly = true)
-    @Enumerated(EnumType.STRING)
-    @UIFieldColorStatusMatch
-    @Column(length = 32)
-    private Status joined = Status.UNKNOWN;
     @Lob
     @Getter
     @Column(length = 3145728) // 3MB
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData = new JSONObject();
+
     @Getter
     @Setter
     private int xb = 0;
+
     @Getter
     @Setter
     private int yb = 0;
+
     @Getter
     @Setter
     private int bw = 1;
+
     @Getter
     @Setter
     private int bh = 1;
@@ -89,13 +83,5 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     public T setIeeeAddress(String ieeeAddress) {
         this.ieeeAddress = ieeeAddress;
         return (T) this;
-    }
-
-    /**
-     * Determine if status, joined and statusMessage should be reset to default at startup
-     */
-    @JsonIgnore
-    public boolean isResetStatusAtStartup() {
-        return true;
     }
 }

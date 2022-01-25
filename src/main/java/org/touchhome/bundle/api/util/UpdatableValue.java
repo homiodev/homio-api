@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.util;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -51,6 +52,14 @@ public class UpdatableValue<T> {
         updatableValue.value = value;
         updatableValue.name = name;
         updatableValue.stringConverter = findStringConverter(value.getClass());
+        return updatableValue;
+    }
+
+    public static <T> UpdatableValue<T> ofNullable(@Nullable T value, String name, Class<?> valueType) {
+        UpdatableValue<T> updatableValue = new UpdatableValue<>();
+        updatableValue.value = value;
+        updatableValue.name = name;
+        updatableValue.stringConverter = findStringConverter(valueType);
         return updatableValue;
     }
 

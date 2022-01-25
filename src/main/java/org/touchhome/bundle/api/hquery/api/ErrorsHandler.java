@@ -12,9 +12,10 @@ public @interface ErrorsHandler {
 
     boolean logError() default true;
 
-    String onRetCodeError();
+    // specify error to throw
+    String onRetCodeError() default "";
 
-    ErrorHandler[] errorHandlers();
+    ErrorHandler[] errorHandlers() default {};
 
     String notRecognizeError() default "";
 

@@ -40,11 +40,11 @@ public interface NetworkHardwareRepository {
     List<Network> scan(@HQueryParam("iface") String iface);
 
     @HardwareQuery(name = "Network stat", value = "iwconfig :iface")
-    @ErrorsHandler(onRetCodeError = "Error getting wireless devices information", errorHandlers = {})
+    @ErrorsHandler(onRetCodeError = "Error getting wireless devices information")
     NetworkStat stat(@HQueryParam("iface") String iface);
 
     @HardwareQuery(name = "Disable network", value = "ifconfig :iface down")
-    @ErrorsHandler(onRetCodeError = "There was an unknown error disabling the interface", notRecognizeError = "There was an error disabling the interface", errorHandlers = {})
+    @ErrorsHandler(onRetCodeError = "There was an unknown error disabling the interface", notRecognizeError = "There was an error disabling the interface")
     void disable(@HQueryParam("iface") String iface);
 
     @HardwareQuery(name = "Restart network interface", value = "/etc/init.d/networking restart", printOutput = true)
@@ -62,7 +62,7 @@ public interface NetworkHardwareRepository {
     @HardwareQuery(name = "Connect wep", value = "iwconfig :iface essid ':essid' key :PASSWORD")
     void connect_wep(@HQueryParam("iface") String iface, @HQueryParam("essid") String essid, @HQueryParam("password") String password);
 
-    @ErrorsHandler(onRetCodeError = "Shit is broken TODO", errorHandlers = {})
+    @ErrorsHandler(onRetCodeError = "Shit is broken TODO")
     @HardwareQuery(name = "Connect wpa", value = "wpa_passphrase ':essid' ':password' > wpa-temp.conf && sudo wpa_supplicant -D wext -i :iface -c wpa-temp.conf && rm wpa-temp.conf")
     void connect_wpa(@HQueryParam("iface") String iface, @HQueryParam("essid") String essid, @HQueryParam("password") String password);
 

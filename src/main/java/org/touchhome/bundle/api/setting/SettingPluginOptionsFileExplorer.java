@@ -1,5 +1,7 @@
 package org.touchhome.bundle.api.setting;
 
+import com.pivovarit.function.ThrowingBiPredicate;
+import com.pivovarit.function.ThrowingPredicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +18,6 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRemovable<Path> {
 
@@ -83,8 +84,8 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                                          boolean skipRootInTreeStructure,
                                          @Nullable Comparator<OptionModel> pathComparator,
                                          @Nullable BiPredicate<Path, BasicFileAttributes> visitDirectory,
-                                         @Nullable Predicate<Path> writeDirectory,
-                                         @Nullable BiPredicate<Path, BasicFileAttributes> writeFile,
+                                         @Nullable ThrowingPredicate<Path, Exception> writeDirectory,
+                                         @Nullable ThrowingBiPredicate<Path, BasicFileAttributes, Exception> writeFile,
                                          @Nullable BiFunction<Path, Path, String> buildKey,
                                          @Nullable Function<Path, String> buildTitle) {
         try {
@@ -93,7 +94,7 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
             }
             BiPredicate<Path, BasicFileAttributes> visitDirectoryTest = visitDirectory == null ?
                     SettingPluginOptionsFileExplorer::visitDirectoryDefault : visitDirectory;
-            Predicate<Path> writeDirectoryTest = writeDirectory == null ? path -> true : writeDirectory;
+            ThrowingPredicate<Path, Exception> writeDirectoryTest = writeDirectory == null ? path -> true : writeDirectory;
 
             Map<Path, OptionModel> fs = new HashMap<>();
             Files.walkFileTree(root,
@@ -101,8 +102,11 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                     Math.max(levels, 1), new SimpleFileVisitor<Path>() {
                         @Override
                         public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-                            if (writeFile == null || writeFile.test(path, attrs)) {
-                                handlePath(path);
+                            try {
+                                if (writeFile == null || writeFile.test(path, attrs)) {
+                                    handlePath(path);
+                                }
+                            } catch (Exception ignore) {
                             }
                             return FileVisitResult.CONTINUE;
                         }
@@ -110,10 +114,13 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
                             if (visitDirectoryTest.test(dir, attrs)) {
-                                if (writeDirectoryTest.test(dir)) {
-                                    handlePath(dir);
-                                } else if (dir.equals(root) && skipRootInTreeStructure) { // handleDir anyway if it root
-                                    handlePath(dir);
+                                try {
+                                    if (writeDirectoryTest.test(dir)) {
+                                        handlePath(dir);
+                                    } else if (dir.equals(root) && skipRootInTreeStructure) { // handleDir anyway if it root
+                                        handlePath(dir);
+                                    }
+                                } catch (Exception ignore) {
                                 }
                                 return FileVisitResult.CONTINUE;
                             }

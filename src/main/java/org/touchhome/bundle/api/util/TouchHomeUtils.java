@@ -54,7 +54,7 @@ public class TouchHomeUtils {
 
     public static final String PRIMARY_COLOR = "#E65100";
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final Path TMP_FOLDER = Paths.get(FileUtils.getTempDirectoryPath());
+    public static final Path TMP_FOLDER = Paths.get(FileUtils.getTempDirectoryPath());
     public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();
 
     @Getter
@@ -206,13 +206,13 @@ public class TouchHomeUtils {
         if (ex == null) {
             return null;
         }
-        if (ex.getCause() instanceof NullPointerException || (ex.getCause() == null
-                && ex instanceof NullPointerException)) {
-            return "Unexpected NullPointerException at line: " + ex.getStackTrace()[0].toString();
-        }
         Throwable cause = ex;
         while (cause.getCause() != null) {
             cause = cause.getCause();
+        }
+
+        if (cause instanceof NullPointerException) {
+            return "Unexpected NullPointerException at line: " + ex.getStackTrace()[0].toString();
         }
 
         return StringUtils.defaultString(cause.getMessage(), cause.toString());
