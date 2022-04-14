@@ -10,9 +10,9 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.state.RawType;
-import org.touchhome.bundle.api.util.Curl;
-import org.touchhome.bundle.api.util.SpringUtils;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
+import org.touchhome.common.util.Curl;
+import org.touchhome.common.util.SpringUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,6 +57,9 @@ public interface WorkspaceBlock {
 
     default <T extends BaseEntity> T getMenuValueEntityRequired(String key, MenuBlock.ServerMenuBlock menuBlock) {
         String entityID = getMenuValue(key, menuBlock, String.class);
+        if ("-".equals(entityID)) {
+            logErrorAndThrow("Menu entity not selected for block: {}", key);
+        }
         T entity = getEntityContext().getEntity(entityID);
         if (entity == null) {
             logErrorAndThrow("Unable to find entity for block: {}. Value: {}", key, entityID);
@@ -312,7 +315,7 @@ public interface WorkspaceBlock {
             String mediaURL = (String) input;
             if (mediaURL.startsWith("http")) {
                 // max 10mb
-                return Curl.download(mediaURL, maxDownloadSize);
+                return new RawType(Curl.download(mediaURL, maxDownloadSize));
             } else if (Files.isRegularFile(Paths.get(mediaURL))) {
                 Path path = Paths.get(mediaURL);
                 content = Files.readAllBytes(path);

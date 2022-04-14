@@ -9,6 +9,7 @@ import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,7 @@ public interface EntityService<S, T extends HasEntityIdentifier> extends HasStat
             try {
                 return new ServiceIdentifier(hash, createService(entityContext));
             } catch (Exception ex) {
-                setStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
+                setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
                 if (throwIfError) {
                     throw new RuntimeException(ex);
                 }
@@ -46,7 +47,7 @@ public interface EntityService<S, T extends HasEntityIdentifier> extends HasStat
                     testService((S) sid.getService());
                 }
             } catch (Exception ex) {
-                setStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
+                setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
                 if (throwIfError) {
                     throw new RuntimeException(ex);
                 }

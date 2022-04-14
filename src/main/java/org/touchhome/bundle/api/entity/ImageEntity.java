@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import javax.persistence.*;
 import java.nio.file.Files;
@@ -63,7 +64,7 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     @SneakyThrows
     public Path toPath() {
         if (fileSystem != null) {
-            return TouchHomeUtils.getOrCreateNewFileSystem(fileSystem).getPath(path);
+            return CommonUtils.getOrCreateNewFileSystem(fileSystem).getPath(path);
         }
         return Paths.get(path);
     }

@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.state;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import java.nio.charset.Charset;
 
@@ -51,6 +52,6 @@ public interface State {
 
     @SneakyThrows
     default State optional(String value) {
-        return StringUtils.isEmpty(value) ? this : TouchHomeUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+        return StringUtils.isEmpty(value) ? this : CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
     }
 }

@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
-import org.touchhome.bundle.api.model.ProgressBar;
+import org.touchhome.common.model.ProgressBar;
 
 import java.util.*;
 import java.util.concurrent.Callable;

@@ -6,23 +6,22 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.hardware.other.MachineHardwareRepository;
 import org.touchhome.bundle.api.model.ActionResponseModel;
-import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.setting.SettingPluginOptionsFileExplorer;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.model.ProgressBar;
+import org.touchhome.common.util.CommonUtils;
+import org.touchhome.common.util.Curl;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static org.touchhome.bundle.api.util.Curl.downloadWithProgress;
 
 public abstract class DependencyExecutableInstaller implements UIActionHandler {
 
     protected Boolean requireInstall;
 
     public abstract String getName();
-
 
     /**
      * If set - scan DependencyExecutableInstaller and listen when button fires on ui
@@ -84,10 +83,10 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
         log.info("Downloading <{}> from url <{}>", folderName, url);
         Path targetFolder = TouchHomeUtils.getInstallPath().resolve(folderName);
         Path archiveFile = targetFolder.resolve(folderName + "." + archiveType);
-        downloadWithProgress(url, archiveFile, progressBar);
+        Curl.downloadWithProgress(url, archiveFile, progressBar);
         progressBar.progress(90, "Unzip files...");
         log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
-        TouchHomeUtils.unzip(archiveFile, targetFolder, null, progressBar);
+        CommonUtils.unzip(archiveFile, targetFolder, null, progressBar);
         Files.deleteIfExists(archiveFile);
         return targetFolder;
     }

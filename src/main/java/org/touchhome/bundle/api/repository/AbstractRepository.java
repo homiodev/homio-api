@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -32,7 +33,7 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
 
     public AbstractRepository(Class<T> clazz) {
         this.clazz = clazz;
-        this.prefix = Modifier.isAbstract(clazz.getModifiers()) ? null : TouchHomeUtils.newInstance(clazz).getEntityPrefix();
+        this.prefix = Modifier.isAbstract(clazz.getModifiers()) ? null : CommonUtils.newInstance(clazz).getEntityPrefix();
     }
 
     @Transactional(readOnly = true)

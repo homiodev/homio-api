@@ -10,6 +10,7 @@ import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.bundle.api.workspace.scratch.*;
+import org.touchhome.common.util.CommonUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -92,7 +93,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
             try {
                 getDrive(workspaceBlock).getFileSystem(entityContext).delete(fileId.split("~~~"));
             } catch (Exception ex) {
-                workspaceBlock.logErrorAndThrow("Unable to delete file: <{}>. Msg: ", fileId, TouchHomeUtils.getErrorMessage(ex));
+                workspaceBlock.logErrorAndThrow("Unable to delete file: <{}>. Msg: ", fileId, CommonUtils.getErrorMessage(ex));
             }
         } else {
             workspaceBlock.logErrorAndThrow("Delete file block requires file name");

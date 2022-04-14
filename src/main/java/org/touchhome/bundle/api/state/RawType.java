@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.springframework.util.MimeTypeUtils;
+import org.touchhome.common.util.Curl;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -36,6 +37,12 @@ public class RawType implements State {
         this.bytes = bytes;
         this.mimeType = mimeType;
         this.name = name;
+    }
+
+    public RawType(Curl.RawResponse rawResponse) {
+        this.bytes = rawResponse.getBytes();
+        this.mimeType = rawResponse.getMimeType();
+        this.name = rawResponse.getName();
     }
 
     public static RawType ofPlainText(String value) {

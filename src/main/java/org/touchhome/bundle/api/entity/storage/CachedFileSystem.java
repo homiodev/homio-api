@@ -97,14 +97,14 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
         if (level > getFSMaxLevel()) {
             return;
         }
-        CachedFileSystem cachedFileSystem = children.get(serverSource.getName());
+        CachedFileSystem cachedFileSystem = children.get(serverSource.getId());
         if (cachedFileSystem == null || cachedFileSystem.source.getLastModifiedTime() != serverSource.getLastModifiedTime()) {
             cachedFileSystem = this.newInstance(serverSource, (S) this);
 
             if (content != null) {
                 content.clear();
             }
-            children.put(serverSource.getName(), (S) cachedFileSystem);
+            children.put(serverSource.getId(), (S) cachedFileSystem);
             if (serverSource.isFolder() && serverSource.fillDeeper()) {
                 for (T child : this.searchForChildren(serverSource, driver)) {
                     cachedFileSystem.fillFromServer(child, driver, level + 1);

@@ -1,9 +1,10 @@
 package org.touchhome.bundle.api.entity.dependency;
 
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.model.ProgressBar;
-import org.touchhome.bundle.api.util.Curl;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.model.ProgressBar;
+import org.touchhome.common.util.CommonUtils;
+import org.touchhome.common.util.Curl;
 
 import java.nio.file.Path;
 
@@ -13,13 +14,13 @@ public interface DependencyZipInstaller {
         Path targetPath = getRootPath().resolve(dependencyName());
         Curl.downloadWithProgress(getDependencyURL(), targetPath, progressBar);
         progressBar.progress(95, "Extracting files...");
-        TouchHomeUtils.unzip(targetPath, targetPath.getParent(), null, progressBar);
+        CommonUtils.unzip(targetPath, targetPath.getParent(), null, progressBar);
         progressBar.progress(99, "Extracting finished");
         afterDependencyInstalled();
     }
 
     default boolean requireInstallDependencies() {
-        return !TouchHomeUtils.isValidZipArchive(getRootPath().resolve(dependencyName()).toFile());
+        return !CommonUtils.isValidZipArchive(getRootPath().resolve(dependencyName()).toFile());
     }
 
     void afterDependencyInstalled();

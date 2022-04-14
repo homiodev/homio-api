@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.model;
 
 import lombok.Getter;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 @Getter
 public class ErrorHolderModel {
@@ -13,7 +14,7 @@ public class ErrorHolderModel {
     public ErrorHolderModel(String title, String message, Exception ex) {
         this.title = title;
         this.message = message;
-        this.cause = TouchHomeUtils.getErrorMessage(ex);
+        this.cause = CommonUtils.getErrorMessage(ex);
         this.errorType = ex.getClass().getSimpleName();
     }
 }

@@ -1,7 +1,8 @@
 package org.touchhome.bundle.api;
 
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.util.FlowMap;
+import org.touchhome.common.util.FlowMap;
+import org.touchhome.common.util.Lang;
 
 import java.util.function.Consumer;
 

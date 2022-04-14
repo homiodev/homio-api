@@ -3,7 +3,6 @@ package org.touchhome.bundle.api.entity.storage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.Lang;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.BaseEntityIdentifier;
 import org.touchhome.bundle.api.entity.HasJsonData;
@@ -15,6 +14,7 @@ import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.action.HasDynamicContextMenuActions;
 import org.touchhome.bundle.api.ui.field.action.UIContextMenuAction;
 import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
+import org.touchhome.common.util.Lang;
 
 import java.util.Map;
 

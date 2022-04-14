@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.touchhome.bundle.api.setting.SettingPluginStatus;
 import org.touchhome.bundle.api.ui.builder.BellNotificationBuilder;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import javax.validation.constraints.NotNull;
 import java.net.URL;
@@ -69,7 +70,7 @@ public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
 
     @SneakyThrows
     default URL getResource(String resource) {
-        return TouchHomeUtils.getResource(getBundleId(), resource);
+        return CommonUtils.getResource(getBundleId(), resource);
     }
 
     enum BundleImageColorIndex {

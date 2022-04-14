@@ -9,15 +9,17 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.exception.ServerException;
-import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.ui.DialogModel;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
-import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.exception.ServerException;
+import org.touchhome.common.model.ProgressBar;
+import org.touchhome.common.util.CommonUtils;
+import org.touchhome.common.util.FlowMap;
+import org.touchhome.common.util.Lang;
 
 import java.util.Collection;
 import java.util.List;
@@ -391,11 +393,9 @@ public interface EntityContextUI {
         } else {
             text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {
-                text = TouchHomeUtils.getErrorMessage(ex);
+                text = CommonUtils.getErrorMessage(ex);
             }
             // try cast text to lang
-
-
             text = Lang.getServerMessage(text, messageParam);
         }
         sendGlobal(GlobalSendType.popup, null, text, title, new JSONObject().put("level", type));

@@ -8,8 +8,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.model.ProgressBar;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
+import org.touchhome.common.model.ProgressBar;
 
 import java.util.Collection;
 import java.util.List;

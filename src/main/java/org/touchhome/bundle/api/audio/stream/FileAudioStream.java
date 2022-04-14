@@ -3,7 +3,7 @@ package org.touchhome.bundle.api.audio.stream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.audio.AudioFormat;
-import org.touchhome.bundle.api.exception.NotFoundException;
+import org.touchhome.common.exception.NotFoundException;
 
 import java.io.*;
 

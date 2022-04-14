@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import org.touchhome.bundle.api.Lang;
+import org.touchhome.common.util.Lang;
 
 import java.util.Collections;
 import java.util.Set;

@@ -9,6 +9,7 @@ import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import java.util.Optional;
 
@@ -37,7 +38,7 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
     }
 
     default T setStatusError(@NotNull Exception ex) {
-        return setStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
+        return setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
     }
 
     default T setStatus(@NotNull Status status) {

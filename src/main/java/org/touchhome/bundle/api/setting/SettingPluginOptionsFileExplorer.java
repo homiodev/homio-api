@@ -10,6 +10,7 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -171,7 +172,7 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
             result.sort(pathComparator == null ? Comparator.comparing(OptionModel::getTitleOrKey) : pathComparator);
             return result;
         } catch (Exception ex) {
-            throw new RuntimeException("Unable to fetch " + TouchHomeUtils.getErrorMessage(ex));
+            throw new RuntimeException("Unable to fetch " + CommonUtils.getErrorMessage(ex));
         }
     }
 

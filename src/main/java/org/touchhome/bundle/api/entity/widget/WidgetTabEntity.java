@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.exception.ServerException;
+import org.touchhome.common.exception.ServerException;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;

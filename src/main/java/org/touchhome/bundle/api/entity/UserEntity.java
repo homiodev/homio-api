@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.converter.StringSetConverter;
 import org.touchhome.bundle.api.util.Constants;
-import org.touchhome.bundle.api.util.SslUtil;
+import org.touchhome.common.util.SslUtil;
 
 import javax.persistence.*;
 import java.util.Collections;

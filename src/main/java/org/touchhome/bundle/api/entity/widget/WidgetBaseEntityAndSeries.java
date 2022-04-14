@@ -5,8 +5,8 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.exception.ServerException;
 import org.touchhome.bundle.api.ui.field.UIField;
+import org.touchhome.common.exception.ServerException;
 
 import javax.persistence.*;
 import java.util.Set;
