@@ -25,12 +25,12 @@ import java.util.Set;
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
         implements HasPosition<DeviceBaseEntity>, HasJsonData<T>, HasStatusAndMsg<T> {
 
-    @UIField(readOnly = true, order = 5)
+    @UIField(readOnly = true, order = 5, hideOnEmpty = true)
     @Getter
     private String ieeeAddress;
 
     @Setter
-    @Getter()
+    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @UIField(order = 50, type = UIFieldType.SelectBox)
     @UIFieldSelection(SelectPlaceOptionLoader.class)

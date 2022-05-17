@@ -42,6 +42,10 @@ public abstract class MenuBlock {
         return new ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), "-", "-", null);
     }
 
+    public static ServerMenuBlock ofServerServiceItems(String name, Class<?> entityServiceClass) {
+        return new ServerMenuBlock(name, "rest/item/service/" + entityServiceClass.getSimpleName(), "-", "-", null);
+    }
+
     public static ServerMenuBlock ofServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey, String firstValue) {
         return new ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), firstKey, firstValue, null);
     }

@@ -12,6 +12,10 @@ import java.util.Map;
  */
 public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
 
+    default String getName() {
+        return getEntityID();
+    }
+
     default String getEntityID() {
         return BundleEntryPoint.getBundleName(getClass());
     }

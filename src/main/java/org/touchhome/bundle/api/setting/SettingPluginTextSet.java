@@ -17,6 +17,10 @@ public interface SettingPluginTextSet extends SettingPlugin<Set<String>> {
 
     String[] defaultValue();
 
+    default String getPattern() {
+        return null;
+    }
+
     @Override
     default String getDefaultValue() {
         return String.join("~~~", defaultValue());

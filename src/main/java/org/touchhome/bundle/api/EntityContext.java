@@ -9,13 +9,14 @@ import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface EntityContext {
-
-    String APP_ID = Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
 
     static boolean isDevEnvironment() {
         return "true".equals(System.getProperty("development"));

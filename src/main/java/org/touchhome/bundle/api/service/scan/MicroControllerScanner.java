@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.entity.micro;
+package org.touchhome.bundle.api.service.scan;
 
 import org.touchhome.bundle.api.service.scan.ItemDiscoverySupport;
 

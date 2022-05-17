@@ -18,4 +18,6 @@ public @interface UIFieldColorStatusMatch {
     String unknown() default "#818744";
 
     String error() default "#9C4F4F";
+
+    String requireAuth() default "#8C3581";
 }

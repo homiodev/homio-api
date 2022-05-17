@@ -8,7 +8,6 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.model.Status;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.util.CommonUtils;
 
 import java.util.HashMap;
@@ -19,6 +18,8 @@ import java.util.stream.Stream;
 public interface EntityService<S, T extends HasEntityIdentifier> extends HasStatusAndMsg<T> {
 
     Map<String, ServiceIdentifier> entityToService = new HashMap<>();
+
+    Class<S> getEntityServiceItemClass();
 
     @SneakyThrows
     default S getOrCreateService(EntityContext entityContext, boolean throwIfError, boolean testService) {

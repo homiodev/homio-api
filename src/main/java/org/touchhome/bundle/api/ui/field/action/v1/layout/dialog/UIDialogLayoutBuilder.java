@@ -22,10 +22,14 @@ public interface UIDialogLayoutBuilder extends UIEntityBuilder {
 
     UIDialogLayoutBuilder appendStyle(@NotNull String style, @NotNull String value);
 
-    UIDialogLayoutBuilder setTitle(@NotNull String title, String color);
+    UIDialogLayoutBuilder setTitle(String title, String icon, String iconColor);
 
-    default UIDialogLayoutBuilder setTitle(@NotNull String title) {
-        return setTitle(title, null);
+    default UIDialogLayoutBuilder setTitle(String title) {
+        return setTitle(title, null, null);
+    }
+
+    default UIDialogLayoutBuilder setTitle(String title, String icon) {
+        return setTitle(title, icon, null);
     }
 
     DialogEntity<UISliderItemBuilder> addSlider(@NotNull String name, float value, float min, float max);

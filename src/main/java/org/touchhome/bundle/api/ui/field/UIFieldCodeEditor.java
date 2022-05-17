@@ -13,6 +13,8 @@ public @interface UIFieldCodeEditor {
 
     boolean autoFormat() default false;
 
+    boolean wordWrap() default false;
+
     enum CodeEditorType {
         javascript, json
     }

@@ -170,14 +170,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
                 simpleId = name + "_" + System.currentTimeMillis();
             }
             this.entityID = simpleId.startsWith(getEntityPrefix()) ? simpleId : getEntityPrefix() + simpleId;
-            if (this.entityID.length() > 30) {
+            /*if (this.entityID.length() > 100) {
                 if (this.entityID.contains(sn)) {
-                    int diff = this.entityID.length() - 30;
+                    int diff = this.entityID.length() - 100;
                     this.entityID = this.entityID.replace(sn, sn.substring(0, sn.length() - diff));
                 } else {
                     this.entityID = getEntityPrefix() + System.currentTimeMillis();
                 }
-            }
+            }*/
         }
         return this.entityID;
     }

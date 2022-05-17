@@ -2,13 +2,15 @@ package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.Tika;
-import org.apache.tika.parser.txt.CharsetDetector;
 import org.springframework.util.MimeTypeUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.util.Curl;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -19,11 +21,32 @@ public class RawType implements State {
     @Setter
     protected String name;
     protected byte[] bytes;
+    private Path relatedFile;
     @Getter
     protected String mimeType;
 
+    public Path toPath() {
+        if (relatedFile == null || !Files.isReadable(relatedFile)) {
+            String fileName = name;
+            if (fileName == null) {
+                fileName = String.valueOf(Arrays.hashCode(bytes));
+            }
+            relatedFile = TouchHomeUtils.writeToFile(TouchHomeUtils.getTmpPath().resolve(fileName), bytes, false);
+        }
+        return relatedFile;
+    }
+
     public RawType(byte[] bytes) {
-        this(bytes, new Tika().detect(bytes), null);
+        this(bytes, MimeTypeUtils.TEXT_PLAIN_VALUE, null);
+    }
+
+    public RawType(Path file) {
+        this(file, MimeTypeUtils.TEXT_PLAIN_VALUE);
+    }
+
+    public RawType(Path file, String mimeType) {
+        this(new byte[0], mimeType, null);
+        this.relatedFile = file;
     }
 
     public RawType(byte[] bytes, String mimeType) {
@@ -61,16 +84,9 @@ public class RawType implements State {
         return new RawType(Base64.getDecoder().decode(value.substring(idx + 1)), value.substring(5, idx2));
     }
 
-    public static String detectByteToString(byte[] bytes) {
-        CharsetDetector detector = new CharsetDetector();
-        detector.setText(bytes);
-        detector.detect();
-        return detector.getString(bytes, "UTF-8");
-    }
-
     @Override
     public String toString() {
-        return RawType.detectByteToString(bytes);
+        return new String(byteArrayValue());
     }
 
     @Override
@@ -88,18 +104,22 @@ public class RawType implements State {
         throw new RuntimeException("Not implemented");
     }
 
+    @SneakyThrows
     @Override
     public byte[] byteArrayValue() {
+        if (bytes == null && relatedFile != null) {
+            bytes = Files.readAllBytes(relatedFile);
+        }
         return bytes;
     }
 
     @Override
     public String toFullString() {
         if (mimeType.startsWith("image/")) {
-            return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
+            return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(byteArrayValue());
         }
         return toString();
-        // return Base64.getEncoder().encodeToString(bytes);
+        // return Base64.getEncoder().encodeToString(byteArrayValue());
     }
 
     @Override
@@ -111,7 +131,7 @@ public class RawType implements State {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + Arrays.hashCode(bytes);
+        result = prime * result + Arrays.hashCode(byteArrayValue());
         return result;
     }
 
@@ -130,16 +150,16 @@ public class RawType implements State {
         if (!mimeType.equals(other.mimeType)) {
             return false;
         }
-        return Arrays.equals(bytes, other.bytes);
+        return Arrays.equals(byteArrayValue(), other.byteArrayValue());
     }
 
     public boolean startsWith(String prefix) {
         byte[] prefixBytes = prefix.getBytes();
-        if (bytes.length < prefixBytes.length) {
+        if (byteArrayValue().length < prefixBytes.length) {
             return false;
         }
         for (int i = 0; i < prefixBytes.length; i++) {
-            if (prefixBytes[i] != bytes[i]) {
+            if (prefixBytes[i] != byteArrayValue()[i]) {
                 return false;
             }
         }

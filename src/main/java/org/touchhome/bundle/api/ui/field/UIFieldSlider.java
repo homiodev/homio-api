@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSlider {
-    int min() default Integer.MIN_VALUE;
+    double min() default Integer.MIN_VALUE;
 
-    int max() default Integer.MAX_VALUE;
+    double max() default Integer.MAX_VALUE;
 
-    int step() default 1;
+    double step() default 1D;
 }

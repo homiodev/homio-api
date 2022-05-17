@@ -86,10 +86,6 @@ public final class UserEntity extends BaseEntity<UserEntity> {
         return this;
     }
 
-    public boolean isPasswordNotSet(PasswordEncoder passwordEncoder) {
-        return StringUtils.isEmpty(password) || matchPassword("admin123", passwordEncoder);
-    }
-
     public UserEntity setKeystore(byte[] keystore) {
         this.keystore = keystore;
         SslUtil.validateKeyStore(keystore, password);

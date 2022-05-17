@@ -9,11 +9,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 import org.touchhome.common.util.Curl;
 import org.touchhome.common.util.SpringUtils;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +43,8 @@ public interface WorkspaceBlock {
 
     <P> P getMenuValue(String key, MenuBlock menuBlock, Class<P> type);
 
+    Path getFile(String key, MenuBlock menuBlock, boolean required);
+
     default <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type) {
         return getMenuValues(key, menuBlock, type, "~~~");
     }
@@ -53,6 +57,19 @@ public interface WorkspaceBlock {
 
     default <T extends BaseEntity> T getMenuValueEntity(String key, MenuBlock.ServerMenuBlock menuBlock) {
         return getEntityContext().getEntity(getMenuValue(key, menuBlock, String.class));
+    }
+
+    default <S> S getEntityService(String key, MenuBlock.ServerMenuBlock menuBlock, Class<S> serviceClass) {
+        BaseEntity baseEntity = getMenuValueEntityRequired(key, menuBlock);
+        if (!(baseEntity instanceof EntityService)) {
+            logErrorAndThrow("Entity {} has to implement EntityService", baseEntity.getTitle());
+        }
+        EntityService entityService = (EntityService) baseEntity;
+        S service = (S) entityService.getOrCreateService(getEntityContext(), true, false);
+        if (!serviceClass.isAssignableFrom(service.getClass())) {
+            logErrorAndThrow("Entity {} has no service {}", baseEntity.getTitle(), serviceClass.getSimpleName());
+        }
+        return service;
     }
 
     default <T extends BaseEntity> T getMenuValueEntityRequired(String key, MenuBlock.ServerMenuBlock menuBlock) {

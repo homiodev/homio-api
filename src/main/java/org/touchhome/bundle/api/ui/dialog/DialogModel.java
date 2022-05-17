@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.ui;
+package org.touchhome.bundle.api.ui.dialog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingConsumer;
@@ -8,7 +8,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.EntityContextUI;
-import org.touchhome.bundle.api.ui.dialog.DialogGroup;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
 
 import java.util.*;
@@ -121,7 +120,6 @@ public class DialogModel {
         private final ButtonType type;
 
         private String icon;
-        private String color;
 
         private enum ButtonType {
             submit, cancel, extra

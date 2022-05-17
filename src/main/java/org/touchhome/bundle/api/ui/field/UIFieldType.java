@@ -70,20 +70,6 @@ public enum UIFieldType {
         return java.lang.Integer.parseInt(o.toString());
     }), // for integer we may set metadata as min, max
     ColorPicker(Object::toString),
-    Json(new Function<Object, Object>() {
-        @SneakyThrows
-        @Override
-        public Object apply(Object o) {
-            if (o instanceof JsonNode) {
-                return o;
-            }
-            if (o instanceof JsonType) {
-                return ((JsonType) o).getJsonNode();
-            }
-            return new ObjectMapper().readValue(o.toString(), JsonNode.class);
-        }
-    }),
-
     Chips(Object::toString), // https://material.angular.io/components/chips/examples
 
     // special type (default for detect field type by java type)
