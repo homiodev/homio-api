@@ -4,12 +4,12 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.AbstractFileFilter;
+import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.exception.ServerException;
 import org.touchhome.common.util.CommonUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.io.filefilter.TrueFileFilter.TRUE;
-
 /**
  * Interface for entities who have ability to convert text to sound
  */
@@ -32,11 +30,17 @@ public abstract class TextToSpeechEntityService {
 
     @Getter
     private final Path cacheFolder;
+    private final Integer maxQuota;
     public long lastTimeCleanOldCache = 0;
 
+    /**
+     * @param folderName - cache folder name
+     * @param maxQuota   if null - no quota
+     */
     @SneakyThrows
-    public TextToSpeechEntityService(String folderName) {
-        cacheFolder = CommonUtils.createDirectoriesIfNotExists(TouchHomeUtils.getAudioPath().resolve(folderName));
+    public TextToSpeechEntityService(String folderName, @Nullable Integer maxQuota) {
+        this.cacheFolder = CommonUtils.createDirectoriesIfNotExists(TouchHomeUtils.getAudioPath().resolve(folderName));
+        this.maxQuota = maxQuota;
         cleanOldCache();
     }
 
@@ -67,31 +71,24 @@ public abstract class TextToSpeechEntityService {
         }
     }
 
+    @SneakyThrows
     private void cleanOldAudioFiles() {
-        for (File oldFile : FileUtils.listFiles(cacheFolder.toFile(), new AbstractFileFilter() {
-            @Override
-            public boolean accept(File file) {
-                try {
-                    BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-                    return TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - attributes.lastAccessTime().toMillis()) > 31;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".mp3"}, true)) {
+            BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+            if (TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - attributes.lastAccessTime().toMillis()) > 31) {
+                log.info("Delete old audio file <{}>", file.getName());
+                file.delete();
             }
-        }, TRUE)) {
-            oldFile.delete();
         }
     }
 
     protected void cleanOldCharacterFiles() {
         String currentCharactersFileName = getCharacters().getFileName().toString();
-        for (File oldFile : FileUtils.listFiles(cacheFolder.toFile(), new AbstractFileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return !file.getName().equals(currentCharactersFileName);
+        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".txt"}, true)) {
+            if (!file.getName().equals(currentCharactersFileName)) {
+                log.info("Delete old character file <{}>", file.getName());
+                file.delete();
             }
-        }, TRUE)) {
-            oldFile.delete();
         }
     }
 
@@ -106,13 +103,20 @@ public abstract class TextToSpeechEntityService {
 
     @SneakyThrows
     public Path synthesizeSpeech(String text, boolean save) {
+        if (text == null || text.length() < 3) {
+            throw new IllegalArgumentException("Unable to make sound from too short text");
+        }
         cleanOldCache();
         String fileNameInCache = getUniqueFilenameForText(text);
         Path audioFileInCache = cacheFolder.resolve(fileNameInCache + ".mp3");
         // check if in cache
-        if (save && Files.exists(audioFileInCache)) {
+        if (save && Files.exists(audioFileInCache) && Files.size(audioFileInCache) > 0) {
             log.debug("Audio file {} was found in cache.", audioFileInCache.getFileName());
             return audioFileInCache;
+        }
+
+        if (maxQuota != null && getSynthesizedCharacters() > maxQuota) {
+            throw new ServerException("Exceeded quota of <" + maxQuota + "> characters");
         }
 
         // if not in cache, get audio data and put to cache
@@ -125,8 +129,8 @@ public abstract class TextToSpeechEntityService {
 
     private Path saveAudioAndTextToFile(String text, Path cacheFile, byte[] audio) {
         log.debug("Caching audio file {}", cacheFile.getFileName());
-        TouchHomeUtils.writeToFile(cacheFile, audio, false);
-        return TouchHomeUtils.writeToFile(getCharacters(), text, true);
+        TouchHomeUtils.writeToFile(getCharacters(), text, true);
+        return TouchHomeUtils.writeToFile(cacheFile, audio, false);
     }
 
     public String getUniqueFilenameForText(String text) {

@@ -35,7 +35,7 @@ public @interface UIFieldProgress {
         public String message;
 
         public Progress(int value, int maxValue, String message) {
-            this(value * 100 / maxValue, message);
+            this((int) Math.ceil(value * 100f / maxValue), message);
         }
     }
 }

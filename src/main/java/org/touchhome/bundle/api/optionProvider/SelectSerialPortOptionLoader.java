@@ -10,7 +10,7 @@ import java.util.Collection;
 public class SelectSerialPortOptionLoader implements DynamicOptionLoader {
 
     @Override
-    public Collection<OptionModel> loadOptions(BaseEntity baseEntity, EntityContext entityContext, String[] staticParameters) {
+    public Collection<OptionModel> loadOptions(DynamicOptionLoaderParameters parameters) {
         return OptionModel.listOfPorts(false);
     }
 }

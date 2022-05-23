@@ -15,7 +15,20 @@ public @interface UIFieldSelection {
      */
     Class<? extends DynamicOptionLoader> value();
 
+    /**
+     * In case of same DynamicOptionLoader uses for few different fields, this parameter may distinguish business handling
+     *
+     * @return
+     */
     String[] staticParameters() default {};
 
+    /**
+     * Set ui as textInout with select button if 'allowInputRawText' is true, and pure select box if false
+     */
     boolean allowInputRawText() default false;
+
+    /**
+     * List of dependency fields that should be passed to DynamicOptionLoader from UI
+     */
+    String[] dependencyFields() default {};
 }

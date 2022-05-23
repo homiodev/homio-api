@@ -50,7 +50,7 @@ public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseE
     private JSONObject jsonData = new JSONObject();
 
     public String getFieldFetchType() {
-        return getJsonData("fieldFetchType", null);
+        return getJsonData("fieldFetchType", (String) null);
     }
 
     public T setFieldFetchType(String value) {

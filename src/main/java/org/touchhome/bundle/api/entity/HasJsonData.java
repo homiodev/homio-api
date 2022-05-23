@@ -1,9 +1,11 @@
 package org.touchhome.bundle.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.util.SecureString;
+import org.touchhome.common.util.CommonUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +23,14 @@ public interface HasJsonData<T> {
 
     default Integer getJsonData(String key, int defaultValue) {
         return getJsonData().optInt(key, defaultValue);
+    }
+
+    @SneakyThrows
+    default <T> T getJsonData(String key, Class<T> classType) {
+        if (getJsonData().has(key)) {
+            return CommonUtils.OBJECT_MAPPER.readValue(getJsonData(key), classType);
+        }
+        return null;
     }
 
     default <E extends Enum> E getJsonDataEnum(String key, E defaultValue) {

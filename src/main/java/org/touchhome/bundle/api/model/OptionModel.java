@@ -77,7 +77,7 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> withEmpty(List<OptionModel> list) {
-        list.add(OptionModel.of("", "no_value"));
+        list.add(0, OptionModel.of("", "Empty"));
         return list;
     }
 
@@ -105,6 +105,10 @@ public class OptionModel implements Comparable<OptionModel> {
 
     public static List<OptionModel> list(Collection<String> values) {
         return values.stream().map(v -> OptionModel.of(v, v)).collect(Collectors.toList());
+    }
+
+    public static List<OptionModel> listWithEmpty(Collection<String> values) {
+        return withEmpty(list(values));
     }
 
     public static List<OptionModel> list(OptionModel... optionModels) {
