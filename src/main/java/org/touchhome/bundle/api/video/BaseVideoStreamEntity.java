@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.entity.types;
+package org.touchhome.bundle.api.video;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +14,7 @@ import org.touchhome.bundle.api.service.scan.VideoStreamScanner;
 import org.touchhome.bundle.api.ui.UISidebarButton;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
+import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
 import org.touchhome.bundle.api.ui.field.action.HasDynamicContextMenuActions;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
@@ -35,6 +36,16 @@ import java.util.Collection;
         handlerClass = BaseVideoStreamEntity.VideoStreamDiscovery.class)
 public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> extends DeviceBaseEntity<T>
         implements HasDynamicContextMenuActions {
+
+    @UIField(order = 300, onlyEdit = true, advanced = true)
+    public boolean isHasAudioStream() {
+        return getJsonData("hasAudioStream", false);
+    }
+
+    public T setHasAudioStream(boolean value) {
+        setJsonData("hasAudioStream", value);
+        return (T) this;
+    }
 
     @Override
     @UIFieldIgnore

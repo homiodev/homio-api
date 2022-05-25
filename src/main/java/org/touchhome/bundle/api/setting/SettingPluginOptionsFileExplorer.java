@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.util.CommonUtils;
 
 import java.io.IOException;
@@ -144,18 +143,23 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
 
                         @SneakyThrows
                         private OptionModel createOptionModelFromPath(Path path) {
-                            String key = StringUtils.defaultString(buildKey == null ? null : buildKey.apply(path, root), buildKeyDefault(skipRootInTreeStructure, path, root));
-                            String title = StringUtils.defaultString(buildTitle == null ? null : buildTitle.apply(path), path.toString());
+                            String key = StringUtils.defaultString(buildKey == null ? null : buildKey.apply(path, root),
+                                    buildKeyDefault(skipRootInTreeStructure, path, root));
+                            String title = StringUtils.defaultString(buildTitle == null ? null : buildTitle.apply(path),
+                                    path.toString());
                             OptionModel model = OptionModel.of(key, title);
                             boolean isDirectory = Files.isDirectory(path);
                             // 1 - file, 2 - directory, 3 - empty directory
+                            model.getJson().put("translate", false);
                             if (isDirectory) {
                                 if (Files.list(path).findAny().isPresent()) {
                                     model.getJson().put("type", 2);
                                     model.setIcon("fas fa-folder");
+                                    model.setColor("#bdc500");
                                 } else {
                                     model.getJson().put("type", 3);
                                     model.setIcon("fas fa-folder-minus");
+                                    model.setColor("#95B8EC");
                                 }
                             } else {
                                 model.setIcon("fas fa-file-alt");

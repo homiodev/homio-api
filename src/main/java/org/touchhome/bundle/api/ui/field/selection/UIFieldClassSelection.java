@@ -15,6 +15,8 @@ public @interface UIFieldClassSelection {
 
     Class<? extends Predicate<Class<?>>> filter() default Identity.class;
 
+    boolean lazyLoading() default false;
+
     class Identity implements Predicate<Class<?>> {
 
         @Override

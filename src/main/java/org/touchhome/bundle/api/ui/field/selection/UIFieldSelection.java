@@ -31,4 +31,8 @@ public @interface UIFieldSelection {
      * List of dependency fields that should be passed to DynamicOptionLoader from UI
      */
     String[] dependencyFields() default {};
+
+    boolean lazyLoading() default false;
+
+    String parentChildJoiner() default "/";
 }

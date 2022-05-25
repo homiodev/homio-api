@@ -25,13 +25,6 @@ public interface VideoPlaybackStorage {
     @Nullable PlaybackFile getLastPlaybackFile(EntityContext entityContext, String profile);
 
     @AllArgsConstructor
-    class DownloadFile {
-        public Resource stream;
-        public long size;
-        public String name;
-    }
-
-    @AllArgsConstructor
     class PlaybackFile {
         public String id;
         public String name;

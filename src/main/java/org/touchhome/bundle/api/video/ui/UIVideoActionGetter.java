@@ -1,12 +1,12 @@
-package org.touchhome.bundle.api.ui.field.selection;
+package org.touchhome.bundle.api.video.ui;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldBeanSelection {
-    boolean lazyLoading() default false;
+public @interface UIVideoActionGetter {
+    String value();
 }

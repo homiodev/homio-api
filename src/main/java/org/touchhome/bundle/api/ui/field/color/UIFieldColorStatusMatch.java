@@ -20,4 +20,7 @@ public @interface UIFieldColorStatusMatch {
     String error() default "#9C4F4F";
 
     String requireAuth() default "#8C3581";
+
+    // handle color if message starts with 'error'/'requireAuth'/...
+    boolean handlePrefixes() default false;
 }
