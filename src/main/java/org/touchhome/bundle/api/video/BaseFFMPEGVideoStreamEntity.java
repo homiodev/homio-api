@@ -3,8 +3,9 @@ package org.touchhome.bundle.api.video;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
 import org.springframework.data.util.Pair;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,9 +24,13 @@ import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.touchhome.bundle.api.ui.field.image.UIFieldImage;
 import org.touchhome.bundle.api.util.SecureString;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.common.exception.ServerException;
 
 import javax.persistence.Transient;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -58,11 +63,6 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         }
     }
 
-    @Override
-    public String getTitle() {
-        return StringUtils.defaultIfBlank(getName(), StringUtils.defaultIfBlank(getDefaultName(), getEntityID()));
-    }
-
     @UIField(order = 15, inlineEdit = true)
     public boolean isStart() {
         return getJsonData("start", false);
@@ -74,10 +74,10 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     })
     public ActionResponseModel recordMP4(JSONObject params) {
         checkVideoOnline();
-        String filename = getFileNameToRecord(params);
+        Path filePath = buildFilePathForRecord(videoHandler.getFfmpegMP4OutputPath(), params.getString("fileName"), ".mp4");
         int secondsToRecord = params.getInt("secondsToRecord");
-        log.debug("Recording {}.mp4 for {} seconds.", filename, secondsToRecord);
-        videoHandler.recordMp4(filename, null, secondsToRecord);
+        log.debug("Recording {}.mp4 for {} seconds.", filePath, secondsToRecord);
+        videoHandler.recordMp4(filePath, null, secondsToRecord);
         return ActionResponseModel.showSuccess("SUCCESS");
     }
 
@@ -87,10 +87,10 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     })
     public ActionResponseModel recordGif(JSONObject params) {
         checkVideoOnline();
-        String filename = getFileNameToRecord(params);
+        Path filePath = buildFilePathForRecord(videoHandler.getFfmpegGifOutputPath(), params.getString("fileName"), ".gif");
         int secondsToRecord = params.getInt("secondsToRecord");
-        log.debug("Recording {}.gif for {} seconds.", filename, secondsToRecord);
-        videoHandler.recordGif(filename, null, secondsToRecord);
+        log.debug("Recording {}.gif for {} seconds.", filePath, secondsToRecord);
+        videoHandler.recordGif(filePath, null, secondsToRecord);
         return ActionResponseModel.showSuccess("SUCCESS");
     }
 
@@ -103,11 +103,15 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         }
     }
 
-    private String getFileNameToRecord(JSONObject params) {
-        String fileName = params.getString("fileName");
-        // hacky
-        fileName = fileName.replace("${timestamp}", System.currentTimeMillis() + "");
-        return fileName;
+    @SneakyThrows
+    public static Path buildFilePathForRecord(Path basePath, String fileName, String ext) {
+        if (!ext.equals(FilenameUtils.getExtension(fileName))) {
+            fileName += "." + ext;
+        }
+        fileName = basePath.resolve(fileName).toString();
+        Path path = Paths.get(WorkspaceBlock.evalStringWithContext(fileName, text -> text));
+        Files.createDirectories(path.getParent());
+        return path;
     }
 
     @UIField(order = 200, readOnly = true)

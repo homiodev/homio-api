@@ -3,7 +3,6 @@ package org.touchhome.bundle.api;
 import lombok.SneakyThrows;
 import org.touchhome.bundle.api.setting.SettingPluginStatus;
 import org.touchhome.bundle.api.ui.builder.BellNotificationBuilder;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.util.CommonUtils;
 
 import javax.validation.constraints.NotNull;
@@ -20,7 +19,13 @@ public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
         return null;
     }
 
+    // run once app started
     void init();
+
+    // run when app started and every time when added/removed new bundles
+    default void onContextRefresh() {
+
+    }
 
     default void destroy() {
 

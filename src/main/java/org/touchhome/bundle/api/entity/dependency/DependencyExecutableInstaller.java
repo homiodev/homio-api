@@ -79,14 +79,14 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
      * Just an utility methodUISidebarButton
      */
     @SneakyThrows
-    public Path downloadAndExtract(String url, String archiveType, String folderName, ProgressBar progressBar, Logger log) {
-        log.info("Downloading <{}> from url <{}>", folderName, url);
-        Path targetFolder = TouchHomeUtils.getInstallPath().resolve(folderName);
-        Path archiveFile = targetFolder.resolve(folderName + "." + archiveType);
+    public static Path downloadAndExtract(String url, String targetFileName, ProgressBar progressBar, Logger log) {
+        log.info("Downloading <{}> from url <{}>", targetFileName, url);
+        Path targetFolder = TouchHomeUtils.getInstallPath();
+        Path archiveFile = targetFolder.resolve(targetFileName);
         Curl.downloadWithProgress(url, archiveFile, progressBar);
         progressBar.progress(90, "Unzip files...");
         log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
-        ArchiveUtil.unzip(archiveFile, targetFolder, null, progressBar, ArchiveUtil.UnzipFileIssueHandler.replace);
+        ArchiveUtil.unzip(archiveFile, targetFolder, null, true, progressBar, ArchiveUtil.UnzipFileIssueHandler.replace);
         Files.deleteIfExists(archiveFile);
         return targetFolder;
     }

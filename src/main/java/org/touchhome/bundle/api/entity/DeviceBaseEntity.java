@@ -59,15 +59,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Setter
     private int bh = 1;
 
-    public String getShortTitle() {
-        return "";
-    }
-
-    @Override
-    public String refreshName() {
-        return getShortTitle();
-    }
-
     @Override
     public void getAllRelatedEntities(Set<BaseEntity> set) {
         set.add(ownerPlace);

@@ -84,12 +84,17 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max,
                                   UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
 
-    default UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor, UIActionHandler action) {
+    default UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
+                                          UIActionHandler action) {
         return addButton(name, icon, iconColor, action, getNextOrder());
     }
 
     UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
                                   UIActionHandler action, int order);
+
+    UIButtonItemBuilder addTableLayoutButton(@NotNull String name, int maxRows, int maxColumns, String value,
+                                             @Nullable String icon, @Nullable String iconColor,
+                                             UIActionHandler action, int order);
 
     default UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
                                                       String[] supportedFormats, UIActionHandler action) {
@@ -102,7 +107,8 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     /**
      * text or icon must be not null!
      */
-    default DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor) {
+    default DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable String icon,
+                                                                          @Nullable String iconColor) {
         return addStickyDialogButton(name, icon, iconColor, getNextOrder());
     }
 

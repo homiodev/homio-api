@@ -13,22 +13,22 @@ import java.lang.annotation.Target;
 public @interface UIFieldFileSelection {
     boolean allowInputRawText() default true;
 
-    // if not specified - CommonUtils.getRootPath() will be used
+    /**
+     * If set - uses only local file system, otherwise uses all possible file systems
+     */
     String rootPath() default "";
+
+    boolean allowMultiSelect() default false;
+
+    boolean showAllFileSystems() default true;
 
     boolean allowSelectDirs() default false;
 
     boolean allowSelectFiles() default true;
 
-    boolean flatStructure() default false;
-
-    boolean skipRootInTreeStructure() default true;
-
-    String[] extensions() default {};
+    String pattern() default ".*";
 
     String icon() default "fas fa-folder-open";
 
     String iconColor() default "";
-
-    int levels() default 1;
 }

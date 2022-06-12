@@ -41,6 +41,10 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
         return setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
     }
 
+    default T setStatusError(@NotNull String message) {
+        return setStatus(Status.ERROR, message);
+    }
+
     default T setStatus(@NotNull Status status) {
         return setStatus(status, status == Status.ONLINE ? null : getStatusMessage());
     }

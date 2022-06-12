@@ -13,7 +13,8 @@ public interface DependencyZipInstaller {
         Path targetPath = getRootPath().resolve(dependencyName());
         Curl.downloadWithProgress(getDependencyURL(), targetPath, progressBar);
         progressBar.progress(95, "Extracting files...");
-        ArchiveUtil.unzip(targetPath, targetPath.getParent(), null, progressBar, ArchiveUtil.UnzipFileIssueHandler.replace);
+        ArchiveUtil.unzip(targetPath, targetPath.getParent(), null, false, progressBar,
+                ArchiveUtil.UnzipFileIssueHandler.replace);
         progressBar.progress(99, "Extracting finished");
         afterDependencyInstalled();
     }

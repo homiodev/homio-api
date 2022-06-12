@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.entity.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeTypeUtils;
 import org.touchhome.bundle.api.BundleEntryPoint;
@@ -11,11 +12,16 @@ import org.touchhome.bundle.api.state.DecimalType;
 import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.bundle.api.workspace.scratch.*;
+import org.touchhome.common.fs.FileObject;
+import org.touchhome.common.fs.FileSystemProvider;
 import org.touchhome.common.util.CommonUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntryPoint,
         E extends BaseEntity & BaseFileSystemEntity>
@@ -23,17 +29,21 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
 
     private final Class<E> entityClass;
 
-    private final MenuBlock.StaticMenuBlock<UploadOptions> uploadOptionsMenu;
+    private final MenuBlock.StaticMenuBlock<UploadOption> uploadOptionsMenu;
     private final MenuBlock.ServerMenuBlock fsEntityMenu;
     private final MenuBlock.ServerMenuBlock fileMenu;
     private final MenuBlock.ServerMenuBlock folderMenu;
     private final MenuBlock.StaticMenuBlock<Unit> unitMenu;
+    private final MenuBlock.StaticMenuBlock<CountNodeEnum> countMenu;
 
     private final Scratch3Block sendFile;
+    private final Scratch3Block modifyFile;
+
     private final Scratch3Block getFileContent;
     private final Scratch3Block deleteFile;
     private final Scratch3Block getUsedQuota;
     private final Scratch3Block getTotalQuota;
+    private final Scratch3Block count;
 
     public Scratch3BaseFileSystemExtensionBlocks(String name, String color, EntityContext entityContext, T bundleEntryPoint,
                                                  Class<E> entityClass) {
@@ -42,38 +52,83 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         this.entityClass = entityClass;
 
         // menu
-        this.fsEntityMenu = MenuBlock.ofServerItems(ENTITY, entityClass);
+        this.fsEntityMenu = MenuBlock.ofServerItems(ENTITY, entityClass, "FileSystem");
         this.uploadOptionsMenu =
-                MenuBlock.ofStatic("uploadOptionsMenu", UploadOptions.class, UploadOptions.Append).setMultiSelect(" | ");
+                MenuBlock.ofStatic("uploadOptionsMenu", UploadOption.class, UploadOption.Append).setMultiSelect(" | ");
         this.unitMenu = MenuBlock.ofStatic("UNIT", Unit.class, Unit.B);
-        this.fileMenu = MenuBlock.ofServer("FILE", "rest/fs/file").setDependency(this.fsEntityMenu)
-                .setUIDelimiter("/");
-        this.folderMenu = MenuBlock.ofServer("FOLDER", "rest/fs/folder", "/", "/").setDependency(this.fsEntityMenu)
-                .setUIDelimiter("/");
+        this.countMenu = MenuBlock.ofStatic("COUNT", CountNodeEnum.class, CountNodeEnum.All);
+        this.fileMenu = MenuBlock.ofServerFiles(this.fsEntityMenu, null);
+        this.folderMenu = MenuBlock.ofServerFolders(this.fsEntityMenu, null);
 
         // blocks
         this.sendFile = ofDrive(Scratch3Block.ofHandler(10, "send_file", BlockType.command,
-                name + " upload [VALUE] as [NAME] to [PARENT] of [ENTITY] | Options: [OPTIONS]", this::sendFileHandle));
-        this.sendFile.addArgument(VALUE, ArgumentType.string, "body to upload");
+                "Upload [VALUE] as [NAME] to [PARENT] of [ENTITY]", this::sendFileHandle));
+        this.sendFile.addArgument(VALUE, ArgumentType.string, "body");
         this.sendFile.addArgument("NAME", "test.txt");
         this.sendFile.addArgument("PARENT", this.folderMenu);
         this.sendFile.addArgument("CONTENT", ArgumentType.string);
-        this.sendFile.addArgument("OPTIONS", this.uploadOptionsMenu);
 
-        this.getFileContent = ofDrive(Scratch3Block.ofReporter(20, "get_file_content",
-                name + " get [FILE] of [ENTITY]", this::getFieldContent));
+        this.modifyFile = ofDrive(Scratch3Block.ofHandler(15, "modify_file", BlockType.command,
+                "Update [VALUE] as [NAME] to [PARENT] of [ENTITY] | Options: [OPTIONS]", this::sendFileHandle));
+        this.modifyFile.addArgument(VALUE, ArgumentType.string, "body");
+        this.modifyFile.addArgument("NAME", "test.txt");
+        this.modifyFile.addArgument("PARENT", this.folderMenu);
+        this.modifyFile.addArgument("CONTENT", ArgumentType.string);
+        this.modifyFile.addArgument("OPTIONS", this.uploadOptionsMenu);
+
+        this.getFileContent =
+                ofDrive(Scratch3Block.ofReporter(20, "get_file_content", "Get [FILE] of [ENTITY]", this::getFieldContent));
         this.getFileContent.addArgument("FILE", this.fileMenu);
 
-        this.getUsedQuota = ofDrive(Scratch3Block.ofReporter(30, "get_used_quota",
-                name + " used quota if [ENTITY] | in [UNIT]", this::getUsedQuotaReporter));
+        this.count = ofDrive(Scratch3Block.ofReporter(30, "get_count", "Count of [VALUE] in [PARENT] [ENTITY]",
+                this::getCountOfNodesReporter));
+        this.count.addArgument("PARENT", this.folderMenu);
+        this.count.addArgument(VALUE, this.countMenu);
+
+        this.getUsedQuota = ofDrive(Scratch3Block.ofReporter(35, "get_used_quota", "Used quota if [ENTITY] | in [UNIT]",
+                this::getUsedQuotaReporter));
         this.getUsedQuota.addArgument("UNIT", this.unitMenu);
-        this.getTotalQuota = ofDrive(Scratch3Block.ofReporter(40, "get_total_quota",
-                name + " total quota of [ENTITY] | in [UNIT]", this::getTotalQuotaReporter));
+        this.getTotalQuota = ofDrive(Scratch3Block.ofReporter(40, "get_total_quota", "Total quota of [ENTITY] | in [UNIT]",
+                this::getTotalQuotaReporter));
         this.getTotalQuota.addArgument("UNIT", this.unitMenu);
 
-        this.deleteFile = ofDrive(Scratch3Block.ofHandler(50, "delete", BlockType.command,
-                name + " delete [FILE] of [ENTITY]", this::deleteFileHandle));
+        this.deleteFile = ofDrive(Scratch3Block.ofHandler(50, "delete", BlockType.command, "Delete [FILE] of [ENTITY]",
+                this::deleteFileHandle));
         this.deleteFile.addArgument("FILE", this.fileMenu);
+    }
+
+    private DecimalType getCountOfNodesReporter(WorkspaceBlock workspaceBlock) {
+        CountNodeEnum countNodeEnum = workspaceBlock.getMenuValue(VALUE, this.countMenu);
+        FileSystemProvider fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
+        String folderId = workspaceBlock.getMenuValue("PARENT", this.folderMenu);
+        Set<FileObject> children = fileSystem.getChildren(folderId);
+        switch (countNodeEnum) {
+            case Files:
+                return new DecimalType(children.stream().filter(c -> !c.getAttributes().isDir()).count());
+            case Folders:
+                return new DecimalType(children.stream().filter(c -> c.getAttributes().isDir()).count());
+            case All:
+                return new DecimalType(children.size());
+            case FilesWithChildren:
+                AtomicInteger filesCounter = new AtomicInteger(0);
+                Consumer<FileObject> filesFilter = fileObject -> {
+                    if (!fileObject.getAttributes().isDir()) {
+                        filesCounter.incrementAndGet();
+                    }
+                };
+                for (FileObject fileObject : fileSystem.getChildrenRecursively(folderId)) {
+                    fileObject.visitFileObjectTree(filesFilter);
+                }
+                return new DecimalType(filesCounter.get());
+            case AllWithChildren:
+                AtomicInteger allNodesCounter = new AtomicInteger(0);
+                Consumer<FileObject> allNodesFilter = fileObject -> allNodesCounter.incrementAndGet();
+                for (FileObject fileObject : fileSystem.getChildrenRecursively(folderId)) {
+                    fileObject.visitFileObjectTree(allNodesFilter);
+                }
+                return new DecimalType(allNodesCounter.get());
+        }
+        throw new RuntimeException("Unable to handle unknown count enum type: " + countNodeEnum);
     }
 
     public void init() {
@@ -96,7 +151,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         String fileId = workspaceBlock.getMenuValue("FILE", this.fileMenu);
         if (!"-".equals(fileId)) {
             try {
-                getDrive(workspaceBlock).getFileSystem(entityContext).delete(Collections.singletonList(fileId.split("~~~")));
+                getDrive(workspaceBlock).getFileSystem(entityContext).delete(Collections.singleton(fileId));
             } catch (Exception ex) {
                 workspaceBlock.logErrorAndThrow("Unable to delete file: <{}>. Msg: ", fileId, CommonUtils.getErrorMessage(ex));
             }
@@ -112,11 +167,15 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     private RawType getFieldContent(WorkspaceBlock workspaceBlock) throws Exception {
         String fileId = workspaceBlock.getMenuValue("FILE", this.fileMenu);
         if (!"-".equals(fileId)) {
-            VendorFileSystem.DownloadData data =
-                    getDrive(workspaceBlock).getFileSystem(entityContext).download(fileId.split("~~~"), true, null);
-            return new RawType(data.getContent(),
-                    StringUtils.defaultIfEmpty(data.getContentType(), MimeTypeUtils.TEXT_PLAIN_VALUE),
-                    data.getName());
+            String[] path = fileId.split("~~~");
+            String id = path[path.length - 1];
+            FileSystemProvider fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
+            FileObject fileObject = fileSystem.toFileObject(id);
+            byte[] content = IOUtils.toByteArray(fileObject.getInputStream());
+
+            return new RawType(content,
+                    StringUtils.defaultIfEmpty(fileObject.getAttributes().getContentType(), MimeTypeUtils.TEXT_PLAIN_VALUE),
+                    fileObject.getName());
         }
         return null;
     }
@@ -127,21 +186,23 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         byte[] value = workspaceBlock.getInputByteArray(VALUE);
 
         String folderId = workspaceBlock.getMenuValue("PARENT", this.folderMenu);
-        String[] parentPath = folderId.contains("~~~") ? folderId.split("~~~") : folderId.split("/");
         try {
-            VendorFileSystem fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
-            List<UploadOptions> properties =
-                    workspaceBlock.getMenuValues("OPTIONS", this.uploadOptionsMenu, UploadOptions.class, "~~~");
+            FileSystemProvider fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
+            List<UploadOption> uploadOptions =
+                    workspaceBlock.getMenuValues("OPTIONS", this.uploadOptionsMenu, UploadOption.class, "~~~");
 
-            if (properties.contains(UploadOptions.PrependNewLine)) {
+            if (uploadOptions.contains(UploadOption.PrependNewLine)) {
                 value = addAll("\n".getBytes(), value);
             }
-            if (properties.contains(UploadOptions.AppendNewLine)) {
+            if (uploadOptions.contains(UploadOption.AppendNewLine)) {
                 value = addAll(value, "\n".getBytes());
             }
 
-            fileSystem.upload(parentPath, fileName, value, properties.contains(UploadOptions.Append), true);
-            fileSystem.updateCache(true);
+            FileSystemProvider.UploadOption uploadOption =
+                    uploadOptions.contains(UploadOption.Append) ? FileSystemProvider.UploadOption.Append :
+                            FileSystemProvider.UploadOption.Replace;
+
+            fileSystem.copy(FileObject.of(fileName, value), folderId, uploadOption);
         } catch (Exception ex) {
             workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());
         }
@@ -158,8 +219,12 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         private final double divider;
     }
 
-    private enum UploadOptions {
+    private enum UploadOption {
         Append, PrependNewLine, AppendNewLine
+    }
+
+    private enum CountNodeEnum {
+        Files, Folders, All, FilesWithChildren, AllWithChildren
     }
 
     public static byte[] addAll(final byte[] array1, byte[] array2) {

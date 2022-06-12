@@ -1,25 +1,28 @@
 package org.touchhome.bundle.api.entity.storage;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.BaseEntityIdentifier;
 import org.touchhome.bundle.api.entity.HasJsonData;
 import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.model.ActionResponseModel;
-import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.action.HasDynamicContextMenuActions;
 import org.touchhome.bundle.api.ui.field.action.UIContextMenuAction;
-import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
+import org.touchhome.common.fs.FileSystemProvider;
 import org.touchhome.common.util.Lang;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends VendorFileSystem>
+public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
         extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData<T> {
+    Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
+
+    String getIcon();
+
+    String getIconColor();
 
     String getIcon();
 
@@ -27,10 +30,16 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
 
     boolean requireConfigure();
 
-    FS getFileSystem(EntityContext entityContext);
+    default FS getFileSystem(EntityContext entityContext) {
+        String key = getEntityID();
+        if (!fileSystemMap.containsKey(key)) {
+            FS fileSystemProvider = buildFileSystem(entityContext);
+            fileSystemMap.put(key, fileSystemProvider);
+        }
+        return (FS) fileSystemMap.get(key);
+    }
 
-    @JsonIgnore
-    Map<String, FS> getFileSystemMap();
+    FS buildFileSystem(EntityContext entityContext);
 
     long getConnectionHashCode();
 
@@ -51,12 +60,14 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
 
     @Override
     default void afterDelete(EntityContext entityContext) {
-        this.getFileSystem(entityContext).dispose();
-        getFileSystemMap().remove(getEntityID());
+        FileSystemProvider provider = fileSystemMap.remove(getEntityID());
+        if (provider != null) {
+            provider.dispose();
+        }
     }
 
     @Override
     default void afterUpdate(EntityContext entityContext) {
-        this.getFileSystem(entityContext).setEntity((BaseEntity) this);
+        this.getFileSystem(entityContext).setEntity(this);
     }
 }

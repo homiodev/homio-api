@@ -1,11 +1,13 @@
 package org.touchhome.bundle.api.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.util.Pair;
@@ -30,10 +32,13 @@ import static java.nio.file.StandardOpenOption.*;
 @Log4j2
 public class TouchHomeUtils {
 
-    public static String APP_UUID;
+    public static final String APP_UUID;
+    public static final int RUN_COUNT;
 
     public static final String PRIMARY_COLOR = "#E65100";
     public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();
+
+    public static final Tika TIKA = new Tika();
 
     @Getter
     private static final Path configPath = getOrCreatePath("conf");
@@ -56,7 +61,7 @@ public class TouchHomeUtils {
     private static final Path sshPath = getOrCreatePath("ssh");
 
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
-    public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 
     // map for store different statuses
@@ -66,14 +71,22 @@ public class TouchHomeUtils {
     static {
         try {
             Path confFilePath = CommonUtils.getRootPath().resolve("touchhome.conf");
-            ConfFile confFile;
+            ConfFile confFile = null;
             if (Files.exists(confFilePath)) {
-                confFile = CommonUtils.OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
-            } else {
-                confFile = new ConfFile().setUuid(Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes()));
-                CommonUtils.OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
+                try {
+                    confFile = CommonUtils.OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
+                } catch (Exception ex) {
+                    log.error("Found corrupted config file. Regenerate new one.");
+                }
             }
+            if (confFile == null) {
+                confFile = new ConfFile().setRunCount(0)
+                        .setUuid(Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes()));
+            }
+            confFile.setRunCount(confFile.getRunCount() + 1);
+            CommonUtils.OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
             APP_UUID = confFile.getUuid();
+            RUN_COUNT = confFile.getRunCount();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -103,7 +116,7 @@ public class TouchHomeUtils {
     }
 
     private static String getTimestampString(Date date) {
-        return dateFormat.format(date);
+        return DATE_TIME_FORMAT.format(date);
     }
 
     public static List<Date> range(Date minDate, Date maxDate) {
@@ -160,7 +173,7 @@ public class TouchHomeUtils {
     public static Path getOrCreatePath(String path) {
         return CommonUtils.createDirectoriesIfNotExists(CommonUtils.getRootPath().resolve(path));
     }
-
+    
  /*   @SneakyThrows
     public static void tempDir(Consumer<Path> consumer) {
         Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
@@ -185,5 +198,7 @@ public class TouchHomeUtils {
     @Accessors(chain = true)
     private static class ConfFile {
         private String uuid;
+        @JsonProperty("run_count")
+        private int runCount;
     }
 }

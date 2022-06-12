@@ -34,6 +34,13 @@ public @interface UIField {
     // able to edit field directly from view mode (now works only in console)
     boolean inlineEdit() default false;
 
+    boolean copyButton() default false;
+
+    /**
+     * Show revert button to set initial value
+     */
+    boolean isRevert() default false;
+
     boolean inlineEditWhenEmpty() default false;
 
     // override field name
@@ -44,6 +51,9 @@ public @interface UIField {
 
     // specify field color for ui
     String color() default "";
+
+    // for different purposes
+    String icon() default "";
 
     // specify color for UI row
     String bg() default "";

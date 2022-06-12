@@ -16,11 +16,14 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.util.MimeTypeUtils;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.EntityContextBGP;
+import org.touchhome.bundle.api.entity.dependency.DependencyExecutableInstaller;
+import org.touchhome.bundle.api.hardware.other.MachineHardwareRepository;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.netty.HasBootstrapServer;
 import org.touchhome.bundle.api.state.*;
@@ -54,6 +57,11 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
         FFMPEG.FFMPEGHandler {
 
     @Getter
+    private static final String ffmpegLocation =
+            SystemUtils.IS_OS_LINUX ? "ffmpeg" :
+                    TouchHomeUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
+
+    @Getter
     protected final EntityContext entityContext;
     protected final BroadcastLockManager broadcastLockManager;
     @Getter
@@ -65,8 +73,6 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
     @Getter
     protected T videoStreamEntity;
     protected String videoStreamEntityID;
-    @Getter
-    protected String ffmpegLocation;
     @Getter
     protected Map<String, State> attributes = new ConcurrentHashMap<>();
     @Getter
@@ -98,10 +104,7 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
     protected FFMPEG ffmpegGIF;
     protected FFMPEG ffmpegSnapshot;
     protected FFMPEG ffmpegMjpeg;
-    protected FFMPEG ffmpegRecord = null;
-
-    private String gifFilename = "ipvideo";
-    private int gifRecordTime = 5;
+    protected FFMPEG ffmpegMP4 = null;
 
     private ServerBootstrap serverBootstrap;
     private EventLoopGroup serversLoopGroup = new NioEventLoopGroup();
@@ -133,13 +136,23 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
         } catch (IOException e) {
             throw new RuntimeException("Unable to clean path: " + ffmpegHLSOutputPath);
         }
-
-        // for custom ffmpeg path
-        entityContext.setting().listenFFMPEGInstallPathAndGet("listen-ffmpeg-path-" + videoStreamEntityID,
-                path -> {
-                    this.ffmpegLocation = path.toString();
-                    this.restart("ffmpeg location changed", false);
-                });
+        entityContext.bgp().runOnceOnInternetUp("test-ffmpeg", () -> {
+            if (SystemUtils.IS_OS_LINUX) {
+                MachineHardwareRepository repository = entityContext.getBean(MachineHardwareRepository.class);
+                if (!repository.isSoftwareInstalled("ffmpeg")) {
+                    log.info("Installing ffmpeg");
+                    repository.installSoftware("ffmpeg", 600);
+                }
+            } else {
+                if (!Files.exists(Paths.get(ffmpegLocation))) {
+                    log.info("Installing ffmpeg");
+                    DependencyExecutableInstaller.downloadAndExtract(
+                            entityContext.getEnv("artifactoryFilesURL") + "/ffmpeg.7z",
+                            "ffmpeg.7z", (progress, message) -> log.info("FFMPEG " + message + ". " + progress + "%"),
+                            log);
+                }
+            }
+        });
     }
 
     public void updateVideoStreamEntity(T videoStreamEntity) {
@@ -163,7 +176,7 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
                     60, TimeUnit.SECONDS, this::pollingVideoConnection, true, true);
             return true;
         } catch (Exception ex) {
-            disposeAndSetStatus(Status.ERROR, "Error while init video: " + CommonUtils.getErrorMessage(ex));
+            disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
         }
         return false;
     }
@@ -304,10 +317,6 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
         fireFfmpeg(ffmpegMjpeg, FFMPEG::startConverting);
     }
 
-    public void startGifRecord() {
-        fireFfmpeg(ffmpegGIF, FFMPEG::startConverting);
-    }
-
     public abstract String getFFMPEGInputOptions(@Nullable String profile);
 
     public String getFFMPEGInputOptions() {
@@ -362,13 +371,6 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
             setAttribute("FFMPEG_HLS", new StringType(String.join(" ", ffmpegHLS.getCommandArrayList())));
         }
 
-        String gifInputOptions = "-y -t " + gifRecordTime + " -hide_banner -loglevel warning " + getFFMPEGInputOptions();
-        ffmpegGIF = new FFMPEG("FFMPEG_GIF)" + getEntityID(), "FFMPEG GIF", this, log, FFMPEGFormat.GIF, ffmpegLocation,
-                gifInputOptions, rtspUri,
-                gifOutOptions, getFfmpegGifOutputPath().resolve(gifFilename + ".gif").toString(),
-                this.videoStreamEntity.getUser(), this.videoStreamEntity.getPassword().asString(), null);
-        setAttribute("FFMPEG_GIF", new StringType(String.join(" ", ffmpegGIF.getCommandArrayList())));
-
         startStreamServer();
     }
 
@@ -382,7 +384,7 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
         log.info("Dispose video: <{}>", this.videoStreamEntity.getTitle());
 
         fireFfmpeg(ffmpegHLS, FFMPEG::stopConverting);
-        fireFfmpeg(ffmpegRecord, FFMPEG::stopConverting);
+        fireFfmpeg(ffmpegMP4, FFMPEG::stopConverting);
         fireFfmpeg(ffmpegGIF, FFMPEG::stopConverting);
         fireFfmpeg(ffmpegMjpeg, FFMPEG::stopConverting);
         fireFfmpeg(ffmpegSnapshot, FFMPEG::stopConverting);
@@ -413,21 +415,24 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
         }
     }
 
-    public final void recordMp4(String fileName, @Nullable String profile, int secondsToRecord) {
+    public final void recordMp4(Path filePath, @Nullable String profile, int secondsToRecord) {
         String inputOptions = getFFMPEGInputOptions(profile);
         inputOptions = "-y -t " + secondsToRecord + " -hide_banner -loglevel warning " + inputOptions;
-        ffmpegRecord =
+        ffmpegMP4 =
                 new FFMPEG("FFMPEGRecordMP4", "FFMPEG record MP4", this, log, FFMPEGFormat.RECORD, ffmpegLocation, inputOptions,
                         getRtspUri(profile),
-                        mp4OutOptions, getFfmpegMP4OutputPath().resolve(fileName + ".mp4").toString(),
+                        mp4OutOptions, filePath.toString(),
                         videoStreamEntity.getUser(), videoStreamEntity.getPassword().asString(), null);
-        fireFfmpeg(ffmpegRecord, FFMPEG::startConverting);
+        fireFfmpeg(ffmpegMP4, FFMPEG::startConverting);
     }
 
-    public final void recordGif(String fileName, @Nullable String profile, int secondsToRecord) {
-        gifFilename = fileName;
-        gifRecordTime = secondsToRecord;
-        startGifRecord();
+    public final void recordGif(Path filePath, @Nullable String profile, int secondsToRecord) {
+        String gifInputOptions = "-y -t " + secondsToRecord + " -hide_banner -loglevel warning " + getFFMPEGInputOptions();
+        ffmpegGIF = new FFMPEG("FFMPEG_GIF)" + getEntityID(), "FFMPEG GIF", this, log, FFMPEGFormat.GIF, ffmpegLocation,
+                gifInputOptions, getRtspUri(profile),
+                gifOutOptions, filePath.toString(), this.videoStreamEntity.getUser(),
+                this.videoStreamEntity.getPassword().asString(), null);
+        fireFfmpeg(ffmpegGIF, FFMPEG::startConverting);
     }
 
     public void setAttribute(String key, State state) {

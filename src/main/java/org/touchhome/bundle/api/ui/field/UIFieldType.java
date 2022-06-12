@@ -1,11 +1,7 @@
 package org.touchhome.bundle.api.ui.field;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.SneakyThrows;
-import org.touchhome.bundle.api.state.JsonType;
 import org.touchhome.bundle.api.state.State;
 
 import java.util.function.Function;
@@ -70,6 +66,7 @@ public enum UIFieldType {
         return java.lang.Integer.parseInt(o.toString());
     }), // for integer we may set metadata as min, max
     ColorPicker(Object::toString),
+    IconPicker(Object::toString),
     Chips(Object::toString), // https://material.angular.io/components/chips/examples
 
     // special type (default for detect field type by java type)

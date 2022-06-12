@@ -15,10 +15,10 @@ import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 import org.touchhome.common.util.Curl;
 import org.touchhome.common.util.SpringUtils;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -28,10 +28,11 @@ import java.util.function.Predicate;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
 public interface WorkspaceBlock {
-    Set<String> MEDIA_EXTENSIONS = new HashSet<>(Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif",
-            ".jfi", ".webp", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg",
-            ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx", ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm",
-            ".html", ".7z", ".zip", ".tar.gz", ".gz", ".js", ".mp3"));
+    Set<String> MEDIA_EXTENSIONS = new HashSet<>(
+            Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
+                    ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
+                    ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
+                    ".js", ".mp3"));
 
     void logError(String message, Object... params);
 
@@ -151,7 +152,8 @@ public interface WorkspaceBlock {
         subscribeToLock(lock, checkFn, 0, null, handler);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit, Runnable runnable) {
+    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
+                                 Runnable runnable) {
         while (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit) && checkFn.apply(lock.getValue())) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
@@ -187,7 +189,7 @@ public interface WorkspaceBlock {
     }
 
     default Integer getInputIntegerRequired(String key) {
-        return getInputFloatRequired(key, "<" + key + "> is mandatory field").intValue();
+        return getInputFloatRequired(key, "(" + key + ") is mandatory field").intValue();
     }
 
     default Float getInputFloat(String key) {
@@ -209,35 +211,71 @@ public interface WorkspaceBlock {
     }
 
     default String getInputStringRequired(String key) {
-        return getInputStringRequired(key, "<" + key + "> is mandatory field");
+        return getInputStringRequired(key, "(" + key + ") is mandatory field");
     }
 
     default String getInputStringRequiredWithContext(String key) {
-        return getInputStringRequiredWithContext(key, "<" + key + "> is mandatory field");
+        return getInputStringRequiredWithContext(key, "(" + key + ") is mandatory field");
     }
 
     default String getInputStringRequiredWithContext(String key, String errorMessage) {
-        String value = getInputString(key);
-        if (StringUtils.isEmpty(value)) {
+        String value = getInputString(key, null);
+        if (value == null) {
             logErrorAndThrow(errorMessage);
         } else {
-            value = SpringUtils.replaceEnvValues(value, (text, defValue) ->
-                    defaultString(String.valueOf(getValue(text)), defValue));
-            DoubleEvaluator eval = new DoubleEvaluator();
-            value = SpringUtils.replaceHashValues(value, (text, defValue) -> {
-                try {
-                    return String.valueOf(eval.evaluate(text));
-                } catch (Exception ignore) {
-                    return StringUtils.defaultString(defValue, text);
-                }
-            });
+            value = evalStringWithContext(value, text -> String.valueOf(getValue(text)));
         }
         return value;
     }
 
+    @SneakyThrows
+    static String evalStringWithContext(String value, Function<String, String> valueSupplier) {
+        value = SpringUtils.replaceEnvValues(value, (text, defValue, prefix) -> {
+            text = text.toUpperCase();
+            switch (text) {
+                case "TIMESTAMP":
+                    return String.valueOf(System.currentTimeMillis());
+                case "DATETIME":
+                    return new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(new Date());
+                case "DATE":
+                    return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                case "TIME":
+                    return new SimpleDateFormat("HH-mm-ss").format(new Date());
+                case "HOUR":
+                    return new SimpleDateFormat("HH").format(new Date());
+                case "MIN":
+                    return new SimpleDateFormat("mm").format(new Date());
+                case "SEC":
+                    return new SimpleDateFormat("ss").format(new Date());
+                case "YEAR":
+                    return new SimpleDateFormat("yyyy").format(new Date());
+                case "MONTH":
+                    return new SimpleDateFormat("MM").format(new Date());
+                case "DAY":
+                    return new SimpleDateFormat("dd").format(new Date());
+                case "UUID":
+                    return UUID.randomUUID().toString();
+                case "FILES":
+                    Path dir = Files.createDirectories(Paths.get(prefix.toString()));
+                    return String.valueOf(Objects.requireNonNull(dir.toFile().list()).length);
+            }
+            return defaultString(valueSupplier.apply(text), defValue);
+        });
+
+        DoubleEvaluator eval = new DoubleEvaluator();
+        value = SpringUtils.replaceHashValues(value, (text, defValue, prefix) -> {
+            try {
+                return String.valueOf(eval.evaluate(text));
+            } catch (Exception ignore) {
+                return StringUtils.defaultString(defValue, text);
+            }
+        });
+        return value;
+    }
+
     default String getInputStringRequired(String key, String errorMessage) {
-        String value = getInputString(key);
-        if (StringUtils.isEmpty(value)) {
+        String value = getInputString(key, null);
+        if (value == null) {
             logErrorAndThrow(errorMessage);
         }
         return value;
@@ -345,7 +383,8 @@ public interface WorkspaceBlock {
                         mediaStringValue = urlParts[1];
                     }
                 }
-                InputStream is = Base64.getDecoder().wrap(new ByteArrayInputStream(mediaStringValue.getBytes(StandardCharsets.UTF_8)));
+                InputStream is = Base64.getDecoder().wrap(new ByteArrayInputStream(mediaStringValue.getBytes(StandardCharsets
+                .UTF_8)));
                 content = IOUtils.toByteArray(is);
             }*/ else {
                 content = mediaURL.getBytes();

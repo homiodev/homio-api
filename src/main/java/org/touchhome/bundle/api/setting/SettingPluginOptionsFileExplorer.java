@@ -3,7 +3,6 @@ package org.touchhome.bundle.api.setting;
 import com.pivovarit.function.ThrowingBiPredicate;
 import com.pivovarit.function.ThrowingPredicate;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
@@ -19,11 +18,17 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+
 public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRemovable<Path> {
 
     @Override
     default UIFieldType getSettingType() {
         return UIFieldType.TextSelectBoxDynamic;
+    }
+
+    default boolean allowUserInput() {
+        return false;
     }
 
     default String getIcon() {
@@ -135,17 +140,22 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                         private void handlePath(Path path) {
                             Path parent = path.getParent();
                             OptionModel model = createOptionModelFromPath(path);
-                            if (!flatStructure && parent != null && fs.containsKey(parent)) {
-                                fs.get(parent).addChild(model);
+                            if (model != null) {
+                                if (!flatStructure && parent != null && fs.containsKey(parent)) {
+                                    fs.get(parent).addChild(model);
+                                }
+                                fs.put(path, model);
                             }
-                            fs.put(path, model);
                         }
 
                         @SneakyThrows
                         private OptionModel createOptionModelFromPath(Path path) {
-                            String key = StringUtils.defaultString(buildKey == null ? null : buildKey.apply(path, root),
+                            String key = defaultIfEmpty(buildKey == null ? null : buildKey.apply(path, root),
                                     buildKeyDefault(skipRootInTreeStructure, path, root));
-                            String title = StringUtils.defaultString(buildTitle == null ? null : buildTitle.apply(path),
+                            if (key == null) {
+                                return null;
+                            }
+                            String title = defaultIfEmpty(buildTitle == null ? null : buildTitle.apply(path),
                                     path.toString());
                             OptionModel model = OptionModel.of(key, title);
                             boolean isDirectory = Files.isDirectory(path);

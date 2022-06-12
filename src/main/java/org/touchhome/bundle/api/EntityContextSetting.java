@@ -6,7 +6,6 @@ import org.touchhome.bundle.api.setting.console.header.dynamic.DynamicConsoleHea
 import org.touchhome.bundle.api.setting.console.header.dynamic.DynamicConsoleHeaderSettingPlugin;
 
 import javax.validation.constraints.NotNull;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -78,8 +77,4 @@ public interface EntityContextSetting {
     <T> String setValueSilence(Class<? extends SettingPlugin<T>> settingClass, @NotNull T value);
 
     <T> void setValueSilenceRaw(Class<? extends SettingPlugin<T>> settingClass, @NotNull String value);
-
-    Path getFFMPEGInstallPath();
-
-    void listenFFMPEGInstallPathAndGet(String key, Consumer<Path> listener);
 }
