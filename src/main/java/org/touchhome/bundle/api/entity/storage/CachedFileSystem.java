@@ -3,7 +3,7 @@ package org.touchhome.bundle.api.entity.storage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.touchhome.bundle.api.model.OptionModel;
+import org.touchhome.common.model.FileSystemItem;
 
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
@@ -73,8 +73,8 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
                 }
             } else {
                 return children.values().stream()
-                        .filter(c -> c.getSource().getId().equals(nameOrId) || c.getSource().getName().equals(nameOrId))
-                        .findAny().orElse(null);
+                        .filter(c -> c.getSource().getId().equals(nameOrId) || c.getSource().getName().equals(nameOrId)).findAny()
+                        .orElse(null);
             }
         }
         return null;
@@ -113,7 +113,7 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
         }
     }
 
-    public final byte[] download(D drive) throws Exception {
+    public VendorFileSystem.DownloadData download(D drive) throws Exception {
         byte[] array = content == null ? null : content.get();
         if (array == null) {
             array = downloadContent(drive);
@@ -121,30 +121,33 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
                 content = new WeakReference<>(array);
             }
         }
-        return array;
+        return new VendorFileSystem.DownloadData(this.source.getName(), null, array, null);
     }
 
     protected abstract byte[] downloadContent(D drive) throws Exception;
 
-    public Collection<OptionModel> getAllFiles() {
+    public Collection<FileSystemItem> getAllFiles() {
         return getFiles(cachedFileSystem -> true);
     }
 
-    public Collection<OptionModel> getAllFolders() {
+    public Collection<FileSystemItem> getAllFolders() {
         return getFiles(cachedFileSystem -> cachedFileSystem.getSource().isFolder());
     }
 
-    public Collection<OptionModel> getFiles(Predicate<S> predicate) {
-        OptionModel parent = new OptionModel();
+    public Collection<FileSystemItem> getFiles(Predicate<S> predicate) {
+        FileSystemItem parent = new FileSystemItem();
         fetchOptionModel((S) this, parent, predicate);
         return parent.getChildren();
     }
 
-    private void fetchOptionModel(S parentCacheFile, OptionModel parentModel, Predicate<S> predicate) {
+    private void fetchOptionModel(S parentCacheFile, FileSystemItem parentModel, Predicate<S> predicate) {
         Collection<S> values = parentCacheFile.getChildren().values();
         for (S cachedFileSystem : values) {
             if (predicate.test(cachedFileSystem)) {
-                OptionModel item = OptionModel.of(cachedFileSystem.getSource().getId(), cachedFileSystem.getSource().getName());
+                SourceFileCapability src = cachedFileSystem.getSource();
+                boolean folder = src.isFolder();
+                FileSystemItem item = new FileSystemItem(folder, false, src.getName(), src.getId(), folder ? 0 : src.size(),
+                        src.getLastModifiedTime(), null);
                 parentModel.addChild(item);
                 fetchOptionModel(cachedFileSystem, item, predicate);
             }
@@ -165,11 +168,13 @@ public abstract class CachedFileSystem<S extends CachedFileSystem, T extends Cac
 
         String getName();
 
-        long getLastModifiedTime();
+        Long getLastModifiedTime();
 
-        void setLastModifiedTime(long time);
+        boolean setLastModifiedTime(long time);
 
         boolean isFolder();
+
+        Long size();
 
         default boolean fillDeeper() {
             return true;

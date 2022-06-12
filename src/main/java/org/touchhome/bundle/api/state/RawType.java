@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeTypeUtils;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.util.CommonUtils;
 import org.touchhome.common.util.Curl;
 
 import java.nio.file.Files;
@@ -31,7 +32,7 @@ public class RawType implements State {
             if (fileName == null) {
                 fileName = String.valueOf(Arrays.hashCode(bytes));
             }
-            relatedFile = TouchHomeUtils.writeToFile(TouchHomeUtils.getTmpPath().resolve(fileName), bytes, false);
+            relatedFile = TouchHomeUtils.writeToFile(CommonUtils.getTmpPath().resolve(fileName), bytes, false);
         }
         return relatedFile;
     }

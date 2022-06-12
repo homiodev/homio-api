@@ -13,6 +13,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.common.model.FileSystemItem;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
@@ -81,9 +82,22 @@ public class OptionModel implements Comparable<OptionModel> {
         return list;
     }
 
+    public static OptionModel of(FileSystemItem item) {
+        OptionModel model = OptionModel.of(item.getId(), item.getName()).json(
+                json -> json.put("dir", item.isDir()).put("size", item.getSize()).put("empty", item.isEmpty())
+                        .put("lastUpdated", item.getLastUpdated()));
+        if (item.getChildren() != null) {
+            for (FileSystemItem child : item.getChildren()) {
+                model.addChild(OptionModel.of(child));
+            }
+        }
+        return model;
+    }
+
     public static List<OptionModel> listOfPorts(boolean withEmpty) {
         List<OptionModel> optionModels = Arrays.stream(SerialPort.getCommPorts()).map(p ->
-                new OptionModel(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName())).collect(Collectors.toList());
+                        new OptionModel(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName()))
+                .collect(Collectors.toList());
         return withEmpty ? withEmpty(optionModels) : optionModels;
     }
 
@@ -92,11 +106,13 @@ public class OptionModel implements Comparable<OptionModel> {
             return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString())
                     .json(json -> json.put("description", ((HasDescription) n).getDescription()))).collect(Collectors.toList());
         }
-        return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString())).collect(Collectors.toList());
+        return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString()))
+                .collect(Collectors.toList());
     }
 
     public static List<OptionModel> list(Class<? extends KeyValueEnum> enumClass) {
-        return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.getKey(), n.getValue())).collect(Collectors.toList());
+        return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.getKey(), n.getValue()))
+                .collect(Collectors.toList());
     }
 
     public static List<OptionModel> list(String... values) {
@@ -138,7 +154,9 @@ public class OptionModel implements Comparable<OptionModel> {
     public static List<OptionModel> list(Collection<? extends BaseEntity>... lists) {
         List<OptionModel> res = new ArrayList<>();
         for (Collection<? extends BaseEntity> list : lists) {
-            res.addAll(list.stream().map(e -> OptionModel.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle()))).collect(Collectors.toList()));
+            res.addAll(
+                    list.stream().map(e -> OptionModel.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle())))
+                            .collect(Collectors.toList()));
         }
         return res;
     }

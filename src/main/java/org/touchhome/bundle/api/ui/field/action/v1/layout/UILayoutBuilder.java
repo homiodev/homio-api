@@ -91,13 +91,13 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
                                   UIActionHandler action, int order);
 
-    default UIButtonItemBuilder addUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
-                                                String[] supportedFormats, UIActionHandler action) {
-        return addUploadButton(name, icon, iconColor, supportedFormats, action, getNextOrder());
+    default UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
+                                                      String[] supportedFormats, UIActionHandler action) {
+        return addSimpleUploadButton(name, icon, iconColor, supportedFormats, action, getNextOrder());
     }
 
-    UIButtonItemBuilder addUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
-                                        String[] supportedFormats, UIActionHandler action, int order);
+    UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
+                                              String[] supportedFormats, UIActionHandler action, int order);
 
     /**
      * text or icon must be not null!

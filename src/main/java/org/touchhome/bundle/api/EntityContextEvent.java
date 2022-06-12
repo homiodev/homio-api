@@ -1,6 +1,6 @@
 package org.touchhome.bundle.api;
 
-import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.entity.BaseEntityIdentifier;
 import org.touchhome.common.util.FlowMap;
 import org.touchhome.common.util.Lang;
 
@@ -57,9 +57,10 @@ public interface EntityContextEvent {
         fireEvent(key, name, null, value, true);
     }
 
-    <T extends BaseEntity> void addEntityUpdateListener(String entityID, String key, Consumer<T> listener);
+    <T extends BaseEntityIdentifier> void addEntityUpdateListener(String entityID, String key, Consumer<T> listener);
 
-    <T extends BaseEntity> void addEntityUpdateListener(String entityID, String key, EntityContext.EntityUpdateListener<T> listener);
+    <T extends BaseEntityIdentifier> void addEntityUpdateListener(String entityID, String key,
+                                                                  EntityContext.EntityUpdateListener<T> listener);
 
     /**
      * Listen any changes fot BaseEntity of concrete type.
@@ -67,7 +68,7 @@ public interface EntityContextEvent {
      * @param entityClass type to listen
      * @param listener    handler invoke when entity update
      */
-    <T extends BaseEntity> void addEntityUpdateListener(Class<T> entityClass, String key, Consumer<T> listener);
+    <T extends BaseEntityIdentifier> void addEntityUpdateListener(Class<T> entityClass, String key, Consumer<T> listener);
 
     /**
      * Listen any changes fot BaseEntity of concrete type.
@@ -75,11 +76,14 @@ public interface EntityContextEvent {
      * @param entityClass type to listen
      * @param listener    handler invoke when entity update. OldValue/NewValue
      */
-    <T extends BaseEntity> void addEntityUpdateListener(Class<T> entityClass, String key, EntityContext.EntityUpdateListener<T> listener);
+    <T extends BaseEntityIdentifier> void addEntityUpdateListener(Class<T> entityClass, String key,
+                                                                  EntityContext.EntityUpdateListener<T> listener);
 
-    <T extends BaseEntity> void addEntityRemovedListener(Class<T> entityClass, String key, Consumer<T> listener);
+    <T extends BaseEntityIdentifier> void addEntityCreateListener(Class<T> entityClass, String key, Consumer<T> listener);
 
-    <T extends BaseEntity> void addEntityRemovedListener(String entityID, String key, Consumer<T> listener);
+    <T extends BaseEntityIdentifier> void addEntityRemovedListener(Class<T> entityClass, String key, Consumer<T> listener);
+
+    <T extends BaseEntityIdentifier> void addEntityRemovedListener(String entityID, String key, Consumer<T> listener);
 
     void removeEntityUpdateListener(String entityID, String key);
 

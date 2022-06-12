@@ -11,7 +11,7 @@ import org.touchhome.bundle.api.setting.SettingPluginOptionsFileExplorer;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.model.ProgressBar;
-import org.touchhome.common.util.CommonUtils;
+import org.touchhome.common.util.ArchiveUtil;
 import org.touchhome.common.util.Curl;
 
 import java.nio.file.Files;
@@ -86,7 +86,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
         Curl.downloadWithProgress(url, archiveFile, progressBar);
         progressBar.progress(90, "Unzip files...");
         log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
-        CommonUtils.unzip(archiveFile, targetFolder, null, progressBar);
+        ArchiveUtil.unzip(archiveFile, targetFolder, null, progressBar, ArchiveUtil.UnzipFileIssueHandler.replace);
         Files.deleteIfExists(archiveFile);
         return targetFolder;
     }

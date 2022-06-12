@@ -21,6 +21,10 @@ import java.util.Map;
 public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends VendorFileSystem>
         extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData<T> {
 
+    String getIcon();
+
+    String getIconColor();
+
     boolean requireConfigure();
 
     FS getFileSystem(EntityContext entityContext);

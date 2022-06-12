@@ -2,20 +2,23 @@ package org.touchhome.bundle.api.entity.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeTypeUtils;
 import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.state.DecimalType;
 import org.touchhome.bundle.api.state.RawType;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.bundle.api.workspace.scratch.*;
 import org.touchhome.common.util.CommonUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntryPoint, E extends BaseEntity & BaseFileSystemEntity>
+public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntryPoint,
+        E extends BaseEntity & BaseFileSystemEntity>
         extends Scratch3ExtensionBlocks {
 
     private final Class<E> entityClass;
@@ -32,14 +35,16 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     private final Scratch3Block getUsedQuota;
     private final Scratch3Block getTotalQuota;
 
-    public Scratch3BaseFileSystemExtensionBlocks(String name, String color, EntityContext entityContext, T bundleEntryPoint, Class<E> entityClass) {
+    public Scratch3BaseFileSystemExtensionBlocks(String name, String color, EntityContext entityContext, T bundleEntryPoint,
+                                                 Class<E> entityClass) {
         super(color, entityContext, bundleEntryPoint, "storage");
         setParent("storage");
         this.entityClass = entityClass;
 
         // menu
         this.fsEntityMenu = MenuBlock.ofServerItems(ENTITY, entityClass);
-        this.uploadOptionsMenu = MenuBlock.ofStatic("uploadOptionsMenu", UploadOptions.class, UploadOptions.Append).setMultiSelect(" | ");
+        this.uploadOptionsMenu =
+                MenuBlock.ofStatic("uploadOptionsMenu", UploadOptions.class, UploadOptions.Append).setMultiSelect(" | ");
         this.unitMenu = MenuBlock.ofStatic("UNIT", Unit.class, Unit.B);
         this.fileMenu = MenuBlock.ofServer("FILE", "rest/fs/file").setDependency(this.fsEntityMenu)
                 .setUIDelimiter("/");
@@ -91,7 +96,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         String fileId = workspaceBlock.getMenuValue("FILE", this.fileMenu);
         if (!"-".equals(fileId)) {
             try {
-                getDrive(workspaceBlock).getFileSystem(entityContext).delete(fileId.split("~~~"));
+                getDrive(workspaceBlock).getFileSystem(entityContext).delete(Collections.singletonList(fileId.split("~~~")));
             } catch (Exception ex) {
                 workspaceBlock.logErrorAndThrow("Unable to delete file: <{}>. Msg: ", fileId, CommonUtils.getErrorMessage(ex));
             }
@@ -107,8 +112,11 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     private RawType getFieldContent(WorkspaceBlock workspaceBlock) throws Exception {
         String fileId = workspaceBlock.getMenuValue("FILE", this.fileMenu);
         if (!"-".equals(fileId)) {
-            byte[] bytes = getDrive(workspaceBlock).getFileSystem(entityContext).download(fileId.split("~~~"), true);
-            return new RawType(bytes);
+            VendorFileSystem.DownloadData data =
+                    getDrive(workspaceBlock).getFileSystem(entityContext).download(fileId.split("~~~"), true, null);
+            return new RawType(data.getContent(),
+                    StringUtils.defaultIfEmpty(data.getContentType(), MimeTypeUtils.TEXT_PLAIN_VALUE),
+                    data.getName());
         }
         return null;
     }
@@ -122,7 +130,8 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         String[] parentPath = folderId.contains("~~~") ? folderId.split("~~~") : folderId.split("/");
         try {
             VendorFileSystem fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
-            List<UploadOptions> properties = workspaceBlock.getMenuValues("OPTIONS", this.uploadOptionsMenu, UploadOptions.class, "~~~");
+            List<UploadOptions> properties =
+                    workspaceBlock.getMenuValues("OPTIONS", this.uploadOptionsMenu, UploadOptions.class, "~~~");
 
             if (properties.contains(UploadOptions.PrependNewLine)) {
                 value = addAll("\n".getBytes(), value);
@@ -131,7 +140,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
                 value = addAll(value, "\n".getBytes());
             }
 
-            fileSystem.upload(parentPath, fileName, value, properties.contains(UploadOptions.Append));
+            fileSystem.upload(parentPath, fileName, value, properties.contains(UploadOptions.Append), true);
             fileSystem.updateCache(true);
         } catch (Exception ex) {
             workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());

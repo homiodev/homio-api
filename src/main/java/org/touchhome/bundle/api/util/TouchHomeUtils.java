@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.common.util.CommonUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,26 +36,24 @@ public class TouchHomeUtils {
     public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();
 
     @Getter
-    private static final Path configPath;
+    private static final Path configPath = getOrCreatePath("conf");
     @Getter
-    private static final Path filesPath;
+    private static final Path filesPath = getOrCreatePath("asm_files");
     @Getter
-    private static final Path installPath;
+    private static final Path installPath = getOrCreatePath("installs");
     @Getter
-    private static final Path externalJarClassPath;
+    private static final Path externalJarClassPath = getOrCreatePath("external_jars");
     @Getter
-    private static final Path bundlePath;
+    private static final Path bundlePath = getOrCreatePath("bundles");
     @Getter
-    private static final Path mediaPath;
+    private static final Path mediaPath = getOrCreatePath("media");
     @Getter
-    private static final Path audioPath;
+    private static final Path audioPath = getOrCreatePath("media/audio");
     @Getter
-    private static final Path imagePath;
-    @Getter
-    private static final Path tmpPath;
+    private static final Path imagePath = getOrCreatePath("media/image");
 
     @Getter
-    private static final Path sshPath;
+    private static final Path sshPath = getOrCreatePath("ssh");
 
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -78,17 +74,6 @@ public class TouchHomeUtils {
                 CommonUtils.OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
             }
             APP_UUID = confFile.getUuid();
-            installPath = getOrCreatePath("installs");
-            filesPath = getOrCreatePath("asm_files");
-            configPath = getOrCreatePath("conf");
-            externalJarClassPath = getOrCreatePath("external_jars");
-            sshPath = getOrCreatePath("ssh");
-            bundlePath = getOrCreatePath("bundles");
-            tmpPath = getOrCreatePath("tmp");
-
-            mediaPath = getOrCreatePath("media");
-            imagePath = getOrCreatePath("media/image");
-            audioPath = getOrCreatePath("media/audio");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
