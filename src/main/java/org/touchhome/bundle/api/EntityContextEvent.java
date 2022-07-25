@@ -1,60 +1,40 @@
 package org.touchhome.bundle.api;
 
+import org.jetbrains.annotations.NotNull;
 import org.touchhome.bundle.api.entity.BaseEntityIdentifier;
-import org.touchhome.common.util.FlowMap;
-import org.touchhome.common.util.Lang;
 
 import java.util.function.Consumer;
 
 public interface EntityContextEvent {
 
-    void removeEvents(String... keys);
+    /**
+     * Remove listeners and last saved value
+     */
+    void removeEvents(String key, String... additionalKeys);
 
     /**
-     * Listen for event with key
+     * Listen for event with key. Replace listener if key already exists
+     *
+     * @return return true replace listener or false
      */
-    void setListener(String key, Consumer<Object> listener);
+    boolean addEventListener(String key, Consumer<Object> listener);
 
     /**
-     * Add event and fire it immediately
+     * Listen for event with key. Fires listener immediately if value was saved before
+     *
+     * @return return true replace listener or false
      */
-    default void fireEvent(String key, String name, FlowMap nameParams, Object value, boolean compareValues) {
-        addEvent(key, name, nameParams);
-        fireEvent(key, value, compareValues);
-    }
-
-    /**
-     * Fire event with key
-     */
-    default void fireEvent(String key) {
-        fireEvent(key, null);
-    }
-
-    /**
-     * Add event key with same name
-     */
-    default String addEvent(String key) {
-        return this.addEvent(key, key);
-    }
+    boolean addEventBehaviourListener(String key, Consumer<Object> listener);
 
     /**
      * Fire event with key and value
+     *
+     * @param value - must implement equal() method in case if compareValues is true
      */
-    void fireEvent(String key, Object value, boolean compareValues);
+    void fireEvent(@NotNull String key, @NotNull Object value, boolean compareValues);
 
-    // return key
-    String addEvent(String key, String name);
-
-    default String addEvent(String key, String name, FlowMap nameParams) {
-        return addEvent(key, Lang.getServerMessage(name, nameParams));
-    }
-
-    default void fireEvent(String key, Object value) {
-        fireEvent(key, null, null, value, true);
-    }
-
-    default void fireEvent(String key, String name, String value) {
-        fireEvent(key, name, null, value, true);
+    default void fireEvent(@NotNull String key, @NotNull Object value) {
+        fireEvent(key, value, true);
     }
 
     <T extends BaseEntityIdentifier> void addEntityUpdateListener(String entityID, String key, Consumer<T> listener);

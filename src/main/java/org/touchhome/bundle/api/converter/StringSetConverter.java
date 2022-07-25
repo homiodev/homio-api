@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 public class StringSetConverter implements AttributeConverter<Set<String>, String> {
     @Override
     public String convertToDatabaseColumn(Set<String> set) {
-        return set == null ? "" : set.stream().collect(Collectors.joining(";"));
+        return set == null ? "" : set.stream().collect(Collectors.joining("~~~"));
     }
 
     @Override
     public Set<String> convertToEntityAttribute(String data) {
-        return StringUtils.isEmpty(data) ? new HashSet<>() : new HashSet<>(Arrays.asList(data.split(";")));
+        return StringUtils.isEmpty(data) ? new HashSet<>() : new HashSet<>(Arrays.asList(data.split("~~~")));
     }
 }

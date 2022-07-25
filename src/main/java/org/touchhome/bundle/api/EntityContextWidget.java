@@ -2,14 +2,14 @@ package org.touchhome.bundle.api;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.touchhome.bundle.api.entity.widget.HasLineChartSeries;
+import org.touchhome.bundle.api.entity.widget.HasTimeValueSeries;
 import org.touchhome.bundle.api.entity.widget.WidgetTabEntity;
 
 import java.util.function.Consumer;
 
 public interface EntityContextWidget {
 
-    String LINE_CHART_WIDGET_PREFIX = "lcw_";
+    String LINE_CHART_WIDGET_PREFIX = "wgtlc_";
 
     EntityContext getEntityContext();
 
@@ -24,7 +24,7 @@ public interface EntityContextWidget {
                                @NotNull Consumer<LineChartWidgetBuilder> lineChartWidgetBuilder, @Nullable WidgetTabEntity attachTab);
 
     interface LineChartSeriesBuilder {
-        void addLineChart(String color, HasLineChartSeries lineChartSeries);
+        void addLineChart(String color, HasTimeValueSeries lineChartSeries);
     }
 
     interface LineChartWidgetBuilder {
@@ -38,7 +38,5 @@ public interface EntityContextWidget {
         LineChartWidgetBuilder axisLabelX(String name);
 
         LineChartWidgetBuilder axisLabelY(String name);
-
-        LineChartWidgetBuilder timeline(String value);
     }
 }

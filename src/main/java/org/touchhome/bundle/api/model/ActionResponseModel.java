@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.touchhome.common.util.CommonUtils;
 import org.touchhome.common.util.Lang;
 
@@ -37,9 +39,14 @@ public class ActionResponseModel {
     }
 
     @SneakyThrows
-    public static ActionResponseModel showJson(Object value) {
-        String content = new ObjectMapper().writeValueAsString(value);
-        return showFiles(Collections.singleton(new FileModel(null, content, FileContentType.json, true)));
+    public static ActionResponseModel showJson(String title, Object value) {
+        String content;
+        if (value instanceof JSONObject || value instanceof JSONArray) {
+            content = value.toString();
+        } else {
+            content = new ObjectMapper().writeValueAsString(value);
+        }
+        return showFiles(Collections.singleton(new FileModel(title, content, FileContentType.json, true)));
     }
 
     public static ActionResponseModel showFiles(Set<FileModel> fileModels) {

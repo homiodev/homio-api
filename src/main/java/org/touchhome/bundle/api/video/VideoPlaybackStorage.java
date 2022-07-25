@@ -2,7 +2,6 @@ package org.touchhome.bundle.api.video;
 
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.core.io.Resource;
 import org.touchhome.bundle.api.EntityContext;
 
 import java.net.URI;

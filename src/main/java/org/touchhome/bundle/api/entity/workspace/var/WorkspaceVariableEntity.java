@@ -4,9 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.widget.HasDisplaySeries;
-import org.touchhome.bundle.api.entity.widget.HasGaugeSeries;
+import org.touchhome.bundle.api.entity.widget.ChartRequest;
+import org.touchhome.bundle.api.entity.widget.AggregationType;
 import org.touchhome.bundle.api.entity.widget.HasSliderSeries;
+import org.touchhome.bundle.api.entity.widget.HasAggregateValueFromSeries;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -15,7 +16,7 @@ import java.util.Set;
 @Getter
 @Accessors(chain = true)
 public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> implements HasSliderSeries,
-        HasDisplaySeries, HasGaugeSeries {
+        HasAggregateValueFromSeries {
 
     public static final String PREFIX = "wsv_";
 
@@ -58,12 +59,7 @@ public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableE
     }
 
     @Override
-    public Object getDisplayValue() {
-        return getValue();
-    }
-
-    @Override
-    public float getGaugeValue() {
-        return getValue();
+    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType) {
+        return value;
     }
 }

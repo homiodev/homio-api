@@ -1,11 +1,13 @@
 package org.touchhome.bundle.api.console;
 
 import com.pivovarit.function.ThrowingSupplier;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.springframework.stereotype.Component;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.ui.UI;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -13,14 +15,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.touchhome.bundle.api.util.TouchHomeUtils.PRIMARY_COLOR;
-
 @Component
 @RequiredArgsConstructor
 public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
+    @Getter
     private final EntityContext entityContext;
-    private List<ConsolePluginComplexLines.ComplexString> values = new ArrayList<>();
+    private final List<ConsolePluginComplexLines.ComplexString> values = new ArrayList<>();
 
     @Override
     public String getEntityID() {
@@ -38,7 +39,7 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
     }
 
     public void add(String value, boolean error) {
-        ComplexString complexString = ComplexString.of(value, System.currentTimeMillis(), error ? PRIMARY_COLOR : null, null);
+        ComplexString complexString = ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
         values.add(complexString);
         entityContext.ui().sendNotification("-lines-icl", complexString.toString());
     }

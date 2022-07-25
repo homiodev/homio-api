@@ -11,9 +11,4 @@ public @interface UIFieldStaticSelection {
     String[] value();
 
     boolean allowInputRawText() default false;
-
-    /**
-     * List of dependency fields that should be passed to DynamicOptionLoader from UI
-     */
-    String[] dependencyFields() default {};
 }

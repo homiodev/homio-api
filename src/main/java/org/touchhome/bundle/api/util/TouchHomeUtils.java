@@ -1,22 +1,26 @@
 package org.touchhome.bundle.api.util;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fazecast.jSerialComm.SerialPort;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.tika.Tika;
 import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.touchhome.bundle.api.entity.RestartHandlerOnChange;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.common.util.CommonUtils;
 
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.*;
 
@@ -35,7 +40,6 @@ public class TouchHomeUtils {
     public static final String APP_UUID;
     public static final int RUN_COUNT;
 
-    public static final String PRIMARY_COLOR = "#E65100";
     public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();
 
     public static final Tika TIKA = new Tika();
@@ -173,7 +177,38 @@ public class TouchHomeUtils {
     public static Path getOrCreatePath(String path) {
         return CommonUtils.createDirectoriesIfNotExists(CommonUtils.getRootPath().resolve(path));
     }
-    
+
+    @SneakyThrows
+    public static boolean isRequireRestartHandler(Object oldEntity, Object newEntity) {
+        if (oldEntity == null) { // in case if just created
+            return false;
+        }
+        Method[] methods = MethodUtils.getMethodsWithAnnotation(newEntity.getClass(), RestartHandlerOnChange.class, true, false);
+        for (Method method : methods) {
+            Object newValue = MethodUtils.invokeMethod(newEntity, method.getName());
+            Object oldValue = MethodUtils.invokeMethod(oldEntity, method.getName());
+            if (!Objects.equals(newValue, oldValue)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static SerialPort getSerialPort(String value) {
+        return StringUtils.isEmpty(value) ? null :
+                Stream.of(SerialPort.getCommPorts())
+                        .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
+    }
+
+    public static boolean isValidJson(String json) {
+        try {
+            new JSONObject(json);
+        } catch (Exception ignore) {
+            return false;
+        }
+        return true;
+    }
+
  /*   @SneakyThrows
     public static void tempDir(Consumer<Path> consumer) {
         Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
@@ -186,12 +221,6 @@ public class TouchHomeUtils {
             }
         }
     }*/
-
-
-    public static class Colors {
-        public static final String RED = "#BD3500";
-        public static final String GREEN = "#17A328";
-    }
 
     @Getter
     @Setter

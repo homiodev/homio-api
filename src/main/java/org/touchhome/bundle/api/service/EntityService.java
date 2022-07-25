@@ -13,9 +13,11 @@ import org.touchhome.common.util.CommonUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 public interface EntityService<S, T extends HasEntityIdentifier> extends HasStatusAndMsg<T> {
+    ReentrantLock serviceAccessLock = new ReentrantLock();
 
     Map<String, ServiceIdentifier> entityToService = new HashMap<>();
 
@@ -23,39 +25,44 @@ public interface EntityService<S, T extends HasEntityIdentifier> extends HasStat
 
     @SneakyThrows
     default S getOrCreateService(EntityContext entityContext, boolean throwIfError, boolean testService) {
-        Object[] safeValues = Stream.of(getServiceParams()).map(v -> v == null ? "" : v).toArray();
-        int hash = Objects.hash(safeValues);
+        serviceAccessLock.lock();
+        try {
+            Object[] safeValues = Stream.of(getServiceParams()).map(v -> v == null ? "" : v).toArray();
+            int hash = Objects.hash(safeValues);
 
-        if (entityToService.containsKey(getEntityID()) && entityToService.get(getEntityID()).hashCode != hash) {
-            destroyService();
-        }
-        ServiceIdentifier sid = entityToService.computeIfAbsent(getEntityID(), entityID -> {
-            setStatus(Status.ONLINE, null);
-            try {
-                return new ServiceIdentifier(hash, createService(entityContext));
-            } catch (Exception ex) {
-                setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
-                if (throwIfError) {
-                    throw new RuntimeException(ex);
-                }
-                return null;
+            if (entityToService.containsKey(getEntityID()) && entityToService.get(getEntityID()).hashCode != hash) {
+                destroyService();
             }
-        });
-        if (sid != null) {
-            try {
-                if (testService) {
-                    setStatus(Status.ONLINE, null);
-                    testService((S) sid.getService());
+            ServiceIdentifier sid = entityToService.computeIfAbsent(getEntityID(), entityID -> {
+                setStatus(Status.ONLINE, null);
+                try {
+                    return new ServiceIdentifier(hash, createService(entityContext));
+                } catch (Exception ex) {
+                    setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+                    if (throwIfError) {
+                        throw new RuntimeException(ex);
+                    }
+                    return null;
                 }
-            } catch (Exception ex) {
-                setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
-                if (throwIfError) {
-                    throw new RuntimeException(ex);
+            });
+            if (sid != null) {
+                try {
+                    if (testService) {
+                        setStatus(Status.ONLINE, null);
+                        testService((S) sid.getService());
+                    }
+                } catch (Exception ex) {
+                    setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+                    if (throwIfError) {
+                        throw new RuntimeException(ex);
+                    }
+                    return null;
                 }
-                return null;
             }
+            return sid == null ? null : (S) sid.service;
+        } finally {
+            serviceAccessLock.unlock();
         }
-        return sid == null ? null : (S) sid.service;
     }
 
     S createService(EntityContext entityContext) throws Exception;

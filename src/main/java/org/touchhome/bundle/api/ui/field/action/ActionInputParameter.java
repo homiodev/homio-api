@@ -6,9 +6,10 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.touchhome.bundle.api.model.OptionModel;
 
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -28,6 +29,7 @@ public class ActionInputParameter {
     private final String value;
     private String description;
     private String style;
+    private List<OptionModel> options;
 
     public ActionInputParameter(UIActionInput input) {
         this.name = input.name();
@@ -41,7 +43,8 @@ public class ActionInputParameter {
         if (input.max() < Integer.MAX_VALUE) {
             this.validators.add("max:" + input.max());
         }
-        if ((type == UIActionInput.Type.number && input.min() > Integer.MIN_VALUE) || type != UIActionInput.Type.number && input.min() > 0) {
+        if ((type == UIActionInput.Type.number && input.min() > Integer.MIN_VALUE) ||
+                type != UIActionInput.Type.number && input.min() > 0) {
             this.validators.add("min:" + input.min());
         }
         if (!".*".equals(input.pattern().regexp())) {
@@ -70,6 +73,11 @@ public class ActionInputParameter {
         return new ActionInputParameter(name, UIActionInput.Type.textarea, null, value);
     }
 
+    // Options example: 1:true;0:false or 1;2;3
+    public static ActionInputParameter select(String name, String value, List<OptionModel> options) {
+        return new ActionInputParameter(name, UIActionInput.Type.select, null, value).setOptions(options);
+    }
+
     public JSONObject toJson() {
         if (!NAME_PATTERN.matcher(name).matches()) {
             throw new IllegalArgumentException("Wrong name pattern for: " + name);
@@ -79,6 +87,7 @@ public class ActionInputParameter {
                 .put("type", type.name());
         putOpt(obj, "description", StringUtils.trimToNull(description));
         putOpt(obj, "value", value);
+        putOpt(obj, "options", options);
         if (validators != null && !validators.isEmpty()) {
             obj.put("validators", validators);
         }

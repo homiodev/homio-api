@@ -1,8 +1,7 @@
 package org.touchhome.bundle.api.ui.field.action.v1.layout;
 
 import org.jetbrains.annotations.Nullable;
-
-import static org.touchhome.bundle.api.util.TouchHomeUtils.PRIMARY_COLOR;
+import org.touchhome.bundle.api.ui.UI;
 
 public interface UIFlexLayoutBuilder extends UILayoutBuilder {
 
@@ -25,7 +24,7 @@ public interface UIFlexLayoutBuilder extends UILayoutBuilder {
     }
 
     default UIFlexLayoutBuilder setBorderArea(String title) {
-        appendStyle("border", "1px solid " + PRIMARY_COLOR);
+        appendStyle("border", "1px solid " + UI.Color.PRIMARY_COLOR);
         appendStyle("border-radius", "3px");
         appendStyle("margin", "3px");
         appendStyle("padding", "5px");

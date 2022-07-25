@@ -7,12 +7,10 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldBeanSelection {
-    //add empty value
-    boolean addEmpty() default false;
+public @interface UIFieldDevicePortSelection {
+    boolean allowInputRawText() default true;
 
-    boolean lazyLoading() default false;
+    String icon() default "fas fa-shuffle";
 
-    Class<?> value() default Object.class; // if value is Object.class then uses method return type or field type to evalueate
-    // Bean
+    String iconColor() default "";
 }

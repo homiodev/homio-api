@@ -17,6 +17,11 @@ public @interface UIFieldGroup {
     String value();
 
     /**
+     * Specify custom group order, otherwise ordering by group name
+     */
+    int order() default 0;
+
+    /**
      * Define border color
      */
     String borderColor() default "";

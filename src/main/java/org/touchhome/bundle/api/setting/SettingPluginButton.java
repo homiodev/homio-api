@@ -17,6 +17,10 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
         return "ACTION_CONFIRM_MESSAGE";
     }
 
+    default String getConfirmTitle() {
+        return null;
+    }
+
     String getIcon();
 
     @Override
@@ -29,7 +33,14 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
         return UIFieldType.Button;
     }
 
+    /**
+     * In case of action require user input. Dialog popup shows
+     */
     default List<ActionInputParameter> getInputParameters(EntityContext entityContext, String value) {
+        return null;
+    }
+
+    default String getInputParametersDialogTitle() {
         return null;
     }
 
@@ -37,6 +48,7 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
         putOpt(parameters, "confirm", getConfirmMsg());
+        putOpt(parameters, "title", getConfirmTitle());
         List<ActionInputParameter> actionInputParameters = getInputParameters(entityContext, value);
         if (actionInputParameters != null && !actionInputParameters.isEmpty()) {
             JSONArray inputs = new JSONArray();

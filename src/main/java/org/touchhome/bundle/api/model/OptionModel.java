@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.common.fs.FileObject;
+import org.touchhome.common.fs.TreeNode;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
@@ -82,15 +82,15 @@ public class OptionModel implements Comparable<OptionModel> {
         return list;
     }
 
-    public static OptionModel of(FileObject item) {
+    public static OptionModel of(TreeNode item) {
         OptionModel model = OptionModel.of(item.getId(), item.getName()).json(
                 json -> json.put("dir", item.getAttributes().isDir())
                         .put("size", item.getAttributes().getSize())
                         .put("empty", item.getAttributes().isEmpty())
                         .put("lastUpdated", item.getAttributes().getLastUpdated()));
-        Collection<FileObject> children = item.getChildren();
+        Collection<TreeNode> children = item.getChildren();
         if (children != null) {
-            for (FileObject child : children) {
+            for (TreeNode child : children) {
                 model.addChild(OptionModel.of(child));
             }
         }

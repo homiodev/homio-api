@@ -7,8 +7,4 @@ public interface WidgetBaseTemplate {
     default String toJavaScript() {
         return null;
     }
-
-    default boolean isDefaultAutoScale() {
-        return false;
-    }
 }

@@ -2,14 +2,13 @@ package org.touchhome.bundle.api.setting;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fazecast.jSerialComm.SerialPort;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.KeyValueEnum;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
 
@@ -108,9 +107,7 @@ public interface SettingPlugin<T> {
             return (T) Enum.valueOf((Class) getType(), value);
         }
         if (SerialPort.class.equals(getType())) {
-            return (T) (StringUtils.isEmpty(value) ? null :
-                    Stream.of(SerialPort.getCommPorts())
-                            .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null));
+            return (T) TouchHomeUtils.getSerialPort(value);
         }
         return (T) value;
     }
@@ -162,10 +159,12 @@ public interface SettingPlugin<T> {
         JSONObject parameters = getParameters(entityContext, value);
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
-                throw new IllegalArgumentException("Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+                throw new IllegalArgumentException(
+                        "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
             }
             if (parameters.has("max") && parseValue > parameters.getInt("max")) {
-                throw new IllegalArgumentException("Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+                throw new IllegalArgumentException(
+                        "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
             }
         }
         return (T) parseValue;

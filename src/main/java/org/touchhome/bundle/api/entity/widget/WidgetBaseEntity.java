@@ -11,7 +11,6 @@ import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.HasJsonData;
 import org.touchhome.bundle.api.model.HasPosition;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
-import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
 
 import javax.persistence.*;
@@ -25,6 +24,13 @@ import javax.persistence.*;
 @NoArgsConstructor
 public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseEntity<T>
         implements HasPosition<WidgetBaseEntity>, HasJsonData<T> {
+
+    /**
+     * Uses for grouping widget by type on UI
+     */
+    public WidgetGroup getGroup() {
+        return null;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WidgetTabEntity widgetTabEntity;
@@ -41,9 +47,6 @@ public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseE
     @Getter
     private int bh = 1;
 
-    @Getter
-    @UIField(order = 20)
-    private boolean autoScale;
     @Lob
     @Column(length = 1048576)
     @Convert(converter = JSONObjectConverter.class)

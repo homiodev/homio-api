@@ -5,9 +5,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.widget.HasDisplaySeries;
-import org.touchhome.bundle.api.entity.widget.HasPushButtonSeries;
-import org.touchhome.bundle.api.entity.widget.HasToggleSeries;
+import org.touchhome.bundle.api.entity.widget.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,7 +16,7 @@ import javax.persistence.ManyToOne;
 @Getter
 @Accessors(chain = true)
 public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> implements HasToggleSeries,
-        HasDisplaySeries, HasPushButtonSeries {
+        HasAggregateValueFromSeries, HasPushButtonSeries {
 
     public static final String PREFIX = "wsbo_";
 
@@ -62,8 +60,8 @@ public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEnt
     }
 
     @Override
-    public Object getDisplayValue() {
-        return getValue();
+    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType) {
+        return value ? 1F : 0F;
     }
 
     @Override

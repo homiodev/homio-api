@@ -2,6 +2,8 @@ package org.touchhome.bundle.api.console;
 
 import org.json.JSONObject;
 import org.touchhome.bundle.api.BundleEntryPoint;
+import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.setting.console.header.ConsoleHeaderSettingPlugin;
 
 import javax.validation.constraints.NotNull;
@@ -11,6 +13,8 @@ import java.util.Map;
  * Uses for implementing page for console tab
  */
 public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
+
+    EntityContext getEntityContext();
 
     default String getName() {
         return getEntityID();
@@ -64,7 +68,12 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
         return true;
     }
 
+    default ActionResponseModel executeAction(String entityID, JSONObject metadata, JSONObject params)
+            throws Exception {
+        return null;
+    }
+
     enum RenderType {
-        lines, comm, table, string, editor
+        lines, comm, table, string, editor, tree
     }
 }

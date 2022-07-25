@@ -1,8 +1,11 @@
 package org.touchhome.bundle.api;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
@@ -46,71 +49,75 @@ public interface EntityContext {
 
     EntityContextSetting setting();
 
-    default <T extends BaseEntity> T getEntity(String entityID) {
+    default <T extends BaseEntity> T getEntity(@NotNull String entityID) {
         return getEntity(entityID, true);
     }
 
-    default <T extends BaseEntity> T getEntityOrDefault(String entityID, T defEntity) {
+    default <T extends BaseEntity> T getEntityOrDefault(@NotNull String entityID, @Nullable T defEntity) {
         T entity = getEntity(entityID, true);
         return entity == null ? defEntity : entity;
     }
 
-    <T extends BaseEntity> T getEntity(String entityID, boolean useCache);
+    <T extends BaseEntity> T getEntity(@NotNull String entityID, boolean useCache);
 
-    default Optional<AbstractRepository> getRepository(BaseEntity baseEntity) {
+    default Optional<AbstractRepository> getRepository(@NotNull BaseEntity baseEntity) {
         return getRepository(baseEntity.getEntityID());
     }
 
-    Optional<AbstractRepository> getRepository(String entityID);
+    Optional<AbstractRepository> getRepository(@NotNull String entityID);
 
-    AbstractRepository getRepository(Class<? extends BaseEntity> entityClass);
+    AbstractRepository getRepository(@NotNull Class<? extends BaseEntity> entityClass);
 
-    default <T extends BaseEntity> T getEntity(T entity) {
+    default <T extends BaseEntity> T getEntity(@NotNull T entity) {
         return getEntity(entity.getEntityID());
     }
 
-    <T extends HasEntityIdentifier> void createDelayed(T entity);
+    <T extends HasEntityIdentifier> void createDelayed(@NotNull T entity);
 
-    <T extends HasEntityIdentifier> void updateDelayed(T entity, Consumer<T> fieldUpdateConsumer);
+    <T extends HasEntityIdentifier> void updateDelayed(@NotNull T entity, @NotNull Consumer<T> fieldUpdateConsumer);
 
-    <T extends HasEntityIdentifier> void save(T entity);
+    <T extends HasEntityIdentifier> void save(@NotNull T entity);
 
-    <T extends BaseEntity> T save(T entity);
+    default <T extends BaseEntity> T save(@NotNull T entity) {
+        return save(entity, true);
+    }
 
-    default <T extends BaseEntity> T delete(T entity) {
+    <T extends BaseEntity> T save(@NotNull T entity, boolean fireNotifyListeners);
+
+    default <T extends BaseEntity> T delete(@NotNull T entity) {
         return (T) delete(entity.getEntityID());
     }
 
-    default <T extends BaseEntity> T findAny(Class<T> clazz) {
+    default <T extends BaseEntity> T findAny(@NotNull Class<T> clazz) {
         List<T> list = findAll(clazz);
         return list.isEmpty() ? null : list.iterator().next();
     }
 
-    <T extends BaseEntity> List<T> findAll(Class<T> clazz);
+    <T extends BaseEntity> List<T> findAll(@NotNull Class<T> clazz);
 
-    <T extends BaseEntity> List<T> findAllByPrefix(String prefix);
+    <T extends BaseEntity> List<T> findAllByPrefix(@NotNull String prefix);
 
-    default <T extends BaseEntity> List<T> findAll(T entity) {
+    default <T extends BaseEntity> List<T> findAll(@NotNull T entity) {
         return (List<T>) findAll(entity.getClass());
     }
 
-    BaseEntity<? extends BaseEntity> delete(String entityId);
+    BaseEntity<? extends BaseEntity> delete(@NotNull String entityId);
 
-    AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(String repositoryPrefix);
+    AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(@NotNull String repositoryPrefix);
 
-    <T extends BaseEntity> T getEntityByName(String name, Class<T> entityClass);
+    <T extends BaseEntity> T getEntityByName(@NotNull String name, @NotNull Class<T> entityClass);
 
-    void setFeatureState(String feature, boolean state);
+    void setFeatureState(@NotNull String feature, boolean state);
 
-    boolean isFeatureEnabled(String deviceFeature);
+    boolean isFeatureEnabled(@NotNull String deviceFeature);
 
     Map<String, Boolean> getDeviceFeatures();
 
-    <T> T getBean(String beanName, Class<T> clazz);
+    <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz);
 
-    <T> T getBean(Class<T> clazz);
+    <T> T getBean(@NotNull Class<T> clazz);
 
-    default <T> T getBean(Class<T> clazz, Supplier<T> defaultValueSupplier) {
+    default <T> T getBean(@NotNull Class<T> clazz, @NotNull Supplier<T> defaultValueSupplier) {
         try {
             return getBean(clazz);
         } catch (Exception ex) {
@@ -118,11 +125,11 @@ public interface EntityContext {
         }
     }
 
-    <T> Collection<T> getBeansOfType(Class<T> clazz);
+    <T> Collection<T> getBeansOfType(@NotNull Class<T> clazz);
 
-    <T> Map<String, T> getBeansOfTypeWithBeanName(Class<T> clazz);
+    <T> Map<String, T> getBeansOfTypeWithBeanName(@NotNull Class<T> clazz);
 
-    <T> Map<String, Collection<T>> getBeansOfTypeByBundles(Class<T> clazz);
+    <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@NotNull Class<T> clazz);
 
     default boolean isAdminUserOrNone() {
         UserEntity user = getUser(false);
@@ -141,21 +148,27 @@ public interface EntityContext {
         return null;
     }
 
+    <T extends ConsolePlugin> void registerConsolePlugin(@NotNull String name, @NotNull T plugin);
+
+    <T extends ConsolePlugin> T getRegisteredConsolePlugin(@NotNull String name);
+
+    boolean unRegisterConsolePlugin(@NotNull String name);
+
     Collection<AbstractRepository> getRepositories();
 
-    <T> List<Class<? extends T>> getClassesWithAnnotation(Class<? extends Annotation> annotation);
+    <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
-    <T> List<Class<? extends T>> getClassesWithParent(Class<T> baseClass, String... packages);
+    <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass, String... packages);
 
-    default String getEnv(String key) {
+    default String getEnv(@NotNull String key) {
         return getEnv(key, String.class, null);
     }
 
-    default String getEnv(String key, String defaultValue) {
+    default String getEnv(@NotNull String key, @Nullable String defaultValue) {
         return getEnv(key, String.class, defaultValue);
     }
 
-    <T> T getEnv(String key, Class<T> classType, T defaultValue);
+    <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue);
 
     interface EntityUpdateListener<T> {
         void entityUpdated(T newValue, T oldValue);

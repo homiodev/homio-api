@@ -12,8 +12,8 @@ import org.touchhome.bundle.api.state.DecimalType;
 import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.bundle.api.workspace.scratch.*;
-import org.touchhome.common.fs.FileObject;
 import org.touchhome.common.fs.FileSystemProvider;
+import org.touchhome.common.fs.TreeNode;
 import org.touchhome.common.util.CommonUtils;
 
 import java.util.Arrays;
@@ -101,7 +101,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         CountNodeEnum countNodeEnum = workspaceBlock.getMenuValue(VALUE, this.countMenu);
         FileSystemProvider fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
         String folderId = workspaceBlock.getMenuValue("PARENT", this.folderMenu);
-        Set<FileObject> children = fileSystem.getChildren(folderId);
+        Set<TreeNode> children = fileSystem.getChildren(folderId);
         switch (countNodeEnum) {
             case Files:
                 return new DecimalType(children.stream().filter(c -> !c.getAttributes().isDir()).count());
@@ -111,20 +111,20 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
                 return new DecimalType(children.size());
             case FilesWithChildren:
                 AtomicInteger filesCounter = new AtomicInteger(0);
-                Consumer<FileObject> filesFilter = fileObject -> {
-                    if (!fileObject.getAttributes().isDir()) {
+                Consumer<TreeNode> filesFilter = treeNode -> {
+                    if (!treeNode.getAttributes().isDir()) {
                         filesCounter.incrementAndGet();
                     }
                 };
-                for (FileObject fileObject : fileSystem.getChildrenRecursively(folderId)) {
-                    fileObject.visitFileObjectTree(filesFilter);
+                for (TreeNode treeNode : fileSystem.getChildrenRecursively(folderId)) {
+                    treeNode.visitTree(filesFilter);
                 }
                 return new DecimalType(filesCounter.get());
             case AllWithChildren:
                 AtomicInteger allNodesCounter = new AtomicInteger(0);
-                Consumer<FileObject> allNodesFilter = fileObject -> allNodesCounter.incrementAndGet();
-                for (FileObject fileObject : fileSystem.getChildrenRecursively(folderId)) {
-                    fileObject.visitFileObjectTree(allNodesFilter);
+                Consumer<TreeNode> allNodesFilter = treeNode -> allNodesCounter.incrementAndGet();
+                for (TreeNode treeNode : fileSystem.getChildrenRecursively(folderId)) {
+                    treeNode.visitTree(allNodesFilter);
                 }
                 return new DecimalType(allNodesCounter.get());
         }
@@ -170,12 +170,12 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
             String[] path = fileId.split("~~~");
             String id = path[path.length - 1];
             FileSystemProvider fileSystem = getDrive(workspaceBlock).getFileSystem(entityContext);
-            FileObject fileObject = fileSystem.toFileObject(id);
-            byte[] content = IOUtils.toByteArray(fileObject.getInputStream());
+            TreeNode treeNode = fileSystem.toTreeNode(id);
+            byte[] content = IOUtils.toByteArray(treeNode.getInputStream());
 
             return new RawType(content,
-                    StringUtils.defaultIfEmpty(fileObject.getAttributes().getContentType(), MimeTypeUtils.TEXT_PLAIN_VALUE),
-                    fileObject.getName());
+                    StringUtils.defaultIfEmpty(treeNode.getAttributes().getContentType(), MimeTypeUtils.TEXT_PLAIN_VALUE),
+                    treeNode.getName());
         }
         return null;
     }
@@ -202,7 +202,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
                     uploadOptions.contains(UploadOption.Append) ? FileSystemProvider.UploadOption.Append :
                             FileSystemProvider.UploadOption.Replace;
 
-            fileSystem.copy(FileObject.of(fileName, value), folderId, uploadOption);
+            fileSystem.copy(TreeNode.of(fileName, value), folderId, uploadOption);
         } catch (Exception ex) {
             workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());
         }

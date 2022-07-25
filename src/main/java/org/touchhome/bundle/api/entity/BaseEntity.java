@@ -8,8 +8,10 @@ import org.hibernate.annotations.NaturalId;
 import org.json.JSONPropertyIgnore;
 import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -119,6 +121,15 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     @PreRemove
     private void preDelete() {
+        TouchHomeUtils.STATUS_MAP.remove(getEntityID());
+        getEntityContext().unRegisterConsolePlugin(getEntityID());
+        if (this instanceof EntityService) {
+            try {
+                ((EntityService<?, ?>) this).destroyService();
+            } catch (Exception ex) {
+                log.warn("Unable to destroy service for entity: {}", getTitle());
+            }
+        }
         this.beforeDelete();
     }
 
@@ -137,6 +148,13 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     }
 
     protected void beforeDelete() {
+
+    }
+
+    /**
+     * Entry point for entity on first load after server starts
+     */
+    public void onInit() {
 
     }
 

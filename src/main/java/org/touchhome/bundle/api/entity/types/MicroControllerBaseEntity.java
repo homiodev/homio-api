@@ -2,8 +2,8 @@ package org.touchhome.bundle.api.entity.types;
 
 import lombok.extern.log4j.Log4j2;
 import org.touchhome.bundle.api.entity.DeviceBaseEntity;
-import org.touchhome.bundle.api.service.scan.MicroControllerScanner;
 import org.touchhome.bundle.api.service.scan.BaseBeansItemsDiscovery;
+import org.touchhome.bundle.api.service.scan.MicroControllerScanner;
 import org.touchhome.bundle.api.ui.UISidebarButton;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 

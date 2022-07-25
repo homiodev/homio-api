@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
 import org.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -53,7 +53,8 @@ public interface EntityContextUI {
     }
 
     @SneakyThrows
-    default void runWithProgress(@NotNull String progressKey, boolean cancellable, @NotNull ThrowingConsumer<ProgressBar, Exception> process,
+    default void runWithProgress(@NotNull String progressKey, boolean cancellable,
+                                 @NotNull ThrowingConsumer<ProgressBar, Exception> process,
                                  @Nullable Consumer<Exception> finallyBlock) {
         runWithProgressAndGet(progressKey, cancellable, progressBar -> {
             process.accept(progressBar);
@@ -103,8 +104,10 @@ public interface EntityContextUI {
      *
      * @param headerButtonAttachTo - if set - attach confirm message to header button
      */
-    default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Consumer<DialogResponseType> confirmHandler,
-                                  @NotNull Collection<String> messages, int maxTimeoutInSec, @Nullable String headerButtonAttachTo) {
+    default void sendConfirmation(@NotNull String key, @NotNull String title,
+                                  @NotNull Consumer<DialogResponseType> confirmHandler,
+                                  @NotNull Collection<String> messages, int maxTimeoutInSec,
+                                  @Nullable String headerButtonAttachTo) {
         sendDialogRequest(key, title, (responseType, pressedButton, parameters) ->
                 confirmHandler.accept(responseType), dialogModel -> {
             List<ActionInputParameter> inputs = messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
@@ -148,7 +151,7 @@ public interface EntityContextUI {
     }
 
     default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
-                                            @Nullable Consumer<UIInputBuilder> actionBuilder) {
+                                         @Nullable Consumer<UIInputBuilder> actionBuilder) {
         addBellNotification(entityID, name, description, NotificationLevel.info, actionBuilder);
     }
 
@@ -160,7 +163,7 @@ public interface EntityContextUI {
     }
 
     default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
-                                          @Nullable Consumer<UIInputBuilder> actionBuilder) {
+                                            @Nullable Consumer<UIInputBuilder> actionBuilder) {
         addBellNotification(entityID, name, description, NotificationLevel.warning, actionBuilder);
     }
 
@@ -191,11 +194,13 @@ public interface EntityContextUI {
         sendGlobal(type, entityID, value, null, null);
     }
 
-    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value, @Nullable String title) {
+    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value,
+                            @Nullable String title) {
         sendGlobal(type, entityID, value, title, null);
     }
 
-    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value, @Nullable String title, @Nullable JSONObject jsonObject) {
+    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value,
+                            @Nullable String title, @Nullable JSONObject jsonObject) {
         if (jsonObject == null) {
             jsonObject = new JSONObject();
         }
@@ -287,7 +292,8 @@ public interface EntityContextUI {
     /**
      * Show error toastr message to ui
      */
-    default void sendErrorMessage(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam, @Nullable Exception ex) {
+    default void sendErrorMessage(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam,
+                                  @Nullable Exception ex) {
         sendMessage(title, message, NotificationLevel.error, messageParam, ex);
     }
 
@@ -384,7 +390,8 @@ public interface EntityContextUI {
         sendGlobal(GlobalSendType.json, null, json, title);
     }
 
-    default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel type, @Nullable FlowMap messageParam, @Nullable Exception ex) {
+    default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel type,
+                             @Nullable FlowMap messageParam, @Nullable Exception ex) {
         title = title == null ? null : Lang.getServerMessage(title, messageParam);
         String text;
         if (ex instanceof ServerException) {
@@ -401,6 +408,10 @@ public interface EntityContextUI {
     }
 
     enum GlobalSendType {
-        popup, json, setting, progress, bell, headerButton, openConsole, reload, addItem, dialog, audio
+        popup, json, setting, progress, bell, headerButton, openConsole, reload, addItem, dialog,
+        // send audio to play on ui
+        audio,
+        // next generation
+        dynamicUpdate
     }
 }

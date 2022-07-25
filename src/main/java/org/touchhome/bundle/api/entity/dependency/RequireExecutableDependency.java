@@ -6,5 +6,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(RequireExecutableDependencies.class)
 public @interface RequireExecutableDependency {
-    Class<? extends DependencyExecutableInstaller> installer();
+    Class<? extends DependencyExecutableInstaller> value();
 }

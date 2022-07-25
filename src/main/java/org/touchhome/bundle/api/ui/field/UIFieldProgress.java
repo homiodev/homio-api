@@ -1,6 +1,8 @@
 package org.touchhome.bundle.api.ui.field;
 
 import lombok.AllArgsConstructor;
+import org.touchhome.common.util.FlowMap;
+import org.touchhome.common.util.Lang;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -36,6 +38,12 @@ public @interface UIFieldProgress {
 
         public Progress(int value, int maxValue, String message) {
             this((int) Math.ceil(value * 100f / maxValue), message);
+        }
+
+        public Progress(int currentValue, int maxValue) {
+            this.value = (int) Math.ceil(currentValue * 100f / maxValue);
+            this.message = Lang.getServerMessage("USED_QUOTA", FlowMap.of(
+                    "PC", value, "VAL", currentValue, "MAX", maxValue));
         }
     }
 }

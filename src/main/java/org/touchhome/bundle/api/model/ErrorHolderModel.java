@@ -1,7 +1,6 @@
 package org.touchhome.bundle.api.model;
 
 import lombok.Getter;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.util.CommonUtils;
 
 @Getter
