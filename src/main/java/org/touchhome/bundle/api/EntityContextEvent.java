@@ -14,17 +14,21 @@ public interface EntityContextEvent {
 
     /**
      * Listen for event with key. Replace listener if key already exists
-     *
-     * @return return true replace listener or false
      */
-    boolean addEventListener(String key, Consumer<Object> listener);
+    default void addEventListener(String key, Consumer<Object> listener) {
+        addEventListener(key, "", listener);
+    }
+
+    void addEventListener(String key, String discriminator, Consumer<Object> listener);
 
     /**
      * Listen for event with key. Fires listener immediately if value was saved before
-     *
-     * @return return true replace listener or false
      */
-    boolean addEventBehaviourListener(String key, Consumer<Object> listener);
+    default void addEventBehaviourListener(String key, Consumer<Object> listener) {
+        addEventBehaviourListener(key, "", listener);
+    }
+
+    void addEventBehaviourListener(String key, String discriminator, Consumer<Object> listener);
 
     /**
      * Fire event with key and value

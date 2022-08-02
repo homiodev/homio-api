@@ -21,7 +21,6 @@ public class ChartRequest {
 
     private final boolean requireFilterByDate;
 
-    @Setter
     private JSONObject parameters = new JSONObject();
 
     public ChartRequest(EntityContext entityContext, Date from, Date to, String dateFromNow, boolean requireFilterByDate) {
@@ -30,6 +29,11 @@ public class ChartRequest {
         this.to = to == null ? new Date() : to;
         this.dateFromNow = dateFromNow;
         this.requireFilterByDate = requireFilterByDate;
+    }
+
+    public ChartRequest setParameters(JSONObject parameters) {
+        this.parameters = parameters;
+        return this;
     }
 
     public boolean isBetween(long timestamp) {
