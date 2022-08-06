@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.mongo;
+package org.touchhome.bundle.api.inmemory;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
@@ -14,6 +14,7 @@ import dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions;
 import dev.morphia.aggregation.experimental.stages.Group;
 import dev.morphia.aggregation.experimental.stages.Projection;
 import dev.morphia.aggregation.experimental.stages.Sort;
+import dev.morphia.query.FindOptions;
 import dev.morphia.query.MorphiaCursor;
 import dev.morphia.query.Query;
 import dev.morphia.query.Type;
@@ -30,17 +31,19 @@ import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions.addToSet;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
 import static dev.morphia.aggregation.experimental.stages.Group.group;
 import static dev.morphia.aggregation.experimental.stages.Group.id;
+import static dev.morphia.query.Sort.ascending;
+import static dev.morphia.query.Sort.descending;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public final class InMemoryDB {
     private static final String DATABASE = "db";
+    public static final String UPDATED = "updated";
     private static final Map<Class<?>, InMemoryDBData<?>> map = new HashMap<>();
 
     private static final Datastore datastore;
@@ -130,7 +133,7 @@ public final class InMemoryDB {
                             List<String> itemsToRemove;
                             // aggregate is faster than .stream()...
                             try (MorphiaCursor<HashMap> execute = datastore.aggregate(pojoClass)
-                                    .sort(Sort.sort().ascending("updated"))
+                                    .sort(Sort.sort().ascending(UPDATED))
                                     .limit(delta)
                                     .project(Projection.project().include("_id"))
                                     .group(Group.group().field("ids", addToSet(field("_id"))))
@@ -158,18 +161,18 @@ public final class InMemoryDB {
         }
 
         @Override
-        public long delete(T entity) {
+        public long delete(@NotNull T entity) {
             return -updateUsed(-datastore.delete(entity).getDeletedCount());
         }
 
         @Override
-        public long deleteBy(String field, String value) {
+        public long deleteBy(@NotNull String field, @NotNull String value) {
             return -updateUsed(
                     -getQuery().filter(Filters.eq(field, value)).delete(new DeleteOptions().multi(true)).getDeletedCount());
         }
 
         @Override
-        public long deleteByPattern(String field, String pattern) {
+        public long deleteByPattern(@NotNull String field, @NotNull String pattern) {
             return -updateUsed(-getQuery().
                     filter(Filters.eq(field, Pattern.compile(pattern)))
                     .delete(new DeleteOptions().multi(true)).getDeletedCount());
@@ -181,22 +184,39 @@ public final class InMemoryDB {
         }
 
         @Override
-        public Stream<T> findBy(String field, String value) {
-            return getQuery().filter(Filters.eq(field, value)).stream();
+        public List<T> findAllBy(@NotNull String field, @NotNull String value,
+                                 @Nullable SortBy sort, @Nullable Integer limit) {
+            try (MorphiaCursor<T> iterator = withSort(getQuery().filter(Filters.eq(field, value)), sort, limit)) {
+                return iterator.toList();
+            }
         }
 
         @Override
-        public Stream<T> findAll() {
-            return getQuery().stream();
+        public T findLatestBy(@NotNull String field, @NotNull String value) {
+            try (MorphiaCursor<T> iterator = withSort(getQuery().filter(Filters.eq(field, value)),
+                    SortBy.sortDesc(UPDATED), 1)) {
+                return iterator.tryNext();
+            }
         }
 
         @Override
-        public Stream<T> findByPattern(String field, String pattern) {
-            return datastore.find(pojoClass).filter(Filters.eq(field, Pattern.compile(pattern))).stream();
+        public List<T> findAll(@Nullable SortBy sort, Integer limit) {
+            try (MorphiaCursor<T> iterator = withSort(getQuery(), sort, limit)) {
+                return iterator.toList();
+            }
         }
 
         @Override
-        public Query<T> find(T entity) {
+        public List<T> findByPattern(@NotNull String field, @NotNull String pattern,
+                                     @Nullable SortBy sort, @Nullable Integer limit) {
+            try (MorphiaCursor<T> iterator = withSort(getQuery().filter(Filters.eq(field, Pattern.compile(pattern))), sort,
+                    limit)) {
+                return iterator.toList();
+            }
+        }
+
+        @Override
+        public Query<T> find(@NotNull T entity) {
             return getQuery();
         }
 
@@ -206,7 +226,7 @@ public final class InMemoryDB {
         }
 
         @Override
-        public void updateQuota(Long quota) {
+        public void updateQuota(@Nullable Long quota) {
             if (quota == null || quota == 0) {
                 this.quota = null;
             } else {
@@ -233,13 +253,13 @@ public final class InMemoryDB {
 
             try (MorphiaCursor<Map> cursor = datastore.aggregate(pojoClass)
                     .match(Filters.and(filters.toArray(Filter[]::new)))
-                    .project(Projection.project().include("updated").include("value"))
+                    .project(Projection.project().include(UPDATED).include("value"))
                     .execute(Map.class)) {
 
                 list = new ArrayList<>();
                 while (cursor.hasNext()) {
                     Map document = cursor.next();
-                    list.add(new Object[]{document.get("updated"), ((Number)document.get("value")).floatValue()});
+                    list.add(new Object[]{document.get(UPDATED), ((Number) document.get("value")).floatValue()});
                 }
             }
             return list;
@@ -299,12 +319,12 @@ public final class InMemoryDB {
             Filter filter = null;
             if (from != null && to != null) {
                 filter = Filters.and(
-                        Filters.gte("updated", from),
-                        Filters.lte("updated", to));
+                        Filters.gte(UPDATED, from),
+                        Filters.lte(UPDATED, to));
             } else if (from != null) {
-                filter = Filters.gte("updated", from);
+                filter = Filters.gte(UPDATED, from);
             } else if (to != null) {
-                filter = Filters.lte("updated", to);
+                filter = Filters.lte(UPDATED, to);
             }
             return filter;
         }
@@ -317,10 +337,10 @@ public final class InMemoryDB {
                     new TypeFilter("value", Type.INTEGER_64_BIT),
                     new TypeFilter("value", Type.DOUBLE)));
             if (from != null) {
-                filters.add(Filters.gte("updated", from));
+                filters.add(Filters.gte(UPDATED, from));
             }
             if (to != null) {
-                filters.add(Filters.lte("updated", to));
+                filters.add(Filters.lte(UPDATED, to));
             }
             if (field != null && value != null) {
                 filters.add(Filters.eq(field, value));
@@ -331,6 +351,18 @@ public final class InMemoryDB {
         private long updateUsed(long changed) {
             estimateUsed.addAndGet(changed);
             return changed;
+        }
+
+        private MorphiaCursor<T> withSort(Query<T> query, SortBy sort, Integer limit) {
+            if (sort != null) {
+                FindOptions findOptions = new FindOptions().sort(sort.isAsceding() ? ascending(sort.getOrderField()) :
+                        descending(sort.getOrderField()));
+                if (limit != null) {
+                    findOptions.limit(limit);
+                }
+                return query.iterator(findOptions);
+            }
+            return query.iterator();
         }
     }
 

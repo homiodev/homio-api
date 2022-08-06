@@ -119,6 +119,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         this.validate();
     }
 
+    @PostUpdate
+    private void postUpdate() {
+        this.afterUpdate(ApplicationContextHolder.getBean(EntityContext.class));
+    }
+
     @PreRemove
     private void preDelete() {
         TouchHomeUtils.STATUS_MAP.remove(getEntityID());

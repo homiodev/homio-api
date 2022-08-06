@@ -3,14 +3,17 @@ package org.touchhome.bundle.api.entity.workspace.var;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.json.JSONObject;
+import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.widget.ChartRequest;
 import org.touchhome.bundle.api.entity.widget.AggregationType;
-import org.touchhome.bundle.api.entity.widget.HasSliderSeries;
+import org.touchhome.bundle.api.entity.widget.ChartRequest;
 import org.touchhome.bundle.api.entity.widget.HasAggregateValueFromSeries;
+import org.touchhome.bundle.api.entity.widget.HasSliderSeries;
 
 import javax.persistence.*;
 import java.util.Set;
+import java.util.function.Consumer;
 
 @Entity
 @Getter
@@ -49,17 +52,29 @@ public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableE
     }
 
     @Override
-    public float getSliderValue() {
+    public float getSliderValue(EntityContext entityContext, JSONObject dynamicParameters) {
         return getValue();
     }
 
     @Override
-    public void setSliderValue(float value) {
+    public void setSliderValue(float value, EntityContext entityContext, JSONObject dynamicParameters) {
         setValue(value);
+        entityContext.save(this);
     }
 
     @Override
     public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType) {
         return value;
+    }
+
+    @Override
+    public void addUpdateValueListener(EntityContext entityContext, String key, JSONObject dynamicParameters,
+                                       Consumer<Object> listener) {
+        entityContext.event().addEventListener(getEntityID(), key, listener);
+    }
+
+    @Override
+    public void afterUpdate(EntityContext entityContext) {
+        entityContext.event().fireEvent(getEntityID(), value);
     }
 }

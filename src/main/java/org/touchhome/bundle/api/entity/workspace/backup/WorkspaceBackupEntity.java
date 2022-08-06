@@ -3,20 +3,25 @@ package org.touchhome.bundle.api.entity.workspace.backup;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
+import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.widget.AggregationType;
 import org.touchhome.bundle.api.entity.widget.ChartRequest;
 import org.touchhome.bundle.api.entity.widget.HasAggregateValueFromSeries;
-import org.touchhome.bundle.api.entity.widget.HasTimeValueSeries;
+import org.touchhome.bundle.api.entity.widget.HasTimeValueAndLastValueSeries;
 import org.touchhome.bundle.api.repository.WorkspaceBackupRepository;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Getter
 @Entity
 @Accessors(chain = true)
-public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> implements HasTimeValueSeries,
+public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> implements HasTimeValueAndLastValueSeries,
         HasAggregateValueFromSeries {
 
     public static final String PREFIX = "wsbp_";
@@ -69,5 +74,16 @@ public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntit
                 throw new IllegalStateException("Not implemented");
         }
         return repo.getBackupLastValue(this, request);
+    }
+
+    @Override
+    public @Nullable Object getLastAvailableValue(@Nullable JSONObject parameters) {
+        return TouchHomeUtils.VALUES_MAP.get(getEntityID());
+    }
+
+    @Override
+    public void addUpdateValueListener(EntityContext entityContext, String key,
+                                       JSONObject dynamicParameters, Consumer<Object> listener) {
+        entityContext.event().addEventListener(getEntityID(), key, listener);
     }
 }

@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.HasJsonData;
+import org.touchhome.bundle.api.ui.field.selection.dynamic.HasDynamicParameterFields;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -19,7 +20,7 @@ import java.util.Set;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class WidgetSeriesEntity<T extends WidgetBaseEntityAndSeries> extends BaseEntity<WidgetSeriesEntity>
-        implements Comparable<WidgetSeriesEntity>, HasJsonData<T> {
+        implements HasDynamicParameterFields, Comparable<WidgetSeriesEntity>, HasJsonData<T> {
 
     private int priority;
 
@@ -39,11 +40,12 @@ public abstract class WidgetSeriesEntity<T extends WidgetBaseEntityAndSeries> ex
         return this;
     }
 
-    public Object setDynamicParameterFieldsHolder(JSONObject value) {
+    @Override
+    public void setDynamicParameterFieldsHolder(JSONObject value) {
         setJsonData("dsp", value);
-        return this;
     }
 
+    @Override
     public JSONObject getDynamicParameterFieldsHolder() {
         return getJsonData().optJSONObject("dsp");
     }

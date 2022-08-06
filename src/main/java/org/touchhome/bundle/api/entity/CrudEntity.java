@@ -1,8 +1,10 @@
 package org.touchhome.bundle.api.entity;
 
 import lombok.Getter;
+import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.ui.field.UIField;
+import org.touchhome.bundle.api.util.ApplicationContextHolder;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -33,7 +35,16 @@ public class CrudEntity<T> implements HasEntityIdentifier {
         beforePersist();
     }
 
-    private void beforePersist() {
+    @PostPersist
+    public final void postPersist() {
+        afterPersist(ApplicationContextHolder.getBean(EntityContext.class));
+    }
+
+    protected void afterPersist(EntityContext entityContext) {
+
+    }
+
+    protected void beforePersist() {
 
     }
 

@@ -1,6 +1,7 @@
 package org.touchhome.bundle.api;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.BaseEntityIdentifier;
 
 import java.util.function.Consumer;
@@ -35,9 +36,9 @@ public interface EntityContextEvent {
      *
      * @param value - must implement equal() method in case if compareValues is true
      */
-    void fireEvent(@NotNull String key, @NotNull Object value, boolean compareValues);
+    void fireEvent(@NotNull String key, @Nullable Object value, boolean compareValues);
 
-    default void fireEvent(@NotNull String key, @NotNull Object value) {
+    default void fireEvent(@NotNull String key, @Nullable Object value) {
         fireEvent(key, value, true);
     }
 

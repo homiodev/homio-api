@@ -15,6 +15,7 @@ import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldGroup;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 import javax.persistence.*;
 
@@ -129,5 +130,15 @@ public abstract class WidgetBaseEntity<T extends WidgetBaseEntity> extends BaseE
     public T setShowTimeButtons(Boolean value) {
         setJsonData("stb", value);
         return (T) this;
+    }
+
+    @UIField(order = 21, type = UIFieldType.ColorPickerWithThreshold)
+    @UIFieldGroup("UI")
+    public String getBackground() {
+        return getJsonData("bg", "transparent");
+    }
+
+    public void setBackground(String value) {
+        setJsonData("bg", value);
     }
 }

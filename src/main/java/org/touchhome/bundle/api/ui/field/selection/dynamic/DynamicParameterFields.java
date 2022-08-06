@@ -5,13 +5,6 @@ package org.touchhome.bundle.api.ui.field.selection.dynamic;
  */
 public interface DynamicParameterFields {
 
-    /**
-     * Specify field where to save dynamic parameters
-     */
-    default String getHolderField() {
-        return "dynamicParameterFieldsHolder";
-    }
-
     default String getGroupName() {
         return null;
     }

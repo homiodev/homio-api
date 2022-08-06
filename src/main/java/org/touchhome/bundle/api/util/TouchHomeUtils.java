@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.*;
@@ -41,6 +42,7 @@ public class TouchHomeUtils {
     public static final int RUN_COUNT;
 
     public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();
+    public static Map<String, Object> VALUES_MAP = new ConcurrentHashMap<>();
 
     public static final Tika TIKA = new Tika();
 

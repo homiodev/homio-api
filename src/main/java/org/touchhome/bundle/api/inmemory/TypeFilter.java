@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.mongo;
+package org.touchhome.bundle.api.inmemory;
 
 import dev.morphia.query.Type;
 import dev.morphia.query.experimental.filters.Filter;

@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.entity.workspace.bool;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.widget.*;
@@ -11,6 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
+import java.util.function.Consumer;
 
 @Entity
 @Getter
@@ -67,5 +69,16 @@ public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEnt
     @Override
     public void pushButton(EntityContext entityContext) {
         inverseValue();
+    }
+
+    @Override
+    public void addUpdateValueListener(EntityContext entityContext, String key, JSONObject dynamicParameters,
+                                       Consumer<Object> listener) {
+        entityContext.event().addEventListener(getEntityID(), key, listener);
+    }
+
+    @Override
+    public void afterUpdate(EntityContext entityContext) {
+        entityContext.event().fireEvent(getEntityID(), value);
     }
 }

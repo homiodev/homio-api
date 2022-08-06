@@ -3,18 +3,25 @@ package org.touchhome.bundle.api.entity.widget;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
+import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Implementation must override either {@link HasTimeValueSeries#getTimeValueSeries(ChartRequest)} or
  * {@link HasTimeValueSeries#getMultipleTimeValueSeries(ChartRequest)}
  */
 public interface HasTimeValueSeries extends HasEntityIdentifier {
+
+    void addUpdateValueListener(EntityContext entityContext, String key,
+                                JSONObject dynamicParameters, Consumer<Object> listener);
+
     /**
      * Return line chart series.
      * <p>
