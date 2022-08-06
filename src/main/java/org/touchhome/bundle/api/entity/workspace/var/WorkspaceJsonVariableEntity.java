@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.entity.workspace;
+package org.touchhome.bundle.api.entity.workspace.var;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -80,7 +80,8 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
                     serialPort == null ? "null" : serialPort.getSystemPortName(), baudRate, flowControl);
             try {
                 if (serialPort == null) {
-                    serialPort = Stream.of(SerialPort.getCommPorts()).filter(p -> p.getPortDescription().toLowerCase().contains(coordinator)).findAny().orElse(null);
+                    serialPort = Stream.of(SerialPort.getCommPorts())
+                            .filter(p -> p.getPortDescription().toLowerCase().contains(coordinator)).findAny().orElse(null);
 
                     if (serialPort == null) {
                         log.error("Serial Error: Port does not exist.");

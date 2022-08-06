@@ -2,13 +2,11 @@ package org.touchhome.bundle.api.ui.field.selection;
 
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Repeatable(UIFieldEntityByClassListSelection.class)
 public @interface UIFieldEntityByClassSelection {
 
     /**

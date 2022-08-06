@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.entity.workspace;
+package org.touchhome.bundle.api.entity.workspace.var;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,10 +6,8 @@ import lombok.experimental.Accessors;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.widget.ChartRequest;
-import org.touchhome.bundle.api.entity.widget.AggregationType;
-import org.touchhome.bundle.api.entity.widget.HasSliderSeries;
-import org.touchhome.bundle.api.entity.widget.HasAggregateValueFromSeries;
+import org.touchhome.bundle.api.entity.widget.ability.HasGetStatusValue;
+import org.touchhome.bundle.api.entity.widget.ability.HasSetStatusValue;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +17,7 @@ import java.util.function.Consumer;
 @Getter
 @Accessors(chain = true)
 public final class WorkspaceStandaloneVariableEntity extends BaseEntity<WorkspaceStandaloneVariableEntity>
-        implements HasAggregateValueFromSeries, HasSliderSeries {
+        implements HasSetStatusValue, HasGetStatusValue {
 
     public static final String PREFIX = "wssv_";
 
@@ -44,19 +42,17 @@ public final class WorkspaceStandaloneVariableEntity extends BaseEntity<Workspac
     }
 
     @Override
-    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType) {
+    public Object getStatusValue(GetStatusValueRequest request) {
+        if(request.getDynamicParameters().has("lastValue")) {
+            return request.getDynamicParameters().get("lastValue");
+        }
         return value;
     }
 
     @Override
-    public float getSliderValue(EntityContext entityContext, JSONObject dynamicParameters) {
-        return getValue();
-    }
-
-    @Override
-    public void setSliderValue(float value, EntityContext entityContext, JSONObject dynamicParameters) {
-        setValue(value);
-        entityContext.save(this);
+    public void setStatusValue(SetStatusValueRequest request) {
+        this.value = request.floatValue(0F);
+        request.getEntityContext().save(this);
     }
 
     @Override
@@ -68,5 +64,15 @@ public final class WorkspaceStandaloneVariableEntity extends BaseEntity<Workspac
     @Override
     public void afterUpdate(EntityContext entityContext) {
         entityContext.event().fireEvent(getEntityID(), value);
+    }
+
+    @Override
+    public String getGetStatusDescription() {
+        return "Get last value";
+    }
+
+    @Override
+    public String getSetStatusDescription() {
+        return "Set value";
     }
 }

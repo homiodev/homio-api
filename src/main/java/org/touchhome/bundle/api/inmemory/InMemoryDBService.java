@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.widget.AggregationType;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
@@ -28,10 +29,12 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
     List<T> findAllBy(@NotNull String field, @NotNull String value, @Nullable SortBy sort, @Nullable Integer limit);
 
     default List<T> findAllBy(@NotNull String field, @NotNull String value) {
-        return findAllBy(field, field, null, null);
+        return findAllBy(field, value, null, null);
     }
 
     T findLatestBy(@NotNull String field, @NotNull String value);
+
+    T getLatest();
 
     List<T> findAll(@Nullable SortBy sort, @Nullable Integer limit);
 
@@ -57,8 +60,20 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
     long getUsed();
 
-    List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value);
+    default List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value) {
+        return getTimeSeries(from, to, field, value, "value");
+    }
 
-    Float aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                    @NotNull AggregationType aggregationType);
+    List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
+                                 @NotNull String aggregateField);
+
+    default Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
+                     @NotNull AggregationType aggregationType, boolean filterOnlyNumbers) {
+        return aggregate(from,to,field,value,aggregationType,filterOnlyNumbers, "value");
+    }
+
+    Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
+                     @NotNull AggregationType aggregationType, boolean filterOnlyNumbers, @NotNull String aggregateField);
+
+    InMemoryDBService<T> addSaveListener(String discriminator, Consumer<T> listener);
 }

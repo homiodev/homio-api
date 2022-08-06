@@ -7,6 +7,7 @@ import org.touchhome.bundle.api.model.OptionModel;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,7 +15,7 @@ import java.util.Map;
  */
 public interface DynamicOptionLoader {
 
-    Collection<OptionModel> loadOptions(DynamicOptionLoaderParameters parameters);
+    List<OptionModel> loadOptions(DynamicOptionLoaderParameters parameters);
 
     @Getter
     class DynamicOptionLoaderParameters {
@@ -23,7 +24,8 @@ public interface DynamicOptionLoader {
         private final String[] staticParameters;
         private final Map<String, String> dependencies;
 
-        public DynamicOptionLoaderParameters(BaseEntity baseEntity, EntityContext entityContext, String[] staticParameters, Map<String, String> dependencies) {
+        public DynamicOptionLoaderParameters(BaseEntity baseEntity, EntityContext entityContext, String[] staticParameters,
+                                             Map<String, String> dependencies) {
             this.baseEntity = baseEntity;
             this.entityContext = entityContext;
             this.staticParameters = staticParameters;

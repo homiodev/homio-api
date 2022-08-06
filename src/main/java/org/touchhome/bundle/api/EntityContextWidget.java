@@ -2,8 +2,7 @@ package org.touchhome.bundle.api;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.touchhome.bundle.api.entity.widget.HasTimeValueSeries;
-import org.touchhome.bundle.api.entity.widget.WidgetTabEntity;
+import org.touchhome.bundle.api.entity.widget.ability.HasTimeValueSeries;
 
 import java.util.function.Consumer;
 
@@ -17,19 +16,19 @@ public interface EntityContextWidget {
      * @param entityID               -unique cline chart entity id. Must starts with EntityContextWidget.LINE_CHART_WIDGET_PREFIX
      * @param name                   widget name
      * @param chartBuilder           - chart builder
-     * @param lineChartWidgetBuilder series builder
-     * @param attachTab              - tabb attach to or null(will be attached to main tab)
+     * @param lineChartWidgetBuilder - series builder
+     * @param attachTabEntityID      - tab attach to or null(will be attached to main tab)
      */
-    void createLineChartWidget(@NotNull String entityID, @NotNull String name, @NotNull Consumer<LineChartSeriesBuilder> chartBuilder,
-                               @NotNull Consumer<LineChartWidgetBuilder> lineChartWidgetBuilder, @Nullable WidgetTabEntity attachTab);
+    void createLineChartWidget(@NotNull String entityID, @NotNull String name,
+                               @NotNull Consumer<LineChartSeriesBuilder> chartBuilder,
+                               @NotNull Consumer<LineChartWidgetBuilder> lineChartWidgetBuilder,
+                               @Nullable String attachTabEntityID);
 
     interface LineChartSeriesBuilder {
         void addLineChart(String color, HasTimeValueSeries lineChartSeries);
     }
 
     interface LineChartWidgetBuilder {
-
-        LineChartWidgetBuilder showButtons(boolean on);
 
         LineChartWidgetBuilder showAxisX(boolean on);
 

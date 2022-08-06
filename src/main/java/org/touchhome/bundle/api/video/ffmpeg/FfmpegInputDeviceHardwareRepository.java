@@ -32,7 +32,8 @@ public interface FfmpegInputDeviceHardwareRepository {
     FFMPEGVideoDevice createVideoInputDevice(@HQueryParam("ffmpeg") String ffmpeg, @HQueryParam("vfile") String vfile);
 
     @RawParse(nix = WindowsInputVideoDevicesParser.class, win = WindowsInputVideoDevicesParser.class)
-    @HardwareQuery(name = "Ffmpeg get window devices", value = "", win = ":ffmpeg -list_devices true -f dshow -hide_banner -i dummy",
+    @HardwareQuery(name = "Ffmpeg get window devices", value = "",
+            win = ":ffmpeg -list_devices true -f dshow -hide_banner -i dummy",
             printOutput = true, cacheValid = 60, redirectErrorsToInputs = true)
     Pair<List<String>, List<String>> getWindowsInputDevices(@HQueryParam("ffmpeg") String ffmpeg);
 
@@ -48,7 +49,8 @@ public interface FfmpegInputDeviceHardwareRepository {
         Set<String> devices = new HashSet<>();
         if (SystemUtils.IS_OS_LINUX) {
             File DEV = new File("/dev");
-            String[] names = DEV.list((dir, name) -> dir.getName().equals("dev") && name.startsWith(prefix) && Character.isDigit(name.charAt(5)));
+            String[] names = DEV.list(
+                    (dir, name) -> dir.getName().equals("dev") && name.startsWith(prefix) && Character.isDigit(name.charAt(5)));
             for (String name : names) {
                 devices.add(new File(DEV, name).getAbsolutePath());
             }

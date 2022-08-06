@@ -1,26 +1,27 @@
-package org.touchhome.bundle.api.entity.widget;
+package org.touchhome.bundle.api.entity.widget.ability;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
-import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.entity.widget.ChartRequest;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * Implementation must override either {@link HasTimeValueSeries#getTimeValueSeries(ChartRequest)} or
  * {@link HasTimeValueSeries#getMultipleTimeValueSeries(ChartRequest)}
  */
-public interface HasTimeValueSeries extends HasEntityIdentifier {
+public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueListener {
 
-    void addUpdateValueListener(EntityContext entityContext, String key,
-                                JSONObject dynamicParameters, Consumer<Object> listener);
+    /**
+     * Uses for UI to determine class type description
+     */
+    @SelectDataSourceDescription
+    String getTimeValueSeriesDescription();
 
     /**
      * Return line chart series.
@@ -31,8 +32,10 @@ public interface HasTimeValueSeries extends HasEntityIdentifier {
      * point[2] - optional
      */
     default @NotNull Map<TimeValueDatasetDescription, List<Object[]>> getMultipleTimeValueSeries(@NotNull ChartRequest request) {
+        Object params = request.getParameters();
+        int paramCode = (params == null ? "" : params).toString().hashCode();
         return Collections.singletonMap(new TimeValueDatasetDescription(getEntityID() + "_" +
-                        request.getParameters().toString().hashCode()),
+                        paramCode),
                 getTimeValueSeries(request));
     }
 

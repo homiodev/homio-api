@@ -43,7 +43,8 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     @SneakyThrows
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint, String idSuffix) {
+    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint,
+                                   String idSuffix) {
         this.id = bundleEntryPoint == null ? idSuffix : bundleEntryPoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
         this.parent = bundleEntryPoint == null ? null : bundleEntryPoint.getBundleId();
         this.entityContext = entityContext;
@@ -52,7 +53,8 @@ public abstract class Scratch3ExtensionBlocks {
             if (resource == null) {
                 throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
             }
-            this.blockIconURI = "data:image/png;base64," + Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
+            this.blockIconURI = "data:image/png;base64," +
+                    Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
             this.scratch3Color = new Scratch3Color(color);
         }
     }
@@ -76,7 +78,8 @@ public abstract class Scratch3ExtensionBlocks {
         sendWorkspaceChangeValue(entityContext, baseEntity, "WorkspaceBackupValue", node -> node.put("value", value));
     }
 
-    private static void sendWorkspaceChangeValue(EntityContext entityContext, BaseEntity baseEntity, String type, Consumer<JSONObject> fn) {
+    private static void sendWorkspaceChangeValue(EntityContext entityContext, BaseEntity baseEntity, String type,
+                                                 Consumer<JSONObject> fn) {
         JSONObject node = new JSONObject().put("block", baseEntity.getEntityID()).put("type", type);
         fn.accept(node);
         entityContext.ui().sendNotification("-workspace-value", node);

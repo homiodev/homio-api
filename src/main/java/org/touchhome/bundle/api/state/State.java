@@ -51,6 +51,7 @@ public interface State {
 
     @SneakyThrows
     default State optional(String value) {
-        return StringUtils.isEmpty(value) ? this : CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+        return StringUtils.isEmpty(value) ? this :
+                CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
     }
 }

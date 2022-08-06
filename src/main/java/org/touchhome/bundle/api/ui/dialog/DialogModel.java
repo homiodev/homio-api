@@ -73,7 +73,8 @@ public class DialogModel {
     }
 
     @SneakyThrows
-    private DialogModel button(String entityID, String title, DialogButton.ButtonType buttonType, ThrowingConsumer<DialogButton, Exception> consumer) {
+    private DialogModel button(String entityID, String title, DialogButton.ButtonType buttonType,
+                               ThrowingConsumer<DialogButton, Exception> consumer) {
         DialogButton dialogButton = new DialogButton(entityID, title, buttonType);
         consumer.accept(dialogButton);
         buttons.add(dialogButton);

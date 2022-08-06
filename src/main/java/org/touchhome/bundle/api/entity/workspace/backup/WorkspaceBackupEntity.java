@@ -3,14 +3,14 @@ package org.touchhome.bundle.api.entity.workspace.backup;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.widget.AggregationType;
 import org.touchhome.bundle.api.entity.widget.ChartRequest;
-import org.touchhome.bundle.api.entity.widget.HasAggregateValueFromSeries;
-import org.touchhome.bundle.api.entity.widget.HasTimeValueAndLastValueSeries;
+import org.touchhome.bundle.api.entity.widget.ability.HasAggregateValueFromSeries;
+import org.touchhome.bundle.api.entity.widget.ability.HasGetStatusValue;
+import org.touchhome.bundle.api.entity.widget.ability.HasTimeValueSeries;
 import org.touchhome.bundle.api.repository.WorkspaceBackupRepository;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
@@ -21,8 +21,8 @@ import java.util.function.Consumer;
 @Getter
 @Entity
 @Accessors(chain = true)
-public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity> implements HasTimeValueAndLastValueSeries,
-        HasAggregateValueFromSeries {
+public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntity>
+        implements HasTimeValueSeries, HasAggregateValueFromSeries, HasGetStatusValue {
 
     public static final String PREFIX = "wsbp_";
 
@@ -57,9 +57,11 @@ public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntit
     }
 
     @Override
-    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType) {
+    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType, boolean exactNumber) {
         WorkspaceBackupRepository repo = request.getEntityContext().getBean(WorkspaceBackupRepository.class);
         switch (aggregationType) {
+            case First:
+                return repo.getBackupFirstValue(this, request);
             case Max:
                 return repo.getBackupMAXValue(this, request);
             case Min:
@@ -77,13 +79,28 @@ public final class WorkspaceBackupEntity extends BaseEntity<WorkspaceBackupEntit
     }
 
     @Override
-    public @Nullable Object getLastAvailableValue(@Nullable JSONObject parameters) {
+    public void addUpdateValueListener(EntityContext entityContext, String key,
+                                       JSONObject dynamicParameters, Consumer<Object> listener) {
+        entityContext.event().addEventListener(getEntityID(), key, listener);
+    }
+
+    @Override
+    public Object getStatusValue(GetStatusValueRequest request) {
         return TouchHomeUtils.VALUES_MAP.get(getEntityID());
     }
 
     @Override
-    public void addUpdateValueListener(EntityContext entityContext, String key,
-                                       JSONObject dynamicParameters, Consumer<Object> listener) {
-        entityContext.event().addEventListener(getEntityID(), key, listener);
+    public String getTimeValueSeriesDescription() {
+        return "Backup time-value series";
+    }
+
+    @Override
+    public String getAggregateValueDescription() {
+        return "Backup series-aggregate value";
+    }
+
+    @Override
+    public String getGetStatusDescription() {
+        return "Last backup value";
     }
 }

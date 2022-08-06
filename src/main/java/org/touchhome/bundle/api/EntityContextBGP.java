@@ -42,7 +42,8 @@ public interface EntityContextBGP {
         }, showOnUI, hideOnUIAfterCancel);
     }
 
-    <T> ThreadContext<T> schedule(@NotNull String name, @NotNull String cron, @NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command,
+    <T> ThreadContext<T> schedule(@NotNull String name, @NotNull String cron,
+                                  @NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command,
                                   boolean showOnUI, boolean hideOnUIAfterCancel);
 
     default ThreadContext<Void> schedule(@NotNull String name, int timeout, @NotNull TimeUnit timeUnit,
@@ -59,15 +60,19 @@ public interface EntityContextBGP {
         return run(name, command, null, showOnUI);
     }
 
-    default ThreadContext<Void> run(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command, boolean showOnUI) {
+    default ThreadContext<Void> run(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command,
+                                    boolean showOnUI) {
         return run(name, initialDelayInMillis, command, null, showOnUI);
     }
 
-    default ThreadContext<Void> run(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
+    default ThreadContext<Void> run(@NotNull String name, @NotNull ThrowingRunnable<Exception> command,
+                                    @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
         return run(name, null, command, finallyBlock, showOnUI);
     }
 
-    default ThreadContext<Void> run(@NotNull String name, @Nullable Long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
+    default ThreadContext<Void> run(@NotNull String name, @Nullable Long initialDelayInMillis,
+                                    @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock,
+                                    boolean showOnUI) {
         return runAndGet(name, initialDelayInMillis, () -> {
             Exception exception = null;
             try {
@@ -84,11 +89,13 @@ public interface EntityContextBGP {
         }, showOnUI);
     }
 
-    default <T> ThreadContext<T> runAndGet(@NotNull String name, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI) {
+    default <T> ThreadContext<T> runAndGet(@NotNull String name, @NotNull ThrowingSupplier<T, Exception> command,
+                                           boolean showOnUI) {
         return runAndGet(name, null, command, showOnUI);
     }
 
-    <T> ThreadContext<T> runAndGet(@NotNull String name, @Nullable Long initialDelayInMillis, @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI);
+    <T> ThreadContext<T> runAndGet(@NotNull String name, @Nullable Long initialDelayInMillis,
+                                   @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI);
 
     void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
 
@@ -117,15 +124,19 @@ public interface EntityContextBGP {
         }, true);
     }
 
-    default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable, @NotNull ThrowingConsumer<ProgressBar, Exception> command) {
+    default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable,
+                                                @NotNull ThrowingConsumer<ProgressBar, Exception> command) {
         return runWithProgress(key, cancellable, command, null, null);
     }
 
-    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable, @NotNull ThrowingFunction<ProgressBar, R, Exception> command) {
+    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable,
+                                                       @NotNull ThrowingFunction<ProgressBar, R, Exception> command) {
         return runWithProgressAndGet(key, cancellable, command, null, null);
     }
 
-    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable, @NotNull ThrowingFunction<ProgressBar, R, Exception> command, @NotNull Consumer<Exception> finallyBlock) {
+    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable,
+                                                       @NotNull ThrowingFunction<ProgressBar, R, Exception> command,
+                                                       @NotNull Consumer<Exception> finallyBlock) {
         return runWithProgressAndGet(key, cancellable, command, finallyBlock, null);
     }
 
@@ -136,15 +147,20 @@ public interface EntityContextBGP {
         return runWithProgress(key, cancellable, command, finallyBlock, null);
     }
 
-    default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable, @NotNull ThrowingConsumer<ProgressBar, Exception> command,
-                                                @Nullable Consumer<Exception> finallyBlock, @Nullable Supplier<RuntimeException> throwIfExists) {
+    default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable,
+                                                @NotNull ThrowingConsumer<ProgressBar, Exception> command,
+                                                @Nullable Consumer<Exception> finallyBlock,
+                                                @Nullable Supplier<RuntimeException> throwIfExists) {
         return runWithProgressAndGet(key, cancellable, progressBar -> {
             command.accept(progressBar);
             return null;
         }, finallyBlock, throwIfExists);
     }
 
-    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable, @NotNull ThrowingFunction<ProgressBar, R, Exception> command, @Nullable Consumer<Exception> finallyBlock, @Nullable Supplier<RuntimeException> throwIfExists) {
+    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable,
+                                                       @NotNull ThrowingFunction<ProgressBar, R, Exception> command,
+                                                       @Nullable Consumer<Exception> finallyBlock,
+                                                       @Nullable Supplier<RuntimeException> throwIfExists) {
         if (throwIfExists != null && isThreadExists(key, true)) {
             RuntimeException exception = throwIfExists.get();
             if (exception != null) {
@@ -152,7 +168,8 @@ public interface EntityContextBGP {
             }
         }
         return runAndGet(key, () -> {
-            ProgressBar progressBar = (progress, message) -> getEntityContext().ui().progress(key, progress, message, cancellable);
+            ProgressBar progressBar =
+                    (progress, message) -> getEntityContext().ui().progress(key, progress, message, cancellable);
             progressBar.progress(0, key);
             Exception exception = null;
             try {
@@ -169,7 +186,8 @@ public interface EntityContextBGP {
         }, true);
     }
 
-    ThreadContext<Void> runInfinite(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, boolean showOnUI, int delay, boolean stopOnException);
+    ThreadContext<Void> runInfinite(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, boolean showOnUI,
+                                    int delay, boolean stopOnException);
 
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);
 

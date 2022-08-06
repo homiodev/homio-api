@@ -1,14 +1,17 @@
 package org.touchhome.bundle.api.inmemory;
 
+import com.mongodb.BasicDBObject;
 import lombok.Getter;
+import org.bson.conversions.Bson;
 
 @Getter
 public class SortBy {
     private final String orderField;
-    private final boolean asceding;
-    private SortBy(String orderField, boolean asceding) {
+    private final boolean asc;
+
+    private SortBy(String orderField, boolean asc) {
         this.orderField = orderField;
-        this.asceding = asceding;
+        this.asc = asc;
     }
 
     public static SortBy sortAsc(String orderField) {
@@ -17,5 +20,9 @@ public class SortBy {
 
     public static SortBy sortDesc(String orderField) {
         return new SortBy(orderField, false);
+    }
+
+    public Bson toBson() {
+        return new BasicDBObject(orderField, asc ? 1 : -1);
     }
 }

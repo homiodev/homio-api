@@ -11,14 +11,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public interface HasJsonData<T> {
+public interface HasJsonData {
 
     @JsonIgnore
     JSONObject getJsonData();
 
-    default <P> T setJsonData(String key, P value) {
+    default <P> void setJsonData(String key, P value) {
         getJsonData().put(key, value);
-        return (T) this;
     }
 
     default Integer getJsonData(String key, int defaultValue) {
@@ -45,9 +44,8 @@ public interface HasJsonData<T> {
         return defaultValue;
     }
 
-    default <E extends Enum> T setJsonDataEnum(String key, E value) {
+    default <E extends Enum> void setJsonDataEnum(String key, E value) {
         setJsonData(key, value == null ? "" : value.name());
-        return (T) this;
     }
 
     default Boolean getJsonData(String key, boolean defaultValue) {

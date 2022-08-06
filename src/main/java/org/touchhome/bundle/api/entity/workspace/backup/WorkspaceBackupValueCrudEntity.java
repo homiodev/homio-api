@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.CrudEntity;
-import org.touchhome.bundle.api.util.ApplicationContextHolder;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;

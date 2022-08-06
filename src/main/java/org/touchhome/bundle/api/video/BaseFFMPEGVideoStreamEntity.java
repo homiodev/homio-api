@@ -168,8 +168,8 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return getJsonData("user", "");
     }
 
-    public T setUser(String value) {
-        return setJsonData("user", value);
+    public void setUser(String value) {
+        setJsonData("user", value);
     }
 
     // not all entity has password
@@ -177,8 +177,8 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return new SecureString(getJsonData("password", ""));
     }
 
-    public T setPassword(String value) {
-        return setJsonData("password", value);
+    public void setPassword(String value) {
+        setJsonData("password", value);
     }
 
     public String getAlarmInputUrl() {

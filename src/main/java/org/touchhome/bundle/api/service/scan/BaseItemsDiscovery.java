@@ -50,7 +50,8 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         entityContext.bgp().runInBatch(getBatchName(), getMaxTimeToWaitInSeconds(), scanners,
                 scanner -> {
                     log.info("Start scan in thread <{}>", scanner.name);
-                    AtomicInteger status = TouchHomeUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
+                    AtomicInteger status =
+                            TouchHomeUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
                     if (status.compareAndSet(0, 1)) {
                         return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
                                 progressBar -> {
@@ -65,7 +66,8 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
                                     log.info("Done scan for <{}>", scanner.name);
                                     status.set(0);
                                     if (ex != null) {
-                                        entityContext.ui().sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", getErrorMessage(ex)), ex);
+                                        entityContext.ui()
+                                                .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", getErrorMessage(ex)), ex);
                                     }
                                 });
                     } else {

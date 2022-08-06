@@ -39,7 +39,8 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
     }
 
     public void add(String value, boolean error) {
-        ComplexString complexString = ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
+        ComplexString complexString =
+                ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
         values.add(complexString);
         entityContext.ui().sendNotification("-lines-icl", complexString.toString());
     }

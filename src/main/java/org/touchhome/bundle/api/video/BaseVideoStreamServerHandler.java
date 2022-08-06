@@ -86,7 +86,8 @@ public abstract class BaseVideoStreamServerHandler<T extends BaseFFMPEGVideoStre
 
     protected abstract void handleLastHttpContent(byte[] incomingJpeg);
 
-    private boolean handleHttpRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) throws IOException, InterruptedException {
+    private boolean handleHttpRequest(ChannelHandlerContext ctx, HttpRequest httpRequest)
+            throws IOException, InterruptedException {
         String requestIP = "(" + ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress().getHostAddress() + ")";
         if (!whiteList.contains(requestIP)) {
             log.warn("The request made from {} was not in the whitelist and will be ignored.", requestIP);
@@ -195,7 +196,8 @@ public abstract class BaseVideoStreamServerHandler<T extends BaseFFMPEGVideoStre
             log.debug("An existing connection was forcibly closed by the remote host");
         } else if (cause.toString().contains("(No such file or directory)")) {
             log.info(
-                    "IpVideo file server could not find the requested file. This may happen if ffmpeg is still creating the file.");
+                    "IpVideo file server could not find the requested file. This may happen if ffmpeg is still creating the " +
+                            "file.");
         } else {
             log.warn("Exception caught from stream server:{}", cause.getMessage());
         }

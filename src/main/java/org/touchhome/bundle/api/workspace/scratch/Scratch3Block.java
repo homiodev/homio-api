@@ -41,7 +41,8 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     @JsonIgnore
     private LinkGeneratorHandler linkGenerator;
 
-    protected Scratch3Block(int order, String opcode, BlockType blockType, Object text, Scratch3BlockHandler handler, Scratch3BlockEvaluateHandler evaluateHandler) {
+    protected Scratch3Block(int order, String opcode, BlockType blockType, Object text, Scratch3BlockHandler handler,
+                            Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
         this.opcode = opcode;
         this.blockType = blockType;
@@ -58,7 +59,8 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return new Scratch3Block(order, opcode, BlockType.hat, text, handler, null);
     }
 
-    public static Scratch3Block ofHandler(int order, String opcode, BlockType blockType, String text, Scratch3BlockHandler handler) {
+    public static Scratch3Block ofHandler(int order, String opcode, BlockType blockType, String text,
+                                          Scratch3BlockHandler handler) {
         return new Scratch3Block(order, opcode, blockType, text, handler, null);
     }
 
@@ -67,8 +69,10 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     @SneakyThrows
-    public static <T extends Scratch3Block> T ofHandler(int order, String opcode, BlockType blockType, String text, Scratch3BlockHandler handler, Class<T> targetClass) {
-        Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class, Scratch3BlockHandler.class, Scratch3BlockEvaluateHandler.class);
+    public static <T extends Scratch3Block> T ofHandler(int order, String opcode, BlockType blockType, String text,
+                                                        Scratch3BlockHandler handler, Class<T> targetClass) {
+        Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class,
+                Scratch3BlockHandler.class, Scratch3BlockEvaluateHandler.class);
         return constructor.newInstance(order, opcode, blockType, text, handler, null);
     }
 
@@ -86,8 +90,10 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     @SneakyThrows
     public static <T extends Scratch3Block> T ofReporter(int order, String opcode,
-                                                         String text, Scratch3BlockEvaluateHandler evalHandler, Class<T> targetClass) {
-        Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class, Scratch3BlockHandler.class, Scratch3BlockEvaluateHandler.class);
+                                                         String text, Scratch3BlockEvaluateHandler evalHandler,
+                                                         Class<T> targetClass) {
+        Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class,
+                Scratch3BlockHandler.class, Scratch3BlockEvaluateHandler.class);
         return constructor.newInstance(order, opcode, BlockType.reporter, text, null, evalHandler);
     }
 

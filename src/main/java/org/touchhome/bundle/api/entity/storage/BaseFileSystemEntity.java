@@ -17,12 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
-        extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData<T> {
+        extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData {
     Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
-
-    String getIcon();
-
-    String getIconColor();
 
     String getIcon();
 
@@ -43,7 +39,8 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
 
     long getConnectionHashCode();
 
-    @UIField(order = 1, required = true, readOnly = true, hideOnEmpty = true, fullWidth = true, bg = "#334842", type = UIFieldType.HTML)
+    @UIField(order = 1, required = true, readOnly = true, hideOnEmpty = true, fullWidth = true, bg = "#334842",
+            type = UIFieldType.HTML)
     default String getDescription() {
         String prefix = getEntityPrefix();
         return requireConfigure() ? Lang.getServerMessage(prefix.substring(0, prefix.length() - 1) + ".description") : null;

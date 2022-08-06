@@ -101,7 +101,8 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
             imageHeight = originalHeight;
         }
 
-        StringBuilder builder = new StringBuilder("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"");
+        StringBuilder builder = new StringBuilder("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3
+        .org/1999/xlink\" width=\"");
         builder.append(imageWidth * scale).append("px\" height=\"").append(imageHeight * scale).append("px\" viewBox=\"0 0 ")
                 .append(originalWidth).append(" ").append(originalHeight).append("\">");
 

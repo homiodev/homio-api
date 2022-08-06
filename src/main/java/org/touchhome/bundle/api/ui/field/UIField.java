@@ -65,4 +65,7 @@ public @interface UIField {
     boolean hideLabelInFullWidth() default true;
 
     String style() default "";
+
+    // in some cases we need hide field from view/editing at all
+    boolean visible() default true;
 }

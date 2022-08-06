@@ -8,7 +8,7 @@ import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 import java.util.List;
 
-public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData<T> {
+public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData {
     @UIField(order = 1000, onlyEdit = true, advanced = true, type = UIFieldType.Chips)
     @UIFieldGroup("hls_group")
     @RestartHandlerOnChange

@@ -70,7 +70,8 @@ public enum RaspberryGpioPin {
         return Stream.of(RaspberryGpioPin.values())
                 .filter(p ->
                         p.getPin().getSupportedPinModes().contains(pinMode) &&
-                                (pinPullResistance == null || p.getPin().getSupportedPinPullResistance().contains(pinPullResistance)))
+                                (pinPullResistance == null ||
+                                        p.getPin().getSupportedPinPullResistance().contains(pinPullResistance)))
                 .sorted(Comparator.comparingInt(o -> o.address))
                 .collect(Collectors.toList());
     }

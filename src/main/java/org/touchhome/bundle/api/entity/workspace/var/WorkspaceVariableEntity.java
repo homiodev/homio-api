@@ -8,8 +8,10 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.widget.AggregationType;
 import org.touchhome.bundle.api.entity.widget.ChartRequest;
-import org.touchhome.bundle.api.entity.widget.HasAggregateValueFromSeries;
-import org.touchhome.bundle.api.entity.widget.HasSliderSeries;
+import org.touchhome.bundle.api.entity.widget.ability.HasAggregateValueFromSeries;
+import org.touchhome.bundle.api.entity.widget.ability.HasGetStatusValue;
+import org.touchhome.bundle.api.entity.widget.ability.HasSetStatusValue;
+import org.touchhome.bundle.api.ui.field.selection.UIFieldSelectionParent;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -18,8 +20,9 @@ import java.util.function.Consumer;
 @Entity
 @Getter
 @Accessors(chain = true)
-public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> implements HasSliderSeries,
-        HasAggregateValueFromSeries {
+@UIFieldSelectionParent(value = "selection.variable", icon = "fas fa-memory", iconColor = "#CCA61F")
+public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableEntity> implements
+        HasAggregateValueFromSeries, HasGetStatusValue, HasSetStatusValue {
 
     public static final String PREFIX = "wsv_";
 
@@ -52,18 +55,18 @@ public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableE
     }
 
     @Override
-    public float getSliderValue(EntityContext entityContext, JSONObject dynamicParameters) {
-        return getValue();
+    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType, boolean exactNumber) {
+        throw new RuntimeException("Not implemented yet");
     }
 
     @Override
-    public void setSliderValue(float value, EntityContext entityContext, JSONObject dynamicParameters) {
-        setValue(value);
-        entityContext.save(this);
+    public void setStatusValue(SetStatusValueRequest request) {
+        this.value = request.floatValue(0F);
+        request.getEntityContext().save(this);
     }
 
     @Override
-    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType) {
+    public Object getStatusValue(GetStatusValueRequest request) {
         return value;
     }
 
@@ -76,5 +79,20 @@ public final class WorkspaceVariableEntity extends BaseEntity<WorkspaceVariableE
     @Override
     public void afterUpdate(EntityContext entityContext) {
         entityContext.event().fireEvent(getEntityID(), value);
+    }
+
+    @Override
+    public String getGetStatusDescription() {
+        return "Get last value";
+    }
+
+    @Override
+    public String getAggregateValueDescription() {
+        return "Variable series-aggregate value";
+    }
+
+    @Override
+    public String getSetStatusDescription() {
+        return "Set value";
     }
 }

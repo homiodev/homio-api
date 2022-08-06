@@ -6,7 +6,8 @@ import lombok.experimental.Accessors;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.widget.*;
+import org.touchhome.bundle.api.entity.widget.ability.HasGetStatusValue;
+import org.touchhome.bundle.api.entity.widget.ability.HasSetStatusValue;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,8 +18,8 @@ import java.util.function.Consumer;
 @Entity
 @Getter
 @Accessors(chain = true)
-public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> implements HasToggleSeries,
-        HasAggregateValueFromSeries, HasPushButtonSeries {
+public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEntity> implements
+        HasGetStatusValue, HasSetStatusValue {
 
     public static final String PREFIX = "wsbo_";
 
@@ -46,31 +47,6 @@ public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEnt
         return PREFIX;
     }
 
-    public WorkspaceBooleanEntity inverseValue() {
-        this.value = !this.value;
-        return this;
-    }
-
-    @Override
-    public Boolean getToggleValue() {
-        return getValue();
-    }
-
-    @Override
-    public void setToggleValue(boolean value) {
-        setValue(value);
-    }
-
-    @Override
-    public Float getAggregateValueFromSeries(ChartRequest request, AggregationType aggregationType) {
-        return value ? 1F : 0F;
-    }
-
-    @Override
-    public void pushButton(EntityContext entityContext) {
-        inverseValue();
-    }
-
     @Override
     public void addUpdateValueListener(EntityContext entityContext, String key, JSONObject dynamicParameters,
                                        Consumer<Object> listener) {
@@ -80,5 +56,26 @@ public final class WorkspaceBooleanEntity extends BaseEntity<WorkspaceBooleanEnt
     @Override
     public void afterUpdate(EntityContext entityContext) {
         entityContext.event().fireEvent(getEntityID(), value);
+    }
+
+    @Override
+    public String getStatusValue(GetStatusValueRequest request) {
+        return value.toString();
+    }
+
+    @Override
+    public void setStatusValue(SetStatusValueRequest request) {
+        this.value = request.booleanValue(false);
+        request.getEntityContext().save(this);
+    }
+
+    @Override
+    public String getSetStatusDescription() {
+        return "Boolean set value";
+    }
+
+    @Override
+    public String getGetStatusDescription() {
+        return "Boolean get last value";
     }
 }

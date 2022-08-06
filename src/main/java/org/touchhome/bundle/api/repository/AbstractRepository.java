@@ -82,14 +82,16 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
 
     protected List<T> findByFieldRange(String fieldName, Object... values) {
         String inStatement = Stream.of(values).map(Object::toString).collect(Collectors.joining(",", "'", "'"));
-        TypedQuery<T> query = em.createQuery("FROM " + getEntityClass().getSimpleName() + " where " + fieldName + " in (:value)", getEntityClass())
+        TypedQuery<T> query = em.createQuery("FROM " + getEntityClass().getSimpleName() + " where " + fieldName + " in (:value)",
+                        getEntityClass())
                 .setParameter("value", inStatement);
         return query.getResultList();
     }
 
     @Transactional(readOnly = true)
     public Long size() {
-        return em.createQuery("SELECT count(t.id) FROM " + getEntityClass().getSimpleName() + " as t", Long.class).getSingleResult();
+        return em.createQuery("SELECT count(t.id) FROM " + getEntityClass().getSimpleName() + " as t", Long.class)
+                .getSingleResult();
     }
 
     @Transactional(readOnly = true)
@@ -112,7 +114,8 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
                 if (ignoreNotUI && field.getAnnotation(UIField.class) == null) {
                     return;
                 }
-                if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(ManyToMany.class)) {
+                if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(OneToOne.class) ||
+                        field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(ManyToMany.class)) {
                     Object proxy = FieldUtils.readField(field, entity, true);
                     Hibernate.initialize(proxy);
                     if (proxy != null && visitedEntities.add(proxy)) {

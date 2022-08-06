@@ -10,24 +10,15 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldIconPicker {
-    /**
-     * Allow user to select no icon to hide icon at all
-     */
-    boolean allowEmptyIcon() default false;
-
+public @interface UIFieldColorPicker {
     /**
      * Allow user to use threshold functionality for showing different icon depend on 'value'
      */
     boolean allowThreshold() default false;
 
     /**
-     * Add Size selector to icon picker. Works only if allowThreshold is true
+     * Add user ability to specify 'animation' condition to UI.
+     * Color animation is animation blink from black to specified color with 1-2sec timeout
      */
-    boolean allowSize() default true;
-
-    /**
-     * Add Spin selector to icon picker. Works only if allowThreshold is true
-     */
-    boolean allowSpin() default true;
+    boolean animateColorCondition() default false;
 }

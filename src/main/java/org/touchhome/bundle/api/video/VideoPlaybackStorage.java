@@ -13,7 +13,8 @@ import java.util.List;
 public interface VideoPlaybackStorage {
     String getTitle();
 
-    LinkedHashMap<Long, Boolean> getAvailableDaysPlaybacks(EntityContext entityContext, String profile, Date from, Date to) throws Exception;
+    LinkedHashMap<Long, Boolean> getAvailableDaysPlaybacks(EntityContext entityContext, String profile, Date from, Date to)
+            throws Exception;
 
     List<PlaybackFile> getPlaybackFiles(EntityContext entityContext, String profile, Date from, Date to) throws Exception;
 

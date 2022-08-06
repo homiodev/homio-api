@@ -160,20 +160,20 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
                             OptionModel model = OptionModel.of(key, title);
                             boolean isDirectory = Files.isDirectory(path);
                             // 1 - file, 2 - directory, 3 - empty directory
-                            model.getJson().put("translate", false);
+                            model.put("translate", false);
                             if (isDirectory) {
                                 if (Files.list(path).findAny().isPresent()) {
-                                    model.getJson().put("type", 2);
+                                    model.put("type", 2);
                                     model.setIcon("fas fa-folder");
                                     model.setColor("#bdc500");
                                 } else {
-                                    model.getJson().put("type", 3);
+                                    model.put("type", 3);
                                     model.setIcon("fas fa-folder-minus");
                                     model.setColor("#95B8EC");
                                 }
                             } else {
                                 model.setIcon("fas fa-file-alt");
-                                model.getJson().put("type", 1);
+                                model.put("type", 1);
                             }
                             return model;
                         }
@@ -193,8 +193,8 @@ public interface SettingPluginOptionsFileExplorer extends SettingPluginOptionsRe
     static void handleRequestNextPath(Collection<OptionModel> result) {
         for (OptionModel model : result) {
             if (model.getChildren() == null) {
-                if (model.getJson().has("type") && model.getJson().getInt("type") == 2) {
-                    model.getJson().put("requestNext", true);
+                if (model.has("type") && model.getJson().getInt("type") == 2) {
+                    model.put("requestNext", true);
                 }
             } else {
                 SettingPluginOptionsFileExplorer.handleRequestNextPath(model.getChildren());

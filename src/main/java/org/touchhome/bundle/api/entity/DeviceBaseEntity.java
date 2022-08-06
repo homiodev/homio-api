@@ -23,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Accessors(chain = true)
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
-        implements HasPosition<DeviceBaseEntity>, HasJsonData<T>, HasStatusAndMsg<T> {
+        implements HasPosition<DeviceBaseEntity>, HasJsonData, HasStatusAndMsg<T> {
 
     @UIField(readOnly = true, order = 5, hideOnEmpty = true)
     @Getter

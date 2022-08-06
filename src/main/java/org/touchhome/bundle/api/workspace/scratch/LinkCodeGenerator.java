@@ -8,7 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.bundle.api.entity.workspace.WorkspaceShareVariableEntity;
+import org.touchhome.bundle.api.entity.workspace.var.WorkspaceShareVariableEntity;
 import org.touchhome.bundle.api.entity.workspace.bool.WorkspaceBooleanEntity;
 import org.touchhome.bundle.api.entity.workspace.var.WorkspaceVariableEntity;
 import org.touchhome.bundle.api.workspace.WorkspaceEntity;
@@ -24,8 +24,10 @@ class LinkCodeGenerator {
     private final Map<String, Object> menuValues;
     private final Map<String, Scratch3Block.ArgumentTypeDescription> arguments;
 
-    private Pair<String, String> generateShareVariables(String block, EntityContext entityContext, String varGroup, String varName) {
-        WorkspaceShareVariableEntity workspaceShareVariableEntity = entityContext.getEntity(WorkspaceShareVariableEntity.PREFIX + WorkspaceShareVariableEntity.NAME);
+    private Pair<String, String> generateShareVariables(String block, EntityContext entityContext, String varGroup,
+                                                        String varName) {
+        WorkspaceShareVariableEntity workspaceShareVariableEntity =
+                entityContext.getEntity(WorkspaceShareVariableEntity.PREFIX + WorkspaceShareVariableEntity.NAME);
         JSONObject content = new JSONObject(StringUtils.defaultIfEmpty(workspaceShareVariableEntity.getContent(), "{}"));
         if (!content.has(block)) {
             content.put(block, new JSONObject());
@@ -62,11 +64,13 @@ class LinkCodeGenerator {
     }
 
     void generateFloatLink(String varGroup, String varName) {
-        generateLink(varGroup, varName, WorkspaceVariableEntity.class, "group_variables", "group_variables_group", "data_group_variable_link");
+        generateLink(varGroup, varName, WorkspaceVariableEntity.class, "group_variables", "group_variables_group",
+                "data_group_variable_link");
     }
 
     void generateBooleanLink(String varGroup, String varName) {
-        generateLink(varGroup, varName, WorkspaceBooleanEntity.class, "bool_variables", "bool_variables_group", "data_boolean_link");
+        generateLink(varGroup, varName, WorkspaceBooleanEntity.class, "bool_variables", "bool_variables_group",
+                "data_boolean_link");
     }
 
     private void generateLink(String varGroup, String varName, Class<? extends BaseEntity> varClass,

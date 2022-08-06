@@ -52,6 +52,8 @@ public enum UIFieldType {
     StaticDate(Object::toString),
 
     String(Object::toString),
+    // template with prefix and suffix
+    StringTemplate(Object::toString),
     Boolean(o -> {
         if (o instanceof State) {
             return ((State) o).boolValue();
@@ -68,22 +70,7 @@ public enum UIFieldType {
     }),
     // String type
     ColorPicker(Object::toString),
-    // stores as String type with type 'string' or json inside
-    // {color:'#FFFFFF', threshold: [{value:16,op:'>',color:'#DDAAEE'}]}
-    ColorPickerWithThreshold(Object::toString),
     Chips(Object::toString), // https://material.angular.io/components/chips/examples
-    // string with position matrix 3x3. i.e.: label position location, etc...
-    // Available values:
-    // 1x1 - Top Left
-    // 1x2 - Top Center
-    // 1x3 - Top Right
-    // 2x1 - Middle Left
-    // 2x2 - Middle Center
-    // 2x3 - Middle Right
-    // 3x1 - Bottom Left
-    // 3x2 - Bottom Center
-    // 3x3 - Bottom Right
-    Position(Object::toString),
 
     // special type (default for detect field type by java type)
     AutoDetect(Object::toString);

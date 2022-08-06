@@ -133,21 +133,21 @@ public class AudioFormat {
 
     /**
      * Constructs an instance with the specified properties.
-     *
+     * <p>
      * Note that any properties that are null indicate that
      * the corresponding AudioFormat allows any value for
      * the property.
-     *
+     * <p>
      * Concretely this implies that if, for example, one
      * passed null for the value of frequency, this would
      * mean the created AudioFormat allowed for any valid
      * frequency.
      *
      * @param container The container for the audio
-     * @param codec The audio codec
+     * @param codec     The audio codec
      * @param bigEndian If the audo data is big endian
-     * @param bitDepth The bit depth of the audo data
-     * @param bitRate The bit rate of the audio
+     * @param bitDepth  The bit depth of the audo data
+     * @param bitRate   The bit rate of the audio
      * @param frequency The frequency at which the audio was sampled
      */
     public AudioFormat(@Nullable String container, @Nullable String codec, @Nullable Boolean bigEndian,
@@ -193,8 +193,8 @@ public class AudioFormat {
     /**
      * Gets bit depth
      *
-     * @see <a href="http://bit.ly/1OTydad">Bit Depth</a>
      * @return Bit depth
+     * @see <a href="http://bit.ly/1OTydad">Bit Depth</a>
      */
     public @Nullable
     Integer getBitDepth() {
@@ -204,8 +204,8 @@ public class AudioFormat {
     /**
      * Gets bit rate
      *
-     * @see <a href="http://bit.ly/1OTy5rk">Bit Rate</a>
      * @return Bit rate
+     * @see <a href="http://bit.ly/1OTy5rk">Bit Rate</a>
      */
     public @Nullable
     Integer getBitRate() {
@@ -224,7 +224,7 @@ public class AudioFormat {
 
     /**
      * Determines if the passed AudioFormat is compatible with this AudioFormat.
-     *
+     * <p>
      * This AudioFormat is compatible with the passed AudioFormat if both have
      * the same value for all non-null members of this instance.
      */
@@ -256,7 +256,7 @@ public class AudioFormat {
     /**
      * Determines the best match between a list of audio formats supported by a source and a sink.
      *
-     * @param inputs the supported audio formats of an audio source
+     * @param inputs  the supported audio formats of an audio source
      * @param outputs the supported audio formats of an audio sink
      * @return the best matching format or null, if source and sink are incompatible
      */
@@ -284,7 +284,7 @@ public class AudioFormat {
      *
      * @param audioFormats The AudioFormats from which to choose
      * @return The preferred AudioFormat or null if none could be determined. A passed concrete format is preferred
-     *         adding default values to an abstract AudioFormat in the passed set.
+     * adding default values to an abstract AudioFormat in the passed set.
      */
     public static @Nullable AudioFormat getPreferredFormat(Set<AudioFormat> audioFormats) {
         // Return the first concrete AudioFormat found

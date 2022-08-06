@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 import org.touchhome.bundle.api.entity.widget.ChartRequest;
 import org.touchhome.bundle.api.entity.workspace.backup.WorkspaceBackupEntity;
 
+import javax.persistence.Query;
 import java.util.List;
 
 @Repository("backupRepository")
@@ -38,6 +39,10 @@ public class WorkspaceBackupRepository extends AbstractRepository<WorkspaceBacku
         return findExactOneBackupValue("AVG(value)", source, request);
     }
 
+    public float getBackupFirstValue(WorkspaceBackupEntity source, ChartRequest request) {
+        return findExactOneBackupValue("value", source, request, "ORDER BY creationTime ASC");
+    }
+
     public float getBackupCountValue(WorkspaceBackupEntity source, ChartRequest request) {
         return findExactOneBackupValue("COUNT(value)", source, request);
     }
@@ -51,15 +56,21 @@ public class WorkspaceBackupRepository extends AbstractRepository<WorkspaceBacku
         return list.isEmpty() ? 0 : (Float) list.get(0);
     }
 
-    private List<?> queryForValues(String select, WorkspaceBackupEntity entity, ChartRequest request, String sort) {
-        return (List<?>) em.createQuery("SELECT " + select + " FROM WorkspaceBackupValueCrudEntity " +
-                        "where workspaceBackupEntity = :source and creationTime >= :from and creationTime <= :to" + sort)
-                .setParameter("source", entity)
-                .setParameter("from", request.getFrom())
-                .setParameter("to", request.getTo())
-                .getResultList();
+    private List<?> queryForValues(String baseSelect, WorkspaceBackupEntity entity, ChartRequest request, String sort) {
+        String select = "SELECT " + baseSelect + " FROM WorkspaceBackupValueCrudEntity where workspaceBackupEntity = :source";
+        if (request.getFrom() != null) {
+            select += " and creationTime >= :from";
+        }
+        if (request.getTo() != null) {
+            select += " and creationTime <= :to";
+        }
+        Query query = em.createQuery(select + sort).setParameter("source", entity);
+        if (request.getFrom() != null) {
+            query.setParameter("from", request.getFrom());
+        }
+        if (request.getTo() != null) {
+            query.setParameter("to", request.getTo());
+        }
+        return query.getResultList();
     }
 }
-
-
-
