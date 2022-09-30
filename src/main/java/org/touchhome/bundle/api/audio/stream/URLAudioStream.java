@@ -1,11 +1,10 @@
 package org.touchhome.bundle.api.audio.stream;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.touchhome.bundle.api.audio.AudioFormat;
 import org.touchhome.bundle.api.audio.AudioStream;
 
@@ -22,14 +21,13 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Log4j2
 public class URLAudioStream extends AudioStream {
 
     private static final Pattern PLS_STREAM_PATTERN = Pattern.compile("^File[0-9]=(.+)$");
 
     public static final String M3U_EXTENSION = "m3u";
     public static final String PLS_EXTENSION = "pls";
-
-    private final Logger logger = LoggerFactory.getLogger(URLAudioStream.class);
 
     private final AudioFormat audioFormat;
     private final InputStream inputStream;
@@ -104,10 +102,10 @@ public class URLAudioStream extends AudioStream {
                 return connection.getInputStream();
             }
         } catch (MalformedURLException e) {
-            logger.error("URL '{}' is not a valid url: {}", url, e.getMessage(), e);
+            log.error("URL '{}' is not a valid url: {}", url, e.getMessage(), e);
             throw new MalformedURLException("URL not valid");
         } catch (IOException e) {
-            logger.error("Cannot set up stream '{}': {}", url, e.getMessage(), e);
+            log.error("Cannot set up stream '{}': {}", url, e.getMessage(), e);
             throw new IOException("IO Error");
         }
     }

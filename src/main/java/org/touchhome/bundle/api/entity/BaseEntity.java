@@ -8,6 +8,7 @@ import org.hibernate.annotations.NaturalId;
 import org.json.JSONPropertyIgnore;
 import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.inmemory.InMemoryDB;
 import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
@@ -119,6 +120,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         this.validate();
     }
 
+    @PostPersist
+    private void postPersist() {
+        this.afterPersist(ApplicationContextHolder.getBean(EntityContext.class));
+    }
+
     @PostUpdate
     private void postUpdate() {
         this.afterUpdate(ApplicationContextHolder.getBean(EntityContext.class));
@@ -126,8 +132,16 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     @PreRemove
     private void preDelete() {
+        // remove all status for entity
         TouchHomeUtils.STATUS_MAP.remove(getEntityID());
+
+        // remove in-memory data if any exists
+        InMemoryDB.removeService(getEntityID());
+
+        // clear all registered console plugins if any exists
         getEntityContext().unRegisterConsolePlugin(getEntityID());
+
+        // destroy any additional services
         if (this instanceof EntityService) {
             try {
                 ((EntityService<?, ?>) this).destroyService();
@@ -143,7 +157,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     }
 
-    //fires before persist
     protected void beforePersist() {
 
     }
@@ -154,6 +167,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     protected void beforeDelete() {
 
+    }
+
+    protected void afterPersist(EntityContext entityContext) {
     }
 
     /**
@@ -205,6 +221,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         return this.entityID;
     }
 
+    /**
+     * Accumulate list of related entities which has to be refreshed in cache after entity updated
+     */
     public void getAllRelatedEntities(Set<BaseEntity> set) {
     }
 
@@ -220,10 +239,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         updateTime = null;
 
         getEntityContext().getBean(EntityManager.class).detach(this);
-    }
-
-    public void merge(T entity) {
-        this.name = entity.getName();
     }
 
     @JsonIgnore

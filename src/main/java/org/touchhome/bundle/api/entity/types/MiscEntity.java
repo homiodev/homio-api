@@ -1,7 +1,8 @@
 package org.touchhome.bundle.api.entity.types;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.touchhome.bundle.api.entity.DeviceBaseEntity;
-import org.touchhome.bundle.api.entity.PlaceEntity;
+import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
 
@@ -15,7 +16,8 @@ import javax.persistence.InheritanceType;
 public abstract class MiscEntity<T extends MiscEntity> extends DeviceBaseEntity<T> {
     @Override
     @UIFieldIgnore
-    public PlaceEntity getOwnerPlace() {
-        return super.getOwnerPlace();
+    @JsonIgnore
+    public String getPlace() {
+        throw new ProhibitedExecution();
     }
 }

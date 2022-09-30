@@ -2,26 +2,12 @@ package org.touchhome.bundle.api.inmemory;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
+import com.mongodb.client.*;
+import com.mongodb.client.model.*;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
-import dev.morphia.Datastore;
-import dev.morphia.DeleteOptions;
-import dev.morphia.Morphia;
-import dev.morphia.aggregation.experimental.Aggregation;
-import dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions;
-import dev.morphia.aggregation.experimental.stages.Group;
-import dev.morphia.aggregation.experimental.stages.Projection;
-import dev.morphia.aggregation.experimental.stages.Sort;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.MorphiaCursor;
-import dev.morphia.query.Query;
-import dev.morphia.query.Type;
-import dev.morphia.query.experimental.filters.Filter;
-import dev.morphia.query.experimental.filters.Filters;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
+import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -36,26 +22,23 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-import static dev.morphia.aggregation.experimental.expressions.AccumulatorExpressions.addToSet;
-import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
-import static dev.morphia.aggregation.experimental.stages.Group.group;
-import static dev.morphia.aggregation.experimental.stages.Group.id;
-import static dev.morphia.query.Sort.ascending;
-import static dev.morphia.query.Sort.descending;
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import static com.mongodb.client.model.Sorts.ascending;
+import static com.mongodb.client.model.Sorts.descending;
+import static org.bson.codecs.configuration.CodecRegistries.*;
 
 public final class InMemoryDB {
     private static final String DATABASE = "db";
-    public static final String UPDATED = "updated";
-    private static final Map<Class<?>, InMemoryDBData<?>> map = new HashMap<>();
-
-    private static final Datastore datastore;
+    public static final String ID = "_id";
+    private static final Map<String, InMemoryDBData<?>> map = new HashMap<>();
 
     private static final MongoServer server;
 
     private static final MongoClient client;
+
+    private static final MongoDatabase datastore;
 
     static {
         server = new MongoServer(new MemoryBackend());
@@ -63,12 +46,14 @@ public final class InMemoryDB {
         // bind on a random local port
         InetSocketAddress serverAddress = server.bind();
 
-        CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
-        CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
+        CodecRegistry pojoProvidersRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
+        CodecRegistry pojoCodecRegistry = fromCodecs(new ObjectCodec());
+        CodecRegistry codecRegistry =
+                fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoProvidersRegistry, pojoCodecRegistry);
 
         client = MongoClients.create(MongoClientSettings.builder().codecRegistry(codecRegistry).applyToClusterSettings(
                 builder -> builder.hosts(Collections.singletonList(new ServerAddress(serverAddress)))).build());
-        datastore = Morphia.createDatastore(client, DATABASE);
+        datastore = client.getDatabase(DATABASE);
         /*Mapper mapper = new Mapper(datastore, datastore.getDatabase().getCodecRegistry(), MapperOptions.DEFAULT) {
             @Override
             public <T> boolean isMappable(Class<T> type) {
@@ -89,28 +74,38 @@ public final class InMemoryDB {
         });
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T extends InMemoryDBEntity> InMemoryDBService<T> getService(@NotNull Class<T> pojoClass,
-                                                                               @Nullable Long quota) {
-        return (InMemoryDBService<T>) map.computeIfAbsent(pojoClass, aClass -> {
-            String collectionName = pojoClass.getSimpleName();
-            EntityBuilder entityBuilder = new EntityBuilder().useCollection(collectionName);
-            datastore.getMapper().mapExternal(entityBuilder, pojoClass);
+    public static <T extends InMemoryDBEntity> InMemoryDBService<T> getOrCreateService(
+            @NotNull Class<T> pojoClass, @Nullable Long quota) {
+        return InMemoryDB.getOrCreateService(pojoClass, pojoClass.getSimpleName(), quota);
+    }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends InMemoryDBEntity> InMemoryDBService<T> getOrCreateService(@NotNull Class<T> pojoClass,
+                                                                                       @NotNull String uniqueId,
+                                                                                       @Nullable Long quota) {
+        return (InMemoryDBService<T>) map.computeIfAbsent(uniqueId, aClass -> {
+            String collectionName = pojoClass.getSimpleName() + uniqueId;
             // create timestamp index
-            /*MongoCollection<T> collection = datastore.getMapper().getCollection(pojoClass);
-            org.bson.Document keys = new org.bson.Document();
-            keys.putAll(new org.bson.Document("created", IndexType.ASC.toString()));
-            IndexOptions indexOptions = new IndexOptions();
-            collection.createIndex(keys, indexOptions);*/
-            datastore.ensureIndexes(pojoClass);
+            MongoCollection<T> collection = datastore.getCollection(collectionName, pojoClass);
+//          collection.createIndex(Indexes.ascending(ID));
+//          collection.createIndex(Indexes.ascending("topic"));
 
             // delta is 10% of quota but not more than 1000
-            InMemoryDBData<T> data =
-                    new InMemoryDBData<>(pojoClass, collectionName, client.getDatabase("db").getCollection(collectionName));
+            InMemoryDBData<T> data = new InMemoryDBData<>(pojoClass, collectionName, collection);
             data.updateQuota(quota);
             return data;
         });
+    }
+
+    /**
+     * Remove service from map and clean all data
+     */
+    public static <T extends InMemoryDBEntity> InMemoryDBService<T> removeService(String uniqueId) {
+        InMemoryDBService<T> service = (InMemoryDBService<T>) map.remove(uniqueId);
+        if (service != null) {
+            service.deleteAll();
+        }
+        return service;
     }
 
     @RequiredArgsConstructor
@@ -118,7 +113,7 @@ public final class InMemoryDB {
 
         private final Class<T> pojoClass;
         private final String collectionName;
-        private final MongoCollection<Document> mongoClient;
+        private final MongoCollection<T> collection;
         private final AtomicLong estimateUsed = new AtomicLong(0);
         private Long quota;
         private int delta;
@@ -126,11 +121,9 @@ public final class InMemoryDB {
 
         @Override
         public T save(T entity) {
-            entity.updated = System.currentTimeMillis();
-
-            T saved = datastore.save(entity);
+            collection.insertOne(entity);
             for (Consumer<T> listener : saveListeners.values()) {
-                listener.accept(saved);
+                listener.accept(entity);
             }
             if (quota != null) {
                 estimateUsed.incrementAndGet();
@@ -140,102 +133,70 @@ public final class InMemoryDB {
                         estimateUsed.set(count()); // calc precise amount of saved documents
 
                         if (estimateUsed.get() > quota) {
-
-                            List<String> itemsToRemove;
-                            // aggregate is faster than .stream()...
-                            try (MorphiaCursor<HashMap> execute = datastore.aggregate(pojoClass)
-                                    .sort(Sort.sort().ascending(UPDATED))
-                                    .limit(delta)
-                                    .project(Projection.project().include("_id"))
-                                    .group(Group.group().field("ids", addToSet(field("_id"))))
-                                    .execute(HashMap.class)) {
-                                //noinspection unchecked
-                                itemsToRemove = (List<String>) execute.next().get("ids");
+                            List<Long> itemsToRemove;
+                            try (MongoCursor<Document> cursor = collection.aggregate(Arrays.asList(
+                                    Aggregates.sort(ascending(ID)),
+                                    Aggregates.limit(delta),
+                                    Aggregates.project(Projections.include("_id")),
+                                    Aggregates.group("ids", Accumulators.addToSet("ids", "$_id"))
+                            ), Document.class).cursor()) {
+                                itemsToRemove = (List<Long>) cursor.next().get("ids", List.class);
                             }
-
-                            updateUsed(-getQuery().filter(Filters.in("_id", itemsToRemove))
-                                    .delete(new DeleteOptions().multi(true)).getDeletedCount());
+                            updateUsed(-collection.deleteMany(Filters.in("_id", itemsToRemove)).getDeletedCount());
                         }
                     }
                 }
             }
-            return saved;
+            return entity;
         }
 
         @Override
         public long count(Long from, Long to) {
-            Query<T> query = getQuery();
             if (from != null || to != null) {
-                query.filter(buildCreatedFilter(from, to));
+                return collection.countDocuments(buildCreatedFilter(from, to));
             }
-            return query.count();
+            return collection.countDocuments();
         }
 
         @Override
-        public long delete(@NotNull T entity) {
-            return -updateUsed(-datastore.delete(entity).getDeletedCount());
-        }
-
-        @Override
-        public long deleteBy(@NotNull String field, @NotNull String value) {
-            return -updateUsed(
-                    -getQuery().filter(Filters.eq(field, value)).delete(new DeleteOptions().multi(true)).getDeletedCount());
-        }
-
-        @Override
-        public long deleteByPattern(@NotNull String field, @NotNull String pattern) {
-            return -updateUsed(-getQuery().
-                    filter(Filters.eq(field, Pattern.compile(pattern)))
-                    .delete(new DeleteOptions().multi(true)).getDeletedCount());
+        public long deleteBy(@NotNull String field, @NotNull Object value) {
+            return -updateUsed(-collection.deleteMany(Filters.eq(field, value)).getDeletedCount());
         }
 
         @Override
         public long deleteAll() {
-            return -updateUsed(-getQuery().delete(new DeleteOptions().multi(true)).getDeletedCount());
+            return -updateUsed(-collection.deleteMany(new Document()).getDeletedCount());
         }
 
         @Override
         public List<T> findAllBy(@NotNull String field, @NotNull String value,
                                  @Nullable SortBy sort, @Nullable Integer limit) {
-            try (MorphiaCursor<T> iterator = withSort(getQuery().filter(Filters.eq(field, value)), sort, limit)) {
-                return iterator.toList();
-            }
+            return queryListWithSort(Filters.eq(field, value), sort, limit);
         }
 
         @Override
         public T findLatestBy(@NotNull String field, @NotNull String value) {
-            try (MorphiaCursor<T> iterator = withSort(getQuery().filter(Filters.eq(field, value)),
-                    SortBy.sortDesc(UPDATED), 1)) {
-                return iterator.tryNext();
+            try (MongoCursor<T> cursor = queryWithSort(Filters.eq(field, value), SortBy.sortDesc(ID), 1)) {
+                return cursor.tryNext();
             }
         }
 
         @Override
         public T getLatest() {
-            try (MorphiaCursor<T> iterator = withSort(getQuery(), SortBy.sortDesc(UPDATED), 1)) {
-                return iterator.tryNext();
+            try (MongoCursor<T> cursor = queryWithSort(new Document(), SortBy.sortDesc(ID), 1)) {
+                return cursor.tryNext();
             }
         }
 
         @Override
         public List<T> findAll(@Nullable SortBy sort, Integer limit) {
-            try (MorphiaCursor<T> iterator = withSort(getQuery(), sort, limit)) {
-                return iterator.toList();
-            }
+            return queryListWithSort(new Document(), sort, limit);
         }
 
         @Override
         public List<T> findByPattern(@NotNull String field, @NotNull String pattern,
                                      @Nullable SortBy sort, @Nullable Integer limit) {
-            try (MorphiaCursor<T> iterator = withSort(getQuery().filter(Filters.eq(field, Pattern.compile(pattern))), sort,
-                    limit)) {
-                return iterator.toList();
-            }
-        }
-
-        @Override
-        public Query<T> find(@NotNull T entity) {
-            return getQuery();
+            return queryListWithSort(Filters.eq(field, Pattern.compile(pattern)), sort, limit);
         }
 
         @Override
@@ -266,21 +227,23 @@ public final class InMemoryDB {
         @Override
         public List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field,
                                             @Nullable String value, @NotNull String aggregateField) {
-            List<Object[]> list;
-            List<Filter> filters = buildAggregateFilter(from, to, field, value, false, aggregateField);
+            List<Bson> filterList = buildBsonFilter(from, to, field, value);
 
-            try (MorphiaCursor<Map> cursor = datastore.aggregate(pojoClass)
-                    .match(Filters.and(filters.toArray(Filter[]::new)))
-                    .project(Projection.project().include(UPDATED).include(aggregateField))
-                    .execute(Map.class)) {
-
-                list = new ArrayList<>();
-                while (cursor.hasNext()) {
-                    Map document = cursor.next();
-                    list.add(new Object[]{document.get(UPDATED), toNumber(document.get(aggregateField)).floatValue()});
-                }
+            try (MongoCursor<Document> cursor = collection.aggregate(Arrays.asList(
+                    Aggregates.match(joinFilters(filterList)),
+                    Aggregates.sort(ascending(ID)),
+                    Aggregates.project(Projections.include(ID, aggregateField))), Document.class).cursor()) {
+                return StreamSupport.stream(Spliterators.spliteratorUnknownSize(cursor, 0), false)
+                        .map(doc -> new Object[]{doc.get(ID), toNumber(doc.get(aggregateField)).floatValue()})
+                        .collect(Collectors.toList());
             }
-            return list;
+        }
+
+        private List<T> queryListWithSort(Bson filter, SortBy sort, Integer limit) {
+            try (MongoCursor<T> cursor = queryWithSort(filter, sort, limit)) {
+                return StreamSupport.stream(Spliterators.spliteratorUnknownSize(cursor, 0), false)
+                        .collect(Collectors.toList());
+            }
         }
 
         private Number toNumber(Object value) {
@@ -302,45 +265,65 @@ public final class InMemoryDB {
         public Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
                                 @NotNull AggregationType aggregationType, boolean filterOnlyNumbers,
                                 @NotNull String aggregateField) {
-            Bson bsonFilter = buildBsonFilter(from, to, field, value);
+            List<Bson> filterList = buildBsonFilter(from, to, field, value);
+            Bson bsonFilter = joinFilters(filterList);
             switch (aggregationType) {
                 case First:
-                    return aggregateMinimal(aggregateField, bsonFilter, SortBy.sortAsc(UPDATED));
+                    return aggregateMinimal(aggregateField, bsonFilter, SortBy.sortAsc(ID));
                 case Last:
-                    return aggregateMinimal(aggregateField, bsonFilter, SortBy.sortDesc(UPDATED));
+                    return aggregateMinimal(aggregateField, bsonFilter, SortBy.sortDesc(ID));
                 case Min:
                     return aggregateMinimal(aggregateField, bsonFilter, SortBy.sortAsc(aggregateField));
                 case Max:
                     return aggregateMinimal(aggregateField, bsonFilter, SortBy.sortDesc(aggregateField));
                 case Count:
-                    return mongoClient.countDocuments(bsonFilter);
+                    return collection.countDocuments(bsonFilter);
             }
 
-            List<Filter> filters = buildAggregateFilter(from, to, field, value, filterOnlyNumbers, aggregateField);
-            Aggregation<T> aggregation = datastore.aggregate(pojoClass).match(Filters.and(filters.toArray(Filter[]::new)));
+            if (filterOnlyNumbers) {
+                filterList.add(Filters.or(
+                        Filters.type(aggregateField, BsonType.DOUBLE),
+                        Filters.type(aggregateField, BsonType.INT64),
+                        Filters.type(aggregateField, BsonType.INT32)
+                ));
+            }
+
+            List<Bson> pipeline = new ArrayList<>();
+            bsonFilter = joinFilters(filterList);
+            if (!filterList.isEmpty()) {
+                pipeline.add(Aggregates.match(joinFilters(filterList)));
+            }
+
             switch (aggregationType) {
                 case Average:
-                    aggregation.group(group(id()).field(aggregateField, AccumulatorExpressions.avg(field(aggregateField))));
+                    pipeline.add(Aggregates.group("_id", Accumulators.avg(aggregateField, "$" + aggregateField)));
                     break;
                 case Sum:
-                    aggregation.group(group(id()).field(aggregateField, AccumulatorExpressions.sum(field(aggregateField))));
+                    pipeline.add(Aggregates.group("_id", Accumulators.sum(aggregateField, "$" + aggregateField)));
                     break;
                 case Median:
-                    long count = mongoClient.countDocuments(bsonFilter);
-                    aggregation.sort(Sort.sort().ascending(aggregateField));
+                    long count = collection.countDocuments(bsonFilter);
+                    pipeline.add(Aggregates.sort(ascending(aggregateField)));
                     if (count % 2 == 0) {
-                        aggregation.skip(count / 2 - 1).limit(2).group(group(id())
-                                .field(aggregateField, AccumulatorExpressions.avg(field(aggregateField))));
+                        pipeline.add(Aggregates.skip((int) (count / 2 - 1)));
+                        pipeline.add(Aggregates.limit(2));
+                        pipeline.add(Aggregates.group("_id", Accumulators.avg(aggregateField, "$" + aggregateField)));
                     } else {
-                        aggregation.skip(count / 2).limit(1);
+                        pipeline.add(Aggregates.skip((int) (count / 2)));
+                        pipeline.add(Aggregates.limit(1));
                     }
                     break;
             }
 
-            try (MorphiaCursor<Map> cursor = aggregation.execute(Map.class)) {
-                Map<?, ?> document = cursor.tryNext();
+            try (MongoCursor<Document> cursor = collection.aggregate(pipeline, Document.class).cursor()) {
+                Document document = cursor.tryNext();
                 return document == null ? null : document.get(aggregateField);
             }
+        }
+
+        private Bson joinFilters(List<Bson> filterList) {
+            return filterList.isEmpty() ? new Document() :
+                    filterList.size() == 1 ? filterList.iterator().next() : Filters.and(filterList);
         }
 
         @Override
@@ -349,55 +332,30 @@ public final class InMemoryDB {
             return this;
         }
 
-        private Query<T> getQuery() {
-            return datastore.find(collectionName, pojoClass);
-        }
-
-        private Filter buildCreatedFilter(Long from, Long to) {
-            Filter filter = null;
+        private Bson buildCreatedFilter(Long from, Long to) {
+            Bson filter = null;
             if (from != null && to != null) {
                 filter = Filters.and(
-                        Filters.gte(UPDATED, from),
-                        Filters.lte(UPDATED, to));
+                        Filters.gte(ID, from),
+                        Filters.lte(ID, to));
             } else if (from != null) {
-                filter = Filters.gte(UPDATED, from);
+                filter = Filters.gte(ID, from);
             } else if (to != null) {
-                filter = Filters.lte(UPDATED, to);
+                filter = Filters.lte(ID, to);
             }
             return filter;
         }
 
-        private Bson buildBsonFilter(Long from, Long to, String field, String value) {
-            List<Bson> filter = new ArrayList<>();
+        private List<Bson> buildBsonFilter(Long from, Long to, String field, String value) {
+            List<Bson> filters = new ArrayList<>();
             if (from != null) {
-                filter.add(com.mongodb.client.model.Filters.gte(UPDATED, from));
+                filters.add(com.mongodb.client.model.Filters.gte(ID, from));
             }
             if (to != null) {
-                filter.add(com.mongodb.client.model.Filters.lte(UPDATED, to));
+                filters.add(com.mongodb.client.model.Filters.lte(ID, to));
             }
             if (field != null && value != null) {
-                filter.add(com.mongodb.client.model.Filters.eq(field, value));
-            }
-            return com.mongodb.client.model.Filters.and(filter);
-        }
-
-        private List<Filter> buildAggregateFilter(@Nullable Long from, @Nullable Long to, @Nullable String field,
-                                                  @Nullable String value, boolean filterOnlyNumbers, String aggregateField) {
-            List<Filter> filters = new ArrayList<>();
-            if (filterOnlyNumbers) {
-                filters.add(Filters.or(
-                        new TypeFilter(aggregateField, Type.INTEGER_32_BIT),
-                        new TypeFilter(aggregateField, Type.INTEGER_64_BIT),
-                        new TypeFilter(aggregateField, Type.DOUBLE)));
-            }
-            if (from != null) {
-                filters.add(Filters.gte(UPDATED, from));
-            }
-            if (to != null) {
-                filters.add(Filters.lte(UPDATED, to));
-            }
-            if (field != null && value != null) {
-                filters.add(Filters.eq(field, value));
+                filters.add(com.mongodb.client.model.Filters.eq(field, value));
             }
             return filters;
         }
@@ -407,40 +365,47 @@ public final class InMemoryDB {
             return changed;
         }
 
-        private <S> MorphiaCursor<S> withSort(Query<S> query, SortBy sort, Integer limit) {
+        private MongoCursor<T> queryWithSort(Bson query, SortBy sort, Integer limit) {
+            FindIterable<T> ts = collection.find(query);
             if (sort != null) {
-                FindOptions findOptions = new FindOptions().sort(sort.isAsc() ? ascending(sort.getOrderField()) :
-                        descending(sort.getOrderField()));
+                ts.sort(sort.isAsc() ? ascending(sort.getOrderField()) : descending(sort.getOrderField()));
                 if (limit != null) {
-                    findOptions.limit(limit);
+                    ts.limit(limit);
                 }
-                return query.iterator(findOptions);
             }
-            return query.iterator();
+            return ts.cursor();
         }
 
         private Object aggregateMinimal(@NotNull String aggregateField, Bson filter, SortBy sort) {
-            Document document = mongoClient.find(filter).sort(sort.toBson()).limit(1).first();
+            Document document = collection.find(filter, Document.class).sort(sort.toBson()).limit(1).first();
             return document == null ? null : document.get(aggregateField);
         }
     }
 
-    /*public static void main(String args[]) {
-        long start = System.currentTimeMillis();
-        InMemoryDBService<Test> service = InMemoryDB.getService(Test.class, 10000L);
-        for (int i = 0; i < 1_000_00; i++) {
-            service.save(new Test("$SYS/data_" + i, 12));
+    /*public static void main(String[] args) throws InterruptedException {
+        long start0 = System.currentTimeMillis();
+        InMemoryDBService<Test> service = InMemoryDB.getOrCreateService(Test.class, 10000L);
+        for (int i = 0; i < 10000; i++) {
+            service.save(new Test("$SYS/data_" + i % 2, i));
+            Thread.sleep(1);
         }
 
-        System.out.println((System.currentTimeMillis() - start) / 1000);
+        long start = System.currentTimeMillis();
+        service.getTimeSeries(1111110L, null, "topic", "$SYS/data_1");
+
+        System.out.println((System.currentTimeMillis() - start));
+        System.out.println((System.currentTimeMillis() - start0));
     }
 
     @Getter
+    @Setter
+    @ToString(callSuper = true)
+    @NoArgsConstructor
     public static class Test extends InMemoryDBEntity {
         private String topic;
 
         public Test(String topic, Object value) {
-            super(Integer.toString(topic.hashCode()), value);
+            super(value);
             this.topic = topic;
         }
     }*/

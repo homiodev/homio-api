@@ -3,7 +3,6 @@ package org.touchhome.bundle.api.repository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.Hibernate;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.ui.field.UIField;
@@ -132,7 +131,7 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public T deleteByEntityID(String entityID) {
         T entity = getByEntityID(entityID);
         if (entity != null) {

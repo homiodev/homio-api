@@ -11,9 +11,56 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSelectionParent {
+    /**
+     * Parent's name
+     */
     String value();
 
+    /**
+     * Description. shows on ui at bottom-right place
+     */
+    String description() default "";
+
+    /**
+     * Specify parent's icon
+     */
     String icon() default "";
 
+    /**
+     * Specify parent's icon color
+     */
     String iconColor() default "";
+
+    /**
+     * In case if we want to configure parent dynamically. If entity/bean configured by anotation @UIFieldSelectionParent and
+     * implement SelectionParent interface that it's merge both. interface SelectionParent overrides annotated values if values
+     * not null
+     */
+    interface SelectionParent {
+        /**
+         * Parent's name
+         */
+        String getParentName();
+
+        /**
+         * Description. shows on ui at bottom-right place
+         */
+        default String getParentDescription() {
+            return "";
+        }
+
+        /**
+         * Specify parent's icon
+         */
+        default String getParentIcon() {
+            return "";
+        }
+
+        /**
+         * Specify parent's icon color
+         */
+        default String getParentIconColor() {
+            return "";
+        }
+    }
 }

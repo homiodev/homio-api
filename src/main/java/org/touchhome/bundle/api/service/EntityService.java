@@ -16,6 +16,9 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
+/**
+ * Configure service for entites. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
+ */
 public interface EntityService<S, T extends HasEntityIdentifier> extends HasStatusAndMsg<T> {
     ReentrantLock serviceAccessLock = new ReentrantLock();
 

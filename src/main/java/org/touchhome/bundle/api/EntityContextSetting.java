@@ -12,6 +12,11 @@ import java.util.function.Consumer;
 public interface EntityContextSetting {
 
     /**
+     * Get unmodifiable list of all available places. Configured via settings
+     */
+    List<String> getPlaces();
+
+    /**
      * Update setting components on ui
      */
     void reloadSettings(Class<? extends SettingPluginOptions> settingPlugin);

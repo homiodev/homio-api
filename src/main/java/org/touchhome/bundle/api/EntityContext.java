@@ -49,6 +49,8 @@ public interface EntityContext {
 
     EntityContextSetting setting();
 
+    EntityContextVar var();
+
     default <T extends BaseEntity> T getEntity(@NotNull String entityID) {
         return getEntity(entityID, true);
     }

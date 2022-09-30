@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.widget.ChartRequest;
+import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
 import java.util.Collections;
@@ -40,7 +41,7 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
     }
 
     default @NotNull List<Object[]> getTimeValueSeries(@NotNull ChartRequest request) {
-        throw new IllegalStateException("Must override");
+        throw new ProhibitedExecution();
     }
 
     @Getter

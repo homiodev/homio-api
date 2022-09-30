@@ -1,12 +1,12 @@
 package org.touchhome.bundle.api.inmemory;
 
-import dev.morphia.query.Query;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.widget.AggregationType;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
@@ -18,11 +18,15 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
     long count(@Nullable Long from, @Nullable Long to);
 
-    long delete(@NotNull T entity);
+    default long delete(@NotNull T entity) {
+        return deleteBy("_id", entity.getId());
+    }
 
-    long deleteBy(@NotNull String field, @NotNull String value);
+    long deleteBy(@NotNull String field, @NotNull Object value);
 
-    long deleteByPattern(@NotNull String field, @NotNull String prefix);
+    default long deleteByPattern(@NotNull String field, @NotNull String prefix) {
+        return deleteBy(field, Pattern.compile(prefix));
+    }
 
     long deleteAll();
 
@@ -48,8 +52,6 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
         return findByPattern(field, value, null, null);
     }
 
-    Query<T> find(@NotNull T entity);
-
     Long getQuota();
 
     default List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to) {
@@ -68,8 +70,8 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
                                  @NotNull String aggregateField);
 
     default Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                     @NotNull AggregationType aggregationType, boolean filterOnlyNumbers) {
-        return aggregate(from,to,field,value,aggregationType,filterOnlyNumbers, "value");
+                             @NotNull AggregationType aggregationType, boolean filterOnlyNumbers) {
+        return aggregate(from, to, field, value, aggregationType, filterOnlyNumbers, "value");
     }
 
     Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,

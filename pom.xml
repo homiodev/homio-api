@@ -78,8 +78,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>dev.morphia.morphia</groupId>
-            <artifactId>morphia-core</artifactId>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

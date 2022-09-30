@@ -15,7 +15,6 @@ import org.touchhome.bundle.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.touchhome.bundle.api.ui.field.selection.UIFieldSelection;
 
 import javax.persistence.*;
-import java.util.Set;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -31,11 +30,10 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
 
     @Setter
     @Getter
-    @ManyToOne(fetch = FetchType.LAZY)
     @UIField(order = 50, type = UIFieldType.SelectBox)
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994")
-    private PlaceEntity ownerPlace;
+    private String place;
 
     @Lob
     @Getter
@@ -58,11 +56,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Getter
     @Setter
     private int bh = 1;
-
-    @Override
-    public void getAllRelatedEntities(Set<BaseEntity> set) {
-        set.add(ownerPlace);
-    }
 
     /**
      * Define order in which entity will be shown on UI map

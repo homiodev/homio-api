@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.video;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -7,7 +8,7 @@ import org.json.JSONObject;
 import org.springframework.data.util.Pair;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.DeviceBaseEntity;
-import org.touchhome.bundle.api.entity.PlaceEntity;
+import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.service.scan.BaseBeansItemsDiscovery;
 import org.touchhome.bundle.api.service.scan.VideoStreamScanner;
@@ -48,9 +49,10 @@ public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> ext
     }
 
     @Override
+    @JsonIgnore
     @UIFieldIgnore
-    public PlaceEntity getOwnerPlace() {
-        return super.getOwnerPlace();
+    public String getPlace() {
+        throw new ProhibitedExecution();
     }
 
     public abstract byte[] getLastSnapshot();

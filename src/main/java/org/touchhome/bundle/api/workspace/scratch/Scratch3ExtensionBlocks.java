@@ -5,15 +5,12 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.json.JSONObject;
 import org.touchhome.bundle.api.BundleEntryPoint;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.entity.BaseEntity;
 
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.*;
-import java.util.function.Consumer;
 
 @Getter
 public abstract class Scratch3ExtensionBlocks {
@@ -64,25 +61,6 @@ public abstract class Scratch3ExtensionBlocks {
      */
     public Scratch3ExtensionBlocks(String id, EntityContext entityContext) {
         this(null, entityContext, null, id);
-    }
-
-    public static void sendWorkspaceBooleanValueChangeValue(EntityContext entityContext, BaseEntity baseEntity, boolean value) {
-        sendWorkspaceChangeValue(entityContext, baseEntity, "WorkspaceBooleanValue", node -> node.put("value", value));
-    }
-
-    public static void sendWorkspaceValueChangeValue(EntityContext entityContext, BaseEntity baseEntity, float value) {
-        sendWorkspaceChangeValue(entityContext, baseEntity, "WorkspaceValue", node -> node.put("value", value));
-    }
-
-    public static void sendWorkspaceBackupValueChangeValue(EntityContext entityContext, BaseEntity baseEntity, float value) {
-        sendWorkspaceChangeValue(entityContext, baseEntity, "WorkspaceBackupValue", node -> node.put("value", value));
-    }
-
-    private static void sendWorkspaceChangeValue(EntityContext entityContext, BaseEntity baseEntity, String type,
-                                                 Consumer<JSONObject> fn) {
-        JSONObject node = new JSONObject().put("block", baseEntity.getEntityID()).put("type", type);
-        fn.accept(node);
-        entityContext.ui().sendNotification("-workspace-value", node);
     }
 
     private URL getImage(BundleEntryPoint bundleEntryPoint) {

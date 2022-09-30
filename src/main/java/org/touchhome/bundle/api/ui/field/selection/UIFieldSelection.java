@@ -35,4 +35,14 @@ public @interface UIFieldSelection {
     boolean lazyLoading() default false;
 
     String parentChildJoiner() default "/";
+
+    /**
+     * Interface to configure selection for IU
+     */
+    interface SelectionConfiguration {
+
+        String selectionIcon();
+
+        String selectionIconColor();
+    }
 }

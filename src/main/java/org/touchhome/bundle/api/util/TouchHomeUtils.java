@@ -85,8 +85,7 @@ public class TouchHomeUtils {
                 }
             }
             if (confFile == null) {
-                confFile = new ConfFile().setRunCount(0)
-                        .setUuid(Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes()));
+                confFile = new ConfFile().setRunCount(0).setUuid(CommonUtils.generateUUID());
             }
             confFile.setRunCount(confFile.getRunCount() + 1);
             CommonUtils.OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
