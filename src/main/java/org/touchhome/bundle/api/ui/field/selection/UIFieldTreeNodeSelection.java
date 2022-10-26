@@ -10,7 +10,10 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldFileSelection {
+public @interface UIFieldTreeNodeSelection {
+
+    String LOCAL_FS = "LOCAL_FS";
+
     boolean allowInputRawText() default true;
 
     /**
@@ -19,8 +22,6 @@ public @interface UIFieldFileSelection {
     String rootPath() default "";
 
     boolean allowMultiSelect() default false;
-
-    boolean showAllFileSystems() default true;
 
     boolean allowSelectDirs() default false;
 
@@ -31,4 +32,9 @@ public @interface UIFieldFileSelection {
     String icon() default "fas fa-folder-open";
 
     String iconColor() default "";
+
+    /**
+     * Specify file systems ids. All available if not specified
+     */
+    String[] fileSystemIds() default {UIFieldTreeNodeSelection.LOCAL_FS};
 }

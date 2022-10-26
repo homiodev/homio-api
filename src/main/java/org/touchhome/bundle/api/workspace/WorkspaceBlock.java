@@ -11,6 +11,7 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.state.RawType;
+import org.touchhome.bundle.api.state.State;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 import org.touchhome.common.util.Curl;
 import org.touchhome.common.util.SpringUtils;
@@ -104,9 +105,9 @@ public interface WorkspaceBlock {
 
     boolean hasField(String fieldName);
 
-    void setValue(String key, Object value);
+    void setValue(String key, State value);
 
-    default void setValue(Object value) {
+    default void setValue(State value) {
         setValue("value", value);
     }
 
@@ -127,9 +128,8 @@ public interface WorkspaceBlock {
 
     @SneakyThrows
     default void handleChildOptional(ThrowingConsumer<WorkspaceBlock, Exception> childConsumer) {
-        WorkspaceBlock child = getChild();
-        if (child != null) {
-            childConsumer.accept(child);
+        if (hasChild()) {
+            childConsumer.accept(getChild());
         }
     }
 
@@ -177,7 +177,7 @@ public interface WorkspaceBlock {
         }
     }
 
-    Object evaluate();
+    State evaluate();
 
     default Integer getInputInteger(String key) {
         return getInputInteger(key, 0);
@@ -289,7 +289,7 @@ public interface WorkspaceBlock {
 
     String getInputString(String key, String defaultValue);
 
-    Object getValue(String key);
+    State getValue(String key);
 
     default JSONObject getInputJSON(String key) {
         return getInputJSON(key, null);
@@ -331,8 +331,6 @@ public interface WorkspaceBlock {
 
     String getDescription();
 
-    void setStateHandler(Consumer<String> stateHandler);
-
     void setState(String state);
 
     boolean isDestroyed();
@@ -350,11 +348,10 @@ public interface WorkspaceBlock {
     }
 
     default WorkspaceBlock getChildOrThrow() {
-        WorkspaceBlock child = getChild();
-        if (child == null) {
+        if (!hasChild()) {
             logErrorAndThrow("No child block found");
         }
-        return child;
+        return getChild();
     }
 
     default RawType getInputRawType(String key) {

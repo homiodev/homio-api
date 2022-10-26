@@ -36,7 +36,6 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     private final MenuBlock.StaticMenuBlock<Unit> unitMenu;
     private final MenuBlock.StaticMenuBlock<CountNodeEnum> countMenu;
 
-    private final Scratch3Block sendFile;
     private final Scratch3Block modifyFile;
 
     private final Scratch3Block getFileContent;
@@ -45,7 +44,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     private final Scratch3Block getTotalQuota;
     private final Scratch3Block count;
 
-    public Scratch3BaseFileSystemExtensionBlocks(String name, String color, EntityContext entityContext, T bundleEntryPoint,
+    public Scratch3BaseFileSystemExtensionBlocks(String color, EntityContext entityContext, T bundleEntryPoint,
                                                  Class<E> entityClass) {
         super(color, entityContext, bundleEntryPoint, "storage");
         setParent("storage");
@@ -54,20 +53,13 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         // menu
         this.fsEntityMenu = MenuBlock.ofServerItems(ENTITY, entityClass, "FileSystem");
         this.uploadOptionsMenu =
-                MenuBlock.ofStatic("uploadOptionsMenu", UploadOption.class, UploadOption.Append).setMultiSelect(" | ");
+                MenuBlock.ofStatic("uploadOptionsMenu", UploadOption.class, UploadOption.Overwrite).setMultiSelect(" | ");
         this.unitMenu = MenuBlock.ofStatic("UNIT", Unit.class, Unit.B);
         this.countMenu = MenuBlock.ofStatic("COUNT", CountNodeEnum.class, CountNodeEnum.All);
         this.fileMenu = MenuBlock.ofServerFiles(this.fsEntityMenu, null);
         this.folderMenu = MenuBlock.ofServerFolders(this.fsEntityMenu, null);
 
         // blocks
-        this.sendFile = ofDrive(Scratch3Block.ofHandler(10, "send_file", BlockType.command,
-                "Upload [VALUE] as [NAME] to [PARENT] of [ENTITY]", this::sendFileHandle));
-        this.sendFile.addArgument(VALUE, ArgumentType.string, "body");
-        this.sendFile.addArgument("NAME", "test.txt");
-        this.sendFile.addArgument("PARENT", this.folderMenu);
-        this.sendFile.addArgument("CONTENT", ArgumentType.string);
-
         this.modifyFile = ofDrive(Scratch3Block.ofHandler(15, "modify_file", BlockType.command,
                 "Update [VALUE] as [NAME] to [PARENT] of [ENTITY] | Options: [OPTIONS]", this::sendFileHandle));
         this.modifyFile.addArgument(VALUE, ArgumentType.string, "body");
@@ -191,16 +183,18 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
             List<UploadOption> uploadOptions =
                     workspaceBlock.getMenuValues("OPTIONS", this.uploadOptionsMenu, UploadOption.class, "~~~");
 
-            if (uploadOptions.contains(UploadOption.PrependNewLine)) {
-                value = addAll("\n".getBytes(), value);
-            }
-            if (uploadOptions.contains(UploadOption.AppendNewLine)) {
-                value = addAll(value, "\n".getBytes());
-            }
+            FileSystemProvider.UploadOption uploadOption = null;
+            if (!uploadOptions.contains(UploadOption.Overwrite)) {
+                if (uploadOptions.contains(UploadOption.PrependNewLine)) {
+                    value = addAll("\n".getBytes(), value);
+                }
+                if (uploadOptions.contains(UploadOption.AppendNewLine)) {
+                    value = addAll(value, "\n".getBytes());
+                }
 
-            FileSystemProvider.UploadOption uploadOption =
-                    uploadOptions.contains(UploadOption.Append) ? FileSystemProvider.UploadOption.Append :
-                            FileSystemProvider.UploadOption.Replace;
+                uploadOption = uploadOptions.contains(UploadOption.Append) ? FileSystemProvider.UploadOption.Append :
+                        FileSystemProvider.UploadOption.Replace;
+            }
 
             fileSystem.copy(TreeNode.of(fileName, value), folderId, uploadOption);
         } catch (Exception ex) {
@@ -220,7 +214,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     }
 
     private enum UploadOption {
-        Append, PrependNewLine, AppendNewLine
+        Overwrite, Append, PrependNewLine, AppendNewLine
     }
 
     private enum CountNodeEnum {

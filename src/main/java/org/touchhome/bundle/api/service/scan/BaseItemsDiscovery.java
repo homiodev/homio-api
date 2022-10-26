@@ -14,6 +14,7 @@ import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.model.ProgressBar;
 import org.touchhome.common.util.FlowMap;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -47,7 +48,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         log.info("Start batch scanning for <{}>", getBatchName());
         String headerButtonKey = "SCAN." + getBatchName();
 
-        entityContext.bgp().runInBatch(getBatchName(), getMaxTimeToWaitInSeconds(), scanners,
+        entityContext.bgp().runInBatch(getBatchName(), Duration.ofSeconds(getMaxTimeToWaitInSeconds()), scanners,
                 scanner -> {
                     log.info("Start scan in thread <{}>", scanner.name);
                     AtomicInteger status =

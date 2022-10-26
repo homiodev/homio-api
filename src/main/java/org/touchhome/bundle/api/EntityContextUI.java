@@ -65,23 +65,17 @@ public interface EntityContextUI {
     /**
      * Fire open console window to UI
      */
-    default <T extends ConsolePlugin<?>> void openConsole(@NotNull T consolePlugin) {
-        sendGlobal(GlobalSendType.openConsole, consolePlugin.getEntityID(), null);
-    }
+    <T extends ConsolePlugin<?>> void openConsole(@NotNull T consolePlugin);
 
     /**
      * Request to reload window to UI
      */
-    default void reloadWindow(@NotNull String reason) {
-        sendGlobal(GlobalSendType.reload, reason, null);
-    }
+    void reloadWindow(@NotNull String reason);
 
     /**
      * Send reload item on UI if related page are opened
      */
-    default void updateItem(@NotNull BaseEntity<?> baseEntity) {
-        sendGlobal(GlobalSendType.addItem, baseEntity.getEntityID(), baseEntity);
-    }
+    void updateItem(@NotNull BaseEntity<?> baseEntity);
 
     /**
      * Fire update to ui that entity was changed.
@@ -189,24 +183,6 @@ public interface EntityContextUI {
 
     // raw
     void sendNotification(@NotNull String destination, @NotNull JSONObject param);
-
-    default void sendGlobal(@NotNull GlobalSendType type, @NotNull String entityID, @Nullable Object value) {
-        sendGlobal(type, entityID, value, null, null);
-    }
-
-    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value,
-                            @Nullable String title) {
-        sendGlobal(type, entityID, value, title, null);
-    }
-
-    default void sendGlobal(@NotNull GlobalSendType type, @Nullable String entityID, @Nullable Object value,
-                            @Nullable String title, @Nullable JSONObject jsonObject) {
-        if (jsonObject == null) {
-            jsonObject = new JSONObject();
-        }
-        sendNotification("-global", jsonObject.put("entityID", entityID).put("type", type.name())
-                .putOpt("value", value).putOpt("title", title));
-    }
 
     /**
      * Add button to ui header
@@ -385,12 +361,9 @@ public interface EntityContextUI {
         sendJsonMessage(title, json, null);
     }
 
-    default void sendJsonMessage(@Nullable String title, @NotNull Object json, @Nullable FlowMap messageParam) {
-        title = title == null ? null : Lang.getServerMessage(title, messageParam);
-        sendGlobal(GlobalSendType.json, null, json, title);
-    }
+    void sendJsonMessage(@Nullable String title, @NotNull Object json, @Nullable FlowMap messageParam);
 
-    default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel type,
+    default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level,
                              @Nullable FlowMap messageParam, @Nullable Exception ex) {
         title = title == null ? null : Lang.getServerMessage(title, messageParam);
         String text;
@@ -404,14 +377,8 @@ public interface EntityContextUI {
             // try cast text to lang
             text = Lang.getServerMessage(text, messageParam);
         }
-        sendGlobal(GlobalSendType.popup, null, text, title, new JSONObject().put("level", type));
+        sendMessage(title, text, level);
     }
 
-    enum GlobalSendType {
-        popup, json, setting, progress, bell, headerButton, openConsole, reload, addItem, dialog,
-        // send audio to play on ui
-        audio,
-        // next generation
-        dynamicUpdate
-    }
+    void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level);
 }

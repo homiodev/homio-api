@@ -1,16 +1,19 @@
 package org.touchhome.bundle.api;
 
-import com.pivovarit.function.*;
+import com.pivovarit.function.ThrowingBiFunction;
+import com.pivovarit.function.ThrowingConsumer;
+import com.pivovarit.function.ThrowingFunction;
+import com.pivovarit.function.ThrowingRunnable;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.common.model.ProgressBar;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -20,97 +23,52 @@ import java.util.function.Supplier;
 public interface EntityContextBGP {
     EntityContext getEntityContext();
 
-    /**
-     * Schedule tasks
-     *
-     * @param name     - task name
-     * @param timeout  - repeat timeout
-     * @param timeUnit - time unit of timeout
-     * @param command  - command to execute
-     * @param showOnUI - show this task on UI in console tab
-     */
-    default ThreadContext<Void> schedule(@NotNull String name, int timeout, @NotNull TimeUnit timeUnit,
-                                         @NotNull ThrowingRunnable<Exception> command, boolean showOnUI) {
-        return schedule(name, timeout, timeUnit, command, showOnUI, false);
+    interface ScheduleBuilder<T> {
+        ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command);
+
+        ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command);
+
+        ScheduleBuilder<T> interval(@NotNull String cron);
+
+        ScheduleBuilder<T> interval(@NotNull Duration duration);
+
+        /**
+         * Execute some code with ThreadContext before execution
+         */
+        ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
+
+        /**
+         * Set delay before first execution.
+         */
+        ScheduleBuilder<T> delay(@NotNull Duration duration);
+
+        // default false
+        ScheduleBuilder<T> hideOnUI(boolean value);
+
+        // default false
+        ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
+
+        // default true
+        ScheduleBuilder<T> cancelOnError(boolean value);
     }
 
-    default ThreadContext<Void> schedule(@NotNull String name, @NotNull String cron, @NotNull ThrowingRunnable<Exception> command,
-                                         boolean showOnUI, boolean hideOnUIAfterCancel) {
-        return schedule(name, cron, voidThreadContext -> {
-            command.run();
-            return null;
-        }, showOnUI, hideOnUIAfterCancel);
-    }
-
-    <T> ThreadContext<T> schedule(@NotNull String name, @NotNull String cron,
-                                  @NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command,
-                                  boolean showOnUI, boolean hideOnUIAfterCancel);
-
-    default ThreadContext<Void> schedule(@NotNull String name, int timeout, @NotNull TimeUnit timeUnit,
-                                         @NotNull ThrowingRunnable<Exception> command,
-                                         boolean showOnUI, boolean hideOnUIAfterCancel) {
-        return schedule(name, 0, timeout, timeUnit, command, showOnUI, hideOnUIAfterCancel);
-    }
-
-    ThreadContext<Void> schedule(@NotNull String name, int initialDelayInMillis, int timeout, @NotNull TimeUnit timeUnit,
-                                         @NotNull ThrowingRunnable<Exception> command,
-                                 boolean showOnUI, boolean hideOnUIAfterCancel);
-
-    default ThreadContext<Void> run(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, boolean showOnUI) {
-        return run(name, command, null, showOnUI);
-    }
-
-    default ThreadContext<Void> run(@NotNull String name, long initialDelayInMillis, @NotNull ThrowingRunnable<Exception> command,
-                                    boolean showOnUI) {
-        return run(name, initialDelayInMillis, command, null, showOnUI);
-    }
-
-    default ThreadContext<Void> run(@NotNull String name, @NotNull ThrowingRunnable<Exception> command,
-                                    @Nullable Consumer<Exception> finallyBlock, boolean showOnUI) {
-        return run(name, null, command, finallyBlock, showOnUI);
-    }
-
-    default ThreadContext<Void> run(@NotNull String name, @Nullable Long initialDelayInMillis,
-                                    @NotNull ThrowingRunnable<Exception> command, @Nullable Consumer<Exception> finallyBlock,
-                                    boolean showOnUI) {
-        return runAndGet(name, initialDelayInMillis, () -> {
-            Exception exception = null;
-            try {
-                command.run();
-            } catch (Exception ex) {
-                exception = ex;
-                throw ex;
-            } finally {
-                if (finallyBlock != null) {
-                    finallyBlock.accept(exception);
-                }
-            }
-            return null;
-        }, showOnUI);
-    }
-
-    default <T> ThreadContext<T> runAndGet(@NotNull String name, @NotNull ThrowingSupplier<T, Exception> command,
-                                           boolean showOnUI) {
-        return runAndGet(name, null, command, showOnUI);
-    }
-
-    <T> ThreadContext<T> runAndGet(@NotNull String name, @Nullable Long initialDelayInMillis,
-                                   @NotNull ThrowingSupplier<T, Exception> command, boolean showOnUI);
+    <T> ScheduleBuilder<T> builder(@NotNull String name);
 
     void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
 
     /**
      * Await processes to be done
      */
-    default <T> ThreadContext<Map<String, T>> awaitProcesses(@NotNull String name, int maxTimeToWaitInSeconds,
+    default <T> ThreadContext<Map<String, T>> awaitProcesses(@NotNull String name, Duration maxTimeToWait,
                                                              @NotNull List<ThreadContext<T>> processes,
                                                              @NotNull Logger logger,
                                                              @Nullable Consumer<Map<String, T>> finallyBlock) {
-        return runAndGet(name, () -> {
+        ScheduleBuilder<Map<String, T>> builder = builder(name);
+        return builder.execute(arg -> {
             Map<String, T> result = new HashMap<>();
             for (ThreadContext<T> process : processes) {
                 try {
-                    result.put(process.getName(), process.await(maxTimeToWaitInSeconds, TimeUnit.SECONDS));
+                    result.put(process.getName(), process.await(maxTimeToWait));
                 } catch (Exception ex) {
                     result.put(process.getName(), null);
                     logger.error("Error while await <{}> for finish. Fire process termination", process.getName());
@@ -121,7 +79,7 @@ public interface EntityContextBGP {
                 finallyBlock.accept(result);
             }
             return result;
-        }, true);
+        });
     }
 
     default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable,
@@ -167,7 +125,8 @@ public interface EntityContextBGP {
                 throw exception;
             }
         }
-        return runAndGet(key, () -> {
+        ScheduleBuilder<R> builder = builder(key);
+        return builder.execute(arg -> {
             ProgressBar progressBar =
                     (progress, message) -> getEntityContext().ui().progress(key, progress, message, cancellable);
             progressBar.progress(0, key);
@@ -183,11 +142,8 @@ public interface EntityContextBGP {
                     finallyBlock.accept(exception);
                 }
             }
-        }, true);
+        });
     }
-
-    ThreadContext<Void> runInfinite(@NotNull String name, @NotNull ThrowingRunnable<Exception> command, boolean showOnUI,
-                                    int delay, boolean stopOnException);
 
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);
 
@@ -200,18 +156,18 @@ public interface EntityContextBGP {
                                String bigDescription);
 
         ThreadPuller addScheduler(String name, String description, Date creationTime, String state, String errorMessage,
-                                  int period, int runCount, String bigDescription);
+                                  @Nullable Duration period, int runCount, String bigDescription);
     }
 
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
-                                                       int maxTerminateTimeoutInSeconds,
+                                                       @Nullable Duration maxTerminateTimeout,
                                                        @NotNull Collection<P> taskItems,
                                                        @NotNull Function<P, Callable<T>> callableProducer,
                                                        @NotNull Consumer<Integer> progressConsumer,
                                                        @NotNull Consumer<List<T>> finallyProcessBlockHandler);
 
     <T> List<T> runInBatchAndGet(@NotNull String batchName,
-                                 int maxTerminateTimeoutInSeconds,
+                                 @Nullable Duration maxTerminateTimeout,
                                  int threadsCount,
                                  @NotNull Map<String, Callable<T>> runnableTasks,
                                  @NotNull Consumer<Integer> progressConsumer);
@@ -221,7 +177,13 @@ public interface EntityContextBGP {
 
         String getState();
 
+        Object getMetadata(String key);
+
+        void setMetadata(String key, Object value);
+
         void setState(@NotNull String state);
+
+        void setCancelOnError(boolean cancelOnError);
 
         String getDescription();
 
@@ -231,7 +193,7 @@ public interface EntityContextBGP {
 
         void cancel();
 
-        T await(long timeout, @NotNull TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException;
+        T await(@NotNull Duration timeout) throws InterruptedException, ExecutionException, TimeoutException;
 
         void onError(@NotNull Consumer<Exception> errorListener);
 

@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.entity.widget.ability;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.widget.AggregationType;
@@ -20,13 +21,10 @@ public interface HasAggregateValueFromSeries extends HasEntityIdentifier, HasUpd
                                                  @NotNull AggregationType aggregationType,
                                                  boolean exactNumber);
 
-    default AggregationType[] getAvailableAggregateTypes() {
-        return AggregationType.values();
-    }
-
     /**
      * Uses for UI to determine class type description
      */
+    @JsonIgnore
     @SelectDataSourceDescription
     String getAggregateValueDescription();
 }

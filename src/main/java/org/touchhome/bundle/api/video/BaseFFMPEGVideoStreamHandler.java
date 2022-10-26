@@ -43,9 +43,9 @@ import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -172,8 +172,8 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
             }
 
             initialize0();
-            videoConnectionJob = entityContext.bgp().schedule("poll-video-connection-" + videoStreamEntityID,
-                    60, TimeUnit.SECONDS, this::pollingVideoConnection, true, true);
+            videoConnectionJob = entityContext.bgp().builder("poll-video-connection-" + videoStreamEntityID)
+                    .interval(Duration.ofSeconds(60)).execute(this::pollingVideoConnection);
             return true;
         } catch (Exception ex) {
             disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
@@ -228,8 +228,8 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
             updateStatus(Status.ONLINE, null);
 
             disposeVideoConnectionJob();
-            pollVideoJob = entityContext.bgp().schedule("poll-video-runnable-" + videoStreamEntityID,
-                    8, TimeUnit.SECONDS, this::pollVideoRunnable, true, true);
+            pollVideoJob = entityContext.bgp().builder("poll-video-runnable-" + videoStreamEntityID)
+                    .interval(Duration.ofSeconds(8)).execute(this::pollVideoRunnable);
         }
     }
 

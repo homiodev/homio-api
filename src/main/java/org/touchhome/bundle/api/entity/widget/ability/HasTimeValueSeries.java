@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.entity.widget.ability;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +22,7 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
     /**
      * Uses for UI to determine class type description
      */
+    @JsonIgnore
     @SelectDataSourceDescription
     String getTimeValueSeriesDescription();
 

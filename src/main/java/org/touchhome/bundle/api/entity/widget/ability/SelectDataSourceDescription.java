@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate for method of classes which user to select dataSources
+ * Annotate for method of classes which uses to select dataSource description
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

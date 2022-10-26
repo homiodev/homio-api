@@ -1,10 +1,12 @@
 package org.touchhome.bundle.api.state;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.common.util.CommonUtils;
 
 import java.nio.charset.Charset;
+import java.util.Map;
 
 public interface State {
 
@@ -53,5 +55,25 @@ public interface State {
     default State optional(String value) {
         return StringUtils.isEmpty(value) ? this :
                 CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+    }
+
+    static State of(Object value) {
+        if (value == null || value instanceof State) return (State) value;
+        if (value instanceof Map) {
+            return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
+        }
+        if (value.getClass().isAssignableFrom(Number.class)) {
+            if (value instanceof Integer || value instanceof Long) {
+                return new DecimalType((long) value);
+            }
+            return new DecimalType((double) value);
+        }
+        if (value instanceof Boolean) {
+            return OnOffType.of((boolean) value);
+        }
+        if (value instanceof String) {
+            return new StringType(value.toString());
+        }
+        return new ObjectType(value);
     }
 }

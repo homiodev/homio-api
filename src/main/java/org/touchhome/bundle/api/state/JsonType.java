@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
+import org.touchhome.common.util.CommonUtils;
 
 import java.util.function.BiConsumer;
 
@@ -15,7 +17,16 @@ import java.util.function.BiConsumer;
 public class JsonType implements State, Comparable<JsonType> {
 
     @Getter
-    private final JsonNode jsonNode;
+    private JsonNode jsonNode;
+
+    public JsonType(JsonNode jsonNode) {
+        this.jsonNode = jsonNode;
+    }
+
+    @SneakyThrows
+    public JsonType(String value) {
+        this.jsonNode = CommonUtils.OBJECT_MAPPER.readValue(value, JsonNode.class);
+    }
 
     public JsonNode get(String... paths) {
         JsonNode node = jsonNode;

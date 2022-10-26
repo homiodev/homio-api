@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.state.State;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 
 import javax.validation.constraints.NotNull;
@@ -208,7 +209,7 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     @FunctionalInterface
     public interface Scratch3BlockEvaluateHandler {
-        Object handle(WorkspaceBlock workspaceBlock) throws Exception;
+        State handle(WorkspaceBlock workspaceBlock) throws Exception;
     }
 
     @Getter

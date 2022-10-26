@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.entity.widget.ability;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.json.JSONObject;
@@ -15,6 +16,7 @@ public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     /**
      * Uses for UI to determine class type description
      */
+    @JsonIgnore
     @SelectDataSourceDescription
     String getGetStatusDescription();
 

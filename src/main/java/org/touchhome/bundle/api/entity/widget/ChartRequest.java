@@ -26,7 +26,9 @@ public class ChartRequest {
     }
 
     public ChartRequest setParameters(JSONObject parameters) {
-        this.parameters = parameters;
+        if (parameters != null) {
+            this.parameters = parameters;
+        }
         return this;
     }
 

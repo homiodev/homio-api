@@ -46,8 +46,8 @@ public class TreeConfiguration {
         this.id = fs.getEntityID();
         DeviceBaseEntity entity = (DeviceBaseEntity) fs;
         this.name = StringUtils.left(entity.getTitle(), 20);
-        this.icon = fs.getIcon();
-        this.color = fs.getIconColor();
+        this.icon = fs.getFileSystemIcon();
+        this.color = fs.getFileSystemIconColor();
         this.hasDelete = true;
         this.hasRename = true;
         this.hasUpload = true;
