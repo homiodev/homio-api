@@ -62,11 +62,13 @@ public interface State {
         if (value instanceof Map) {
             return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
         }
-        if (value.getClass().isAssignableFrom(Number.class)) {
-            if (value instanceof Integer || value instanceof Long) {
-                return new DecimalType((long) value);
+        if (Number.class.isAssignableFrom(value.getClass())) {
+            if (value instanceof Double) {
+                return new DecimalType((double) value);
+            } else if (value instanceof Integer) {
+                return new DecimalType((int) value);
             }
-            return new DecimalType((double) value);
+            return new DecimalType((long) value);
         }
         if (value instanceof Boolean) {
             return OnOffType.of((boolean) value);

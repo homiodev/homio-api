@@ -1,17 +1,21 @@
 package org.touchhome.bundle.api.state;
 
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
 import tec.uom.se.AbstractUnit;
 import tec.uom.se.quantity.Quantities;
 
 import javax.measure.*;
 import java.math.BigDecimal;
 
+/**
+ * Value with Unit
+ */
 @Log4j2
 public class QuantityType<T extends Quantity<T>> extends Number
         implements State, Comparable<QuantityType<T>> {
 
-    private final Quantity<T> quantity;
+    private final @NotNull Quantity<T> quantity;
 
     public QuantityType(Number value, Unit<T> unit) {
         // Avoid scientific notation for double
@@ -40,7 +44,7 @@ public class QuantityType<T extends Quantity<T>> extends Number
                 UnitConverter uc = getUnit().getConverterToAny(targetUnit);
                 Quantity<?> result = Quantities.getQuantity(uc.convert(quantity.getValue()), targetUnit);
 
-                return new QuantityType<T>(result.getValue(), (Unit<T>) targetUnit);
+                return new QuantityType<>(result.getValue(), (Unit<T>) targetUnit);
             } catch (UnconvertibleException | IncommensurableException e) {
                 log.debug("Unable to convert unit from {} to {}", getUnit(), targetUnit);
                 return null;
@@ -94,5 +98,20 @@ public class QuantityType<T extends Quantity<T>> extends Number
         } else {
             return quantity.toString();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        QuantityType<?> that = (QuantityType<?>) o;
+
+        return quantity.equals(that.quantity);
+    }
+
+    @Override
+    public int hashCode() {
+        return quantity.hashCode();
     }
 }

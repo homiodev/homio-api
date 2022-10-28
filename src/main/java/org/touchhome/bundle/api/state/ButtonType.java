@@ -49,4 +49,19 @@ public class ButtonType implements State {
             return parameterValue;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ButtonType that = (ButtonType) o;
+
+        return buttonPressType == that.buttonPressType;
+    }
+
+    @Override
+    public int hashCode() {
+        return buttonPressType.hashCode();
+    }
 }

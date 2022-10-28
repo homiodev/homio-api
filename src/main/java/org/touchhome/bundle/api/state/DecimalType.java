@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.state;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -17,11 +18,26 @@ public class DecimalType extends Number implements State, Comparable<DecimalType
     public static final DecimalType HUNDRED = new DecimalType(100);
 
     @Getter
-    private BigDecimal value;
+    private final @NotNull BigDecimal value;
 
     @Getter
     @Setter
     private BigDecimal oldValue;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DecimalType that = (DecimalType) o;
+
+        return value.equals(that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
 
     @Override
     public boolean equalToOldValue() {

@@ -34,7 +34,6 @@ import org.touchhome.bundle.api.video.ffmpeg.FFMPEGFormat;
 import org.touchhome.bundle.api.video.ffmpeg.FfmpegInputDeviceHardwareRepository;
 import org.touchhome.bundle.api.video.ui.UIVideoAction;
 import org.touchhome.bundle.api.video.ui.UIVideoActionGetter;
-import org.touchhome.bundle.api.workspace.BroadcastLockManager;
 import org.touchhome.common.util.CommonUtils;
 import org.touchhome.common.util.FlowMap;
 
@@ -63,7 +62,6 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
 
     @Getter
     protected final EntityContext entityContext;
-    protected final BroadcastLockManager broadcastLockManager;
     @Getter
     protected final int serverPort;
     protected final FfmpegInputDeviceHardwareRepository ffmpegInputDeviceHardwareRepository;
@@ -80,13 +78,13 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
     @Getter
     protected long lastAnswerFromVideo;
     @Getter
-    private Path ffmpegGifOutputPath;
+    private final Path ffmpegGifOutputPath;
     @Getter
-    private Path ffmpegMP4OutputPath;
+    private final Path ffmpegMP4OutputPath;
     @Getter
-    private Path ffmpegHLSOutputPath;
+    private final Path ffmpegHLSOutputPath;
     @Getter
-    private Path ffmpegImageOutputPath;
+    private final Path ffmpegImageOutputPath;
     @Getter
     private boolean isVideoOnline = false; // Used so only 1 error is logged when a network issue occurs.
     @Getter
@@ -123,7 +121,6 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
 
         this.entityContext = entityContext;
         this.ffmpegInputDeviceHardwareRepository = entityContext.getBean(FfmpegInputDeviceHardwareRepository.class);
-        this.broadcastLockManager = entityContext.getBean(BroadcastLockManager.class);
         this.serverPort = videoStreamEntity.getServerPort();
 
         Path ffmpegOutputPath = TouchHomeUtils.getMediaPath().resolve(videoStreamEntity.getFolderName()).resolve(getEntityID());
@@ -437,7 +434,7 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
 
     public void setAttribute(String key, State state) {
         attributes.put(key, state);
-        broadcastLockManager.signalAll(key + ":" + videoStreamEntityID, state);
+        entityContext.event().fireEvent(key + ":" + videoStreamEntityID, state);
 
         if (key.equals(CHANNEL_AUDIO_THRESHOLD)) {
             entityContext.updateDelayed(videoStreamEntity, e -> e.setAudioThreshold(state.intValue()));

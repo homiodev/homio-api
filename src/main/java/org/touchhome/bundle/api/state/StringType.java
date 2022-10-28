@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -9,7 +10,7 @@ public class StringType implements State {
     public static StringType EMPTY = new StringType("");
 
     @Getter
-    private final String value;
+    private final @NotNull String value;
 
     @Getter
     @Setter
@@ -46,5 +47,20 @@ public class StringType implements State {
     @Override
     public boolean boolValue() {
         return value.equals("1") || value.equalsIgnoreCase("true");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StringType that = (StringType) o;
+
+        return value.equals(that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
     }
 }

@@ -17,11 +17,7 @@ import java.util.function.BiConsumer;
 public class JsonType implements State, Comparable<JsonType> {
 
     @Getter
-    private JsonNode jsonNode;
-
-    public JsonType(JsonNode jsonNode) {
-        this.jsonNode = jsonNode;
-    }
+    private final JsonNode jsonNode;
 
     @SneakyThrows
     public JsonType(String value) {
@@ -91,5 +87,20 @@ public class JsonType implements State, Comparable<JsonType> {
     @Override
     public int compareTo(@NotNull JsonType o) {
         return 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JsonType jsonType = (JsonType) o;
+
+        return jsonNode.equals(jsonType.jsonNode);
+    }
+
+    @Override
+    public int hashCode() {
+        return jsonNode.hashCode();
     }
 }

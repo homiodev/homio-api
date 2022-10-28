@@ -149,14 +149,20 @@ public interface EntityContextBGP {
 
     void cancelThread(@NotNull String name);
 
-    void registerThreadsPuller(String entityID, Consumer<ThreadPuller> threadPullerConsumer);
+    /**
+     * Register 'external' threads in context. 'External' mean thread that wasnt created by bgp().builder(...) but eny
+     * other new Thread(...) or even java.lang.Process
+     */
+    void registerThreadsPuller(@NotNull String entityID, @NotNull Consumer<ThreadPuller> threadPullerConsumer);
 
     interface ThreadPuller {
-        ThreadPuller addThread(String name, String description, Date creationTime, String state, String errorMessage,
-                               String bigDescription);
+        @NotNull ThreadPuller addThread(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
+                                        @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
 
-        ThreadPuller addScheduler(String name, String description, Date creationTime, String state, String errorMessage,
-                                  @Nullable Duration period, int runCount, String bigDescription);
+        @NotNull ThreadPuller addScheduler(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
+                                           @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
+                                           int runCount,
+                                           @Nullable String bigDescription);
     }
 
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
@@ -166,26 +172,26 @@ public interface EntityContextBGP {
                                                        @NotNull Consumer<Integer> progressConsumer,
                                                        @NotNull Consumer<List<T>> finallyProcessBlockHandler);
 
-    <T> List<T> runInBatchAndGet(@NotNull String batchName,
-                                 @Nullable Duration maxTerminateTimeout,
-                                 int threadsCount,
-                                 @NotNull Map<String, Callable<T>> runnableTasks,
-                                 @NotNull Consumer<Integer> progressConsumer);
+    @NotNull <T> List<T> runInBatchAndGet(@NotNull String batchName,
+                                          @Nullable Duration maxTerminateTimeout,
+                                          int threadsCount,
+                                          @NotNull Map<String, Callable<T>> runnableTasks,
+                                          @NotNull Consumer<Integer> progressConsumer);
 
     interface ThreadContext<T> {
-        String getName();
+        @NotNull String getName();
 
-        String getState();
+        @NotNull String getState();
 
-        Object getMetadata(String key);
+        @Nullable Object getMetadata(String key);
 
-        void setMetadata(String key, Object value);
+        void setMetadata(@NotNull String key, @NotNull Object value);
 
         void setState(@NotNull String state);
 
         void setCancelOnError(boolean cancelOnError);
 
-        String getDescription();
+        @Nullable String getDescription();
 
         void setDescription(@NotNull String description);
 

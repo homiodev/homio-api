@@ -331,7 +331,7 @@ public interface WorkspaceBlock {
 
     String getDescription();
 
-    void setState(String state);
+    BroadcastLockManager getBroadcastLockManager();
 
     boolean isDestroyed();
 
