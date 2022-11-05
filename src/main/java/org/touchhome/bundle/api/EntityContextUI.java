@@ -63,6 +63,18 @@ public interface EntityContextUI {
     }
 
     /**
+     * Register console plugin name. In case if console plugin available only if some
+     * entity is created or not enabled by some case we may show disabled console name on UI
+     */
+    void registerConsolePluginName(@NotNull String name);
+
+    <T extends ConsolePlugin> void registerConsolePlugin(@NotNull String name, @NotNull T plugin);
+
+    <T extends ConsolePlugin> T getRegisteredConsolePlugin(@NotNull String name);
+
+    boolean unRegisterConsolePlugin(@NotNull String name);
+
+    /**
      * Fire open console window to UI
      */
     <T extends ConsolePlugin<?>> void openConsole(@NotNull T consolePlugin);

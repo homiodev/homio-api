@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
@@ -149,12 +148,6 @@ public interface EntityContext {
         }
         return null;
     }
-
-    <T extends ConsolePlugin> void registerConsolePlugin(@NotNull String name, @NotNull T plugin);
-
-    <T extends ConsolePlugin> T getRegisteredConsolePlugin(@NotNull String name);
-
-    boolean unRegisterConsolePlugin(@NotNull String name);
 
     Collection<AbstractRepository> getRepositories();
 

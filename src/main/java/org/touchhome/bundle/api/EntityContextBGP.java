@@ -45,7 +45,7 @@ public interface EntityContextBGP {
         // default false
         ScheduleBuilder<T> hideOnUI(boolean value);
 
-        // default false
+        // default true
         ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
 
         // default true

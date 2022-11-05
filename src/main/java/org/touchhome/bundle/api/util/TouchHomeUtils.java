@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.util;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fazecast.jSerialComm.SerialPort;
+import com.pivovarit.function.ThrowingFunction;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -15,7 +16,9 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.RestartHandlerOnChange;
+import org.touchhome.bundle.api.hardware.network.NetworkHardwareRepository;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.common.util.CommonUtils;
 
@@ -30,9 +33,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.*;
+import static org.touchhome.common.util.Lang.getServerMessage;
 
 @Log4j2
 public class TouchHomeUtils {
@@ -207,6 +212,34 @@ public class TouchHomeUtils {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Simple utility for scan for ip range
+     */
+    public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
+                                     ThrowingFunction<String, Boolean, Exception> testDevice,
+                                     Consumer<String> createDeviceHandler) {
+        Consumer<String> deviceHandler = (ip) -> {
+            try {
+                if (testDevice.apply("127.0.0.1")) {
+                    List<String> messages = new ArrayList<>();
+                    messages.add(getServerMessage("NEW_DEVICE.GENERAL_QUESTION", "NAME", deviceName));
+                    messages.add(getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName + "(" + ip + ":" + devicePort + ")"));
+                    messages.add(getServerMessage("NEW_DEVICE.URL", "URL", ip + ":" + devicePort));
+                    entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
+                            getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName), () ->
+                                    createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
+                }
+            } catch (Exception ignore) {
+            }
+        };
+
+        NetworkHardwareRepository networkHardwareRepository = entityContext.getBean(NetworkHardwareRepository.class);
+        String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
+        deviceHandler.accept("127.0.0.1");
+        networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log, Collections.singleton(devicePort), 500,
+                (url, port) -> deviceHandler.accept(url));
     }
 
  /*   @SneakyThrows

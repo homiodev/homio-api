@@ -11,7 +11,9 @@ import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.state.DecimalType;
 import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
-import org.touchhome.bundle.api.workspace.scratch.*;
+import org.touchhome.bundle.api.workspace.scratch.ArgumentType;
+import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
+import org.touchhome.bundle.api.workspace.scratch.Scratch3ExtensionBlocks;
 import org.touchhome.common.fs.FileSystemProvider;
 import org.touchhome.common.fs.TreeNode;
 import org.touchhome.common.util.CommonUtils;
@@ -36,14 +38,6 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
     private final MenuBlock.StaticMenuBlock<Unit> unitMenu;
     private final MenuBlock.StaticMenuBlock<CountNodeEnum> countMenu;
 
-    private final Scratch3Block modifyFile;
-
-    private final Scratch3Block getFileContent;
-    private final Scratch3Block deleteFile;
-    private final Scratch3Block getUsedQuota;
-    private final Scratch3Block getTotalQuota;
-    private final Scratch3Block count;
-
     public Scratch3BaseFileSystemExtensionBlocks(String color, EntityContext entityContext, T bundleEntryPoint,
                                                  Class<E> entityClass) {
         super(color, entityContext, bundleEntryPoint, "storage");
@@ -51,42 +45,57 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         this.entityClass = entityClass;
 
         // menu
-        this.fsEntityMenu = MenuBlock.ofServerItems(ENTITY, entityClass, "FileSystem");
+        this.fsEntityMenu = menuServerItems(ENTITY, entityClass, "FileSystem");
         this.uploadOptionsMenu =
-                MenuBlock.ofStatic("uploadOptionsMenu", UploadOption.class, UploadOption.Overwrite).setMultiSelect(" | ");
-        this.unitMenu = MenuBlock.ofStatic("UNIT", Unit.class, Unit.B);
-        this.countMenu = MenuBlock.ofStatic("COUNT", CountNodeEnum.class, CountNodeEnum.All);
-        this.fileMenu = MenuBlock.ofServerFiles(this.fsEntityMenu, null);
-        this.folderMenu = MenuBlock.ofServerFolders(this.fsEntityMenu, null);
+                menuStatic("uploadOptionsMenu", UploadOption.class, UploadOption.Overwrite).setMultiSelect(" | ");
+        this.unitMenu = menuStatic("UNIT", Unit.class, Unit.B);
+        this.countMenu = menuStatic("COUNT", CountNodeEnum.class, CountNodeEnum.All);
+        this.fileMenu = menuServerFiles(this.fsEntityMenu, null);
+        this.folderMenu = menuServerFolders(this.fsEntityMenu, null);
 
         // blocks
-        this.modifyFile = ofDrive(Scratch3Block.ofHandler(15, "modify_file", BlockType.command,
-                "Update [VALUE] as [NAME] to [PARENT] of [ENTITY] | Options: [OPTIONS]", this::sendFileHandle));
-        this.modifyFile.addArgument(VALUE, ArgumentType.string, "body");
-        this.modifyFile.addArgument("NAME", "test.txt");
-        this.modifyFile.addArgument("PARENT", this.folderMenu);
-        this.modifyFile.addArgument("CONTENT", ArgumentType.string);
-        this.modifyFile.addArgument("OPTIONS", this.uploadOptionsMenu);
+        blockCommand(15, "modify_file",
+                "Update [VALUE] as [NAME] to [PARENT] of [ENTITY] | Options: [OPTIONS]", this::sendFileHandle,
+                block -> {
+                    block.addArgument(ENTITY, this.fsEntityMenu);
+                    block.addArgument(VALUE, ArgumentType.string, "body");
+                    block.addArgument("NAME", "test.txt");
+                    block.addArgument("PARENT", this.folderMenu);
+                    block.addArgument("CONTENT", ArgumentType.string);
+                    block.addArgument("OPTIONS", this.uploadOptionsMenu);
+                });
 
-        this.getFileContent =
-                ofDrive(Scratch3Block.ofReporter(20, "get_file_content", "Get [FILE] of [ENTITY]", this::getFieldContent));
-        this.getFileContent.addArgument("FILE", this.fileMenu);
 
-        this.count = ofDrive(Scratch3Block.ofReporter(30, "get_count", "Count of [VALUE] in [PARENT] [ENTITY]",
-                this::getCountOfNodesReporter));
-        this.count.addArgument("PARENT", this.folderMenu);
-        this.count.addArgument(VALUE, this.countMenu);
+        blockReporter(20, "get_file_content", "Get [FILE] of [ENTITY]", this::getFieldContent,
+                block -> {
+                    block.addArgument(ENTITY, this.fsEntityMenu);
+                    block.addArgument("FILE", this.fileMenu);
+                });
 
-        this.getUsedQuota = ofDrive(Scratch3Block.ofReporter(35, "get_used_quota", "Used quota if [ENTITY] | in [UNIT]",
-                this::getUsedQuotaReporter));
-        this.getUsedQuota.addArgument("UNIT", this.unitMenu);
-        this.getTotalQuota = ofDrive(Scratch3Block.ofReporter(40, "get_total_quota", "Total quota of [ENTITY] | in [UNIT]",
-                this::getTotalQuotaReporter));
-        this.getTotalQuota.addArgument("UNIT", this.unitMenu);
+        blockReporter(30, "get_count", "Count of [VALUE] in [PARENT] [ENTITY]", this::getCountOfNodesReporter,
+                block -> {
+                    block.addArgument(ENTITY, this.fsEntityMenu);
+                    block.addArgument("PARENT", this.folderMenu);
+                    block.addArgument(VALUE, this.countMenu);
+                });
 
-        this.deleteFile = ofDrive(Scratch3Block.ofHandler(50, "delete", BlockType.command, "Delete [FILE] of [ENTITY]",
-                this::deleteFileHandle));
-        this.deleteFile.addArgument("FILE", this.fileMenu);
+        blockReporter(35, "get_used_quota", "Used quota if [ENTITY] | in [UNIT]", this::getUsedQuotaReporter,
+                block -> {
+                    block.addArgument(ENTITY, this.fsEntityMenu);
+                    block.addArgument("UNIT", this.unitMenu);
+                });
+
+        blockReporter(40, "get_total_quota", "Total quota of [ENTITY] | in [UNIT]", this::getTotalQuotaReporter,
+                block -> {
+                    block.addArgument(ENTITY, this.fsEntityMenu);
+                    block.addArgument("UNIT", this.unitMenu);
+                });
+
+        blockCommand(50, "delete", "Delete [FILE] of [ENTITY]", this::deleteFileHandle,
+                block -> {
+                    block.addArgument(ENTITY, this.fsEntityMenu);
+                    block.addArgument("FILE", this.fileMenu);
+                });
     }
 
     private DecimalType getCountOfNodesReporter(WorkspaceBlock workspaceBlock) {
@@ -200,11 +209,6 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
         } catch (Exception ex) {
             workspaceBlock.logError("Unable to store file: <{}>. Msg: <{}>", fileName, ex.getMessage());
         }
-    }
-
-    private Scratch3Block ofDrive(Scratch3Block scratch3Block) {
-        scratch3Block.addArgument(ENTITY, this.fsEntityMenu);
-        return scratch3Block;
     }
 
     @RequiredArgsConstructor

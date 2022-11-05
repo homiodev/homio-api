@@ -14,5 +14,5 @@ public @interface UIFieldSelectValueOnEmpty {
 
     String label();
 
-    String color();
+    String color() default "#A7D21E";
 }

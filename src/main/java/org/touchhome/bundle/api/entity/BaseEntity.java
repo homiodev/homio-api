@@ -120,18 +120,10 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         this.validate();
     }
 
-    @PostPersist
-    private void postPersist() {
-        this.afterPersist(ApplicationContextHolder.getBean(EntityContext.class));
-    }
-
-    @PostUpdate
-    private void postUpdate() {
-        this.afterUpdate(ApplicationContextHolder.getBean(EntityContext.class));
-    }
-
-    @PreRemove
-    private void preDelete() {
+    /**
+     * Entity may contain related in-memory resources. so we remove all of them before delete entity or when user detach bundle
+     */
+    public void releaseResources() {
         // remove all status for entity
         TouchHomeUtils.STATUS_MAP.remove(getEntityID());
 
@@ -139,7 +131,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         InMemoryDB.removeService(getEntityID());
 
         // clear all registered console plugins if any exists
-        getEntityContext().unRegisterConsolePlugin(getEntityID());
+        getEntityContext().ui().unRegisterConsolePlugin(getEntityID());
 
         // destroy any additional services
         if (this instanceof EntityService) {
@@ -149,6 +141,29 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
                 log.warn("Unable to destroy service for entity: {}", getTitle());
             }
         }
+    }
+
+    @PostPersist
+    private void postPersist() {
+        this.afterPersist(ApplicationContextHolder.getBean(EntityContext.class));
+    }
+
+    @PostUpdate
+    private void postUpdate() {
+        EntityContext entityContext = ApplicationContextHolder.getBean(EntityContext.class);
+        if (this instanceof EntityService) {
+            EntityService.ServiceInstance service =
+                    ((EntityService<?, T>) this).getOrCreateService(entityContext, false, true);
+            if(service != null) {
+                service.entityUpdated((EntityService) this);
+            }
+        }
+        this.afterUpdate(entityContext);
+    }
+
+    @PreRemove
+    private void preDelete() {
+        this.releaseResources();
         this.beforeDelete();
     }
 

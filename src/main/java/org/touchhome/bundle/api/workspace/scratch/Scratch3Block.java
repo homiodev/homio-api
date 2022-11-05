@@ -3,19 +3,14 @@ package org.touchhome.bundle.api.workspace.scratch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
-import org.json.JSONObject;
-import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.state.State;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 
 import javax.validation.constraints.NotNull;
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 @Getter
@@ -36,12 +31,6 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     private Scratch3Color scratch3Color;
 
-    private BiConsumer<String, WorkspaceBlock> allowLinkBoolean;
-    private BiConsumer<String, WorkspaceBlock> allowLinkVariable;
-
-    @JsonIgnore
-    private LinkGeneratorHandler linkGenerator;
-
     protected Scratch3Block(int order, String opcode, BlockType blockType, Object text, Scratch3BlockHandler handler,
                             Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
@@ -50,56 +39,6 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         this.text = text;
         this.handler = handler;
         this.evaluateHandler = evaluateHandler;
-    }
-
-    public static Scratch3ConditionalBlock ofConditional(int order, String opcode, String text, Scratch3BlockHandler handler) {
-        return new Scratch3ConditionalBlock(order, opcode, BlockType.conditional, text, handler, null);
-    }
-
-    public static Scratch3Block ofHat(int order, String opcode, String text, Scratch3BlockHandler handler) {
-        return new Scratch3Block(order, opcode, BlockType.hat, text, handler, null);
-    }
-
-    public static Scratch3Block ofHandler(int order, String opcode, BlockType blockType, String text,
-                                          Scratch3BlockHandler handler) {
-        return new Scratch3Block(order, opcode, blockType, text, handler, null);
-    }
-
-    public static Scratch3Block ofCommand(int order, String opcode, String text, Scratch3BlockHandler handler) {
-        return ofHandler(order, opcode, BlockType.command, text, handler);
-    }
-
-    @SneakyThrows
-    public static <T extends Scratch3Block> T ofHandler(int order, String opcode, BlockType blockType, String text,
-                                                        Scratch3BlockHandler handler, Class<T> targetClass) {
-        Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class,
-                Scratch3BlockHandler.class, Scratch3BlockEvaluateHandler.class);
-        return constructor.newInstance(order, opcode, blockType, text, handler, null);
-    }
-
-    public static Scratch3Block ofHandler(String opcode, BlockType blockType, Scratch3BlockHandler handler) {
-        return new Scratch3Block(0, opcode, blockType, null, handler, null);
-    }
-
-    public static Scratch3Block ofReporter(int order, String opcode, String text, Scratch3BlockEvaluateHandler evalHandler) {
-        return new Scratch3Block(order, opcode, BlockType.reporter, text, null, evalHandler);
-    }
-
-    public static Scratch3Block ofBoolean(int order, String opcode, String text, Scratch3BlockEvaluateHandler evalHandler) {
-        return new Scratch3Block(order, opcode, BlockType.Boolean, text, null, evalHandler);
-    }
-
-    @SneakyThrows
-    public static <T extends Scratch3Block> T ofReporter(int order, String opcode,
-                                                         String text, Scratch3BlockEvaluateHandler evalHandler,
-                                                         Class<T> targetClass) {
-        Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class,
-                Scratch3BlockHandler.class, Scratch3BlockEvaluateHandler.class);
-        return constructor.newInstance(order, opcode, BlockType.reporter, text, null, evalHandler);
-    }
-
-    public static Scratch3Block ofReporter(String opcode, Scratch3BlockEvaluateHandler evalHandler) {
-        return new Scratch3Block(0, opcode, BlockType.reporter, null, null, evalHandler);
     }
 
     public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type) {
@@ -169,22 +108,6 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         }
     }
 
-    public void allowLinkBoolean(BiConsumer<String, WorkspaceBlock> allowLinkBoolean) {
-        this.allowLinkBoolean = allowLinkBoolean;
-    }
-
-    public void setLinkGenerator(LinkGeneratorHandler linkGenerator) {
-        this.linkGenerator = linkGenerator;
-    }
-
-    public void allowLinkFloatVariable(BiConsumer<String, WorkspaceBlock> allowLinkVariable) {
-        this.allowLinkVariable = allowLinkVariable;
-    }
-
-    public WorkspaceCodeGenerator codeGenerator(String extension) {
-        return new WorkspaceCodeGenerator(extension);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -196,10 +119,6 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     @Override
     public int hashCode() {
         return Objects.hash(opcode);
-    }
-
-    public interface LinkGeneratorHandler {
-        void handle(String varGroup, String varName, JSONObject parameter) throws Exception;
     }
 
     @FunctionalInterface
@@ -250,30 +169,6 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
                 return defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
             }
             return null;
-        }
-    }
-
-    @RequiredArgsConstructor
-    public class WorkspaceCodeGenerator {
-
-        private final Map<String, Object> menuValues = new HashMap<>();
-        private final String extension;
-
-        public WorkspaceCodeGenerator setMenu(MenuBlock menuBlock, Object value) {
-            menuValues.put(menuBlock.getName(), value);
-            return this;
-        }
-
-        public void generateBooleanLink(String varGroup, String varName, EntityContext entityContext) {
-            getLinkCodeGenerator(entityContext).generateBooleanLink(varGroup, varName);
-        }
-
-        public void generateFloatLink(String varGroup, String varName, EntityContext entityContext) {
-            getLinkCodeGenerator(entityContext).generateFloatLink(varGroup, varName);
-        }
-
-        private LinkCodeGenerator getLinkCodeGenerator(EntityContext entityContext) {
-            return new LinkCodeGenerator(extension, getOpcode(), entityContext, menuValues, getArguments());
         }
     }
 }

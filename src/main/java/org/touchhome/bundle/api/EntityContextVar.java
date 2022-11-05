@@ -3,6 +3,7 @@ package org.touchhome.bundle.api;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
+import org.touchhome.common.util.CommonUtils;
 
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -52,13 +53,26 @@ public interface EntityContextVar {
      */
     boolean exists(String variableId);
 
-    // return variable id
-    String createVariable(String groupId, String variableName, VariableType variableType);
+    default String createVariable(String groupId, String variableName, VariableType variableType) {
+        return createVariable(groupId, CommonUtils.generateUUID(), variableName, variableType);
+    }
 
     /**
+     * Get or create new variable.
+     *
+     * @return variable id
+     */
+    String createVariable(String groupId, String variableId, String variableName, VariableType variableType);
+
+    default boolean createGroup(String groupId, String groupName) {
+        return createGroup(groupId, groupName, false);
+    }
+
+    /**
+     * @param locked - locked group and related variables unable to remove from UI
      * @return false if group already exists
      */
-    boolean createGroup(String groupId, String groupName);
+    boolean createGroup(String groupId, String groupName, boolean locked);
 
     @Getter
     @RequiredArgsConstructor

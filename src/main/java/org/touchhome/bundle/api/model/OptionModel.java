@@ -163,11 +163,14 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> list(@NotNull String... values) {
-        return Stream.of(values).map(v -> OptionModel.of(v, v)).collect(Collectors.toList());
+        return list(Arrays.asList(values));
     }
 
     public static List<OptionModel> list(@NotNull Collection<String> values) {
-        return values.stream().map(v -> OptionModel.of(v, v)).collect(Collectors.toList());
+        return values.stream().filter(Objects::nonNull).map(v -> {
+            String[] items = v.split(":");
+            return OptionModel.of(items[0], items.length > 1 ? items[1] : items[0]);
+        }).collect(Collectors.toList());
     }
 
     public static List<OptionModel> listWithEmpty(@NotNull Collection<String> values) {

@@ -11,6 +11,7 @@ import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.util.CommonUtils;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
@@ -54,8 +55,15 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
         return (T) this;
     }
 
-    default T setStatus(@NotNull Status status, @Nullable String msg) {
-        TouchHomeUtils.STATUS_MAP.put(((T) this).getEntityID(), Pair.of(status, msg == null ? "" : msg));
+    default T setStatus(@Nullable Status status, @Nullable String msg) {
+        if (status != null) {
+            String entityID = ((T) this).getEntityID();
+            Pair<Status, String> prev = TouchHomeUtils.STATUS_MAP.get(entityID);
+            if (prev != null && prev.getFirst() != status && !Objects.equals(prev.getSecond(), msg)) {
+                logChangeStatus(status, msg);
+            }
+            TouchHomeUtils.STATUS_MAP.put(entityID, Pair.of(status, msg == null ? "" : msg));
+        }
         return (T) this;
     }
 
@@ -67,5 +75,12 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
 
     default T setStatusMessage(@Nullable String msg) {
         return setStatus(getStatus(), msg);
+    }
+
+    /**
+     * Override in entity if need log change status
+     */
+    default void logChangeStatus(Status status, String message) {
+        // do nothing
     }
 }

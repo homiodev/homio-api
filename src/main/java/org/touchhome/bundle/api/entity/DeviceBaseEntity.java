@@ -32,7 +32,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Getter
     @UIField(order = 50, type = UIFieldType.SelectBox)
     @UIFieldSelection(SelectPlaceOptionLoader.class)
-    @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE", color = "#748994")
+    @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE")
     private String place;
 
     @Lob

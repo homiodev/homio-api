@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.entity.HasJsonData;
 import org.touchhome.bundle.api.entity.widget.ability.HasGetStatusValue;
 import org.touchhome.bundle.api.entity.widget.ability.HasSetStatusValue;
-import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
 public interface HasDynamicParameterFields extends HasJsonData {
 

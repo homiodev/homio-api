@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -67,7 +66,7 @@ public interface WorkspaceBlock {
             logErrorAndThrow("Entity {} has to implement EntityService", baseEntity.getTitle());
         }
         EntityService entityService = (EntityService) baseEntity;
-        S service = (S) entityService.getOrCreateService(getEntityContext(), true, false);
+        S service = (S) entityService.getService();
         if (!serviceClass.isAssignableFrom(service.getClass())) {
             logErrorAndThrow("Entity {} has no service {}", baseEntity.getTitle(), serviceClass.getSimpleName());
         }

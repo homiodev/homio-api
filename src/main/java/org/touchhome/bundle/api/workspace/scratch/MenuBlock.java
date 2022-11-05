@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.KeyValueEnum;
 
@@ -19,8 +17,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.apache.commons.lang3.StringUtils.defaultString;
-
 @Getter
 @RequiredArgsConstructor
 public abstract class MenuBlock {
@@ -29,59 +25,6 @@ public abstract class MenuBlock {
 
     protected boolean multiSelect;
     protected String uiDelimiter;
-
-    public static ServerMenuBlock ofServer(String name, String url, String firstKey, String firstValue, Integer... clusters) {
-        return new ServerMenuBlock(name, url, firstKey, firstValue, clusters, true);
-    }
-
-    public static ServerMenuBlock ofServer(String name, String url, String firstKey) {
-        return ofServer(name, url, firstKey, "-");
-    }
-
-    public static ServerMenuBlock ofServer(String name, String url, String firstKey, String firstValue) {
-        return new ServerMenuBlock(name, url, firstKey, firstValue, null, true);
-    }
-
-    public static ServerMenuBlock ofServerServiceItems(String name, Class<?> entityServiceClass, String firstKey) {
-        return new ServerMenuBlock(name, "rest/item/service/" + entityServiceClass.getSimpleName(), firstKey, "-", null, true);
-    }
-
-    public static ServerMenuBlock ofServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey) {
-        return ofServerItems(name, itemClass, firstKey, "-");
-    }
-
-    public static ServerMenuBlock ofServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey,
-                                                String firstValue) {
-        return new ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), firstKey, firstValue, null, true);
-    }
-
-    public static <T extends Enum> StaticMenuBlock<T> ofStatic(String name, Class<T> enumClass, T defaultValue) {
-        return new StaticMenuBlock(name, null, enumClass).addEnum(enumClass).setDefaultValue(defaultValue);
-    }
-
-    public static <T extends KeyValueEnum> StaticMenuBlock<T> ofStaticKV(String name, Class<T> enumClass, T defaultValue) {
-        return new StaticMenuBlock(name, null, enumClass).addEnumKVE(enumClass).setDefaultValue(defaultValue);
-    }
-
-    public static <T extends Enum> StaticMenuBlock<T> ofStatic(String name, Class<T> enumClass, T defaultValue,
-                                                               Predicate<T> filter) {
-        return new StaticMenuBlock(name, null, enumClass).addEnum(enumClass, filter).setDefaultValue(defaultValue);
-    }
-
-    public static StaticMenuBlock<String> ofStaticList(String name, Map<String, String> items, String defaultValue) {
-        return new StaticMenuBlock(name, items, String.class).setDefaultValue(defaultValue);
-    }
-
-    public static ServerMenuBlock ofServerFiles(@NotNull MenuBlock.ServerMenuBlock fileSystemDependency,
-                                                @Nullable String regexp) {
-        return MenuBlock.ofServer("FILE", defaultString(regexp, ".*"), "File")
-                .setDependency(fileSystemDependency).setUIDelimiter("/");
-    }
-
-    public static ServerMenuBlock ofServerFolders(@NotNull MenuBlock.ServerMenuBlock fileSystemDependency,
-                                                  @Nullable String regexp) {
-        return MenuBlock.ofServer("FOLDER", defaultString(regexp, ".*"), "Folder").setDependency(fileSystemDependency);
-    }
 
     public abstract Object getDefaultValue();
 
@@ -181,21 +124,21 @@ public abstract class MenuBlock {
             return this;
         }
 
-        private StaticMenuBlock addEnum(Class<? extends Enum> enumClass) {
+        StaticMenuBlock addEnum(Class<? extends Enum> enumClass) {
             for (Enum item : enumClass.getEnumConstants()) {
                 this.items.add(new StaticMenuItem(item.name(), item.toString()));
             }
             return this;
         }
 
-        private StaticMenuBlock addEnumKVE(Class<? extends KeyValueEnum> enumClass) {
+        StaticMenuBlock addEnumKVE(Class<? extends KeyValueEnum> enumClass) {
             for (KeyValueEnum item : enumClass.getEnumConstants()) {
                 this.items.add(new StaticMenuItem(item.getKey(), item.getValue()));
             }
             return this;
         }
 
-        private <T extends Enum> StaticMenuBlock addEnum(Class<T> enumClass, Predicate<T> filter) {
+        <T extends Enum> StaticMenuBlock addEnum(Class<T> enumClass, Predicate<T> filter) {
             for (T item : enumClass.getEnumConstants()) {
                 if (filter.test(item)) {
                     this.items.add(new StaticMenuItem(item.name(), item.toString()));
