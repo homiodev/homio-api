@@ -33,4 +33,9 @@ public interface SettingPluginOptionsPort extends SettingPlugin<SerialPort>, Set
     default Class<SerialPort> getType() {
         return SerialPort.class;
     }
+
+    @Override
+    default boolean lazyLoad() {
+        return true;
+    }
 }

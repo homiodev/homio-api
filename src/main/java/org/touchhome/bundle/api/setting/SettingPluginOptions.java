@@ -9,4 +9,8 @@ import java.util.Collection;
 public interface SettingPluginOptions<T> extends SettingPlugin<T> {
 
     Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params);
+
+    default boolean lazyLoad() {
+        return false;
+    }
 }

@@ -8,6 +8,7 @@ import org.touchhome.bundle.api.util.SecureString;
 import org.touchhome.common.util.CommonUtils;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,8 +62,20 @@ public interface HasJsonData {
     }
 
     default List<String> getJsonDataList(String key, String delimiter) {
+        return getJsonDataStream(key, delimiter).collect(Collectors.toList());
+    }
+
+    default Set<String> getJsonDataSet(String key) {
+        return getJsonDataSet(key, "~~~");
+    }
+
+    default Set<String> getJsonDataSet(String key, String delimiter) {
+        return getJsonDataStream(key, delimiter).collect(Collectors.toSet());
+    }
+
+    default Stream<String> getJsonDataStream(String key, String delimiter) {
         return Stream.of(getJsonData().optString(key, "").split(delimiter))
-                .filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+                .filter(StringUtils::isNotEmpty);
     }
 
     default Long getJsonData(String key, long defaultValue) {

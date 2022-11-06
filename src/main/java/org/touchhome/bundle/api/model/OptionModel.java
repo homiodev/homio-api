@@ -167,10 +167,23 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> list(@NotNull Collection<String> values) {
-        return values.stream().filter(Objects::nonNull).map(v -> {
-            String[] items = v.split(":");
-            return OptionModel.of(items[0], items.length > 1 ? items[1] : items[0]);
-        }).collect(Collectors.toList());
+        List<OptionModel> models = new ArrayList<>();
+        for (String value : values) {
+            if (value.contains("..")) { // 1..12;Value %s
+                String[] items = value.split("\\.\\.");
+                String[] toAndDefinition = items[1].split(";");
+                String title = toAndDefinition.length == 2 ? toAndDefinition[1] : "%s";
+                for (int i = Integer.parseInt(items[0]); i <= Integer.parseInt(toAndDefinition[0]); i++) {
+                    models.add(OptionModel.of(String.valueOf(i), String.format(title, i)));
+                }
+            } else if (value.contains(":")) {
+                String[] items = value.split(":");
+                models.add(OptionModel.of(items[0], items[1]));
+            } else {
+                models.add(OptionModel.of(value));
+            }
+        }
+        return models;
     }
 
     public static List<OptionModel> listWithEmpty(@NotNull Collection<String> values) {

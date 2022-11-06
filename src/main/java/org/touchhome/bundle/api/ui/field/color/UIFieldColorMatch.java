@@ -2,7 +2,7 @@ package org.touchhome.bundle.api.ui.field.color;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(UIFieldColorsMatch.class)
 public @interface UIFieldColorMatch {

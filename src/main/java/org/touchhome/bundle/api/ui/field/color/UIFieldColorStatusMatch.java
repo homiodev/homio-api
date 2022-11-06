@@ -11,15 +11,32 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorStatusMatch {
+    // Status.ONLINE
     String online() default "#1F8D2D";
 
-    String offline() default "#B22020";
+    // Status.OFFLINE
+    String offline() default "#969696";
 
+    // Status.UNKNOWN
     String unknown() default "#818744";
 
-    String error() default "#9C4F4F";
+    // Status.ERROR
+    String error() default "#B22020";
 
+    // Status.REQUIRE_AUTH
     String requireAuth() default "#8C3581";
+
+    // Status.RUNNING
+    String running() default "#B59324";
+
+    // Status.WAITING
+    String waiting() default "#506ABF";
+
+    // Status.NOT_SUPPORTED
+    String notSupported() default "#9C3E60";
+
+    // Status.DONE
+    String done() default "#399396";
 
     // handle color if message starts with 'error'/'requireAuth'/...
     boolean handlePrefixes() default false;

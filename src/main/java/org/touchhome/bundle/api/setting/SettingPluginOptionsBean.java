@@ -20,6 +20,11 @@ public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
     }
 
     @Override
+    default boolean lazyLoad() {
+        return true;
+    }
+
+    @Override
     default T parseValue(EntityContext entityContext, String value) {
         return entityContext.getBeansOfType(getType()).stream().filter(p -> p.getClass().getSimpleName().equals(value)).findAny()
                 .orElseThrow(() -> new NotFoundException(

@@ -9,7 +9,7 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.hardware.other.MachineHardwareRepository;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
-import org.touchhome.bundle.api.setting.SettingPluginOptionsFileExplorer;
+import org.touchhome.bundle.api.setting.SettingPluginText;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.model.ProgressBar;
@@ -18,6 +18,7 @@ import org.touchhome.common.util.Curl;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public abstract class DependencyExecutableInstaller implements UIActionHandler {
 
@@ -34,7 +35,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
     protected abstract @Nullable Path installDependencyInternal(@NotNull EntityContext entityContext,
                                                                 @NotNull ProgressBar progressBar) throws Exception;
 
-    protected void afterDependencyInstalled(@NotNull EntityContext entityContext, @NotNull Path path) {
+    protected void afterDependencyInstalled(@NotNull EntityContext entityContext, @Nullable Path path) {
 
     }
 
@@ -42,7 +43,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
         requireInstall = null;
         Path path = installDependencyInternal(entityContext, progressBar);
         if (path != null) {
-            entityContext.setting().setValue(getDependencyPluginSettingClass(), path);
+            entityContext.setting().setValue(getDependencyPluginSettingClass(), path.toString());
         }
         // check dependency installed
         if (isRequireInstallDependencies(entityContext, false)) {
@@ -67,7 +68,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
     }
 
     public boolean checkDependencyInstalled(@NotNull EntityContext entityContext, @NotNull MachineHardwareRepository repository) {
-        Path targetPath = entityContext.setting().getValue(getDependencyPluginSettingClass());
+        Path targetPath = Paths.get(entityContext.setting().getValue(getDependencyPluginSettingClass()));
         if (Files.isRegularFile(targetPath)) {
             return checkWinDependencyInstalled(repository, targetPath);
         }
@@ -79,7 +80,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
     }
 
     /**
-     * Just an utility methodUISidebarButton
+     * Just a utility methodUISidebarButton
      */
     @SneakyThrows
     public static Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
@@ -95,7 +96,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
         return targetFolder;
     }
 
-    public abstract @NotNull Class<? extends SettingPluginOptionsFileExplorer> getDependencyPluginSettingClass();
+    public abstract @NotNull Class<? extends SettingPluginText> getDependencyPluginSettingClass();
 
     @Override
     public boolean isEnabled(@NotNull EntityContext entityContext) {

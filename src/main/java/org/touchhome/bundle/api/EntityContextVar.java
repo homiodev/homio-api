@@ -65,14 +65,14 @@ public interface EntityContextVar {
     String createVariable(String groupId, String variableId, String variableName, VariableType variableType);
 
     default boolean createGroup(String groupId, String groupName) {
-        return createGroup(groupId, groupName, false);
+        return createGroup(groupId, groupName, false, null, null, null);
     }
 
     /**
      * @param locked - locked group and related variables unable to remove from UI
      * @return false if group already exists
      */
-    boolean createGroup(String groupId, String groupName, boolean locked);
+    boolean createGroup(String groupId, String groupName, boolean locked, String icon, String iconColor, String description);
 
     @Getter
     @RequiredArgsConstructor
