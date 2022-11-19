@@ -23,38 +23,7 @@ import java.util.function.Supplier;
 public interface EntityContextBGP {
     EntityContext getEntityContext();
 
-    interface ScheduleBuilder<T> {
-        ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command);
-
-        ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command);
-
-        ScheduleBuilder<T> interval(@NotNull String cron);
-
-        ScheduleBuilder<T> interval(@NotNull Duration duration);
-
-        /**
-         * Execute some code with ThreadContext before execution
-         */
-        ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
-
-        /**
-         * Set delay before first execution.
-         */
-        ScheduleBuilder<T> delay(@NotNull Duration duration);
-
-        // default false
-        ScheduleBuilder<T> hideOnUI(boolean value);
-
-        // default true
-        ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
-
-        // default true
-        ScheduleBuilder<T> cancelOnError(boolean value);
-    }
-
     <T> ScheduleBuilder<T> builder(@NotNull String name);
-
-    void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
 
     /**
      * Await processes to be done
@@ -155,16 +124,6 @@ public interface EntityContextBGP {
      */
     void registerThreadsPuller(@NotNull String entityID, @NotNull Consumer<ThreadPuller> threadPullerConsumer);
 
-    interface ThreadPuller {
-        @NotNull ThreadPuller addThread(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-                                        @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
-
-        @NotNull ThreadPuller addScheduler(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-                                           @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
-                                           int runCount,
-                                           @Nullable String bigDescription);
-    }
-
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
                                                        @Nullable Duration maxTerminateTimeout,
                                                        @NotNull Collection<P> taskItems,
@@ -178,16 +137,55 @@ public interface EntityContextBGP {
                                           @NotNull Map<String, Callable<T>> runnableTasks,
                                           @NotNull Consumer<Integer> progressConsumer);
 
+    interface ScheduleBuilder<T> {
+        ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command);
+
+        ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command);
+
+        ScheduleBuilder<T> interval(@NotNull String cron);
+
+        ScheduleBuilder<T> interval(@NotNull Duration duration);
+
+        /**
+         * Execute some code with ThreadContext before execution
+         */
+        ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
+
+        /**
+         * Set delay before first execution.
+         */
+        ScheduleBuilder<T> delay(@NotNull Duration duration);
+
+        // default false
+        ScheduleBuilder<T> hideOnUI(boolean value);
+
+        // default true
+        ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
+
+        // default true
+        ScheduleBuilder<T> cancelOnError(boolean value);
+    }
+
+    interface ThreadPuller {
+        @NotNull ThreadPuller addThread(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
+                                        @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
+
+        @NotNull ThreadPuller addScheduler(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
+                                           @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
+                                           int runCount,
+                                           @Nullable String bigDescription);
+    }
+
     interface ThreadContext<T> {
         @NotNull String getName();
 
         @NotNull String getState();
 
+        void setState(@NotNull String state);
+
         @Nullable Object getMetadata(String key);
 
         void setMetadata(@NotNull String key, @NotNull Object value);
-
-        void setState(@NotNull String state);
 
         void setCancelOnError(boolean cancelOnError);
 

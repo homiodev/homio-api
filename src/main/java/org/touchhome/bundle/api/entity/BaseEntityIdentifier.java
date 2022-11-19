@@ -11,9 +11,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializable {
 
     @JsonIgnore
-    default String getDefaultName() {
-        return null;
-    }
+    String getDefaultName();
 
     default String getTitle() {
         return defaultIfBlank(getName(), defaultIfBlank(getDefaultName(), getEntityID()));
@@ -29,7 +27,7 @@ public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializab
 
     }
 
-    default void afterUpdate(EntityContext entityContext) {
+    default void afterUpdate(EntityContext entityContext, boolean persis) {
 
     }
 

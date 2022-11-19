@@ -18,12 +18,17 @@ public final class WorkspaceEntity extends BaseEntity<WorkspaceEntity> implement
     public static final String PREFIX = "ws_";
 
     @Lob
-    @Column(length = 10485760) // 10MB
+    @Column(length = 10_000_000)
     private String content;
 
     @Override
     public int compareTo(WorkspaceEntity o) {
         return this.getCreationTime().compareTo(o.getCreationTime());
+    }
+
+    @Override
+    public String getDefaultName() {
+        return null;
     }
 
     @Override

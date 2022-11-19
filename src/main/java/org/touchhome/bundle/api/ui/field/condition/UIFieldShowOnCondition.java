@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.ui.field;
+package org.touchhome.bundle.api.ui.field.condition;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -34,6 +34,51 @@ public interface WorkspaceBlock {
                     ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
                     ".js", ".mp3"));
 
+    @SneakyThrows
+    static String evalStringWithContext(String value, Function<String, String> valueSupplier) {
+        value = SpringUtils.replaceEnvValues(value, (text, defValue, prefix) -> {
+            text = text.toUpperCase();
+            switch (text) {
+                case "TIMESTAMP":
+                    return String.valueOf(System.currentTimeMillis());
+                case "DATETIME":
+                    return new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(new Date());
+                case "DATE":
+                    return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                case "TIME":
+                    return new SimpleDateFormat("HH-mm-ss").format(new Date());
+                case "HOUR":
+                    return new SimpleDateFormat("HH").format(new Date());
+                case "MIN":
+                    return new SimpleDateFormat("mm").format(new Date());
+                case "SEC":
+                    return new SimpleDateFormat("ss").format(new Date());
+                case "YEAR":
+                    return new SimpleDateFormat("yyyy").format(new Date());
+                case "MONTH":
+                    return new SimpleDateFormat("MM").format(new Date());
+                case "DAY":
+                    return new SimpleDateFormat("dd").format(new Date());
+                case "UUID":
+                    return UUID.randomUUID().toString();
+                case "FILES":
+                    Path dir = Files.createDirectories(Paths.get(prefix.toString()));
+                    return String.valueOf(Objects.requireNonNull(dir.toFile().list()).length);
+            }
+            return defaultString(valueSupplier.apply(text), defValue);
+        });
+
+        DoubleEvaluator eval = new DoubleEvaluator();
+        value = SpringUtils.replaceHashValues(value, (text, defValue, prefix) -> {
+            try {
+                return String.valueOf(eval.evaluate(text));
+            } catch (Exception ignore) {
+                return StringUtils.defaultString(defValue, text);
+            }
+        });
+        return value;
+    }
+
     void logError(String message, Object... params);
 
     void logErrorAndThrow(String message, Object... params);
@@ -224,51 +269,6 @@ public interface WorkspaceBlock {
         } else {
             value = evalStringWithContext(value, text -> String.valueOf(getValue(text)));
         }
-        return value;
-    }
-
-    @SneakyThrows
-    static String evalStringWithContext(String value, Function<String, String> valueSupplier) {
-        value = SpringUtils.replaceEnvValues(value, (text, defValue, prefix) -> {
-            text = text.toUpperCase();
-            switch (text) {
-                case "TIMESTAMP":
-                    return String.valueOf(System.currentTimeMillis());
-                case "DATETIME":
-                    return new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(new Date());
-                case "DATE":
-                    return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-                case "TIME":
-                    return new SimpleDateFormat("HH-mm-ss").format(new Date());
-                case "HOUR":
-                    return new SimpleDateFormat("HH").format(new Date());
-                case "MIN":
-                    return new SimpleDateFormat("mm").format(new Date());
-                case "SEC":
-                    return new SimpleDateFormat("ss").format(new Date());
-                case "YEAR":
-                    return new SimpleDateFormat("yyyy").format(new Date());
-                case "MONTH":
-                    return new SimpleDateFormat("MM").format(new Date());
-                case "DAY":
-                    return new SimpleDateFormat("dd").format(new Date());
-                case "UUID":
-                    return UUID.randomUUID().toString();
-                case "FILES":
-                    Path dir = Files.createDirectories(Paths.get(prefix.toString()));
-                    return String.valueOf(Objects.requireNonNull(dir.toFile().list()).length);
-            }
-            return defaultString(valueSupplier.apply(text), defValue);
-        });
-
-        DoubleEvaluator eval = new DoubleEvaluator();
-        value = SpringUtils.replaceHashValues(value, (text, defValue, prefix) -> {
-            try {
-                return String.valueOf(eval.evaluate(text));
-            } catch (Exception ignore) {
-                return StringUtils.defaultString(defValue, text);
-            }
-        });
         return value;
     }
 

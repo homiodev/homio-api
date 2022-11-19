@@ -38,7 +38,7 @@ import java.util.Collection;
 public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> extends DeviceBaseEntity<T>
         implements HasDynamicContextMenuActions {
 
-    @UIField(order = 300, onlyEdit = true, advanced = true)
+    @UIField(order = 300, onlyEdit = true)
     public boolean isHasAudioStream() {
         return getJsonData("hasAudioStream", false);
     }
@@ -65,6 +65,12 @@ public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> ext
 
     public abstract String getStreamUrl(String key);
 
+    @Override
+    public void assembleActions(UIInputBuilder uiInputBuilder) {
+        uiInputBuilder.from(assembleActions());
+        uiInputBuilder.fireFetchValues();
+    }
+
     static class VideoStreamDiscovery extends BaseBeansItemsDiscovery {
 
         public VideoStreamDiscovery() {
@@ -80,11 +86,5 @@ public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> ext
             entity.fireUpdateSnapshot(entityContext, params);
             return null;
         }
-    }
-
-    @Override
-    public void assembleActions(UIInputBuilder uiInputBuilder) {
-        uiInputBuilder.from(assembleActions());
-        uiInputBuilder.fireFetchValues();
     }
 }

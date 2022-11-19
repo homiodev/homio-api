@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api;
 
+import com.pivovarit.function.ThrowingRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.BaseEntityIdentifier;
@@ -9,17 +10,20 @@ import java.util.function.Consumer;
 public interface EntityContextEvent {
 
     /**
-     * Remove listeners and last saved value
+     * Remove general listeners and last saved value
      */
     void removeEvents(String key, String... additionalKeys);
 
     /**
-     * Listen for event with key. Replace listener if key already exists
+     * Listen for general event with key. Replace listener if key already exists
      */
     default EntityContextEvent addEventListener(String key, Consumer<Object> listener) {
         return addEventListener(key, "", listener);
     }
 
+    /**
+     * Listen for general event with key. Replace listener if key already exists
+     */
     EntityContextEvent addEventListener(String key, String discriminator, Consumer<Object> listener);
 
     /**
@@ -29,18 +33,22 @@ public interface EntityContextEvent {
         return addEventBehaviourListener(key, "", listener);
     }
 
+    /**
+     * Listen for event with key. Fires listener immediately if value was saved before
+     */
     EntityContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<Object> listener);
 
     /**
-     * Fire event with key and value
+     * Fire event with key and value.
      *
      * @param value - must implement equal() method in case if compareValues is true
      */
-    EntityContextEvent fireEvent(@NotNull String key, @Nullable Object value, boolean compareValues);
+    EntityContextEvent fireEvent(@NotNull String key, @Nullable Object value);
 
-    default EntityContextEvent fireEvent(@NotNull String key, @Nullable Object value) {
-        return fireEvent(key, value, true);
-    }
+    /**
+     * Fire event with key and value only if previous saved value is null or value != previousValue
+     */
+    EntityContextEvent fireEventIfNotSame(@NotNull String key, @Nullable Object value);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
             (String entityID, String key, Consumer<T> listener);
@@ -78,4 +86,16 @@ public interface EntityContextEvent {
     EntityContextEvent removeEntityUpdateListener(String entityID, String key);
 
     EntityContextEvent removeEntityRemoveListener(String entityID, String key);
+
+    /**
+     * Run only once when internet became available
+     */
+    void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
+
+    /**
+     * Listen for any port changes with key. Replace listener if key already exists
+     */
+    default void addPortChangeStatusListener(String key, Consumer<Object> listener) {
+        addEventListener("any-port-changed", key, listener);
+    }
 }

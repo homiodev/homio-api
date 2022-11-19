@@ -24,6 +24,40 @@ public class DecimalType extends Number implements State, Comparable<DecimalType
     @Setter
     private BigDecimal oldValue;
 
+    public DecimalType(BigDecimal value) {
+        this.value = value;
+    }
+
+    public DecimalType(BigDecimal value, BigDecimal oldValue) {
+        this.value = value;
+        this.oldValue = oldValue;
+    }
+
+    public DecimalType(int value, int oldValue) {
+        this.value = BigDecimal.valueOf(value);
+        this.oldValue = BigDecimal.valueOf(oldValue);
+    }
+
+    public DecimalType(float value, Float oldValue) {
+        this(BigDecimal.valueOf(value), oldValue == null ? null : BigDecimal.valueOf(oldValue));
+    }
+
+    public DecimalType(long value) {
+        this(BigDecimal.valueOf(value));
+    }
+
+    public DecimalType(double value) {
+        this(BigDecimal.valueOf(value));
+    }
+
+    public DecimalType(float value) {
+        this(BigDecimal.valueOf(value));
+    }
+
+    public DecimalType(String value) {
+        this(new BigDecimal(value));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -42,35 +76,6 @@ public class DecimalType extends Number implements State, Comparable<DecimalType
     @Override
     public boolean equalToOldValue() {
         return Objects.equals(value, oldValue);
-    }
-
-    public DecimalType(BigDecimal value) {
-        this.value = value;
-    }
-
-    public DecimalType(BigDecimal value, BigDecimal oldValue) {
-        this.value = value;
-        this.oldValue = oldValue;
-    }
-
-    public DecimalType(long value) {
-        this(BigDecimal.valueOf(value));
-    }
-
-    public DecimalType(double value) {
-        this(BigDecimal.valueOf(value));
-    }
-
-    public DecimalType(float value) {
-        this(BigDecimal.valueOf(value));
-    }
-
-    public DecimalType(float value, Float oldValue) {
-        this(BigDecimal.valueOf(value), oldValue == null ? null : BigDecimal.valueOf(oldValue));
-    }
-
-    public DecimalType(String value) {
-        this(new BigDecimal(value));
     }
 
     @Override

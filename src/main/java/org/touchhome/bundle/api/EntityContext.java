@@ -8,17 +8,44 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
+import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.repository.AbstractRepository;
+import org.touchhome.bundle.api.workspace.scratch.Scratch3ExtensionBlocks;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface EntityContext {
+
+    AtomicReference<MemSetterHandler> MEM_HANDLER = new AtomicReference<>();
+
+    interface MemSetterHandler {
+        void setValue(String entityID, String key, Object value);
+
+        Object getValue(String entityID, String key, Object defaultValue);
+    }
+
+    static Status getStatus(String key, @NotNull String distinguishKey, Status defaultStatus) {
+        return (Status) MEM_HANDLER.get().getValue(key, distinguishKey, defaultStatus);
+    }
+
+    static void setStatus(String entityId, @NotNull String distinguishKey, Status status) {
+        MEM_HANDLER.get().setValue(entityId, distinguishKey, status);
+    }
+
+    static String getMessage(String key, @NotNull String distinguishKey) {
+        return (String) MEM_HANDLER.get().getValue(key, distinguishKey + "_msg", null);
+    }
+
+    static void setMessage(String entityId, @NotNull String distinguishKey, String value) {
+        MEM_HANDLER.get().setValue(entityId, distinguishKey + "_msg", value);
+    }
 
     static boolean isDevEnvironment() {
         return "true".equals(System.getProperty("development"));
@@ -49,6 +76,11 @@ public interface EntityContext {
     EntityContextSetting setting();
 
     EntityContextVar var();
+
+    /**
+     * Register custom Scratch3Extension
+     */
+    void registerScratch3Extension(Scratch3ExtensionBlocks scratch3ExtensionBlocks);
 
     default <T extends BaseEntity> T getEntity(@NotNull String entityID) {
         return getEntity(entityID, true);

@@ -24,11 +24,9 @@ import java.util.regex.Pattern;
 @Log4j2
 public class URLAudioStream extends AudioStream {
 
-    private static final Pattern PLS_STREAM_PATTERN = Pattern.compile("^File[0-9]=(.+)$");
-
     public static final String M3U_EXTENSION = "m3u";
     public static final String PLS_EXTENSION = "pls";
-
+    private static final Pattern PLS_STREAM_PATTERN = Pattern.compile("^File[0-9]=(.+)$");
     private final AudioFormat audioFormat;
     private final InputStream inputStream;
     @Getter

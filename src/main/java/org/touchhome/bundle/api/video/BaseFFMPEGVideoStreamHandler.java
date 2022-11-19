@@ -65,7 +65,16 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
     @Getter
     protected final int serverPort;
     protected final FfmpegInputDeviceHardwareRepository ffmpegInputDeviceHardwareRepository;
+    @Getter
+    private final Path ffmpegGifOutputPath;
+    @Getter
+    private final Path ffmpegMP4OutputPath;
+    @Getter
+    private final Path ffmpegHLSOutputPath;
+    @Getter
+    private final Path ffmpegImageOutputPath;
     public ReentrantLock lockCurrentSnapshot = new ReentrantLock();
+    public FFMPEG ffmpegHLS;
     @Getter
     protected byte[] latestSnapshot = new byte[0];
     @Getter
@@ -78,13 +87,11 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
     @Getter
     protected long lastAnswerFromVideo;
     @Getter
-    private final Path ffmpegGifOutputPath;
-    @Getter
-    private final Path ffmpegMP4OutputPath;
-    @Getter
-    private final Path ffmpegHLSOutputPath;
-    @Getter
-    private final Path ffmpegImageOutputPath;
+    protected boolean motionDetected = false;
+    protected FFMPEG ffmpegGIF;
+    protected FFMPEG ffmpegSnapshot;
+    protected FFMPEG ffmpegMjpeg;
+    protected FFMPEG ffmpegMP4 = null;
     @Getter
     private boolean isVideoOnline = false; // Used so only 1 error is logged when a network issue occurs.
     @Getter
@@ -92,18 +99,8 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
     private EntityContextBGP.ThreadContext<Void> videoConnectionJob;
     private EntityContextBGP.ThreadContext<Void> pollVideoJob;
     private Map<String, Consumer<Status>> stateListeners = new HashMap<>();
-
     // actions holder
     private UIInputBuilder uiInputBuilder;
-
-    public FFMPEG ffmpegHLS;
-    @Getter
-    protected boolean motionDetected = false;
-    protected FFMPEG ffmpegGIF;
-    protected FFMPEG ffmpegSnapshot;
-    protected FFMPEG ffmpegMjpeg;
-    protected FFMPEG ffmpegMP4 = null;
-
     private ServerBootstrap serverBootstrap;
     private EventLoopGroup serversLoopGroup = new NioEventLoopGroup();
 
@@ -133,7 +130,7 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
         } catch (IOException e) {
             throw new RuntimeException("Unable to clean path: " + ffmpegHLSOutputPath);
         }
-        entityContext.bgp().runOnceOnInternetUp("test-ffmpeg", () -> {
+        entityContext.event().runOnceOnInternetUp("test-ffmpeg", () -> {
             if (SystemUtils.IS_OS_LINUX) {
                 MachineHardwareRepository repository = entityContext.getBean(MachineHardwareRepository.class);
                 if (!repository.isSoftwareInstalled("ffmpeg")) {
@@ -434,7 +431,7 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
 
     public void setAttribute(String key, State state) {
         attributes.put(key, state);
-        entityContext.event().fireEvent(key + ":" + videoStreamEntityID, state);
+        entityContext.event().fireEventIfNotSame(key + ":" + videoStreamEntityID, state);
 
         if (key.equals(CHANNEL_AUDIO_THRESHOLD)) {
             entityContext.updateDelayed(videoStreamEntity, e -> e.setAudioThreshold(state.intValue()));
@@ -525,6 +522,13 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
         return new DecimalType(videoStreamEntity.getAudioThreshold());
     }
 
+    protected void setAudioAlarmThreshold(int threshold) {
+        setAttribute(CHANNEL_AUDIO_THRESHOLD, new StringType(threshold));
+        if (threshold == 0) {
+            audioDetected(false);
+        }
+    }
+
     @UIVideoAction(name = CHANNEL_AUDIO_THRESHOLD, order = 120, icon = "fas fa-volume-up", type = UIVideoAction.ActionType.Dimmer)
     public void setAudioThreshold(int threshold) {
         entityContext.updateDelayed(videoStreamEntity, e -> e.setAudioThreshold(threshold));
@@ -541,13 +545,6 @@ public abstract class BaseFFMPEGVideoStreamHandler<T extends BaseFFMPEGVideoStre
     public void setMotionThreshold(int threshold) {
         entityContext.updateDelayed(videoStreamEntity, e -> e.setMotionThreshold(threshold));
         setMotionAlarmThreshold(threshold);
-    }
-
-    protected void setAudioAlarmThreshold(int threshold) {
-        setAttribute(CHANNEL_AUDIO_THRESHOLD, new StringType(threshold));
-        if (threshold == 0) {
-            audioDetected(false);
-        }
     }
 
     protected void setMotionAlarmThreshold(int threshold) {

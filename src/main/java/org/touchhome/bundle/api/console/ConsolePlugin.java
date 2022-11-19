@@ -1,7 +1,7 @@
 package org.touchhome.bundle.api.console;
 
 import org.json.JSONObject;
-import org.touchhome.bundle.api.BundleEntryPoint;
+import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.setting.console.header.ConsoleHeaderSettingPlugin;
@@ -21,7 +21,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     default String getEntityID() {
-        return BundleEntryPoint.getBundleName(getClass());
+        return BundleEntrypoint.getBundleName(getClass());
     }
 
     T getValue();

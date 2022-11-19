@@ -58,7 +58,7 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     @Getter
     @Setter
     @Lob
-    @Column(length = 1048576)
+    @Column(length = 1_000_000)
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData;
 
@@ -99,6 +99,11 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     @Override
     public String getEntityPrefix() {
         return PREFIX;
+    }
+
+    @Override
+    public String getDefaultName() {
+        return "User";
     }
 
     public enum UserType {

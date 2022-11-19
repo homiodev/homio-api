@@ -9,7 +9,7 @@ import org.touchhome.bundle.api.ui.field.UIFieldType;
 import java.util.List;
 
 public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData {
-    @UIField(order = 1000, onlyEdit = true, advanced = true, type = UIFieldType.Chips)
+    @UIField(order = 1000, onlyEdit = true, type = UIFieldType.Chips)
     @UIFieldGroup("hls_group")
     @RestartHandlerOnChange
     default List<String> getExtraOptions() {
@@ -20,7 +20,7 @@ public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData {
         setJsonData("extraOpts", value);
     }
 
-    @UIField(order = 320, onlyEdit = true, advanced = true)
+    @UIField(order = 320, onlyEdit = true)
     @UIFieldGroup("hls_group")
     @RestartHandlerOnChange
     default int getHlsListSize() {
@@ -32,7 +32,7 @@ public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData {
         return (T) this;
     }
 
-    @UIField(order = 400, onlyEdit = true, advanced = true)
+    @UIField(order = 400, onlyEdit = true)
     @RestartHandlerOnChange
     @UIFieldGroup("hls_group")
     default String getVideoCodec() {
@@ -44,7 +44,7 @@ public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData {
         return (T) this;
     }
 
-    @UIField(order = 410, onlyEdit = true, advanced = true)
+    @UIField(order = 410, onlyEdit = true)
     @RestartHandlerOnChange
     @UIFieldGroup("hls_group")
     default String getAudioCodec() {
@@ -56,7 +56,7 @@ public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData {
         return (T) this;
     }
 
-    @UIField(order = 320, onlyEdit = true, advanced = true)
+    @UIField(order = 320, onlyEdit = true)
     @RestartHandlerOnChange
     @UIFieldGroup("hls_group")
     default String getHlsScale() {

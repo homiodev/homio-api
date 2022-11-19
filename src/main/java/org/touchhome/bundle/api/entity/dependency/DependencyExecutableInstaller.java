@@ -24,6 +24,23 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
 
     protected Boolean requireInstall;
 
+    /**
+     * Just a utility methodUISidebarButton
+     */
+    @SneakyThrows
+    public static Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
+                                          @NotNull ProgressBar progressBar, @NotNull Logger log) {
+        log.info("Downloading <{}> from url <{}>", targetFileName, url);
+        Path targetFolder = TouchHomeUtils.getInstallPath();
+        Path archiveFile = targetFolder.resolve(targetFileName);
+        Curl.downloadWithProgress(url, archiveFile, progressBar);
+        progressBar.progress(90, "Unzip files...");
+        log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
+        ArchiveUtil.unzip(archiveFile, targetFolder, null, true, progressBar, ArchiveUtil.UnzipFileIssueHandler.replace);
+        Files.deleteIfExists(archiveFile);
+        return targetFolder;
+    }
+
     public abstract String getName();
 
     /**
@@ -51,7 +68,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
         }
         progressBar.progress(99, "Installing finished");
         afterDependencyInstalled(entityContext, path);
-        entityContext.event().fireEvent(getName() + "-dependency-installed", true, false);
+        entityContext.event().fireEvent(getName() + "-dependency-installed", true);
     }
 
     public synchronized boolean isRequireInstallDependencies(@NotNull EntityContext entityContext, boolean useCacheIfPossible) {
@@ -77,23 +94,6 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
 
     public boolean checkWinDependencyInstalled(@NotNull MachineHardwareRepository repository, @NotNull Path targetPath) {
         return !repository.execute(targetPath + " -version").startsWith(getName() + " version");
-    }
-
-    /**
-     * Just a utility methodUISidebarButton
-     */
-    @SneakyThrows
-    public static Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
-                                          @NotNull ProgressBar progressBar, @NotNull Logger log) {
-        log.info("Downloading <{}> from url <{}>", targetFileName, url);
-        Path targetFolder = TouchHomeUtils.getInstallPath();
-        Path archiveFile = targetFolder.resolve(targetFileName);
-        Curl.downloadWithProgress(url, archiveFile, progressBar);
-        progressBar.progress(90, "Unzip files...");
-        log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
-        ArchiveUtil.unzip(archiveFile, targetFolder, null, true, progressBar, ArchiveUtil.UnzipFileIssueHandler.replace);
-        Files.deleteIfExists(archiveFile);
-        return targetFolder;
     }
 
     public abstract @NotNull Class<? extends SettingPluginText> getDependencyPluginSettingClass();

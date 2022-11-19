@@ -2,8 +2,9 @@ package org.touchhome.bundle.api;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-import org.touchhome.common.util.CommonUtils;
 
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -12,67 +13,88 @@ public interface EntityContextVar {
 
     EntityContext getEntityContext();
 
-    Object get(String variableId);
+    Object get(@NotNull String variableId);
 
-    void set(String variableId, Object value);
+    void set(@NotNull String variableId, @Nullable Object value);
 
-    default void setIfNotMatch(String variableId, Object value) {
+    default void setIfNotMatch(@NotNull String variableId, @Nullable Object value) {
         if (!Objects.equals(get(variableId), value)) {
             set(variableId, value);
         }
     }
 
-    default void setIfNotMatch(String variableId, boolean value) {
+    default void setIfNotMatch(@NotNull String variableId, boolean value) {
         if (!Objects.equals(get(variableId), value)) {
             set(variableId, value);
         }
     }
 
-    default void setIfNotMatch(String variableId, float value) {
+    default void setIfNotMatch(@NotNull String variableId, float value) {
         if (!Objects.equals(get(variableId), value)) {
             set(variableId, value);
         }
     }
 
-    default void inc(String variableId, float value) {
+    default void inc(@NotNull String variableId, float value) {
         Object o = get(variableId);
         if (Number.class.isAssignableFrom(o.getClass())) {
             set(variableId, ((Number) o).floatValue() + value);
         }
     }
 
-    String getTitle(String variableId, String defaultTitle);
+    String getTitle(@NotNull String variableId, @Nullable String defaultTitle);
 
     /**
      * Return count of messages
      */
-    long count(String variableId);
+    long count(@NotNull String variableId);
 
     /**
      * Does variable exists in system
      */
-    boolean exists(String variableId);
+    boolean exists(@NotNull String variableId);
 
-    default String createVariable(String groupId, String variableName, VariableType variableType) {
-        return createVariable(groupId, CommonUtils.generateUUID(), variableName, variableType);
+    /**
+     * Get or create new variable.
+     */
+    default String createVariable(@NotNull String groupId, @NotNull String variableName, @NotNull VariableType variableType) {
+        return createVariable(groupId, null, variableName, variableType, null);
     }
 
     /**
      * Get or create new variable.
-     *
-     * @return variable id
      */
-    String createVariable(String groupId, String variableId, String variableName, VariableType variableType);
+    default String createVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
+                                  @NotNull VariableType variableType) {
+        return createVariable(groupId, variableId, variableName, variableType, null);
+    }
 
-    default boolean createGroup(String groupId, String groupName) {
-        return createGroup(groupId, groupName, false, null, null, null);
+    /**
+     * Get or create new variable.
+     */
+    default String createVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
+                                  @NotNull VariableType variableType, @Nullable String description) {
+        return createVariable(groupId, variableId, variableName, variableType, description, null);
+    }
+
+    String createVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
+                          @NotNull VariableType variableType, @Nullable String description, @Nullable String color);
+
+    default boolean createGroup(@NotNull String groupId, @NotNull String groupName) {
+        return createGroup(groupId, groupName, false, "fas fa-layer-group", "#18C0DB", null);
     }
 
     /**
      * @param locked - locked group and related variables unable to remove from UI
      * @return false if group already exists
      */
-    boolean createGroup(String groupId, String groupName, boolean locked, String icon, String iconColor, String description);
+    boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
+                        @NotNull String iconColor, @Nullable String description);
+
+    default boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
+                                @NotNull String iconColor) {
+        return createGroup(groupId, groupName, locked, icon, iconColor, null);
+    }
 
     @Getter
     @RequiredArgsConstructor

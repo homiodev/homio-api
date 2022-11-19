@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,6 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.common.fs.TreeNode;
 
@@ -41,23 +41,17 @@ public class OptionModel implements Comparable<OptionModel> {
     };
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
+    private final ObjectNode json = OBJECT_MAPPER.createObjectNode();
     @Getter
     private @NotNull String key;
-
     @Setter
     private String title;
-
     @Setter
     @Getter
     private String icon;
-
     @Setter
     @Getter
     private String color;
-
-    private final JSONObject json = new JSONObject();
-
     @Getter
     private List<OptionModel> children;
 
@@ -66,39 +60,10 @@ public class OptionModel implements Comparable<OptionModel> {
         this.title = String.valueOf(title);
     }
 
-    public String getTitle() {
-        return key.equals(title) ? null : title;
-    }
-
-    public JSONObject getJson() {
-        return json.isEmpty() ? null : json;
-    }
-
-    public boolean has(String key) {
-        return json.has(key);
-    }
-
-    public JSONObject put(String key, Object value) {
-        return json.put(key, value);
-    }
-
-    public void putIfAbsent(String key, Object value) {
-        if (!json.has(key)) {
-            json.put(key, value);
-        }
-    }
-
     public static OptionModel key(@NotNull String key) {
         OptionModel optionModel = new OptionModel();
         optionModel.key = key;
         return optionModel;
-    }
-
-    public OptionModel setDescription(String description) {
-        if (StringUtils.isNotEmpty(description)) {
-            json(json -> json.put("description", description));
-        }
-        return this;
     }
 
     public static OptionModel separator() {
@@ -215,14 +180,9 @@ public class OptionModel implements Comparable<OptionModel> {
         return map.entrySet().stream().map(e -> OptionModel.of(e.getKey(), e.getValue())).collect(Collectors.toList());
     }
 
-    public static List<OptionModel> list(@NotNull Collection<? extends BaseEntity>... lists) {
-        List<OptionModel> res = new ArrayList<>();
-        for (Collection<? extends BaseEntity> list : lists) {
-            res.addAll(
-                    list.stream().map(e -> OptionModel.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle())))
-                            .collect(Collectors.toList()));
-        }
-        return res;
+    public static List<OptionModel> entityList(@NotNull Collection<? extends BaseEntity> list) {
+        return list.stream().map(e -> OptionModel.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle())))
+                .collect(Collectors.toList());
     }
 
     public static List<OptionModel> simpleNamelist(@NotNull Collection list) {
@@ -235,6 +195,38 @@ public class OptionModel implements Comparable<OptionModel> {
             optionModels.add(optionModel);
         }
         return optionModels;
+    }
+
+    public static void sort(List<OptionModel> options) {
+        sort(options, DEFAULT_COMPARATOR);
+    }
+
+    public static void sort(List<OptionModel> options, Comparator<OptionModel> comparator) {
+        options.sort(comparator);
+        for (OptionModel option : options) {
+            if (option.hasChildren()) {
+                OptionModel.sort(option.getChildren());
+            }
+        }
+    }
+
+    public String getTitle() {
+        return key.equals(title) ? null : title;
+    }
+
+    public ObjectNode getJson() {
+        return json.isEmpty() ? null : json;
+    }
+
+    public boolean has(String key) {
+        return json.has(key);
+    }
+
+    public OptionModel setDescription(String description) {
+        if (StringUtils.isNotEmpty(description)) {
+            json(json -> json.put("description", description));
+        }
+        return this;
     }
 
     @JsonIgnore
@@ -303,7 +295,7 @@ public class OptionModel implements Comparable<OptionModel> {
         }
     }
 
-    public OptionModel json(@NotNull Consumer<JSONObject> consumer) {
+    public OptionModel json(@NotNull Consumer<ObjectNode> consumer) {
         consumer.accept(json);
         return this;
     }
@@ -334,18 +326,5 @@ public class OptionModel implements Comparable<OptionModel> {
     @Override
     public int hashCode() {
         return Objects.hash(key);
-    }
-
-    public static void sort(List<OptionModel> options) {
-        sort(options, DEFAULT_COMPARATOR);
-    }
-
-    public static void sort(List<OptionModel> options, Comparator<OptionModel> comparator) {
-        options.sort(comparator);
-        for (OptionModel option : options) {
-            if (option.hasChildren()) {
-                OptionModel.sort(option.getChildren());
-            }
-        }
     }
 }

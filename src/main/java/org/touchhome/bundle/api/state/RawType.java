@@ -22,20 +22,9 @@ public class RawType implements State {
     @Setter
     protected String name;
     protected byte[] bytes;
-    private Path relatedFile;
     @Getter
     protected String mimeType;
-
-    public Path toPath() {
-        if (relatedFile == null || !Files.isReadable(relatedFile)) {
-            String fileName = name;
-            if (fileName == null) {
-                fileName = String.valueOf(Arrays.hashCode(bytes));
-            }
-            relatedFile = TouchHomeUtils.writeToFile(CommonUtils.getTmpPath().resolve(fileName), bytes, false);
-        }
-        return relatedFile;
-    }
+    private Path relatedFile;
 
     public RawType(byte[] bytes) {
         this(bytes, MimeTypeUtils.TEXT_PLAIN_VALUE, null);
@@ -83,6 +72,17 @@ public class RawType implements State {
             throw new IllegalArgumentException("Missing MIME type in argument " + value);
         }
         return new RawType(Base64.getDecoder().decode(value.substring(idx + 1)), value.substring(5, idx2));
+    }
+
+    public Path toPath() {
+        if (relatedFile == null || !Files.isReadable(relatedFile)) {
+            String fileName = name;
+            if (fileName == null) {
+                fileName = String.valueOf(Arrays.hashCode(bytes));
+            }
+            relatedFile = TouchHomeUtils.writeToFile(CommonUtils.getTmpPath().resolve(fileName), bytes, false);
+        }
+        return relatedFile;
     }
 
     @Override

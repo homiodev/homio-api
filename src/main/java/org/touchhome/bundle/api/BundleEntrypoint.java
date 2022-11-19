@@ -8,7 +8,7 @@ import org.touchhome.common.util.CommonUtils;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
 
-public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
+public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
     String BUNDLE_PREFIX = "org.touchhome.bundle.";
 
     static String getBundleName(Class clazz) {
@@ -46,7 +46,7 @@ public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
 
     // a-z or at most one '-' and nothing else
     default String getBundleId() {
-        return BundleEntryPoint.getBundleName(getClass());
+        return BundleEntrypoint.getBundleName(getClass());
     }
 
     int order();
@@ -56,7 +56,7 @@ public interface BundleEntryPoint extends Comparable<BundleEntryPoint> {
     }
 
     @Override
-    default int compareTo(@NotNull BundleEntryPoint o) {
+    default int compareTo(@NotNull BundleEntrypoint o) {
         return Integer.compare(this.order(), o.order());
     }
 

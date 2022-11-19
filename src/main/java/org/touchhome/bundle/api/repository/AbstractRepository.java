@@ -44,7 +44,6 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
      * Must be called only from EntityManager. That's why it's not transactional
      */
     public T save(T entity) {
-        entity.getEntityID(true); // verify entityID exists
         return em.merge(entity);
     }
 

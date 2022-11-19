@@ -82,7 +82,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     @Override
-    default void afterUpdate(EntityContext entityContext) {
+    default void afterUpdate(EntityContext entityContext, boolean persist) {
         this.getFileSystem(entityContext).setEntity(this);
     }
 }

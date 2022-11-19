@@ -6,28 +6,11 @@ import java.util.Set;
 
 public class AudioFormat {
 
-    // generic mp3 format without any further constraints
-    public static final AudioFormat MP3 = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_MP3, null, null,
-            null, null);
-
-    // generic wav format without any further constraints
-    public static final AudioFormat WAV = new AudioFormat(AudioFormat.CONTAINER_WAVE, AudioFormat.CODEC_PCM_SIGNED,
-            null, null, null, null);
-
-    // generic OGG format without any further constraints
-    public static final AudioFormat OGG = new AudioFormat(AudioFormat.CONTAINER_OGG, AudioFormat.CODEC_VORBIS, null,
-            null, null, null);
-
-    // generic AAC format without any further constraints
-    public static final AudioFormat AAC = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_AAC, null, null,
-            null, null);
-
     /**
      * {@link AudioCodec} encoded data without any container header or footer,
      * e.g. MP3 is a non-container format
      */
     public static final String CONTAINER_NONE = "NONE";
-
     /**
      * Microsofts wave container format
      *
@@ -36,61 +19,64 @@ public class AudioFormat {
      * @see <a href="http://bit.ly/1TUWSlk">RIFF container format</a>
      */
     public static final String CONTAINER_WAVE = "WAVE";
-
     /**
      * OGG container format
      *
      * @see <a href="http://bit.ly/1oRMWNE">OGG</a>
      */
     public static final String CONTAINER_OGG = "OGG";
-
     /**
      * PCM Signed
      *
      * @see <a href="http://wiki.multimedia.cx/?title=PCM#PCM_Types">PCM Types</a>
      */
     public static final String CODEC_PCM_SIGNED = "PCM_SIGNED";
-
+    // generic wav format without any further constraints
+    public static final AudioFormat WAV = new AudioFormat(AudioFormat.CONTAINER_WAVE, AudioFormat.CODEC_PCM_SIGNED,
+            null, null, null, null);
     /**
      * PCM Unsigned
      *
      * @see <a href="http://wiki.multimedia.cx/?title=PCM#PCM_Types">PCM Types</a>
      */
     public static final String CODEC_PCM_UNSIGNED = "PCM_UNSIGNED";
-
     /**
      * PCM A-law
      *
      * @see <a href="http://wiki.multimedia.cx/?title=PCM#PCM_Types">PCM Types</a>
      */
     public static final String CODEC_PCM_ALAW = "ALAW";
-
     /**
      * PCM u-law
      *
      * @see <a href="http://wiki.multimedia.cx/?title=PCM#PCM_Types">PCM Types</a>
      */
     public static final String CODEC_PCM_ULAW = "ULAW";
-
     /**
      * MP3 Codec
      *
      * @see <a href="http://wiki.multimedia.cx/index.php?title=MP3">MP3 Codec</a>
      */
     public static final String CODEC_MP3 = "MP3";
-
+    // generic mp3 format without any further constraints
+    public static final AudioFormat MP3 = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_MP3, null, null,
+            null, null);
     /**
      * Vorbis Codec
      *
      * @see <a href="http://xiph.org/vorbis/doc/">Vorbis</a>
      */
     public static final String CODEC_VORBIS = "VORBIS";
-
+    // generic OGG format without any further constraints
+    public static final AudioFormat OGG = new AudioFormat(AudioFormat.CONTAINER_OGG, AudioFormat.CODEC_VORBIS, null,
+            null, null, null);
     /**
      * AAC Codec
      */
     public static final String CODEC_AAC = "AAC";
-
+    // generic AAC format without any further constraints
+    public static final AudioFormat AAC = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_AAC, null, null,
+            null, null);
     /**
      * Codec
      */
@@ -158,99 +144,6 @@ public class AudioFormat {
         this.bitDepth = bitDepth;
         this.bitRate = bitRate;
         this.frequency = frequency;
-    }
-
-    /**
-     * Gets codec
-     *
-     * @return The codec
-     */
-    public @Nullable
-    String getCodec() {
-        return codec;
-    }
-
-    /**
-     * Gets container
-     *
-     * @return The container
-     */
-    public @Nullable
-    String getContainer() {
-        return container;
-    }
-
-    /**
-     * Is big endian?
-     *
-     * @return If format is big endian
-     */
-    public @Nullable
-    Boolean isBigEndian() {
-        return bigEndian;
-    }
-
-    /**
-     * Gets bit depth
-     *
-     * @return Bit depth
-     * @see <a href="http://bit.ly/1OTydad">Bit Depth</a>
-     */
-    public @Nullable
-    Integer getBitDepth() {
-        return bitDepth;
-    }
-
-    /**
-     * Gets bit rate
-     *
-     * @return Bit rate
-     * @see <a href="http://bit.ly/1OTy5rk">Bit Rate</a>
-     */
-    public @Nullable
-    Integer getBitRate() {
-        return bitRate;
-    }
-
-    /**
-     * Gets frequency
-     *
-     * @return The frequency
-     */
-    public @Nullable
-    Long getFrequency() {
-        return frequency;
-    }
-
-    /**
-     * Determines if the passed AudioFormat is compatible with this AudioFormat.
-     * <p>
-     * This AudioFormat is compatible with the passed AudioFormat if both have
-     * the same value for all non-null members of this instance.
-     */
-    public boolean isCompatible(@Nullable AudioFormat audioFormat) {
-        if (audioFormat == null) {
-            return false;
-        }
-        if ((null != getContainer()) && (!getContainer().equals(audioFormat.getContainer()))) {
-            return false;
-        }
-        if ((null != getCodec()) && (!getCodec().equals(audioFormat.getCodec()))) {
-            return false;
-        }
-        if ((null != isBigEndian()) && (!isBigEndian().equals(audioFormat.isBigEndian()))) {
-            return false;
-        }
-        if ((null != getBitDepth()) && (!getBitDepth().equals(audioFormat.getBitDepth()))) {
-            return false;
-        }
-        if ((null != getBitRate()) && (!getBitRate().equals(audioFormat.getBitRate()))) {
-            return false;
-        }
-        if ((null != getFrequency()) && (!getFrequency().equals(audioFormat.getFrequency()))) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -379,6 +272,99 @@ public class AudioFormat {
 
         // Return null indicating failure
         return null;
+    }
+
+    /**
+     * Gets codec
+     *
+     * @return The codec
+     */
+    public @Nullable
+    String getCodec() {
+        return codec;
+    }
+
+    /**
+     * Gets container
+     *
+     * @return The container
+     */
+    public @Nullable
+    String getContainer() {
+        return container;
+    }
+
+    /**
+     * Is big endian?
+     *
+     * @return If format is big endian
+     */
+    public @Nullable
+    Boolean isBigEndian() {
+        return bigEndian;
+    }
+
+    /**
+     * Gets bit depth
+     *
+     * @return Bit depth
+     * @see <a href="http://bit.ly/1OTydad">Bit Depth</a>
+     */
+    public @Nullable
+    Integer getBitDepth() {
+        return bitDepth;
+    }
+
+    /**
+     * Gets bit rate
+     *
+     * @return Bit rate
+     * @see <a href="http://bit.ly/1OTy5rk">Bit Rate</a>
+     */
+    public @Nullable
+    Integer getBitRate() {
+        return bitRate;
+    }
+
+    /**
+     * Gets frequency
+     *
+     * @return The frequency
+     */
+    public @Nullable
+    Long getFrequency() {
+        return frequency;
+    }
+
+    /**
+     * Determines if the passed AudioFormat is compatible with this AudioFormat.
+     * <p>
+     * This AudioFormat is compatible with the passed AudioFormat if both have
+     * the same value for all non-null members of this instance.
+     */
+    public boolean isCompatible(@Nullable AudioFormat audioFormat) {
+        if (audioFormat == null) {
+            return false;
+        }
+        if ((null != getContainer()) && (!getContainer().equals(audioFormat.getContainer()))) {
+            return false;
+        }
+        if ((null != getCodec()) && (!getCodec().equals(audioFormat.getCodec()))) {
+            return false;
+        }
+        if ((null != isBigEndian()) && (!isBigEndian().equals(audioFormat.isBigEndian()))) {
+            return false;
+        }
+        if ((null != getBitDepth()) && (!getBitDepth().equals(audioFormat.getBitDepth()))) {
+            return false;
+        }
+        if ((null != getBitRate()) && (!getBitRate().equals(audioFormat.getBitRate()))) {
+            return false;
+        }
+        if ((null != getFrequency()) && (!getFrequency().equals(audioFormat.getFrequency()))) {
+            return false;
+        }
+        return true;
     }
 
     @Override

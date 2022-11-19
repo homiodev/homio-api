@@ -42,7 +42,7 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     private UserType userType = UserType.CommonType;
 
     @Lob
-    @Column(length = 1048576)
+    @Column(length = 1_000_000)
     @JsonIgnore
     private byte[] blob;
 
@@ -75,6 +75,11 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     @Override
     public String getEntityPrefix() {
         return "img_";
+    }
+
+    @Override
+    public String getDefaultName() {
+        return "Image";
     }
 
     /*public String getSvgImageAsString(DevicePlugin devicePlugin, Integer width, Integer height, Float scale) {

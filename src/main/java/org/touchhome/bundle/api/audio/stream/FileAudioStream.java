@@ -16,8 +16,8 @@ public class FileAudioStream extends FixedLengthAudioStream {
 
     private final File file;
     private final AudioFormat audioFormat;
-    private InputStream inputStream;
     private final long length;
+    private InputStream inputStream;
 
     public FileAudioStream(File file) throws Exception {
         this(file, getAudioFormat(file));

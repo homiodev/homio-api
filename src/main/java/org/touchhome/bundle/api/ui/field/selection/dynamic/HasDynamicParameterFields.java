@@ -8,12 +8,12 @@ import org.touchhome.bundle.api.entity.widget.ability.HasSetStatusValue;
 
 public interface HasDynamicParameterFields extends HasJsonData {
 
-    default void setDynamicParameterFieldsHolder(JSONObject value) {
-        setJsonData("dsp", value);
-    }
-
     default JSONObject getDynamicParameterFieldsHolder() {
         return getJsonData().optJSONObject("dsp");
+    }
+
+    default void setDynamicParameterFieldsHolder(JSONObject value) {
+        setJsonData("dsp", value);
     }
 
     default JSONObject getChartDynamicParameterFields() {

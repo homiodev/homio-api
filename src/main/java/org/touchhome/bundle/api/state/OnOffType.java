@@ -7,24 +7,10 @@ import java.util.Objects;
 
 public class OnOffType implements State {
 
-    public enum OnOffTypeEnum {
-        Off, On;
-
-        public boolean boolValue() {
-            return this == On;
-        }
-    }
-
     public static final OnOffType ON = new OnOffType(true);
     public static final OnOffType OFF = new OnOffType(false);
-
-    public static OnOffType of(boolean on) {
-        return on ? ON : OFF;
-    }
-
     @Getter
     private final boolean value;
-
     @Getter
     @Setter
     private Boolean oldValue;
@@ -36,6 +22,10 @@ public class OnOffType implements State {
     public OnOffType(boolean value, Boolean oldValue) {
         this.value = value;
         this.oldValue = oldValue;
+    }
+
+    public static OnOffType of(boolean on) {
+        return on ? ON : OFF;
     }
 
     @Override
@@ -96,5 +86,13 @@ public class OnOffType implements State {
     @Override
     public int hashCode() {
         return (value ? 1 : 0);
+    }
+
+    public enum OnOffTypeEnum {
+        Off, On;
+
+        public boolean boolValue() {
+            return this == On;
+        }
     }
 }

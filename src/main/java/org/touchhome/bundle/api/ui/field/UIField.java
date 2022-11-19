@@ -9,18 +9,30 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIField {
 
-    // show field in context menu
+    /**
+     * Show field in context menu
+     */
     boolean showInContextMenu() default false;
 
-    // disable editing
+    /**
+     * Hide field from edit mode
+     */
     boolean readOnly() default false;
-
-    boolean advanced() default false;
 
     /**
      * Should be available only in editMode. If true - readOnly flag ignored
      */
     boolean onlyEdit() default false;
+
+    /**
+     * Disable editing but show in view/edit mode
+     */
+    boolean disableEdit() default false;
+
+    /**
+     * in some cases we need hide field from view/editing at all
+     */
+    boolean visible() default true;
 
     UIFieldType type() default UIFieldType.AutoDetect;
 
@@ -65,7 +77,4 @@ public @interface UIField {
     boolean hideLabelInFullWidth() default true;
 
     String style() default "";
-
-    // in some cases we need hide field from view/editing at all
-    boolean visible() default true;
 }

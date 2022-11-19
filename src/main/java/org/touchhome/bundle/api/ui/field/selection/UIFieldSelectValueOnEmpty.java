@@ -15,4 +15,6 @@ public @interface UIFieldSelectValueOnEmpty {
     String label();
 
     String color() default "#A7D21E";
+
+    String icon() default "fas fa-th-large";
 }

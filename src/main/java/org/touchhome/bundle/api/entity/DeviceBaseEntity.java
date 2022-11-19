@@ -35,9 +35,8 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE")
     private String place;
 
-    @Lob
     @Getter
-    @Column(length = 3145728) // 3MB
+    @Column(length = 65535)
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData = new JSONObject();
 

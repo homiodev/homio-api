@@ -44,12 +44,7 @@ public class TouchHomeUtils {
 
     public static final String APP_UUID;
     public static final int RUN_COUNT;
-
-    public static Map<String, Pair<Status, String>> STATUS_MAP = new ConcurrentHashMap<>();
-    public static Map<String, Object> VALUES_MAP = new ConcurrentHashMap<>();
-
     public static final Tika TIKA = new Tika();
-
     @Getter
     private static final Path configPath = getOrCreatePath("conf");
     @Getter
@@ -66,39 +61,18 @@ public class TouchHomeUtils {
     private static final Path audioPath = getOrCreatePath("media/audio");
     @Getter
     private static final Path imagePath = getOrCreatePath("media/image");
-
     @Getter
     private static final Path sshPath = getOrCreatePath("ssh");
-
-    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
-    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-
-
     // map for store different statuses
     @Getter
     private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
+    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
+    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     static {
-        try {
-            Path confFilePath = CommonUtils.getRootPath().resolve("touchhome.conf");
-            ConfFile confFile = null;
-            if (Files.exists(confFilePath)) {
-                try {
-                    confFile = CommonUtils.OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
-                } catch (Exception ex) {
-                    log.error("Found corrupted config file. Regenerate new one.");
-                }
-            }
-            if (confFile == null) {
-                confFile = new ConfFile().setRunCount(0).setUuid(CommonUtils.generateUUID());
-            }
-            confFile.setRunCount(confFile.getRunCount() + 1);
-            CommonUtils.OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
-            APP_UUID = confFile.getUuid();
-            RUN_COUNT = confFile.getRunCount();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        ConfFile confFile = readConfigurationFile();
+        APP_UUID = confFile.getUuid();
+        RUN_COUNT = confFile.getRunCount();
     }
 
     public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {
@@ -254,6 +228,25 @@ public class TouchHomeUtils {
             }
         }
     }*/
+
+    @SneakyThrows
+    private static ConfFile readConfigurationFile() {
+        Path confFilePath = CommonUtils.getRootPath().resolve("touchhome.conf");
+        ConfFile confFile = null;
+        if (Files.exists(confFilePath)) {
+            try {
+                confFile = CommonUtils.OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
+            } catch (Exception ex) {
+                log.error("Found corrupted config file. Regenerate new one.");
+            }
+        }
+        if (confFile == null) {
+            confFile = new ConfFile().setRunCount(0).setUuid(String.valueOf(System.currentTimeMillis()));
+        }
+        confFile.setRunCount(confFile.getRunCount() + 1);
+        CommonUtils.OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
+        return confFile;
+    }
 
     @Getter
     @Setter

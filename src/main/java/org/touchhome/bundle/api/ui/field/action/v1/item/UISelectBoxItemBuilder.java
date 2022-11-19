@@ -15,8 +15,6 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
      */
     UISelectBoxItemBuilder setAsButton(@Nullable String icon, @Nullable String iconColor, @Nullable String text);
 
-    UISelectBoxItemBuilder setOptions(Collection<OptionModel> options);
-
     UISelectBoxItemBuilder addOption(OptionModel option);
 
     default UISelectBoxItemBuilder setSelected(String selected) {
@@ -30,4 +28,6 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
     String getSelectReplacer();
 
     Collection<OptionModel> getOptions();
+
+    UISelectBoxItemBuilder setOptions(Collection<OptionModel> options);
 }

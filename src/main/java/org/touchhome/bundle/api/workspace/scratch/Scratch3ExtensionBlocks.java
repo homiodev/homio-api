@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.touchhome.bundle.api.BundleEntryPoint;
+import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.KeyValueEnum;
@@ -42,6 +42,43 @@ public abstract class Scratch3ExtensionBlocks {
      */
     @Setter
     private String parent;
+
+    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntrypoint bundleEntryPoint) {
+        this(color, entityContext, bundleEntryPoint, null);
+    }
+
+    @SneakyThrows
+    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntrypoint bundleEntryPoint,
+                                   String idSuffix) {
+        this.id = bundleEntryPoint == null ? idSuffix : bundleEntryPoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
+        this.parent = bundleEntryPoint == null ? null : bundleEntryPoint.getBundleId();
+        this.entityContext = entityContext;
+        if (color != null) {
+            URL resource = getImage(bundleEntryPoint);
+            if (resource == null) {
+                throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
+            }
+            this.blockIconURI = "data:image/png;base64," +
+                    Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
+            this.scratch3Color = new Scratch3Color(color);
+        }
+    }
+
+    @SneakyThrows
+    public Scratch3ExtensionBlocks(@NotNull String color, @NotNull EntityContext entityContext, @NotNull String id,
+                                   @NotNull String name, @NotNull URL imageResource) {
+        this.id = id;
+        this.entityContext = entityContext;
+        this.blockIconURI = "data:image/png;base64," + Base64.getEncoder().encodeToString(IOUtils.toByteArray(imageResource));
+        this.scratch3Color = new Scratch3Color(color);
+    }
+
+    /**
+     * Uses only in app
+     */
+    public Scratch3ExtensionBlocks(String id, EntityContext entityContext) {
+        this(null, entityContext, null, id);
+    }
 
     protected Scratch3Block blockHat(int order, String opcode, String text, Scratch3Block.Scratch3BlockHandler handler,
                                      Consumer<Scratch3Block> configureHandler) {
@@ -98,6 +135,14 @@ public abstract class Scratch3ExtensionBlocks {
         return blockReporter(0, opcode, null, evalHandler, null);
     }
 
+    /*@SneakyThrows
+
+
+    protected Scratch3Block ofReporter(String opcode, Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
+        return new Scratch3Block(0, opcode, BlockType.reporter, null, null, evalHandler);
+    }
+*/
+
     @SneakyThrows
     protected <T extends Scratch3Block> T blockTargetReporter(int order, String opcode, String text,
                                                               Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
@@ -118,14 +163,6 @@ public abstract class Scratch3ExtensionBlocks {
                                          Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
         return blockBoolean(order, opcode, text, evalHandler, null);
     }
-
-    /*@SneakyThrows
-
-
-    protected Scratch3Block ofReporter(String opcode, Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
-        return new Scratch3Block(0, opcode, BlockType.reporter, null, null, evalHandler);
-    }
-*/
 
     protected <T extends Enum> MenuBlock.StaticMenuBlock<T> menuStatic(String name, Class<T> enumClass, T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnum(enumClass)
@@ -187,10 +224,6 @@ public abstract class Scratch3ExtensionBlocks {
         return menuServer("FOLDER", defaultString(regexp, ".*"), "Folder").setDependency(fileSystemDependency);
     }
 
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint) {
-        this(color, entityContext, bundleEntryPoint, null);
-    }
-
     private <T extends Scratch3Block> T addBlock(T scratch3Block, Consumer<T> configureHandler) {
         if (blocksMap.containsKey(scratch3Block.getOpcode())) {
             throw new RuntimeException("Found multiple blocks with same opcode: " + scratch3Block.getOpcode());
@@ -204,31 +237,7 @@ public abstract class Scratch3ExtensionBlocks {
         return scratch3Block;
     }
 
-    @SneakyThrows
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, BundleEntryPoint bundleEntryPoint,
-                                   String idSuffix) {
-        this.id = bundleEntryPoint == null ? idSuffix : bundleEntryPoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
-        this.parent = bundleEntryPoint == null ? null : bundleEntryPoint.getBundleId();
-        this.entityContext = entityContext;
-        if (color != null) {
-            URL resource = getImage(bundleEntryPoint);
-            if (resource == null) {
-                throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
-            }
-            this.blockIconURI = "data:image/png;base64," +
-                    Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
-            this.scratch3Color = new Scratch3Color(color);
-        }
-    }
-
-    /**
-     * Uses only in app
-     */
-    public Scratch3ExtensionBlocks(String id, EntityContext entityContext) {
-        this(null, entityContext, null, id);
-    }
-
-    private URL getImage(BundleEntryPoint bundleEntryPoint) {
+    private URL getImage(BundleEntrypoint bundleEntryPoint) {
         URL resource = null;
         if (bundleEntryPoint != null) {
             resource = bundleEntryPoint.getResource(this.id + ".png");

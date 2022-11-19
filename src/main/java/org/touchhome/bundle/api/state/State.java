@@ -10,6 +10,28 @@ import java.util.Map;
 
 public interface State {
 
+    static State of(Object value) {
+        if (value == null || value instanceof State) return (State) value;
+        if (value instanceof Map) {
+            return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
+        }
+        if (Number.class.isAssignableFrom(value.getClass())) {
+            if (value instanceof Double) {
+                return new DecimalType((double) value);
+            } else if (value instanceof Integer) {
+                return new DecimalType((int) value);
+            }
+            return new DecimalType((long) value);
+        }
+        if (value instanceof Boolean) {
+            return OnOffType.of((boolean) value);
+        }
+        if (value instanceof String) {
+            return new StringType(value.toString());
+        }
+        return new ObjectType(value);
+    }
+
     default boolean equalToOldValue() {
         throw new IllegalStateException("Unable to invoke equality for non state class");
     }
@@ -55,27 +77,5 @@ public interface State {
     default State optional(String value) {
         return StringUtils.isEmpty(value) ? this :
                 CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
-    }
-
-    static State of(Object value) {
-        if (value == null || value instanceof State) return (State) value;
-        if (value instanceof Map) {
-            return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
-        }
-        if (Number.class.isAssignableFrom(value.getClass())) {
-            if (value instanceof Double) {
-                return new DecimalType((double) value);
-            } else if (value instanceof Integer) {
-                return new DecimalType((int) value);
-            }
-            return new DecimalType((long) value);
-        }
-        if (value instanceof Boolean) {
-            return OnOffType.of((boolean) value);
-        }
-        if (value instanceof String) {
-            return new StringType(value.toString());
-        }
-        return new ObjectType(value);
     }
 }

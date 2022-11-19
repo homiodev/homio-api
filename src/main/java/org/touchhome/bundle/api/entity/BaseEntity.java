@@ -6,13 +6,10 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
 import org.json.JSONPropertyIgnore;
-import org.touchhome.bundle.api.BundleEntryPoint;
+import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.inmemory.InMemoryDB;
-import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -56,6 +53,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     public static BaseEntity fakeEntity(String entityID) {
         return new BaseEntity() {
             @Override
+            public String getDefaultName() {
+                return null;
+            }
+
+            @Override
             public String getEntityPrefix() {
                 return "";
             }
@@ -89,6 +91,12 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         return entityID != null ? entityID.equals(that.entityID) : that.entityID == null;
     }
 
+    /**
+     * Method return default name to store when persist entity
+     */
+    @JsonIgnore
+    public abstract String getDefaultName();
+
     @Override
     public int hashCode() {
         return entityID != null ? entityID.hashCode() : 0;
@@ -105,11 +113,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
             this.creationTime = new Date();
         }
         this.updateTime = new Date();
-        this.getEntityID(true);
         if (StringUtils.isEmpty(getName())) {
             setName(refreshName());
         }
         this.beforePersist();
+        this.getEntityID(true);
         this.validate();
     }
 
@@ -118,53 +126,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         this.updateTime = new Date();
         this.beforeUpdate();
         this.validate();
-    }
-
-    /**
-     * Entity may contain related in-memory resources. so we remove all of them before delete entity or when user detach bundle
-     */
-    public void releaseResources() {
-        // remove all status for entity
-        TouchHomeUtils.STATUS_MAP.remove(getEntityID());
-
-        // remove in-memory data if any exists
-        InMemoryDB.removeService(getEntityID());
-
-        // clear all registered console plugins if any exists
-        getEntityContext().ui().unRegisterConsolePlugin(getEntityID());
-
-        // destroy any additional services
-        if (this instanceof EntityService) {
-            try {
-                ((EntityService<?, ?>) this).destroyService();
-            } catch (Exception ex) {
-                log.warn("Unable to destroy service for entity: {}", getTitle());
-            }
-        }
-    }
-
-    @PostPersist
-    private void postPersist() {
-        this.afterPersist(ApplicationContextHolder.getBean(EntityContext.class));
-    }
-
-    @PostUpdate
-    private void postUpdate() {
-        EntityContext entityContext = ApplicationContextHolder.getBean(EntityContext.class);
-        if (this instanceof EntityService) {
-            EntityService.ServiceInstance service =
-                    ((EntityService<?, T>) this).getOrCreateService(entityContext, false, true);
-            if(service != null) {
-                service.entityUpdated((EntityService) this);
-            }
-        }
-        this.afterUpdate(entityContext);
-    }
-
-    @PreRemove
-    private void preDelete() {
-        this.releaseResources();
-        this.beforeDelete();
     }
 
     // fires before persist/update
@@ -180,11 +141,8 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     }
 
-    protected void beforeDelete() {
+    public void beforeDelete(EntityContext entityContext) {
 
-    }
-
-    protected void afterPersist(EntityContext entityContext) {
     }
 
     /**
@@ -263,6 +221,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     }
 
     public String getBundle() {
-        return BundleEntryPoint.getBundleName(getClass());
+        return BundleEntrypoint.getBundleName(getClass());
     }
 }

@@ -135,14 +135,6 @@ public interface EntityContextUI {
         sendDialogRequest(dialogModel);
     }
 
-    interface DialogRequestHandler {
-        void handle(DialogResponseType responseType, String pressedButton, JSONObject parameters);
-    }
-
-    enum DialogResponseType {
-        Cancelled, Timeout, Accepted
-    }
-
     /**
      * Add message to 'bell' header select box
      */
@@ -393,4 +385,12 @@ public interface EntityContextUI {
     }
 
     void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level);
+
+    enum DialogResponseType {
+        Cancelled, Timeout, Accepted
+    }
+
+    interface DialogRequestHandler {
+        void handle(DialogResponseType responseType, String pressedButton, JSONObject parameters);
+    }
 }

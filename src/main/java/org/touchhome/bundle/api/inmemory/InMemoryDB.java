@@ -22,6 +22,7 @@ import org.touchhome.bundle.api.entity.widget.AggregationType;
 import java.net.InetSocketAddress;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -33,9 +34,9 @@ import static com.mongodb.client.model.Sorts.descending;
 import static org.bson.codecs.configuration.CodecRegistries.*;
 
 public final class InMemoryDB {
-    private static final String DATABASE = "db";
     public static final String ID = "_id";
-    private static final Map<String, InMemoryDBData<?>> map = new HashMap<>();
+    private static final String DATABASE = "db";
+    private static final Map<String, InMemoryDBData<?>> map = new ConcurrentHashMap<>();
 
     private static final MongoServer server;
 
@@ -90,8 +91,8 @@ public final class InMemoryDB {
             String collectionName = pojoClass.getSimpleName() + uniqueId;
             // create timestamp index
             MongoCollection<T> collection = datastore.getCollection(collectionName, pojoClass);
-//          collection.createIndex(Indexes.ascending(ID));
-//          collection.createIndex(Indexes.ascending("topic"));
+            //          collection.createIndex(Indexes.ascending(ID));
+            //          collection.createIndex(Indexes.ascending("topic"));
 
             // delta is 10% of quota but not more than 1000
             InMemoryDBData<T> data = new InMemoryDBData<>(pojoClass, collectionName, collection);
@@ -118,9 +119,9 @@ public final class InMemoryDB {
         private final String collectionName;
         private final MongoCollection<T> collection;
         private final AtomicLong estimateUsed = new AtomicLong(0);
+        private final Map<String, Consumer<T>> saveListeners = new HashMap<>();
         private Long quota;
         private int delta;
-        private final Map<String, Consumer<T>> saveListeners = new HashMap<>();
 
         @Override
         public T save(T entity) {

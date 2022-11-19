@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeTypeUtils;
-import org.touchhome.bundle.api.BundleEntryPoint;
+import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.state.DecimalType;
@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntryPoint,
+public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntrypoint,
         E extends BaseEntity & BaseFileSystemEntity>
         extends Scratch3ExtensionBlocks {
 
@@ -96,6 +96,12 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
                     block.addArgument(ENTITY, this.fsEntityMenu);
                     block.addArgument("FILE", this.fileMenu);
                 });
+    }
+
+    public static byte[] addAll(final byte[] array1, byte[] array2) {
+        byte[] joinedArray = Arrays.copyOf(array1, array1.length + array2.length);
+        System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
+        return joinedArray;
     }
 
     private DecimalType getCountOfNodesReporter(WorkspaceBlock workspaceBlock) {
@@ -223,11 +229,5 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
 
     private enum CountNodeEnum {
         Files, Folders, All, FilesWithChildren, AllWithChildren
-    }
-
-    public static byte[] addAll(final byte[] array1, byte[] array2) {
-        byte[] joinedArray = Arrays.copyOf(array1, array1.length + array2.length);
-        System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
-        return joinedArray;
     }
 }

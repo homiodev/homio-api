@@ -33,6 +33,21 @@ public class ButtonType implements State {
         return "ButtonState{buttonPressType=" + buttonPressType + '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ButtonType that = (ButtonType) o;
+
+        return buttonPressType == that.buttonPressType;
+    }
+
+    @Override
+    public int hashCode() {
+        return buttonPressType.hashCode();
+    }
+
     public enum ButtonPressType {
         SHORT_PRESS("shortpress"),
         DOUBLE_PRESS("doublepress"),
@@ -48,20 +63,5 @@ public class ButtonType implements State {
         public String toString() {
             return parameterValue;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ButtonType that = (ButtonType) o;
-
-        return buttonPressType == that.buttonPressType;
-    }
-
-    @Override
-    public int hashCode() {
-        return buttonPressType.hashCode();
     }
 }

@@ -13,4 +13,6 @@ public @interface UIFieldSlider {
     double max() default Integer.MAX_VALUE;
 
     double step() default 1D;
+
+    String header() default "";
 }

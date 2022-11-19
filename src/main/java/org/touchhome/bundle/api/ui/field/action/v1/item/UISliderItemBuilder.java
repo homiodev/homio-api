@@ -9,19 +9,19 @@ public interface UISliderItemBuilder extends UIEntityItemBuilder<UISliderItemBui
 
     Float getStep();
 
+    UISliderItemBuilder setStep(Float step);
+
     boolean isHideThumbLabel();
 
+    UISliderItemBuilder setHideThumbLabel(boolean hideThumbLabel);
+
     boolean isRequired();
+
+    UISliderItemBuilder setRequired(boolean required);
 
     SliderType getSliderType();
 
     UISliderItemBuilder setSliderType(SliderType sliderType);
-
-    UISliderItemBuilder setStep(Float step);
-
-    UISliderItemBuilder setRequired(boolean required);
-
-    UISliderItemBuilder setHideThumbLabel(boolean hideThumbLabel);
 
     enum SliderType {
         Regular, Input

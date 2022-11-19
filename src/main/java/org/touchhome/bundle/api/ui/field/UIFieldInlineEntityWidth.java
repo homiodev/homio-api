@@ -13,12 +13,12 @@ import java.lang.annotation.Target;
 public @interface UIFieldInlineEntityWidth {
 
     /**
-     * Width in view mode
+     * Width in view mode. -1 - unset
      */
     int viewWidth();
 
     /**
-     * Width in edit mode
+     * Width in edit mode. -1 = unset
      */
     int editWidth();
 }

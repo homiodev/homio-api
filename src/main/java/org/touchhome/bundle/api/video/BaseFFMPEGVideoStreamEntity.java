@@ -46,6 +46,17 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     @JsonIgnore
     private H videoHandler;
 
+    @SneakyThrows
+    public static Path buildFilePathForRecord(Path basePath, String fileName, String ext) {
+        if (!ext.equals(FilenameUtils.getExtension(fileName))) {
+            fileName += "." + ext;
+        }
+        fileName = basePath.resolve(fileName).toString();
+        Path path = Paths.get(WorkspaceBlock.evalStringWithContext(fileName, text -> text));
+        Files.createDirectories(path.getParent());
+        return path;
+    }
+
     public abstract String getFolderName();
 
     @UIField(order = 500, readOnly = true, type = UIFieldType.Duration)
@@ -66,6 +77,11 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     @UIField(order = 15, inlineEdit = true)
     public boolean isStart() {
         return getJsonData("start", false);
+    }
+
+    public BaseFFMPEGVideoStreamEntity setStart(boolean start) {
+        setJsonData("start", start);
+        return this;
     }
 
     @UIContextMenuAction(value = "VIDEO.RECORD_MP4", icon = "fas fa-file-video", inputs = {
@@ -103,17 +119,6 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         }
     }
 
-    @SneakyThrows
-    public static Path buildFilePathForRecord(Path basePath, String fileName, String ext) {
-        if (!ext.equals(FilenameUtils.getExtension(fileName))) {
-            fileName += "." + ext;
-        }
-        fileName = basePath.resolve(fileName).toString();
-        Path path = Paths.get(WorkspaceBlock.evalStringWithContext(fileName, text -> text));
-        Files.createDirectories(path.getParent());
-        return path;
-    }
-
     @UIField(order = 200, readOnly = true)
     @UIFieldCodeEditor(editorType = UIFieldCodeEditor.CodeEditorType.json, autoFormat = true)
     public Map<String, State> getAttributes() {
@@ -127,11 +132,6 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return videoHandler == null ? null : videoHandler.assembleActions();
     }
 
-    public BaseFFMPEGVideoStreamEntity setStart(boolean start) {
-        setJsonData("start", start);
-        return this;
-    }
-
     @UIField(order = 16, inlineEdit = true)
     public boolean isAutoStart() {
         return getJsonData("autoStart", true);
@@ -142,7 +142,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return this;
     }
 
-    @UIField(order = 250, onlyEdit = true, advanced = true)
+    @UIField(order = 250, onlyEdit = true)
     @UIFieldNumber(min = 1025, max = 65535)
     @RestartHandlerOnChange
     public Integer getServerPort() {
@@ -195,7 +195,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return super.getIeeeAddress();
     }
 
-    @UIField(order = 125, onlyEdit = true, advanced = true, type = UIFieldType.Chips)
+    @UIField(order = 125, onlyEdit = true, type = UIFieldType.Chips)
     @RestartHandlerOnChange
     public List<String> getGifOutOptions() {
         return getJsonDataList("gifOutOptions");
@@ -205,7 +205,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         setJsonData("gifOutOptions", value);
     }
 
-    @UIField(order = 130, onlyEdit = true, advanced = true, type = UIFieldType.Chips)
+    @UIField(order = 130, onlyEdit = true, type = UIFieldType.Chips)
     @RestartHandlerOnChange
     public List<String> getMjpegOutOptions() {
         return getJsonDataList("mjpegOutOptions");
@@ -215,7 +215,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         setJsonData("mjpegOutOptions", value);
     }
 
-    @UIField(order = 135, onlyEdit = true, advanced = true, type = UIFieldType.Chips)
+    @UIField(order = 135, onlyEdit = true, type = UIFieldType.Chips)
     @RestartHandlerOnChange
     public List<String> getSnapshotOutOptions() {
         return getJsonDataList("imgOutOptions");
@@ -230,7 +230,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return String.join(" ", getSnapshotOutOptions());
     }
 
-    @UIField(order = 140, onlyEdit = true, advanced = true, type = UIFieldType.Chips)
+    @UIField(order = 140, onlyEdit = true, type = UIFieldType.Chips)
     @RestartHandlerOnChange
     public List<String> getMotionOptions() {
         return getJsonDataList("motionOptions");
@@ -256,6 +256,10 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return getJsonData("audioThreshold", 40);
     }
 
+    public void setAudioThreshold(int value) {
+        setJsonData("audioThreshold", value);
+    }
+
     @UIField(order = 200)
     @UIFieldSlider(min = 1, max = 30)
     public int getSnapshotPollInterval() {
@@ -266,11 +270,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         setJsonData("spi", value);
     }
 
-    public void setAudioThreshold(int value) {
-        setJsonData("audioThreshold", value);
-    }
-
-    @UIField(order = 160, onlyEdit = true, advanced = true, type = UIFieldType.Chips)
+    @UIField(order = 160, onlyEdit = true, type = UIFieldType.Chips)
     @RestartHandlerOnChange
     public List<String> getMp4OutOptions() {
         return getJsonDataList("mp4OutOptions");
