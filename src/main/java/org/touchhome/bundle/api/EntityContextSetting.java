@@ -1,5 +1,8 @@
 package org.touchhome.bundle.api;
 
+import org.apache.commons.lang3.SystemUtils;
+import org.touchhome.bundle.api.model.HasEntityIdentifier;
+import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.setting.SettingPlugin;
 import org.touchhome.bundle.api.setting.SettingPluginOptions;
 import org.touchhome.bundle.api.setting.console.header.dynamic.DynamicConsoleHeaderContainerSettingPlugin;
@@ -7,9 +10,28 @@ import org.touchhome.bundle.api.setting.console.header.dynamic.DynamicConsoleHea
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public interface EntityContextSetting {
+
+    static boolean isDevEnvironment() {
+        return "true".equals(System.getProperty("development"));
+    }
+
+    static boolean isDockerEnvironment() {
+        return "true".equals(System.getProperty("docker"));
+    }
+
+    static boolean isLinuxEnvironment() {
+        return SystemUtils.IS_OS_LINUX && !isDockerEnvironment() && !isDevEnvironment();
+    }
+
+    static boolean isLinuxOrDockerEnvironment() {
+        return SystemUtils.IS_OS_LINUX && !isDevEnvironment();
+    }
+
+    AtomicReference<MemSetterHandler> MEM_HANDLER = new AtomicReference<>();
 
     /**
      * Get unmodifiable list of all available places. Configured via settings
@@ -82,4 +104,32 @@ public interface EntityContextSetting {
     <T> String setValueSilence(Class<? extends SettingPlugin<T>> settingClass, @NotNull T value);
 
     <T> void setValueSilenceRaw(Class<? extends SettingPlugin<T>> settingClass, @NotNull String value);
+
+    interface MemSetterHandler {
+        void setValue(HasEntityIdentifier entity, String key, Object value);
+
+        Object getValue(HasEntityIdentifier entity, String key, Object defaultValue);
+    }
+
+    static Status getStatus(HasEntityIdentifier entity, @NotNull String distinguishKey, Status defaultStatus) {
+        return (Status) MEM_HANDLER.get().getValue(entity, distinguishKey, defaultStatus);
+    }
+
+    static void setStatus(HasEntityIdentifier entity, @NotNull String distinguishKey, Status status) {
+        MEM_HANDLER.get().setValue(entity, distinguishKey, status);
+    }
+
+    static void setStatus(HasEntityIdentifier entity, @NotNull String distinguishKey, Status status,
+                          String message) {
+        MEM_HANDLER.get().setValue(entity, distinguishKey + "msg", message);
+        MEM_HANDLER.get().setValue(entity, distinguishKey, status);
+    }
+
+    static String getMessage(HasEntityIdentifier entity, @NotNull String distinguishKey) {
+        return (String) MEM_HANDLER.get().getValue(entity, distinguishKey + "_msg", null);
+    }
+
+    static void setMessage(HasEntityIdentifier entity, @NotNull String distinguishKey, String value) {
+        MEM_HANDLER.get().setValue(entity, distinguishKey + "_msg", value);
+    }
 }

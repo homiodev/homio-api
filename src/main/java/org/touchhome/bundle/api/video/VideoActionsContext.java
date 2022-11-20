@@ -6,7 +6,7 @@ import org.touchhome.bundle.api.state.State;
 public interface VideoActionsContext<T extends BaseVideoStreamEntity> {
     State getAttribute(String key);
 
-    T getVideoStreamEntity();
+    T getEntity();
 
     EntityContext getEntityContext();
 }

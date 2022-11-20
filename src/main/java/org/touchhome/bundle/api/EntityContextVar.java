@@ -96,6 +96,11 @@ public interface EntityContextVar {
         return createGroup(groupId, groupName, locked, icon, iconColor, null);
     }
 
+    /**
+     * Remove group and all associated variables
+     */
+    boolean removeGroup(@NotNull String groupId);
+
     @Getter
     @RequiredArgsConstructor
     enum VariableType {

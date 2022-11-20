@@ -104,7 +104,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     @Override
     public String toString() {
-        return "{'entityID':'" + getEntityID(false) + "'\'}";
+        return getTitle();
     }
 
     @PrePersist

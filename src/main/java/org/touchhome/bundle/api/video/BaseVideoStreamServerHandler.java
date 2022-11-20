@@ -26,17 +26,17 @@ import static org.touchhome.bundle.api.video.VideoConstants.CHANNEL_START_STREAM
  * responsible for handling streams
  */
 @Log4j2
-public abstract class BaseVideoStreamServerHandler<T extends BaseFFMPEGVideoStreamHandler> extends ChannelInboundHandlerAdapter {
+public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> extends ChannelInboundHandlerAdapter {
 
-    protected final T videoHandler;
+    protected final S videoService;
 
     private final String whiteList;
     private byte[] incomingJpeg = new byte[0];
     private int receivedBytes = 0;
     private boolean updateSnapshot = false;
 
-    public BaseVideoStreamServerHandler(T videoHandler) {
-        this.videoHandler = videoHandler;
+    public BaseVideoStreamServerHandler(S videoService) {
+        this.videoService = videoService;
         this.whiteList = "(127.0.0.1)(" + TouchHomeUtils.MACHINE_IP_ADDRESS + ")";
     }
 
@@ -74,9 +74,9 @@ public abstract class BaseVideoStreamServerHandler<T extends BaseFFMPEGVideoStre
         receivedBytes = incomingJpeg.length;
 
         if (msg instanceof LastHttpContent) {
-            videoHandler.bringVideoOnline();
+            videoService.getVideoHandler().bringVideoOnline();
             if (updateSnapshot) {
-                videoHandler.processSnapshot(incomingJpeg);
+                videoService.getVideoHandler().processSnapshot(incomingJpeg);
             } else {
                 handleLastHttpContent(incomingJpeg);
             }
@@ -88,7 +88,9 @@ public abstract class BaseVideoStreamServerHandler<T extends BaseFFMPEGVideoStre
 
     private boolean handleHttpRequest(ChannelHandlerContext ctx, HttpRequest httpRequest)
             throws IOException, InterruptedException {
+        BaseFFMPEGVideoStreamHandler videoHandler = videoService.getVideoHandler();
         String requestIP = "(" + ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress().getHostAddress() + ")";
+
         if (!whiteList.contains(requestIP)) {
             log.warn("The request made from {} was not in the whitelist and will be ignored.", requestIP);
             return true;
@@ -166,6 +168,7 @@ public abstract class BaseVideoStreamServerHandler<T extends BaseFFMPEGVideoStre
     protected abstract boolean streamServerReceivedPostHandler(HttpRequest httpRequest);
 
     private void sendSnapshotImage(ChannelHandlerContext ctx, String contentType) {
+        BaseFFMPEGVideoStreamHandler videoHandler = videoService.getVideoHandler();
         videoHandler.lockCurrentSnapshot.lock();
         try {
             sendNettyResponse(ctx, contentType, videoHandler.getLatestSnapshot());
@@ -230,6 +233,7 @@ public abstract class BaseVideoStreamServerHandler<T extends BaseFFMPEGVideoStre
     protected abstract void handlerChildRemoved(ChannelHandlerContext ctx);
 
     private void sendNettyResponse(ChannelHandlerContext ctx, String contentType, byte[] data) {
+        BaseFFMPEGVideoStreamHandler videoHandler = videoService.getVideoHandler();
         ByteBuf snapshotData = Unpooled.copiedBuffer(videoHandler.getLatestSnapshot());
         sendNettyResponse(ctx, contentType, snapshotData.readableBytes(), snapshotData);
     }

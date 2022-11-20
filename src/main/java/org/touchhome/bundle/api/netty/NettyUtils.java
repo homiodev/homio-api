@@ -39,9 +39,9 @@ public class NettyUtils {
         return freePort.get();
     }
 
-    public static HasBootstrapServer getServerByPort(String excludekey, int port) {
+    public static HasBootstrapServer getServerByPort(String excludeKey, int port) {
         return bootstrapServerMap.entrySet().stream()
-                .filter(e -> !e.getKey().equals(excludekey) && e.getValue().getServerPort() == port)
+                .filter(e -> !e.getKey().equals(excludeKey) && e.getValue().getServerPort() == port)
                 .findAny().map(e -> e.getValue()).orElse(null);
     }
 }

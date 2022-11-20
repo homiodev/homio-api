@@ -1,6 +1,5 @@
 package org.touchhome.bundle.api;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.core.Authentication;
@@ -8,7 +7,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.UserEntity;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
-import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 import org.touchhome.bundle.api.workspace.scratch.Scratch3ExtensionBlocks;
 
@@ -17,51 +15,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface EntityContext {
-
-    AtomicReference<MemSetterHandler> MEM_HANDLER = new AtomicReference<>();
-
-    interface MemSetterHandler {
-        void setValue(String entityID, String key, Object value);
-
-        Object getValue(String entityID, String key, Object defaultValue);
-    }
-
-    static Status getStatus(String key, @NotNull String distinguishKey, Status defaultStatus) {
-        return (Status) MEM_HANDLER.get().getValue(key, distinguishKey, defaultStatus);
-    }
-
-    static void setStatus(String entityId, @NotNull String distinguishKey, Status status) {
-        MEM_HANDLER.get().setValue(entityId, distinguishKey, status);
-    }
-
-    static String getMessage(String key, @NotNull String distinguishKey) {
-        return (String) MEM_HANDLER.get().getValue(key, distinguishKey + "_msg", null);
-    }
-
-    static void setMessage(String entityId, @NotNull String distinguishKey, String value) {
-        MEM_HANDLER.get().setValue(entityId, distinguishKey + "_msg", value);
-    }
-
-    static boolean isDevEnvironment() {
-        return "true".equals(System.getProperty("development"));
-    }
-
-    static boolean isDockerEnvironment() {
-        return "true".equals(System.getProperty("docker"));
-    }
-
-    static boolean isLinuxEnvironment() {
-        return SystemUtils.IS_OS_LINUX && !isDockerEnvironment() && !isDevEnvironment();
-    }
-
-    static boolean isLinuxOrDockerEnvironment() {
-        return SystemUtils.IS_OS_LINUX && !isDevEnvironment();
-    }
 
     EntityContextWidget widget();
 

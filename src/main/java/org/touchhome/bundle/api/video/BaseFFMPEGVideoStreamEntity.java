@@ -2,19 +2,17 @@ package org.touchhome.bundle.api.video;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
 import org.springframework.data.util.Pair;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.RestartHandlerOnChange;
 import org.touchhome.bundle.api.model.ActionResponseModel;
-import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.netty.HasBootstrapServer;
 import org.touchhome.bundle.api.netty.NettyUtils;
+import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.state.State;
 import org.touchhome.bundle.api.ui.field.*;
 import org.touchhome.bundle.api.ui.field.action.UIActionButton;
@@ -25,26 +23,23 @@ import org.touchhome.bundle.api.ui.field.image.UIFieldImage;
 import org.touchhome.bundle.api.util.SecureString;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
+import org.touchhome.common.exception.NotFoundException;
 import org.touchhome.common.exception.ServerException;
 
-import javax.persistence.Transient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.*;
 
 @Log4j2
 public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStreamEntity,
-        H extends BaseFFMPEGVideoStreamHandler> extends BaseVideoStreamEntity<T> {
+        H extends BaseFFMPEGVideoStreamHandler<T, S, H>, S extends BaseVideoService<H, T>>
+        extends BaseVideoStreamEntity<T> implements EntityService<S, T> {
 
-    @Getter
-    @Transient
-    @JsonIgnore
-    private H videoHandler;
+    @Override
+    public S getService() throws NotFoundException {
+        return EntityService.super.getService();
+    }
 
     @SneakyThrows
     public static Path buildFilePathForRecord(Path basePath, String fileName, String ext) {
@@ -61,7 +56,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
 
     @UIField(order = 500, readOnly = true, type = UIFieldType.Duration)
     public long getLastAnswerFromVideo() {
-        return videoHandler == null ? 0 : videoHandler.getLastAnswerFromVideo();
+        return optService().map(s -> s.getVideoHandler().getLastAnswerFromVideo()).orElse(0L);
     }
 
     @Override
@@ -69,9 +64,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         if (!isStart()) {
             throw new ServerException("Video <" + getTitle() + "> not started");
         }
-        if (videoHandler != null) {
-            videoHandler.startSnapshot();
-        }
+        optService().ifPresent(s -> s.getVideoHandler().startSnapshot());
     }
 
     @UIField(order = 15, inlineEdit = true)
@@ -90,6 +83,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     })
     public ActionResponseModel recordMP4(JSONObject params) {
         checkVideoOnline();
+        H videoHandler = getService().getVideoHandler();
         Path filePath = buildFilePathForRecord(videoHandler.getFfmpegMP4OutputPath(), params.getString("fileName"), ".mp4");
         int secondsToRecord = params.getInt("secondsToRecord");
         log.debug("Recording {}.mp4 for {} seconds.", filePath, secondsToRecord);
@@ -103,6 +97,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     })
     public ActionResponseModel recordGif(JSONObject params) {
         checkVideoOnline();
+        H videoHandler = getService().getVideoHandler();
         Path filePath = buildFilePathForRecord(videoHandler.getFfmpegGifOutputPath(), params.getString("fileName"), ".gif");
         int secondsToRecord = params.getInt("secondsToRecord");
         log.debug("Recording {}.gif for {} seconds.", filePath, secondsToRecord);
@@ -111,10 +106,11 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     }
 
     protected void checkVideoOnline() {
-        if (videoHandler == null) {
+        Optional<S> optService = optService();
+        if (!optService.isPresent() || optService.get().getVideoHandler() == null) {
             throw new ServerException("Video handler is empty");
         }
-        if (!videoHandler.isVideoOnline()) {
+        if (!optService.get().getVideoHandler().isVideoOnline()) {
             throw new ServerException("VIDEO.OFFLINE");
         }
     }
@@ -122,14 +118,12 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     @UIField(order = 200, readOnly = true)
     @UIFieldCodeEditor(editorType = UIFieldCodeEditor.CodeEditorType.json, autoFormat = true)
     public Map<String, State> getAttributes() {
-        return videoHandler == null ? null : videoHandler.getAttributes();
+        return optService().map(s -> s.getVideoHandler().getAttributes()).orElse(null);
     }
-
-    public abstract H createVideoHandler(EntityContext entityContext);
 
     @Override
     public UIInputBuilder assembleActions() {
-        return videoHandler == null ? null : videoHandler.assembleActions();
+        return optService().map(s -> s.getVideoHandler().assembleActions()).orElse(null);
     }
 
     @UIField(order = 16, inlineEdit = true)
@@ -158,9 +152,8 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     @UIFieldImage
     @UIActionButton(name = "refresh", icon = "fas fa-sync",
             actionHandler = BaseVideoStreamEntity.UpdateSnapshotActionHandler.class)
-    @UIFieldIgnoreGetDefault
     public byte[] getLastSnapshot() {
-        return videoHandler == null ? null : videoHandler.getLatestSnapshot();
+        return optService().map(s -> s.getVideoHandler().getLatestSnapshot()).orElse(null);
     }
 
     // not all entity has user name
@@ -304,27 +297,32 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
 
     @JsonIgnore
     public String getHlsStreamUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getVideoHandler().getServerPort() + "/ipvideo.m3u8";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getVideoHandler().getServerPort() +
+                "/ipvideo.m3u8";
     }
 
     @JsonIgnore
     public String getSnapshotsMjpegUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getVideoHandler().getServerPort() + "/snapshots.mjpeg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getVideoHandler().getServerPort() +
+                "/snapshots.mjpeg";
     }
 
     @JsonIgnore
     public String getAutofpsMjpegUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getVideoHandler().getServerPort() + "/autofps.mjpeg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getVideoHandler().getServerPort() +
+                "/autofps.mjpeg";
     }
 
     @JsonIgnore
     public String getImageUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getVideoHandler().getServerPort() + "/ipvideo.jpg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getVideoHandler().getServerPort() +
+                "/ipvideo.jpg";
     }
 
     @JsonIgnore
     public String getIpVideoMjpeg() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getVideoHandler().getServerPort() + "/ipvideo.mjpeg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getVideoHandler().getServerPort() +
+                "/ipvideo.mjpeg";
     }
 
     @Override
@@ -351,22 +349,5 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
                 return getImageUrl();
         }
         return null;
-    }
-
-    @Override
-    public void afterFetch(EntityContext entityContext) {
-        videoHandler = (H) NettyUtils.putBootstrapServer(getEntityID(),
-                (Supplier<HasBootstrapServer>) () -> createVideoHandler(entityContext));
-
-        if (getStatus() == Status.UNKNOWN) {
-            try {
-                getVideoHandler().testOnline();
-                setStatusOnline();
-            } catch (BadCredentialsException ex) {
-                setStatus(Status.REQUIRE_AUTH, ex.getMessage());
-            } catch (Exception ex) {
-                setStatusError(ex);
-            }
-        }
     }
 }
