@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.ui.field;
+package org.touchhome.bundle.api.ui.field.inline;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,12 +13,7 @@ import java.lang.annotation.Target;
 public @interface UIFieldInlineEntityWidth {
 
     /**
-     * Width in view mode. -1 - unset
+     * Width in view mode.
      */
-    int viewWidth();
-
-    /**
-     * Width in edit mode. -1 = unset
-     */
-    int editWidth();
+    int value();
 }

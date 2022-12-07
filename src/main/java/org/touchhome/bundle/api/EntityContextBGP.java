@@ -23,6 +23,11 @@ import java.util.function.Supplier;
 public interface EntityContextBGP {
     EntityContext getEntityContext();
 
+    /**
+     * Create builder to run new thread/scheduler.
+     *
+     * @param name unique name of thread. cancel thread if already exists
+     */
     <T> ScheduleBuilder<T> builder(@NotNull String name);
 
     /**
@@ -196,6 +201,11 @@ public interface EntityContextBGP {
         boolean isStopped();
 
         void cancel();
+
+        /**
+         * Next schedule call as string
+         */
+        String getTimeToNextSchedule();
 
         T await(@NotNull Duration timeout) throws InterruptedException, ExecutionException, TimeoutException;
 

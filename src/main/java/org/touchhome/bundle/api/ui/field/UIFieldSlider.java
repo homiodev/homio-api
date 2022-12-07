@@ -15,4 +15,14 @@ public @interface UIFieldSlider {
     double step() default 1D;
 
     String header() default "";
+
+    /**
+     * fetch min value from minRef field instead of min if specified
+     */
+    String minRef() default "";
+
+    /**
+     * fetch max value from maxRef field instead of ax if specified
+     */
+    String maxRef() default "";
 }

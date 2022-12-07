@@ -38,6 +38,17 @@ public @interface UIFieldColorStatusMatch {
     // Status.DONE
     String done() default "#399396";
 
+    // Status.INITIALIZE
+    String init() default "#CF79ED";
+
+    // Status.CLOSING
+    String closing() default "#992F5D";
+
+    // Status.NOT_READY
+    String notReady() default "#99A040";
+
+    String restarting() default "#99A040";
+
     // handle color if message starts with 'error'/'requireAuth'/...
     boolean handlePrefixes() default false;
 }

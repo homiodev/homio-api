@@ -46,8 +46,10 @@ public class UserRepository extends AbstractRepository<UserEntity> {
                 throw new RuntimeException("Unable to start app without file user_password.conf");
             }
             UserPasswordFile userPasswordFile = OBJECT_MAPPER.readValue(userPasswordFilePath.toFile(), UserPasswordFile.class);
-            UserEntity userEntity = new UserEntity().computeEntityID(() -> userPasswordFile.email).
-                    setPassword(userPasswordFile.password, passwordEncoder).setUserId(userPasswordFile.email)
+            UserEntity userEntity = new UserEntity()
+                    .setEntityID(userPasswordFile.email)
+                    .setPassword(userPasswordFile.password, passwordEncoder)
+                    .setUserId(userPasswordFile.email)
                     .setRoles(new HashSet<>(Arrays.asList(ADMIN_ROLE, PRIVILEGED_USER_ROLE, GUEST_ROLE)));
 
             Path initPrivateKey = CommonUtils.getRootPath().resolve("init_private_key");

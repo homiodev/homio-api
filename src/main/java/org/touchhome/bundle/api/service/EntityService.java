@@ -2,13 +2,12 @@ package org.touchhome.bundle.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.SneakyThrows;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
-import org.touchhome.bundle.api.model.Status;
 import org.touchhome.common.exception.NotFoundException;
-import org.touchhome.common.util.CommonUtils;
 
 import java.util.Map;
 import java.util.Optional;
@@ -25,10 +24,10 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     Map<String, Object> entityToService = new ConcurrentHashMap<>();
 
     /**
-     * Get service and throw error if not found
+     * Get service or throw error if not found
      */
     @JsonIgnore
-    default S getService() throws NotFoundException {
+    default @NotNull S getService() throws NotFoundException {
         Object service = entityToService.get(getEntityID());
         if (service == null) {
             throw new NotFoundException("Service for entity: " + getEntityID() + " not found");
@@ -37,60 +36,49 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     }
 
     @JsonIgnore
-    default Optional<S> optService() {
+    default @NotNull Optional<S> optService() {
         return Optional.ofNullable((S) entityToService.get(getEntityID()));
     }
 
     @JsonIgnore
-    Class<S> getEntityServiceItemClass();
+    @NotNull Class<S> getEntityServiceItemClass();
 
     @SneakyThrows
-    default S getOrCreateService(EntityContext entityContext, boolean throwIfError, boolean testService) {
+    default @NotNull Optional<S> getOrCreateService(@NotNull EntityContext entityContext) {
         serviceAccessLock.lock();
         try {
-            S service = (S) entityToService.computeIfAbsent(getEntityID(), entityID -> {
-                setStatus(getSuccessServiceStatus(), null);
-                try {
-                    return createService(entityContext);
-                } catch (Exception ex) {
-                    setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
-                    if (throwIfError) {
-                        throw new RuntimeException(ex);
-                    }
-                    return null;
-                }
-            });
-            if (service != null) {
-                try {
-                    if (testService) {
-                        setStatus(getSuccessServiceStatus(), null);
-                        service.testService();
-                    }
-                } catch (Exception ex) {
-                    setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
-                    if (throwIfError) {
-                        throw new RuntimeException(ex);
-                    }
-                    return null;
-                }
+            if (entityToService.containsKey(getEntityID())) {
+                return Optional.of((S) entityToService.get(getEntityID()));
             }
-            return service;
+            try {
+                S service = createService(entityContext);
+                if (service != null) {
+                    try {
+                        if (service.testService()) {
+                            setStatusOnline();
+                        }
+                    } catch (Exception ex) {
+                        setStatusError(ex);
+                    }
+                    entityToService.put(getEntityID(), service);
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+            return Optional.ofNullable((S) entityToService.get(getEntityID()));
         } finally {
             serviceAccessLock.unlock();
         }
     }
 
-    S createService(EntityContext entityContext) throws Exception;
-
     /**
-     * Mark service with getSuccessServiceStatus() status if service has been created
-     * Do not mark status if method return null
+     * Create service factory method
+     *
+     * @return service or null if service has to be created during some external process
      */
-    default @Nullable Status getSuccessServiceStatus() {
-        return Status.ONLINE;
-    }
+    @Nullable S createService(@NotNull EntityContext entityContext);
 
-    String getEntityID();
+    @NotNull String getEntityID();
 
     default void destroyService() throws Exception {
         S service = (S) entityToService.remove(getEntityID());
@@ -102,12 +90,34 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     interface ServiceInstance<E extends EntityService<?, ?>> {
         /**
          * Fires to update entity inside in-memory service each time when entity fetched/updated
+         * testService() method calls always after this to check service actual status
+         *
+         * @return true - need call testService()
          */
-        void entityUpdated(E entity);
+        boolean entityUpdated(@NotNull E entity);
+
+        @NotNull E getEntity();
+
+        /**
+         * Test service must check if service became/still available.
+         *
+         * @return true - set entity status to ONLINE. false - keep existed
+         * @throws Exception - set entity status to ERROR
+         */
+        boolean testService() throws Exception;
+
+        default void testServiceWithSetStatus() throws Exception {
+            try {
+                if (testService()) {
+                    getEntity().setStatusOnline();
+                }
+            } catch (Exception ex) {
+                getEntity().setStatusError(ex);
+                throw ex;
+            }
+        }
 
         void destroy() throws Exception;
-
-        void testService() throws Exception;
     }
 }
 

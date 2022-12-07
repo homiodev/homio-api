@@ -31,12 +31,14 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
     protected final S videoService;
 
     private final String whiteList;
+    private final String entityID;
     private byte[] incomingJpeg = new byte[0];
     private int receivedBytes = 0;
     private boolean updateSnapshot = false;
 
     public BaseVideoStreamServerHandler(S videoService) {
         this.videoService = videoService;
+        this.entityID = videoService.getEntityID();
         this.whiteList = "(127.0.0.1)(" + TouchHomeUtils.MACHINE_IP_ADDRESS + ")";
     }
 
@@ -74,9 +76,9 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
         receivedBytes = incomingJpeg.length;
 
         if (msg instanceof LastHttpContent) {
-            videoService.getVideoHandler().bringVideoOnline();
+            videoService.bringVideoOnline();
             if (updateSnapshot) {
-                videoService.getVideoHandler().processSnapshot(incomingJpeg);
+                videoService.processSnapshot(incomingJpeg);
             } else {
                 handleLastHttpContent(incomingJpeg);
             }
@@ -88,15 +90,15 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
 
     private boolean handleHttpRequest(ChannelHandlerContext ctx, HttpRequest httpRequest)
             throws IOException, InterruptedException {
-        BaseFFMPEGVideoStreamHandler videoHandler = videoService.getVideoHandler();
         String requestIP = "(" + ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress().getHostAddress() + ")";
 
         if (!whiteList.contains(requestIP)) {
-            log.warn("The request made from {} was not in the whitelist and will be ignored.", requestIP);
+            log.warn("[{}]: The request made from {} was not in the whitelist and will be ignored.",
+                    entityID, requestIP);
             return true;
         }
         if ("GET".equalsIgnoreCase(httpRequest.method().toString())) {
-            log.debug("Stream Server received request \tGET:{}", httpRequest.uri());
+            log.debug("[{}]: Stream Server received request \tGET:{}", entityID, httpRequest.uri());
             // Some browsers send a query string after the path when refreshing a picture.
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(httpRequest.uri());
 
@@ -104,25 +106,25 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
 
             switch (queryStringDecoder.path()) {
                 case "/ipvideo.m3u8":
-                    FFMPEG localFfmpeg = videoHandler.ffmpegHLS;
+                    FFMPEG localFfmpeg = videoService.ffmpegHLS;
                     if (!localFfmpeg.getIsAlive()) {
                         if (localFfmpeg.startConverting()) {
-                            videoHandler.setAttribute(CHANNEL_START_STREAM, OnOffType.ON);
+                            videoService.setAttribute(CHANNEL_START_STREAM, OnOffType.ON);
                         }
                     } else {
                         localFfmpeg.setKeepAlive(8);
-                        sendFile(ctx, httpRequest.uri(), "application/x-mpegurl", videoHandler.getFfmpegHLSOutputPath());
+                        sendFile(ctx, httpRequest.uri(), "application/x-mpegurl", videoService.getFfmpegHLSOutputPath());
                         return true;
                     }
                     // Allow files to be created, or you get old m3u8 from the last time this ran.
                     TimeUnit.SECONDS.sleep(10);
-                    sendFile(ctx, httpRequest.uri(), "application/x-mpegurl", videoHandler.getFfmpegHLSOutputPath());
+                    sendFile(ctx, httpRequest.uri(), "application/x-mpegurl", videoService.getFfmpegHLSOutputPath());
                     return true;
                 case "/ipvideo.mpd":
-                    sendFile(ctx, httpRequest.uri(), "application/dash+xml", videoHandler.getFfmpegMP4OutputPath());
+                    sendFile(ctx, httpRequest.uri(), "application/dash+xml", videoService.getFfmpegMP4OutputPath());
                     return true;
                 case "/ipvideo.gif":
-                    byte[] bytes = videoHandler.recordGifSync(null, 5);
+                    byte[] bytes = videoService.recordGifSync(null, 5);
                     sendNettyResponse(ctx, "image/gif", bytes);
                     return true;
                 case "/ipvideo.jpg":
@@ -133,14 +135,14 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
                 case "/ipvideo0.ts":
                 default:
                     if (httpRequest.uri().contains(".ts")) {
-                        sendFile(ctx, queryStringDecoder.path(), "video/MP2T", videoHandler.getFfmpegHLSOutputPath());
+                        sendFile(ctx, queryStringDecoder.path(), "video/MP2T", videoService.getFfmpegHLSOutputPath());
                     } else if (httpRequest.uri().contains(".gif")) {
-                        sendFile(ctx, queryStringDecoder.path(), "image/gif", videoHandler.getFfmpegGifOutputPath());
+                        sendFile(ctx, queryStringDecoder.path(), "image/gif", videoService.getFfmpegGifOutputPath());
                     } else if (httpRequest.uri().contains(".jpg")) {
                         // Allow access to the preroll and postroll jpg files
-                        sendFile(ctx, queryStringDecoder.path(), "image/jpg", videoHandler.getFfmpegImageOutputPath());
+                        sendFile(ctx, queryStringDecoder.path(), "image/jpg", videoService.getFfmpegImageOutputPath());
                     } else if (httpRequest.uri().contains(".m4s") || httpRequest.uri().contains(".mp4")) {
-                        sendFile(ctx, queryStringDecoder.path(), "video/mp4", videoHandler.getFfmpegMP4OutputPath());
+                        sendFile(ctx, queryStringDecoder.path(), "video/mp4", videoService.getFfmpegMP4OutputPath());
                     }
                     return true;
             }
@@ -153,7 +155,8 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
                         updateSnapshot = true;
                         break;
                     default:
-                        log.debug("Stream Server received unknown request \tPOST:{}", httpRequest.uri());
+                        log.debug("[{}]: Stream Server received unknown request \tPOST:{}",
+                                entityID, httpRequest.uri());
                         break;
                 }
             }
@@ -168,12 +171,11 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
     protected abstract boolean streamServerReceivedPostHandler(HttpRequest httpRequest);
 
     private void sendSnapshotImage(ChannelHandlerContext ctx, String contentType) {
-        BaseFFMPEGVideoStreamHandler videoHandler = videoService.getVideoHandler();
-        videoHandler.lockCurrentSnapshot.lock();
+        videoService.lockCurrentSnapshot.lock();
         try {
-            sendNettyResponse(ctx, contentType, videoHandler.getLatestSnapshot());
+            sendNettyResponse(ctx, contentType, videoService.getLatestSnapshot());
         } finally {
-            videoHandler.lockCurrentSnapshot.unlock();
+            videoService.lockCurrentSnapshot.unlock();
         }
     }
 
@@ -194,15 +196,14 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
         if (cause.toString().contains("Connection reset by peer")) {
             log.trace("Connection reset by peer.");
         } else if (cause.toString().contains("An established connection was aborted by the software")) {
-            log.debug("An established connection was aborted by the software");
+            log.debug("[{}]: An established connection was aborted by the software", entityID);
         } else if (cause.toString().contains("An existing connection was forcibly closed by the remote host")) {
-            log.debug("An existing connection was forcibly closed by the remote host");
+            log.debug("[{}]: An existing connection was forcibly closed by the remote host", entityID);
         } else if (cause.toString().contains("(No such file or directory)")) {
-            log.info(
-                    "IpVideo file server could not find the requested file. This may happen if ffmpeg is still creating the " +
-                            "file.");
+            log.info("[{}]: IpVideo file server could not find the requested file. This may happen if ffmpeg is still creating the " +
+                            "file.", entityID);
         } else {
-            log.warn("Exception caught from stream server:{}", cause.getMessage());
+            log.warn("[{}]: Exception caught from stream server:{}", entityID, cause.getMessage());
         }
         ctx.close();
     }
@@ -215,7 +216,7 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
             if (e.state() == IdleState.WRITER_IDLE) {
-                log.debug("Stream server is going to close an idle channel.");
+                log.debug("[{}]: Stream server is going to close an idle channel.", entityID);
                 ctx.close();
             }
         }
@@ -233,8 +234,7 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
     protected abstract void handlerChildRemoved(ChannelHandlerContext ctx);
 
     private void sendNettyResponse(ChannelHandlerContext ctx, String contentType, byte[] data) {
-        BaseFFMPEGVideoStreamHandler videoHandler = videoService.getVideoHandler();
-        ByteBuf snapshotData = Unpooled.copiedBuffer(videoHandler.getLatestSnapshot());
+        ByteBuf snapshotData = Unpooled.copiedBuffer(videoService.getLatestSnapshot());
         sendNettyResponse(ctx, contentType, snapshotData.readableBytes(), snapshotData);
     }
 

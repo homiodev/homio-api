@@ -18,14 +18,14 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     public static final String CONDITION = "CONDITION";
     Object text;
     @JsonIgnore
-    private int order;
-    private String opcode;
-    private BlockType blockType;
-    private Map<String, ArgumentTypeDescription> arguments = new HashMap<>();
+    private final int order;
+    private final String opcode;
+    private final BlockType blockType;
+    private final Map<String, ArgumentTypeDescription> arguments = new HashMap<>();
     @JsonIgnore
-    private Scratch3BlockHandler handler;
+    private final Scratch3BlockHandler handler;
     @JsonIgnore
-    private Scratch3BlockEvaluateHandler evaluateHandler;
+    private final Scratch3BlockEvaluateHandler evaluateHandler;
     @JsonIgnore
     private int spaceCount = 0;
 

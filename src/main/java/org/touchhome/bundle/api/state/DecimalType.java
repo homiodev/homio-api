@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 @Log4j2
-public class DecimalType extends Number implements State, Comparable<DecimalType> {
+public class DecimalType extends State implements Comparable<DecimalType> {
 
     public static final DecimalType TRUE = new DecimalType(1);
     public static final DecimalType FALSE = new DecimalType(0);
@@ -83,7 +83,6 @@ public class DecimalType extends Number implements State, Comparable<DecimalType
         return value.compareTo(o.value);
     }
 
-    @Override
     public double doubleValue() {
         return value.doubleValue();
     }

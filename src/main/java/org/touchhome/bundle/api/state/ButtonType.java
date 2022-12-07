@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ButtonType implements State {
+public class ButtonType extends State {
     private final ButtonPressType buttonPressType;
 
     @Override
@@ -53,7 +53,7 @@ public class ButtonType implements State {
         DOUBLE_PRESS("doublepress"),
         LONG_PRESS("longpress");
 
-        private String parameterValue;
+        private final String parameterValue;
 
         ButtonPressType(String parameterValue) {
             this.parameterValue = parameterValue;

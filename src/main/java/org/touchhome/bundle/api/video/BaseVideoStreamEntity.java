@@ -3,13 +3,14 @@ package org.touchhome.bundle.api.video;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.json.JSONObject;
 import org.springframework.data.util.Pair;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.EntityContextSetting;
 import org.touchhome.bundle.api.entity.DeviceBaseEntity;
 import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.model.ActionResponseModel;
+import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.service.scan.BaseBeansItemsDiscovery;
 import org.touchhome.bundle.api.service.scan.VideoStreamScanner;
 import org.touchhome.bundle.api.ui.UISidebarButton;
@@ -19,13 +20,13 @@ import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
 import org.touchhome.bundle.api.ui.field.action.HasDynamicContextMenuActions;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
+import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import java.util.Collection;
 
-@Log4j2
 @Setter
 @Getter
 @Entity
@@ -38,7 +39,7 @@ import java.util.Collection;
 public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> extends DeviceBaseEntity<T>
         implements HasDynamicContextMenuActions {
 
-    @UIField(order = 300, onlyEdit = true)
+    @UIField(order = 300, hideInView = true)
     public boolean isHasAudioStream() {
         return getJsonData("hasAudioStream", false);
     }
@@ -46,6 +47,21 @@ public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> ext
     public T setHasAudioStream(boolean value) {
         setJsonData("hasAudioStream", value);
         return (T) this;
+    }
+
+    @UIField(order = 11, hideInEdit = true)
+    @UIFieldColorStatusMatch
+    public Status getSourceStatus() {
+        return EntityContextSetting.getStatus(this, "cam_stat", Status.UNKNOWN);
+    }
+
+    public void setSourceStatus(Status status, String message) {
+        EntityContextSetting.setStatus(this, "cam_stat", "SourceStatus", status, message);
+    }
+
+    @UIField(order = 20, hideInEdit = true, hideOnEmpty = true)
+    public String getSourceStatusMessage() {
+        return EntityContextSetting.getMessage(this, "cam_stat");
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class FFMPEGVideoDevice extends FFMPEGBaseDevice {
 
-    private Dimension[] resolutions;
+    private final Dimension[] resolutions;
     private Dimension resolution = null;
 
     protected FFMPEGVideoDevice(String resolutions) {

@@ -17,22 +17,17 @@ public @interface UIField {
     /**
      * Hide field from edit mode
      */
-    boolean readOnly() default false;
+    boolean hideInEdit() default false;
 
     /**
-     * Should be available only in editMode. If true - readOnly flag ignored
+     * Hide field in view mode
      */
-    boolean onlyEdit() default false;
+    boolean hideInView() default false;
 
     /**
      * Disable editing but show in view/edit mode
      */
     boolean disableEdit() default false;
-
-    /**
-     * in some cases we need hide field from view/editing at all
-     */
-    boolean visible() default true;
 
     UIFieldType type() default UIFieldType.AutoDetect;
 

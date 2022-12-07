@@ -4,7 +4,8 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.server.PortInUseException;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.common.util.CommonUtils;
@@ -17,54 +18,24 @@ import java.util.stream.Stream;
 
 import static com.fazecast.jSerialComm.SerialPort.TIMEOUT_NONBLOCKING;
 
-@Log4j2
+@RequiredArgsConstructor
 public abstract class BaseSerialPort implements SerialPortDataListener {
     protected final Object bufferSynchronisationObject = new Object();
 
-    /**
-     * The baud rate.
-     */
-    @Getter
-    protected final int baudRate;
-
-    /**
-     * True to enable RTS / CTS flow control
-     */
-    protected final PortFlowControl flowControl;
     protected final String coordinator;
+    protected final String entityID;
     protected final EntityContext entityContext;
+    protected final int baudRate;
+    protected final PortFlowControl flowControl;
     protected final Runnable portUnavailableListener;
     protected final Consumer<SerialPort> portOpenSuccessListener;
-    /**
-     * The portName portName.
-     */
+    private final Logger log;
+
     @Getter
     protected SerialPort serialPort;
-    /**
-     * The serial port input stream.
-     */
     protected InputStream inputStream;
-    /**
-     * The serial port output stream.
-     */
     @Getter
     protected OutputStream outputStream;
-
-    public BaseSerialPort(String coordinator,
-                          EntityContext entityContext,
-                          SerialPort serialPort,
-                          int baudRate,
-                          PortFlowControl flowControl,
-                          Runnable portUnavailableListener,
-                          Consumer<SerialPort> portOpenSuccessListener) {
-        this.coordinator = coordinator;
-        this.entityContext = entityContext;
-        this.serialPort = serialPort;
-        this.baudRate = baudRate;
-        this.flowControl = flowControl;
-        this.portUnavailableListener = portUnavailableListener;
-        this.portOpenSuccessListener = portOpenSuccessListener;
-    }
 
     public boolean open() {
         return open(baudRate, flowControl);
@@ -76,7 +47,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
 
     public boolean open(int baudRate, PortFlowControl flowControl) {
         try {
-            log.debug("Connecting to serial port [{}] at {} baud, flow control {}.",
+            log.debug("[{}]: Connecting to serial port [{}] at {} baud, flow control {}.", entityID,
                     serialPort == null ? "null" : serialPort.getSystemPortName(), baudRate, flowControl);
             try {
                 if (serialPort == null) {
@@ -84,7 +55,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
                             .filter(p -> p.getPortDescription().toLowerCase().contains(coordinator)).findAny().orElse(null);
 
                     if (serialPort == null) {
-                        log.error("Serial Error: Port does not exist.");
+                        log.error("[{}]: Serial Error: Port does not exist.", entityID);
                         return false;
                     } else if (portOpenSuccessListener != null) {
                         portOpenSuccessListener.accept(serialPort);
@@ -107,13 +78,13 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
                 serialPort.setComPortTimeouts(TIMEOUT_NONBLOCKING, 100, 0);
                 serialPort.addDataListener(this);
 
-                log.debug("Serial port [{}] is initialized.", serialPort.getSystemPortName());
+                log.debug("[{}]: Serial port [{}] is initialized.", entityID, serialPort.getSystemPortName());
                 serialPort.openPort();
             } catch (PortInUseException e) {
-                log.error("Serial Error: Port {} in use.", serialPort.getSystemPortName());
+                log.error("[{}]: Serial Error: Port {} in use.", entityID, serialPort.getSystemPortName());
                 return false;
             } catch (RuntimeException e) {
-                log.error("Serial Error: Device cannot be opened on Port {}. Caused by {}",
+                log.error("[{}]: Serial Error: Device cannot be opened on Port {}. Caused by {}", entityID,
                         serialPort == null ? "UNKNOWN_SYSTEM_PORT" : serialPort.getSystemPortName(), e.getMessage());
                 return false;
             }
@@ -123,7 +94,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
 
             return true;
         } catch (Exception e) {
-            log.error("Unable to open serial port: ", e);
+            log.error("[{}]: Unable to open serial port: ", entityID, e);
             return false;
         }
     }
@@ -134,18 +105,18 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
             try {
                 synchronized (bufferSynchronisationObject) {
                     int available = inputStream.available();
-                    log.trace("Processing DATA_AVAILABLE event: have {} bytes available", available);
-                    byte buf[] = new byte[available];
+                    log.trace("[{}]: Processing DATA_AVAILABLE event: have {} bytes available", entityID, available);
+                    byte[] buf = new byte[available];
                     int offset = 0;
                     while (offset != available) {
                         if (log.isTraceEnabled()) {
-                            log.trace("Processing DATA_AVAILABLE event: try read  {} at offset {}",
+                            log.trace("[{}]: Processing DATA_AVAILABLE event: try read  {} at offset {}", entityID,
                                     available - offset, offset);
                         }
                         int n = inputStream.read(buf, offset, available - offset);
                         if (log.isTraceEnabled()) {
-                            log.trace("Processing DATA_AVAILABLE event: did read {} of {} at offset {}", n,
-                                    available - offset, offset);
+                            log.trace("[{}]: Processing DATA_AVAILABLE event: did read {} of {} at offset {}",
+                                    entityID, n, available - offset, offset);
                         }
                         if (n <= 0) {
                             throw new IOException("Expected to be able to read " + available
@@ -156,9 +127,9 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
                     this.handleSerialEvent(buf);
                 }
             } catch (IOException e) {
-                log.warn("Processing DATA_AVAILABLE event: received IOException in serial port event", e);
+                log.warn("[{}]: Processing DATA_AVAILABLE event: received IOException in serial port event", entityID, e);
             } catch (Exception ex) {
-                log.warn("Port read exception: " + CommonUtils.getErrorMessage(ex));
+                log.warn("[{}]: Port read exception: {}", entityID, CommonUtils.getErrorMessage(ex));
                 if (this.portUnavailableListener != null) {
                     this.portUnavailableListener.run();
                 }
@@ -193,10 +164,10 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
                     this.notify();
                 }
 
-                log.debug("Serial port '{}' closed.", serialPortName);
+                log.debug("[{}]: Serial port '{}' closed.", entityID, serialPortName);
             }
         } catch (Exception e) {
-            log.error("Error closing serial port: '{}' ", serialPortName, e);
+            log.error("[{}]: Error closing serial port: '{}' ", entityID, serialPortName, e);
         }
     }
 

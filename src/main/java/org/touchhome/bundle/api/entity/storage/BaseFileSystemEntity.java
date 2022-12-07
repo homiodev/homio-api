@@ -57,7 +57,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     @JsonIgnore
     long getConnectionHashCode();
 
-    @UIField(order = 1, required = true, readOnly = true, hideOnEmpty = true, fullWidth = true, bg = "#334842",
+    @UIField(order = 1, required = true, hideInEdit = true, hideOnEmpty = true, fullWidth = true, bg = "#334842",
             type = UIFieldType.HTML)
     default String getDescription() {
         String prefix = getEntityPrefix();

@@ -18,7 +18,7 @@ public class CrudEntity<T> implements HasEntityIdentifier {
     @GeneratedValue
     private Integer id;
 
-    @UIField(order = 4, readOnly = true, type = StaticDate)
+    @UIField(order = 4, hideInEdit = true, type = StaticDate)
     @Column(nullable = false)
     private Date creationTime;
 

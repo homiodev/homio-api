@@ -2,6 +2,8 @@ package org.touchhome.bundle.api.video.ffmpeg;
 
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.touchhome.common.util.CommonUtils;
 
 import java.io.BufferedReader;
@@ -10,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.FFMPEG_LOCATION;
 import static org.touchhome.bundle.api.video.VideoConstants.CHANNEL_FFMPEG_MOTION_ALARM;
 import static org.touchhome.common.util.CommonUtils.addToListSafe;
 
@@ -28,17 +31,21 @@ public class FFMPEG {
     @Getter
     private final Date creationDate = new Date();
     private Process process = null;
-    private FFMPEGFormat format;
+    private final FFMPEGFormat format;
     @Getter
-    private List<String> commandArrayList = new ArrayList<>();
+    private final List<String> commandArrayList = new ArrayList<>();
     private IpVideoFfmpegThread ipVideoFfmpegThread;
     private int keepAlive = 8;
+    private String entityID;
 
-    public FFMPEG(String key, String description, FFMPEGHandler handler, Logger log, FFMPEGFormat format, String ffmpegLocation,
-                  String inputArguments,
-                  String input, String outArguments, String output, String username, String password, Runnable destroyListener) {
-        FFMPEG.ffmpegMap.put(key, this);
+    public FFMPEG(@NotNull String entityID, @NotNull String description,
+                  @NotNull FFMPEGHandler handler, @NotNull Logger log, @NotNull FFMPEGFormat format,
+                  @NotNull String inputArguments, @NotNull String input, @NotNull String outArguments,
+                  @NotNull String output, @NotNull String username, @NotNull String password,
+                  @Nullable Runnable destroyListener) {
+        FFMPEG.ffmpegMap.put(entityID + "_" + description, this);
 
+        this.entityID = entityID;
         this.log = log;
         this.description = description;
         this.format = format;
@@ -64,8 +71,8 @@ public class FFMPEG {
 
         Collections.addAll(commandArrayList, String.join(" ", builder).split("\\s+"));
         // ffmpegLocation may have a space in its folder
-        commandArrayList.add(0, ffmpegLocation);
-        log.warn("\n\nGenerated ffmpeg command for: {}.\n{}\n\n", format, String.join(" ", commandArrayList));
+        commandArrayList.add(0, FFMPEG_LOCATION);
+        log.warn("\n\n[{}]: Generated ffmpeg command for: {}.\n{}\n\n", entityID, format, String.join(" ", commandArrayList));
     }
 
     public void setKeepAlive(int seconds) {
@@ -106,7 +113,7 @@ public class FFMPEG {
 
     public void stopConverting() {
         if (ipVideoFfmpegThread.isAlive()) {
-            log.debug("Stopping ffmpeg {} now when keepalive is:{}", format, keepAlive);
+            log.debug("[{}]: Stopping ffmpeg {} now when keepalive is:{}", entityID, format, keepAlive);
             if (process != null) {
                 process.destroyForcibly();
             }
@@ -147,7 +154,7 @@ public class FFMPEG {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
                         if (format.equals(FFMPEGFormat.RTSP_ALARMS)) {
-                            log.info("{}", line);
+                            log.info("[{}]: {}", entityID, line);
                             if (line.contains("lavfi.")) {
                                 if (countOfMotions == 4) {
                                     handler.motionDetected(true, CHANNEL_FFMPEG_MOTION_ALARM);
@@ -168,7 +175,7 @@ public class FFMPEG {
                                 handler.audioDetected(true);
                             }
                         } else {
-                            log.info("{}", line);
+                            log.info("[{}]: {}", entityID, line);
                         }
                         if (line.contains("No such file or directory")) {
                             handler.ffmpegError(line);
@@ -176,7 +183,7 @@ public class FFMPEG {
                     }
                 }
             } catch (IOException ex) {
-                log.warn("An error occurred trying to process the messages from FFMPEG.");
+                log.warn("[{}]: An error occurred trying to process the messages from FFMPEG.", entityID);
                 handler.ffmpegError(CommonUtils.getErrorMessage(ex));
             }
         }

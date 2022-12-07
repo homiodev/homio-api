@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import java.util.Objects;
 
-public class ObjectType implements State {
+public class ObjectType extends State {
 
     @Getter
     private final Object value;
@@ -29,11 +29,6 @@ public class ObjectType implements State {
     }
 
     @Override
-    public String toString() {
-        return value == null ? "" : value.toString();
-    }
-
-    @Override
     public float floatValue() {
         throw new IllegalStateException("Unable to fetch float value from string");
     }
@@ -41,6 +36,11 @@ public class ObjectType implements State {
     @Override
     public int intValue() {
         throw new IllegalStateException("Unable to fetch float value from string");
+    }
+
+    @Override
+    public String stringValue() {
+        return value == null ? "" : value.toString();
     }
 
     @Override

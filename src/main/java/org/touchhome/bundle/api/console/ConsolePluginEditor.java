@@ -11,6 +11,8 @@ import org.touchhome.bundle.api.model.FileContentType;
 import org.touchhome.bundle.api.model.FileModel;
 import org.touchhome.bundle.api.setting.console.header.ConsoleHeaderSettingPlugin;
 
+import static org.touchhome.common.util.CommonUtils.OBJECT_MAPPER;
+
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 
     @Override
@@ -21,7 +23,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
     ActionResponseModel save(FileModel content);
 
     default void sendValueToConsoleEditor(EntityContext entityContext) {
-        entityContext.ui().sendNotification("-editor-" + getEntityID(), new JSONObject(getValue()));
+        entityContext.ui().sendNotification("-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
     }
 
     default MonacoGlyphAction getGlyphAction() {

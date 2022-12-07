@@ -9,17 +9,16 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.tika.Tika;
 import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.RestartHandlerOnChange;
 import org.touchhome.bundle.api.hardware.network.NetworkHardwareRepository;
-import org.touchhome.bundle.api.model.Status;
 import org.touchhome.common.util.CommonUtils;
 
 import java.io.InputStream;
@@ -51,6 +50,9 @@ public class TouchHomeUtils {
     private static final Path filesPath = getOrCreatePath("asm_files");
     @Getter
     private static final Path installPath = getOrCreatePath("installs");
+    @Getter
+    public static final String FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
+            TouchHomeUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
     @Getter
     private static final Path externalJarClassPath = getOrCreatePath("external_jars");
     @Getter

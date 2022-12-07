@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class StringType implements State {
+public class StringType extends State {
     public static StringType EMPTY = new StringType("");
 
     @Getter
@@ -30,11 +30,6 @@ public class StringType implements State {
     }
 
     @Override
-    public String toString() {
-        return value;
-    }
-
-    @Override
     public float floatValue() {
         return Float.parseFloat(value);
     }
@@ -45,8 +40,13 @@ public class StringType implements State {
     }
 
     @Override
+    public String stringValue() {
+        return value;
+    }
+
+    @Override
     public boolean boolValue() {
-        return value.equals("1") || value.equalsIgnoreCase("true");
+        return value.equals("ON") || value.equals("1") || value.equalsIgnoreCase("true");
     }
 
     @Override

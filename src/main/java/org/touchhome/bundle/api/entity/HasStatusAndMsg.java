@@ -12,16 +12,18 @@ import org.touchhome.common.util.CommonUtils;
 
 public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
 
-    @UIField(order = 10, readOnly = true, hideOnEmpty = true)
+    String DISTINGUISH_KEY = "status";
+
+    @UIField(order = 10, hideInEdit = true, hideOnEmpty = true)
     @UIFieldColorStatusMatch
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     default Status getStatus() {
-        return EntityContextSetting.getStatus(((T) this), "", Status.UNKNOWN);
+        return EntityContextSetting.getStatus(((T) this), DISTINGUISH_KEY, Status.UNKNOWN);
     }
 
-    @UIField(order = 23, readOnly = true, hideOnEmpty = true)
+    @UIField(order = 11, hideInEdit = true, hideOnEmpty = true)
     default String getStatusMessage() {
-        return EntityContextSetting.getMessage(((T) this), "");
+        return EntityContextSetting.getMessage(((T) this), DISTINGUISH_KEY);
     }
 
     default T setStatusOnline() {
@@ -41,12 +43,12 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
     }
 
     default T setStatus(@Nullable Status status, @Nullable String msg) {
-        EntityContextSetting.setStatus((BaseEntityIdentifier) this, "", status, msg);
+        EntityContextSetting.setStatus((BaseEntityIdentifier) this, DISTINGUISH_KEY, "Status", status, msg);
         return (T) this;
     }
 
     default T setStatusMessage(@Nullable String msg) {
-        EntityContextSetting.setMessage(((T) this), "", msg);
+        EntityContextSetting.setMessage(((T) this), DISTINGUISH_KEY, msg);
         return (T) this;
     }
 }

@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HSBType implements State {
+public class HSBType extends State {
 
     // constants for the constituents
     public static final String KEY_HUE = "h";
@@ -22,18 +22,18 @@ public class HSBType implements State {
     public static final HSBType BLUE = new HSBType("240,100,100");
     private static final long serialVersionUID = 322902950356613226L;
     // 1931 CIE XYZ to sRGB (D65 reference white)
-    private static final float XY2RGB[][] = {{3.2406f, -1.5372f, -0.4986f}, {-0.9689f, 1.8758f, 0.0415f},
+    private static final float[][] XY2RGB = {{3.2406f, -1.5372f, -0.4986f}, {-0.9689f, 1.8758f, 0.0415f},
             {0.0557f, -0.2040f, 1.0570f}};
 
     // sRGB to 1931 CIE XYZ (D65 reference white)
-    private static final float RGB2XY[][] = {{0.4124f, 0.3576f, 0.1805f}, {0.2126f, 0.7152f, 0.0722f},
+    private static final float[][] RGB2XY = {{0.4124f, 0.3576f, 0.1805f}, {0.2126f, 0.7152f, 0.0722f},
             {0.0193f, 0.1192f, 0.9505f}};
 
     protected BigDecimal hue;
     protected BigDecimal saturation;
 
     @Getter
-    private BigDecimal value;
+    private final BigDecimal value;
 
     public HSBType() {
         this("0,0,0");
@@ -262,11 +262,8 @@ public class HSBType implements State {
             return false;
         }
         HSBType other = (HSBType) obj;
-        if (!getHue().equals(other.getHue()) || !getSaturation().equals(other.getSaturation())
-                || !getBrightness().equals(other.getBrightness())) {
-            return false;
-        }
-        return true;
+        return getHue().equals(other.getHue()) && getSaturation().equals(other.getSaturation())
+                && getBrightness().equals(other.getBrightness());
     }
 
     public DecimalType[] toRGB() {
@@ -334,7 +331,7 @@ public class HSBType implements State {
      */
     public DecimalType[] toXY() {
         // This makes sure we keep color information even if brightness is zero
-        DecimalType sRGB[] = new HSBType(getHue(), getSaturation(), DecimalType.HUNDRED).toRGB();
+        DecimalType[] sRGB = new HSBType(getHue(), getSaturation(), DecimalType.HUNDRED).toRGB();
 
         float r = gammaDecompress(sRGB[0].floatValue() / 100.0f);
         float g = gammaDecompress(sRGB[1].floatValue() / 100.0f);
@@ -382,7 +379,7 @@ public class HSBType implements State {
         } else if (target == DecimalType.class) {
             return target.cast(new DecimalType(getBrightness().toBigDecimal()));
         } else {
-            return State.super.as(target);
+            return super.as(target);
         }
     }
 }

@@ -361,10 +361,7 @@ public class AudioFormat {
         if ((null != getBitRate()) && (!getBitRate().equals(audioFormat.getBitRate()))) {
             return false;
         }
-        if ((null != getFrequency()) && (!getFrequency().equals(audioFormat.getFrequency()))) {
-            return false;
-        }
-        return true;
+        return (null == getFrequency()) || (getFrequency().equals(audioFormat.getFrequency()));
     }
 
     @Override
@@ -387,11 +384,8 @@ public class AudioFormat {
             if (!(null == getBitRate() ? null == format.getBitRate() : getBitRate().equals(format.getBitRate()))) {
                 return false;
             }
-            if (!(null == getFrequency() ? null == format.getFrequency()
-                    : getFrequency().equals(format.getFrequency()))) {
-                return false;
-            }
-            return true;
+            return null == getFrequency() ? null == format.getFrequency()
+                    : getFrequency().equals(format.getFrequency());
         }
         return super.equals(obj);
     }

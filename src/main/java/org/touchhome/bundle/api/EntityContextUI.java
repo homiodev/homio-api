@@ -1,12 +1,12 @@
 package org.touchhome.bundle.api;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
@@ -84,10 +84,25 @@ public interface EntityContextUI {
      */
     void reloadWindow(@NotNull String reason);
 
-    /**
-     * Send reload item on UI if related page are opened
-     */
+
     void updateItem(@NotNull BaseEntity<?> baseEntity);
+
+    /**
+     * Update specific field
+     */
+    void updateItem(@NotNull BaseEntity<?> baseEntity, @NotNull String updateField, @Nullable Object value);
+
+    /**
+     * Update specific field inside @UIFieldInlineEntities
+     *
+     * @param parentEntity    - holder entity entity. i.e.: ZigBeeDeviceEntity
+     * @param parentFieldName - parent field name that holds Set of destinations. i.e.: 'endpoints'
+     * @param innerEntity     - target field entity to update from inside Set
+     * @param updateField     - specific field name to update inside innerEntity
+     * @param value           - value to send to UI
+     */
+    void updateInnerSetItem(@NotNull BaseEntity<?> parentEntity, String parentFieldName, @NotNull BaseEntity<?> innerEntity,
+                            @NotNull String updateField, @NotNull Object value);
 
     /**
      * Fire update to ui that entity was changed.
@@ -186,22 +201,12 @@ public interface EntityContextUI {
     void sendNotification(@NotNull String destination, @NotNull String param);
 
     // raw
-    void sendNotification(@NotNull String destination, @NotNull JSONObject param);
+    void sendNotification(@NotNull String destination, @NotNull ObjectNode param);
 
     /**
      * Add button to ui header
      */
-    void addHeaderButton(@NotNull String entityID, @NotNull String color, @Nullable String title, @Nullable String icon,
-                         boolean rotate, @Nullable Integer border, @Nullable Integer duration,
-                         @Nullable Class<? extends BaseEntity> page, @Nullable Class<? extends SettingPluginButton> hideAction);
-
-    default void addHeaderButton(@NotNull String entityID, @NotNull String color, @Nullable String title, @Nullable String icon) {
-        addHeaderButton(entityID, color, title, icon, false, null, null, null, null);
-    }
-
-    default void addHeaderButton(@NotNull String entityID, @NotNull String color, int duration, @Nullable String title) {
-        addHeaderButton(entityID, color, title, null, false, null, duration, null, null);
-    }
+    HeaderButtonBuilder headerButtonBuilder(@NotNull String entityID);
 
     /**
      * Remove button from ui header.
@@ -391,6 +396,29 @@ public interface EntityContextUI {
     }
 
     interface DialogRequestHandler {
-        void handle(DialogResponseType responseType, String pressedButton, JSONObject parameters);
+        void handle(@NotNull DialogResponseType responseType, @NotNull String pressedButton, @NotNull ObjectNode parameters);
+    }
+
+    interface HeaderButtonBuilder {
+        HeaderButtonBuilder title(@NotNull String title);
+
+        HeaderButtonBuilder icon(@NotNull String icon, @Nullable String color, boolean rotate);
+
+        /**
+         * @param width - default 1
+         * @param color - default unset
+         */
+        HeaderButtonBuilder border(int width, @Nullable String color);
+
+        /**
+         * Button available duration
+         */
+        HeaderButtonBuilder duration(int duration);
+
+        HeaderButtonBuilder availableForPage(@NotNull Class<? extends BaseEntity> page);
+
+        HeaderButtonBuilder clickAction(@NotNull Class<? extends SettingPluginButton> clickAction);
+
+        void build();
     }
 }

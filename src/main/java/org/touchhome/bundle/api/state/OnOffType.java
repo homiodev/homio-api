@@ -5,12 +5,14 @@ import lombok.Setter;
 
 import java.util.Objects;
 
-public class OnOffType implements State {
+public class OnOffType extends State {
 
     public static final OnOffType ON = new OnOffType(true);
     public static final OnOffType OFF = new OnOffType(false);
+
     @Getter
     private final boolean value;
+
     @Getter
     @Setter
     private Boolean oldValue;
@@ -26,11 +28,6 @@ public class OnOffType implements State {
 
     public static OnOffType of(boolean on) {
         return on ? ON : OFF;
-    }
-
-    @Override
-    public String toString() {
-        return value ? "ON" : "OFF";
     }
 
     @Override
@@ -60,7 +57,12 @@ public class OnOffType implements State {
 
     @Override
     public String stringValue() {
-        return String.valueOf(intValue());
+        return value ? "1" : "0";
+    }
+
+    @Override
+    public String toString() {
+        return value ? "ON" : "OFF";
     }
 
     public <T extends State> T as(Class<T> target) {
@@ -69,7 +71,7 @@ public class OnOffType implements State {
         } else if (target == HSBType.class) {
             return target.cast(this == ON ? HSBType.WHITE : HSBType.BLACK);
         } else {
-            return State.super.as(target);
+            return super.as(target);
         }
     }
 

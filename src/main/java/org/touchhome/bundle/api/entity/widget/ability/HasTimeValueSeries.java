@@ -50,7 +50,7 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
     class TimeValueDatasetDescription {
         private final @NotNull String id;
         private final @Nullable String name;
-        private @Nullable String color;
+        private final @Nullable String color;
 
         public TimeValueDatasetDescription(@NotNull String id) {
             this(id, null, null);

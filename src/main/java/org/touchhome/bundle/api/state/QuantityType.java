@@ -12,8 +12,7 @@ import java.math.BigDecimal;
  * Value with Unit
  */
 @Log4j2
-public class QuantityType<T extends Quantity<T>> extends Number
-        implements State, Comparable<QuantityType<T>> {
+public class QuantityType<T extends Quantity<T>> extends State implements Comparable<QuantityType<T>> {
 
     private final @NotNull Quantity<T> quantity;
 
@@ -82,7 +81,6 @@ public class QuantityType<T extends Quantity<T>> extends Number
         return quantity.getValue().floatValue();
     }
 
-    @Override
     public double doubleValue() {
         return quantity.getValue().doubleValue();
     }

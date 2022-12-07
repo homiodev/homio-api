@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONPropertyIgnore;
 import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
@@ -14,7 +15,6 @@ import org.touchhome.bundle.api.util.ApplicationContextHolder;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static org.touchhome.bundle.api.ui.field.UIFieldType.StaticDate;
 
@@ -31,6 +31,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     private Integer version;
 
     @NaturalId
+    @Getter
     @Column(name = "entityID", unique = true, nullable = false)
     private String entityID;
 
@@ -39,16 +40,13 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     private String name;
 
     @Column(nullable = false)
-    @UIField(order = 20, readOnly = true, type = StaticDate)
+    @UIField(order = 20, hideInEdit = true, type = StaticDate)
     @Getter
     private Date creationTime;
 
-    @UIField(order = 30, readOnly = true, type = StaticDate)
+    @UIField(order = 30, hideInEdit = true, type = StaticDate)
     @Getter
     private Date updateTime;
-
-    @Transient
-    private String entityIDSupplierStr;
 
     public static BaseEntity fakeEntity(String entityID) {
         return new BaseEntity() {
@@ -117,7 +115,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
             setName(refreshName());
         }
         this.beforePersist();
-        this.getEntityID(true);
+        if (this.entityID == null) {
+            this.entityID = getEntityPrefix() + String.valueOf(System.currentTimeMillis());
+        }
         this.validate();
     }
 
@@ -145,53 +145,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     }
 
-    /**
-     * Entry point for entity on first load after server starts
-     */
-    public void onInit() {
-
-    }
-
-    public T computeEntityID(Supplier<String> entityIDSupplier) {
-        entityIDSupplierStr = entityIDSupplier.get();
-        if (this.name == null) {
-            this.name = entityIDSupplierStr;
+    public T setEntityID(@NotNull String entityID) {
+        String prefix = getEntityPrefix();
+        if (entityID.startsWith(prefix)) {
+            this.entityID = entityID;
+        } else {
+            this.entityID = prefix + entityID;
         }
         return (T) this;
-    }
-
-    public String getEntityID() {
-        return getEntityID(false);
-    }
-
-    public T setEntityID(String entityID) {
-        this.entityID = entityID;
-        return (T) this;
-    }
-
-    public String getEntityID(boolean create) {
-        if (create && this.entityID == null) {
-            String sn = getClass().getSimpleName();
-
-            String simpleId = entityIDSupplierStr;
-            if (simpleId == null) {
-                String name = sn;
-                if (name.endsWith("DeviceEntity")) {
-                    name = name.substring(0, name.length() - "DeviceEntity".length());
-                }
-                simpleId = name + "_" + System.currentTimeMillis();
-            }
-            this.entityID = simpleId.startsWith(getEntityPrefix()) ? simpleId : getEntityPrefix() + simpleId;
-            /*if (this.entityID.length() > 100) {
-                if (this.entityID.contains(sn)) {
-                    int diff = this.entityID.length() - 100;
-                    this.entityID = this.entityID.replace(sn, sn.substring(0, sn.length() - diff));
-                } else {
-                    this.entityID = getEntityPrefix() + System.currentTimeMillis();
-                }
-            }*/
-        }
-        return this.entityID;
     }
 
     /**

@@ -96,12 +96,12 @@ public abstract class MenuBlock {
     @Getter
     @Accessors(chain = true)
     public static class StaticMenuBlock<T> extends MenuBlock {
-        private boolean acceptReporters = true;
-        private List<StaticMenuItem> items = new ArrayList<>();
+        private final boolean acceptReporters = true;
+        private final List<StaticMenuItem> items = new ArrayList<>();
         private Map<String, List> subMenu;
         @Setter
         private Object defaultValue;
-        private Class<T> typeClass;
+        private final Class<T> typeClass;
 
         StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
             super(name);

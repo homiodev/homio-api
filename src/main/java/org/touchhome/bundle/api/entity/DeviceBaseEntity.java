@@ -24,7 +24,7 @@ import javax.persistence.*;
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
         implements HasPosition<DeviceBaseEntity>, HasJsonData, HasStatusAndMsg<T> {
 
-    @UIField(readOnly = true, order = 5, hideOnEmpty = true)
+    @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
     @Getter
     private String ieeeAddress;
 

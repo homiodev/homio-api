@@ -56,14 +56,15 @@ public class OptionModel implements Comparable<OptionModel> {
     private List<OptionModel> children;
 
     private OptionModel(@NotNull Object key, @Nullable Object title) {
-        this.key = key == null ? null : key.toString();
-        this.title = String.valueOf(title);
+        if (key == null) {
+            throw new IllegalArgumentException("key is null");
+        }
+        this.key = key.toString();
+        this.title = title == null ? null : title.toString();
     }
 
     public static OptionModel key(@NotNull String key) {
-        OptionModel optionModel = new OptionModel();
-        optionModel.key = key;
-        return optionModel;
+        return new OptionModel(key, null);
     }
 
     public static OptionModel separator() {
@@ -278,7 +279,7 @@ public class OptionModel implements Comparable<OptionModel> {
             if (this.children == null) {
                 children = new ArrayList<>();
             }
-            child.key = this.key == null ? child.key : this.key + "~~~" + child.key;
+            child.key = this.key.isEmpty() ? child.key : this.key + "~~~" + child.key;
             children.add(child);
 
             modifyChildrenKeys(this.key, child);

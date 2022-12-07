@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 @Accessors(chain = true)
-public class RawType implements State {
+public class RawType extends State {
 
     @Getter
     @Setter
@@ -86,11 +86,6 @@ public class RawType implements State {
     }
 
     @Override
-    public String toString() {
-        return new String(byteArrayValue());
-    }
-
-    @Override
     public float floatValue() {
         throw new RuntimeException("Not implemented");
     }
@@ -115,12 +110,16 @@ public class RawType implements State {
     }
 
     @Override
-    public String toFullString() {
+    public String stringValue() {
         if (mimeType.startsWith("image/")) {
             return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(byteArrayValue());
         }
         return toString();
-        // return Base64.getEncoder().encodeToString(byteArrayValue());
+    }
+
+    @Override
+    public String toString() {
+        return new String(byteArrayValue());
     }
 
     @Override

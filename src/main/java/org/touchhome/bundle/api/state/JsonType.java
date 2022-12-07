@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 
 @Log4j2
 @RequiredArgsConstructor
-public class JsonType implements State, Comparable<JsonType> {
+public class JsonType extends State implements Comparable<JsonType> {
 
     @Getter
     private final JsonNode jsonNode;
@@ -61,11 +61,6 @@ public class JsonType implements State, Comparable<JsonType> {
     }
 
     @Override
-    public String toString() {
-        return toFullString();
-    }
-
-    @Override
     public float floatValue() {
         return (float) jsonNode.asDouble();
     }
@@ -75,7 +70,8 @@ public class JsonType implements State, Comparable<JsonType> {
         return jsonNode.asInt();
     }
 
-    public String toFullString() {
+    @Override
+    public String stringValue() {
         return jsonNode.toString();
     }
 
