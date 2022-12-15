@@ -11,8 +11,6 @@ import java.util.function.Predicate;
 public @interface UIFieldClassSelection {
     Class<?> value();
 
-    String[] basePackages();
-
     Class<? extends Predicate<Class<?>>> filter() default Identity.class;
 
     boolean lazyLoading() default false;

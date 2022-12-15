@@ -142,7 +142,7 @@ public interface EntityContext {
 
     <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
-    <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass, String... packages);
+    <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);
 
     default String getEnv(@NotNull String key) {
         return getEnv(key, String.class, null);

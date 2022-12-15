@@ -3,6 +3,7 @@ package org.touchhome.bundle.api.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.proxy.HibernateProxy;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.converter.JSONObjectConverter;
 import org.touchhome.bundle.api.ui.field.UIField;
@@ -29,6 +30,18 @@ public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends Dev
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DeviceBaseEntity.class)
     private O owner;
 
+    @JsonIgnore
+    public O getOwnerTarget() {
+        if (owner instanceof HibernateProxy) {
+            if (((HibernateProxy) owner).getHibernateLazyInitializer().isUninitialized()) {
+                return null;
+            }
+            return ((O) ((HibernateProxy) owner).getHibernateLazyInitializer().getImplementation());
+        } else {
+            return (O) owner;
+        }
+    }
+
     @UIField(order = 20, hideInEdit = true)
     private int address;
 
@@ -36,6 +49,7 @@ public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends Dev
     private String description;
 
     @Getter
+    @Setter
     @Column(length = 1000)
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData = new JSONObject();

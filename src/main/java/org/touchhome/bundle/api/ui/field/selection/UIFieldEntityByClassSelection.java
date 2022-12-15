@@ -13,6 +13,4 @@ public @interface UIFieldEntityByClassSelection {
      * Define base class/interface which should implement BaseEntity
      */
     Class<? extends HasEntityIdentifier> value();
-
-    String[] basePackages() default "org.touchhome";
 }

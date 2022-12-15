@@ -4,6 +4,10 @@ import org.jetbrains.annotations.NotNull;
 
 public interface UIEntityItemBuilder<Owner, Value> extends UIEntityBuilder {
 
+    String getSeparatedText();
+
+    Owner setSeparatedText(String text);
+
     String getStyle();
 
     Owner setValue(Value value);

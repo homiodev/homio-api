@@ -2,8 +2,8 @@ package org.touchhome.bundle.api.state;
 
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import tec.uom.se.AbstractUnit;
-import tec.uom.se.quantity.Quantities;
+import tech.units.indriya.AbstractUnit;
+import tech.units.indriya.quantity.Quantities;
 
 import javax.measure.*;
 import java.math.BigDecimal;

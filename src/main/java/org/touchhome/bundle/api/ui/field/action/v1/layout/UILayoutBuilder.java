@@ -42,6 +42,12 @@ public interface UILayoutBuilder extends UIEntityBuilder {
         return addFlex(name, getNextOrder());
     }
 
+    default UIFlexLayoutBuilder addFlex(@NotNull String name, Consumer<UIFlexLayoutBuilder> flexConsumer) {
+        UIFlexLayoutBuilder flex = addFlex(name, getNextOrder());
+        flexConsumer.accept(flex);
+        return flex;
+    }
+
     UIFlexLayoutBuilder addFlex(@NotNull String name, int order);
 
     default UIInfoItemBuilder addInfo(@NotNull String name) {
@@ -57,6 +63,15 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     }
 
     UIInfoItemBuilder addInfo(@NotNull String name, UIInfoItemBuilder.InfoType infoType, int order);
+
+    UITextInputItemBuilder addInput(@NotNull String name, String defaultValue,
+                                    UITextInputItemBuilder.InputType inputType,
+                                    boolean required);
+
+    default UITextInputItemBuilder addTextInput(@NotNull String name, String defaultValue,
+                                                boolean required) {
+        return addInput(name, defaultValue, UITextInputItemBuilder.InputType.Text, required);
+    }
 
     default UISelectBoxItemBuilder addSelectBox(@NotNull String name, UIActionHandler action) {
         return addSelectBox(name, action, getNextOrder());
@@ -76,9 +91,13 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     UIMultiButtonItemBuilder addMultiButton(String name, UIActionHandler action, int order);
 
-    default UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max,
-                                          UIActionHandler action, UISliderItemBuilder.SliderType sliderType) {
-        return addSlider(name, value, min, max, action, sliderType, getNextOrder());
+    default UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max, UIActionHandler action) {
+        return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Regular, getNextOrder());
+    }
+
+    default UISliderItemBuilder addNumberInput(@NotNull String name, int value, int min, int max,
+                                               UIActionHandler action) {
+        return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Input, getNextOrder());
     }
 
     UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max,

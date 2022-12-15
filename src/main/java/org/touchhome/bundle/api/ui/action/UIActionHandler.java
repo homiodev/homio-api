@@ -9,7 +9,7 @@ import org.touchhome.bundle.api.model.ActionResponseModel;
  */
 public interface UIActionHandler {
 
-    ActionResponseModel handleAction(EntityContext entityContext, JSONObject params);
+    ActionResponseModel handleAction(EntityContext entityContext, JSONObject params) throws Exception;
 
     default boolean isEnabled(EntityContext entityContext) {
         return true;

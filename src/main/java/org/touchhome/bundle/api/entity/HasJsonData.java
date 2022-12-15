@@ -3,11 +3,14 @@ package org.touchhome.bundle.api.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.util.SecureString;
 import org.touchhome.common.util.CommonUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,25 +18,29 @@ import java.util.stream.Stream;
 public interface HasJsonData {
 
     @JsonIgnore
-    JSONObject getJsonData();
+    @NotNull JSONObject getJsonData();
 
-    default <P> void setJsonData(String key, P value) {
+    default <P> void setJsonData(@NotNull String key, @Nullable P value) {
         getJsonData().put(key, value);
     }
 
-    default Integer getJsonData(String key, int defaultValue) {
+    default Optional<Number> getJsonDataNumber(@NotNull String key) {
+        return Optional.ofNullable(getJsonData().optNumber(key));
+    }
+
+    default int getJsonData(@NotNull String key, int defaultValue) {
         return getJsonData().optInt(key, defaultValue);
     }
 
     @SneakyThrows
-    default <T> T getJsonData(String key, Class<T> classType) {
+    default <T> @Nullable T getJsonData(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
             return CommonUtils.OBJECT_MAPPER.readValue(getJsonData(key), classType);
         }
         return null;
     }
 
-    default <E extends Enum> E getJsonDataEnum(String key, E defaultValue) {
+    default <E extends Enum> @NotNull E getJsonDataEnum(@NotNull String key, @NotNull E defaultValue) {
         String jsonData = getJsonData(key);
 
         E[] enumConstants = (E[]) defaultValue.getDeclaringClass().getEnumConstants();
@@ -45,56 +52,56 @@ public interface HasJsonData {
         return defaultValue;
     }
 
-    default <E extends Enum> void setJsonDataEnum(String key, E value) {
+    default <E extends Enum> void setJsonDataEnum(@NotNull String key, @Nullable E value) {
         setJsonData(key, value == null ? "" : value.name());
     }
 
-    default Boolean getJsonData(String key, boolean defaultValue) {
+    default boolean getJsonData(@NotNull String key, boolean defaultValue) {
         return getJsonData().optBoolean(key, defaultValue);
     }
 
-    default String getJsonData(String key, String defaultValue) {
+    default @Nullable String getJsonData(@NotNull String key, @Nullable String defaultValue) {
         return getJsonData().optString(key, defaultValue);
     }
 
-    default List<String> getJsonDataList(String key) {
+    default @NotNull List<String> getJsonDataList(@NotNull String key) {
         return getJsonDataList(key, "~~~");
     }
 
-    default List<String> getJsonDataList(String key, String delimiter) {
+    default @NotNull List<String> getJsonDataList(@NotNull String key, @NotNull String delimiter) {
         return getJsonDataStream(key, delimiter).collect(Collectors.toList());
     }
 
-    default Set<String> getJsonDataSet(String key) {
+    default @NotNull Set<String> getJsonDataSet(@NotNull String key) {
         return getJsonDataSet(key, "~~~");
     }
 
-    default Set<String> getJsonDataSet(String key, String delimiter) {
+    default @NotNull Set<String> getJsonDataSet(@NotNull String key, @NotNull String delimiter) {
         return getJsonDataStream(key, delimiter).collect(Collectors.toSet());
     }
 
-    default Stream<String> getJsonDataStream(String key, String delimiter) {
+    default @NotNull Stream<String> getJsonDataStream(@NotNull String key, @NotNull String delimiter) {
         return Stream.of(getJsonData().optString(key, "").split(delimiter))
                 .filter(StringUtils::isNotEmpty);
     }
 
-    default Long getJsonData(String key, long defaultValue) {
+    default @NotNull Long getJsonData(@NotNull String key, long defaultValue) {
         return getJsonData().optLong(key, defaultValue);
     }
 
-    default String getJsonData(String key) {
+    default @NotNull String getJsonData(@NotNull String key) {
         return getJsonData().optString(key);
     }
 
-    default SecureString getJsonSecure(String key) {
+    default @NotNull SecureString getJsonSecure(@NotNull String key) {
         return new SecureString(getJsonData(key));
     }
 
-    default SecureString getJsonSecure(String key, String defaultValue) {
+    default @NotNull SecureString getJsonSecure(@NotNull String key, @NotNull String defaultValue) {
         return new SecureString(getJsonData(key, defaultValue));
     }
 
-    default Double getJsonData(String key, double defaultValue) {
+    default double getJsonData(@NotNull String key, double defaultValue) {
         return getJsonData().optDouble(key, defaultValue);
     }
 }

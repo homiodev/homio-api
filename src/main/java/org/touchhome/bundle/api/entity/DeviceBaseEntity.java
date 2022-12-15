@@ -30,12 +30,13 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
 
     @Setter
     @Getter
-    @UIField(order = 50, type = UIFieldType.SelectBox)
+    @UIField(order = 50, type = UIFieldType.SelectBox, color = "#538744")
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE")
     private String place;
 
     @Getter
+    @Setter
     @Column(length = 65535)
     @Convert(converter = JSONObjectConverter.class)
     private JSONObject jsonData = new JSONObject();

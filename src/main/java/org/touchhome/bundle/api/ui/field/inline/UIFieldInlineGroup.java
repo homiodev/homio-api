@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.ui.field.condition;
+package org.touchhome.bundle.api.ui.field.inline;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,12 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Condition to show @UIField(...) field on UI.
- * Also able to filter to show entities on class level
+ * Annotate to allow to show field with full width inside table and ignore all rest fields
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldShowOnCondition {
-
+public @interface UIFieldInlineGroup {
+    /**
+     * Condition when apply field
+     */
     String value();
 }

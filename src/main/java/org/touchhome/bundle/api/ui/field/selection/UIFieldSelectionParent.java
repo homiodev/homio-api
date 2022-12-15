@@ -37,6 +37,8 @@ public @interface UIFieldSelectionParent {
      * not null
      */
     interface SelectionParent {
+        String getParentId();
+
         /**
          * Parent's name
          */
@@ -62,5 +64,8 @@ public @interface UIFieldSelectionParent {
         default String getParentIconColor() {
             return "";
         }
+
+        // if we want grouping of groups
+        default SelectionParent getSuperParent() {return null;}
     }
 }

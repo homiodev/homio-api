@@ -1,6 +1,7 @@
 package org.touchhome.bundle.api.ui.field;
 
-import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.touchhome.common.util.FlowMap;
 import org.touchhome.common.util.Lang;
 
@@ -13,7 +14,7 @@ import java.lang.annotation.Target;
  * Progress bar. Must return int or UIFieldProgress.Progress
  * Max value is 100!
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldProgress {
     String color() default "";
@@ -30,18 +31,28 @@ public @interface UIFieldProgress {
         int whenMoreThan();
     }
 
-
-    @AllArgsConstructor
+    @Getter
+    @RequiredArgsConstructor
     class Progress {
-        public int value;
-        public String message;
+        private final int value;
+        private final String message;
+        private final boolean showMessage;
 
         public Progress(int value, int maxValue, String message) {
-            this((int) Math.ceil(value * 100f / maxValue), message);
+            this(value, maxValue, message, false);
+        }
+
+        public Progress(int value, int maxValue, String message, boolean showMessage) {
+            this((int) Math.ceil(value * 100f / maxValue), message, showMessage);
         }
 
         public Progress(int currentValue, int maxValue) {
+            this(currentValue, maxValue, false);
+        }
+
+        public Progress(int currentValue, int maxValue, boolean showMessage) {
             this.value = (int) Math.ceil(currentValue * 100f / maxValue);
+            this.showMessage = showMessage;
             this.message = Lang.getServerMessage("USED_QUOTA", FlowMap.of(
                     "PC", value, "VAL", currentValue, "MAX", maxValue));
         }
