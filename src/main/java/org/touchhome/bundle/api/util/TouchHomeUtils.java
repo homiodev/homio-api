@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.tika.Tika;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
@@ -44,6 +46,8 @@ public class TouchHomeUtils {
     public static final String APP_UUID;
     public static final int RUN_COUNT;
     public static final Tika TIKA = new Tika();
+    @Getter
+    private static final Path logsPath = getOrCreatePath("logs");
     @Getter
     private static final Path configPath = getOrCreatePath("conf");
     @Getter
@@ -184,8 +188,12 @@ public class TouchHomeUtils {
     public static boolean isValidJson(String json) {
         try {
             new JSONObject(json);
-        } catch (Exception ignore) {
-            return false;
+        } catch (JSONException ignore) {
+            try {
+                new JSONArray(json);
+            } catch (JSONException ne) {
+                return false;
+            }
         }
         return true;
     }

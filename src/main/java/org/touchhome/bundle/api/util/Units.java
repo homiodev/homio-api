@@ -65,6 +65,7 @@ public final class Units extends AbstractSystemOfUnits {
     public static final Unit<ElectricConductivity> SIEMENS_PER_METRE;
     public static final Unit<ElectricInductance> HENRY;
     public static final Unit<ElectricPotential> VOLT;
+    public static final Unit<ElectricPotential> MILLI_VOLT;
     public static final Unit<ElectricResistance> OHM;
     public static final Unit<Energy> JOULE;
     public static final Unit<Energy> WATT_SECOND;
@@ -176,6 +177,7 @@ public final class Units extends AbstractSystemOfUnits {
                 addUnit(new ProductUnit(tech.units.indriya.unit.Units.SIEMENS.divide(tech.units.indriya.unit.Units.METRE)));
         HENRY = addUnit(tech.units.indriya.unit.Units.HENRY);
         VOLT = addUnit(tech.units.indriya.unit.Units.VOLT);
+        MILLI_VOLT = addUnit(new TransformedUnit("mV", Units.VOLT, MultiplyConverter.of(1000)));
         OHM = addUnit(tech.units.indriya.unit.Units.OHM);
         JOULE = addUnit(tech.units.indriya.unit.Units.JOULE);
         WATT_SECOND = addUnit(new ProductUnit(tech.units.indriya.unit.Units.WATT.multiply(tech.units.indriya.unit.Units.SECOND)));

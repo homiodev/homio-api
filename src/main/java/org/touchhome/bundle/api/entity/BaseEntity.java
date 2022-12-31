@@ -105,6 +105,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         return getTitle();
     }
 
+    public boolean isDisableEdit() {
+        return false;
+    }
+
+    public boolean isDisableDelete() {
+        return false;
+    }
+
     @PrePersist
     private void prePersist() {
         if (this.creationTime == null) {

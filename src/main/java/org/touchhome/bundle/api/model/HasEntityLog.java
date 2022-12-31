@@ -25,6 +25,10 @@ public interface HasEntityLog extends HasJsonData {
         }
 
         void addTopic(String topic, String filterByField);
+
+        default void addTopicFilterByEntityID(String topic) {
+            addTopic(topic, "entityID");
+        }
     }
 }
 

@@ -53,14 +53,8 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             try {
                 S service = createService(entityContext);
                 if (service != null) {
-                    try {
-                        if (service.testService()) {
-                            setStatusOnline();
-                        }
-                    } catch (Exception ex) {
-                        setStatusError(ex);
-                    }
                     entityToService.put(getEntityID(), service);
+                    testService();
                 }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -68,6 +62,16 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             return Optional.ofNullable((S) entityToService.get(getEntityID()));
         } finally {
             serviceAccessLock.unlock();
+        }
+    }
+
+    default void testService() {
+        try {
+            if (getService().testService()) {
+                setStatusOnline();
+            }
+        } catch (Exception ex) {
+            setStatusError(ex);
         }
     }
 

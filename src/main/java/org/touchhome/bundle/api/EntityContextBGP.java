@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.common.model.ProgressBar;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -55,6 +56,8 @@ public interface EntityContextBGP {
             return result;
         });
     }
+
+    ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand);
 
     default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable,
                                                 @NotNull ThrowingConsumer<ProgressBar, Exception> command) {
@@ -142,6 +145,8 @@ public interface EntityContextBGP {
                                           @NotNull Map<String, Callable<T>> runnableTasks,
                                           @NotNull Consumer<Integer> progressConsumer);
 
+    void executeOnExit(Runnable runnable);
+
     interface ScheduleBuilder<T> {
         ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command);
 
@@ -169,6 +174,9 @@ public interface EntityContextBGP {
 
         // default true
         ScheduleBuilder<T> cancelOnError(boolean value);
+
+        // link log file to be able to read on UI
+        ScheduleBuilder<T> linkLogFile(Path logFile);
     }
 
     interface ThreadPuller {

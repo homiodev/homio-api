@@ -91,16 +91,16 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     UIMultiButtonItemBuilder addMultiButton(String name, UIActionHandler action, int order);
 
-    default UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max, UIActionHandler action) {
+    default UISliderItemBuilder addSlider(@NotNull String name, int value, int min, int max, UIActionHandler action) {
         return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Regular, getNextOrder());
     }
 
-    default UISliderItemBuilder addNumberInput(@NotNull String name, int value, int min, int max,
+    default UISliderItemBuilder addNumberInput(@NotNull String name, Integer value, int min, int max,
                                                UIActionHandler action) {
         return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Input, getNextOrder());
     }
 
-    UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max,
+    UISliderItemBuilder addSlider(@NotNull String name, Integer value, int min, int max,
                                   UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
 
     default UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,

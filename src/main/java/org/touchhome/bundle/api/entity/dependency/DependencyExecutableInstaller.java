@@ -1,12 +1,15 @@
 package org.touchhome.bundle.api.entity.dependency;
 
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.hardware.other.MachineHardwareRepository;
+import org.touchhome.bundle.api.hquery.LinesReader;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.setting.SettingPluginText;
@@ -19,7 +22,9 @@ import org.touchhome.common.util.Curl;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Consumer;
 
+@Log4j2
 public abstract class DependencyExecutableInstaller implements UIActionHandler {
 
     protected Boolean requireInstall;
@@ -97,6 +102,39 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
     }
 
     public abstract @NotNull Class<? extends SettingPluginText> getDependencyPluginSettingClass();
+
+    public void runService(EntityContext entityContext, Consumer<Process> processConsumer, String entityID) {
+        MachineHardwareRepository machineHardwareRepository = entityContext.getBean(MachineHardwareRepository.class);
+        if (SystemUtils.IS_OS_LINUX) {
+            machineHardwareRepository.startSystemCtl(getName());
+        } else {
+            Path targetPath = Paths.get(entityContext.setting().getValue(getDependencyPluginSettingClass()));
+            Path logFile = targetPath.getParent().resolve("execution-log.log");
+            entityContext.bgp().builder(getName() + "-service").linkLogFile(logFile).hideOnUIAfterCancel(false).execute(() -> {
+                Process process = Runtime.getRuntime().exec(targetPath.toString());
+                entityContext.bgp().executeOnExit(() -> {
+                    if (process != null) {
+                        process.destroyForcibly();
+                    }
+                });
+                processConsumer.accept(process);
+                Thread inputThread =
+                        new Thread(new LinesReader(getName() + "inputReader", process.getInputStream(), null, message -> {
+                            log.info("[{}]: {}. {}", entityID, getName(), message);
+                        }));
+                Thread errorThread =
+                        new Thread(new LinesReader(getName() + "errorReader", process.getErrorStream(), null, message -> {
+                            log.error("[{}]: {}. {}", entityID, getName(), message);
+                        }));
+                inputThread.start();
+                errorThread.start();
+
+                process.waitFor();
+                inputThread.interrupt();
+                errorThread.interrupt();
+            });
+        }
+    }
 
     @Override
     public boolean isEnabled(@NotNull EntityContext entityContext) {

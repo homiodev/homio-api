@@ -74,6 +74,6 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     enum RenderType {
-        lines, comm, table, string, editor, tree
+        lines, comm, table, string, editor, tree, frame
     }
 }

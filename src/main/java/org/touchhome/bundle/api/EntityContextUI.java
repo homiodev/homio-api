@@ -7,8 +7,10 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.ui.dialog.DialogModel;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
@@ -23,6 +25,7 @@ import org.touchhome.common.util.Lang;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -84,6 +87,7 @@ public interface EntityContextUI {
      */
     void reloadWindow(@NotNull String reason);
 
+    void removeItem(@NotNull BaseEntity<?> baseEntity);
 
     void updateItem(@NotNull BaseEntity<?> baseEntity);
 
@@ -126,16 +130,15 @@ public interface EntityContextUI {
      * @param headerButtonAttachTo - if set - attach confirm message to header button
      */
     default void sendConfirmation(@NotNull String key, @NotNull String title,
-                                  @NotNull Consumer<DialogResponseType> confirmHandler,
-                                  @NotNull Collection<String> messages, int maxTimeoutInSec,
-                                  @Nullable String headerButtonAttachTo) {
-        sendDialogRequest(key, title, (responseType, pressedButton, parameters) ->
-                confirmHandler.accept(responseType), dialogModel -> {
-            List<ActionInputParameter> inputs = messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
-            dialogModel.headerButtonAttachTo(headerButtonAttachTo)
-                    .submitButton("Confirm", button -> {
+                                  @NotNull Consumer<DialogResponseType> confirmHandler, @NotNull Collection<String> messages,
+                                  int maxTimeoutInSec, @Nullable String headerButtonAttachTo) {
+        sendDialogRequest(key, title, (responseType, pressedButton, parameters) -> confirmHandler.accept(responseType),
+                dialogModel -> {
+                    List<ActionInputParameter> inputs =
+                            messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
+                    dialogModel.headerButtonAttachTo(headerButtonAttachTo).submitButton("Confirm", button -> {
                     }).group("General", inputs);
-        });
+                });
     }
 
     /**
@@ -418,6 +421,8 @@ public interface EntityContextUI {
         HeaderButtonBuilder availableForPage(@NotNull Class<? extends BaseEntity> page);
 
         HeaderButtonBuilder clickAction(@NotNull Class<? extends SettingPluginButton> clickAction);
+
+        HeaderButtonBuilder clickAction(@NotNull Supplier<ActionResponseModel> clickAction);
 
         void build();
     }

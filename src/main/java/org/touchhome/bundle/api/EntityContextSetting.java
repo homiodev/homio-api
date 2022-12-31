@@ -61,16 +61,16 @@ public interface EntityContextSetting {
 
     static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, String title, Status status,
                           String message) {
-        setMemValue(entity, distinguishKey + "_msg", "", message);
+        setMemValue(entity, distinguishKey + "Message", "", message);
         setMemValue(entity, distinguishKey, title, status);
     }
 
     static String getMessage(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey) {
-        return getMemValue(entity, distinguishKey + "_msg", null);
+        return getMemValue(entity, distinguishKey + "Message", null);
     }
 
     static void setMessage(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, String message) {
-        setMemValue(entity, distinguishKey + "_msg", "", message);
+        setMemValue(entity, distinguishKey + "Message", "", message);
     }
 
     /**

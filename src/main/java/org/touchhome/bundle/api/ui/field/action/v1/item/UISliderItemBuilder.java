@@ -17,6 +17,10 @@ public interface UISliderItemBuilder extends UIEntityItemBuilder<UISliderItemBui
 
     boolean isRequired();
 
+    boolean isAllowEraseValue();
+
+    UISliderItemBuilder setAllowEraseValue(boolean value);
+
     UISliderItemBuilder setRequired(boolean required);
 
     SliderType getSliderType();
