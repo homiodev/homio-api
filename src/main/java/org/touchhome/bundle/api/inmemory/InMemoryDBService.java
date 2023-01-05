@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import static org.touchhome.bundle.api.inmemory.InMemoryDB.CREATED;
+
 public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
     T save(@NotNull T entity);
@@ -34,6 +36,14 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
     default List<T> findAllBy(@NotNull String field, @NotNull String value) {
         return findAllBy(field, value, null, null);
+    }
+
+    default List<T> findAllBySortAsc(@NotNull String field, @NotNull String value) {
+        return findAllBy(field, value, SortBy.sortAsc(CREATED), null);
+    }
+
+    default List<T> findAllBySortDesc(@NotNull String field, @NotNull String value) {
+        return findAllBy(field, value, SortBy.sortDesc(CREATED), null);
     }
 
     T findLatestBy(@NotNull String field, @NotNull String value);

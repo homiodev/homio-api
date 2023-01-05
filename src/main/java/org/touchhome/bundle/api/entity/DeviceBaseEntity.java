@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.json.JSONObject;
-import org.touchhome.bundle.api.converter.JSONObjectConverter;
+import org.touchhome.bundle.api.converter.JSONConverter;
 import org.touchhome.bundle.api.model.HasPosition;
+import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.optionProvider.SelectPlaceOptionLoader;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIField;
@@ -38,8 +38,8 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Getter
     @Setter
     @Column(length = 65535)
-    @Convert(converter = JSONObjectConverter.class)
-    private JSONObject jsonData = new JSONObject();
+    @Convert(converter = JSONConverter.class)
+    private JSON jsonData = new JSON();
 
     @Getter
     @Setter

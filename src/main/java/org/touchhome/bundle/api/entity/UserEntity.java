@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.Type;
-import org.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.touchhome.bundle.api.converter.JSONObjectConverter;
+import org.touchhome.bundle.api.converter.JSONConverter;
 import org.touchhome.bundle.api.converter.StringSetConverter;
+import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.util.Constants;
 import org.touchhome.common.util.SslUtil;
 
@@ -59,8 +59,8 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     @Setter
     @Lob
     @Column(length = 1_000_000)
-    @Convert(converter = JSONObjectConverter.class)
-    private JSONObject jsonData;
+    @Convert(converter = JSONConverter.class)
+    private JSON jsonData;
 
     @Getter
     @Setter

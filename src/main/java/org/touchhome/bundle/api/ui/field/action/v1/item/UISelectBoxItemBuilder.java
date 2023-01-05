@@ -17,6 +17,13 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
 
     UISelectBoxItemBuilder addOption(OptionModel option);
 
+    default UISelectBoxItemBuilder addOptions(Collection<OptionModel> options) {
+        for (OptionModel option : options) {
+            addOption(option);
+        }
+        return this;
+    }
+
     default UISelectBoxItemBuilder setSelected(String selected) {
         setValue(selected);
         return this;
@@ -30,4 +37,6 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
     Collection<OptionModel> getOptions();
 
     UISelectBoxItemBuilder setOptions(Collection<OptionModel> options);
+
+    UISelectBoxItemBuilder setPlaceholder(String placeholder);
 }

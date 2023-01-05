@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.entity.HasJsonData;
 import org.touchhome.bundle.api.entity.widget.ability.HasGetStatusValue;
 import org.touchhome.bundle.api.entity.widget.ability.HasSetStatusValue;
+import org.touchhome.bundle.api.model.JSON;
 
 public interface HasDynamicParameterFields extends HasJsonData {
 
@@ -12,7 +13,7 @@ public interface HasDynamicParameterFields extends HasJsonData {
         return getJsonData().optJSONObject("dsp");
     }
 
-    default void setDynamicParameterFieldsHolder(JSONObject value) {
+    default void setDynamicParameterFieldsHolder(JSON value) {
         setJsonData("dsp", value);
     }
 

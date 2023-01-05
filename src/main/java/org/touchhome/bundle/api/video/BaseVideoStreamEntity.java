@@ -11,9 +11,6 @@ import org.touchhome.bundle.api.entity.DeviceBaseEntity;
 import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.model.Status;
-import org.touchhome.bundle.api.service.scan.BaseBeansItemsDiscovery;
-import org.touchhome.bundle.api.service.scan.VideoStreamScanner;
-import org.touchhome.bundle.api.ui.UISidebarButton;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.ui.field.UIField;
@@ -33,9 +30,6 @@ import java.util.Collection;
 @Inheritance(strategy = InheritanceType.JOINED)
 @UISidebarMenu(icon = "fas fa-video", order = 1, parent = UISidebarMenu.TopSidebarMenu.MEDIA,
         bg = "#5950A7", allowCreateNewItems = true, overridePath = "vstreams")
-@UISidebarButton(buttonIcon = "fas fa-qrcode", buttonIconColor = "#ED703E",
-        buttonTitle = "TITLE.SCAN_VIDEO_STREAMS",
-        handlerClass = BaseVideoStreamEntity.VideoStreamDiscovery.class)
 public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> extends DeviceBaseEntity<T>
         implements HasDynamicContextMenuActions {
 
@@ -85,13 +79,6 @@ public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> ext
     public void assembleActions(UIInputBuilder uiInputBuilder) {
         uiInputBuilder.from(assembleActions());
         uiInputBuilder.fireFetchValues();
-    }
-
-    static class VideoStreamDiscovery extends BaseBeansItemsDiscovery {
-
-        public VideoStreamDiscovery() {
-            super(VideoStreamScanner.class);
-        }
     }
 
     public static class UpdateSnapshotActionHandler implements UIActionHandler {

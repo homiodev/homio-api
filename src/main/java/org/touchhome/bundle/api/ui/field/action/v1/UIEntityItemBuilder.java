@@ -16,8 +16,6 @@ public interface UIEntityItemBuilder<Owner, Value> extends UIEntityBuilder {
 
     Owner setDisabled(boolean disabled);
 
-    Owner setDescription(String description);
-
     Owner setOrder(int order);
 
     default Owner setIcon(String icon) {

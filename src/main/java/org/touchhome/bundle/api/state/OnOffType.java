@@ -30,6 +30,10 @@ public class OnOffType extends State {
         return on ? ON : OFF;
     }
 
+    public OnOffType invert() {
+        return value ? OFF : ON;
+    }
+
     @Override
     public boolean equalToOldValue() {
         return Objects.equals(value, oldValue);

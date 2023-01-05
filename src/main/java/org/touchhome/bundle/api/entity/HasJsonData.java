@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
+import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.util.SecureString;
 import org.touchhome.common.util.CommonUtils;
 
@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public interface HasJsonData {
 
     @JsonIgnore
-    @NotNull JSONObject getJsonData();
+    @NotNull JSON getJsonData();
 
     default <P> void setJsonData(@NotNull String key, @Nullable P value) {
         getJsonData().put(key, value);

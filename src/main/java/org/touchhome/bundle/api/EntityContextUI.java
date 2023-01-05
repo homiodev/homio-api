@@ -7,7 +7,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.ActionResponseModel;
@@ -91,6 +90,12 @@ public interface EntityContextUI {
 
     void updateItem(@NotNull BaseEntity<?> baseEntity);
 
+    default void updateItems(@NotNull Class<? extends BaseEntity<?>> baseEntityClass) {
+        for (BaseEntity<?> baseEntity : getEntityContext().findAll(baseEntityClass)) {
+            updateItem(baseEntity);
+        }
+    }
+
     /**
      * Update specific field
      */
@@ -101,11 +106,11 @@ public interface EntityContextUI {
      *
      * @param parentEntity    - holder entity entity. i.e.: ZigBeeDeviceEntity
      * @param parentFieldName - parent field name that holds Set of destinations. i.e.: 'endpoints'
-     * @param innerEntity     - target field entity to update from inside Set
+     * @param innerEntityID   - target field entity ID to update from inside Set
      * @param updateField     - specific field name to update inside innerEntity
      * @param value           - value to send to UI
      */
-    void updateInnerSetItem(@NotNull BaseEntity<?> parentEntity, String parentFieldName, @NotNull BaseEntity<?> innerEntity,
+    void updateInnerSetItem(@NotNull BaseEntity<?> parentEntity, String parentFieldName, @NotNull String innerEntityID,
                             @NotNull String updateField, @NotNull Object value);
 
     /**

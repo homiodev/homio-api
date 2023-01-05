@@ -38,6 +38,14 @@ public abstract class State {
 
     public abstract float floatValue();
 
+    public float floatValue(float defaultValue) {
+        try {
+            return floatValue();
+        } catch (Exception ex) {
+            return defaultValue;
+        }
+    }
+
     public abstract int intValue();
 
     public abstract String stringValue();

@@ -24,6 +24,10 @@ public class DecimalType extends State implements Comparable<DecimalType> {
     @Setter
     private BigDecimal oldValue;
 
+    public DecimalType(Number value) {
+        this.value = new BigDecimal(value.toString());
+    }
+
     public DecimalType(BigDecimal value) {
         this.value = value;
     }

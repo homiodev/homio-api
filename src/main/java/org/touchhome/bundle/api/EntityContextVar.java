@@ -131,6 +131,13 @@ public interface EntityContextVar {
                 return false;
             }
         }, "{}"),
+        Color(o -> {
+            if (o instanceof String) {
+                String str = o.toString();
+                return (str.length() == 7 || str.length() == 9) && str.startsWith("#");
+            }
+            return false;
+        }, false),
         Boolean(o -> o instanceof Boolean, false),
         Float(o -> o instanceof Number, 0F);
 

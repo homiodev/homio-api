@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fazecast.jSerialComm.SerialPort;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.KeyValueEnum;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
@@ -14,6 +15,13 @@ import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPlugin<T> {
+
+    /**
+     * If want to show setting direct on top header panel instead of settings
+     */
+    default Class<? extends BaseEntity> availableForEntity() {
+        return null;
+    }
 
     Class<T> getType();
 

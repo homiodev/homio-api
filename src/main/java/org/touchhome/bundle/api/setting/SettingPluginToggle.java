@@ -8,6 +8,14 @@ public interface SettingPluginToggle extends SettingPlugin<Boolean> {
 
     String getToggleIcon();
 
+    default String getIconColor() {
+        return "";
+    }
+
+    default String getToggleIconColor() {
+        return "";
+    }
+
     @Override
     default Class<Boolean> getType() {
         return Boolean.class;

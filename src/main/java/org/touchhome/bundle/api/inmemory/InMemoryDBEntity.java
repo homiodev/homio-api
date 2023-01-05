@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
@@ -16,6 +15,7 @@ public abstract class InMemoryDBEntity implements Comparable<InMemoryDBEntity> {
     private static final AtomicLong sequence = new AtomicLong();
 
     private long id = sequence.incrementAndGet();
+    private long created = System.currentTimeMillis();
 
     @Override
     public boolean equals(Object o) {

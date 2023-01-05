@@ -105,10 +105,16 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         return getTitle();
     }
 
+    /**
+     * Disable edit entity on UI
+     */
     public boolean isDisableEdit() {
         return false;
     }
 
+    /**
+     * Disable delete entity on UI
+     */
     public boolean isDisableDelete() {
         return false;
     }
@@ -124,7 +130,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         }
         this.beforePersist();
         if (this.entityID == null) {
-            this.entityID = getEntityPrefix() + String.valueOf(System.currentTimeMillis());
+            this.entityID = getEntityPrefix() + System.currentTimeMillis();
         }
         this.validate();
     }

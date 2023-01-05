@@ -35,6 +35,7 @@ import static org.bson.codecs.configuration.CodecRegistries.*;
 
 public final class InMemoryDB {
     public static final String ID = "_id";
+    public static final String CREATED = "created";
     private static final String DATABASE = "db";
     private static final Map<String, InMemoryDBData<?>> map = new ConcurrentHashMap<>();
 
@@ -139,7 +140,7 @@ public final class InMemoryDB {
                         if (estimateUsed.get() > quota) {
                             List<Long> itemsToRemove;
                             try (MongoCursor<Document> cursor = collection.aggregate(Arrays.asList(
-                                    Aggregates.sort(ascending(ID)),
+                                    Aggregates.sort(ascending(CREATED)),
                                     Aggregates.limit(delta),
                                     Aggregates.project(Projections.include("_id")),
                                     Aggregates.group("ids", Accumulators.addToSet("ids", "$_id"))
@@ -235,7 +236,7 @@ public final class InMemoryDB {
 
             try (MongoCursor<Document> cursor = collection.aggregate(Arrays.asList(
                     Aggregates.match(joinFilters(filterList)),
-                    Aggregates.sort(ascending(ID)),
+                    Aggregates.sort(ascending(CREATED)),
                     Aggregates.project(Projections.include(ID, aggregateField))), Document.class).cursor()) {
                 return StreamSupport.stream(Spliterators.spliteratorUnknownSize(cursor, 0), false)
                         .map(doc -> new Object[]{doc.get(ID), toNumber(doc.get(aggregateField)).floatValue()})

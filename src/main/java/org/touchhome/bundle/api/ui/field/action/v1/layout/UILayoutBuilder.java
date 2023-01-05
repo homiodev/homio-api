@@ -64,6 +64,16 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     UIInfoItemBuilder addInfo(@NotNull String name, UIInfoItemBuilder.InfoType infoType, int order);
 
+    /**
+     * Add read-only duration that incremets on UI
+     */
+    void addDuration(long value, @Nullable String color);
+
+    /**
+     * Add read-write color picker
+     */
+    UIColorPickerItemBuilder addColorPicker(@NotNull String name, String color, UIActionHandler action);
+
     UITextInputItemBuilder addInput(@NotNull String name, String defaultValue,
                                     UITextInputItemBuilder.InputType inputType,
                                     boolean required);
@@ -91,16 +101,16 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     UIMultiButtonItemBuilder addMultiButton(String name, UIActionHandler action, int order);
 
-    default UISliderItemBuilder addSlider(@NotNull String name, int value, int min, int max, UIActionHandler action) {
+    default UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max, UIActionHandler action) {
         return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Regular, getNextOrder());
     }
 
-    default UISliderItemBuilder addNumberInput(@NotNull String name, Integer value, int min, int max,
+    default UISliderItemBuilder addNumberInput(@NotNull String name, Float value, Float min, Float max,
                                                UIActionHandler action) {
         return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Input, getNextOrder());
     }
 
-    UISliderItemBuilder addSlider(@NotNull String name, Integer value, int min, int max,
+    UISliderItemBuilder addSlider(@NotNull String name, Float value, Float min, Float max,
                                   UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
 
     default UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,

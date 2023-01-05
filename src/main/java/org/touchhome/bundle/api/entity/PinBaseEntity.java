@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 import org.json.JSONObject;
-import org.touchhome.bundle.api.converter.JSONObjectConverter;
+import org.touchhome.bundle.api.converter.JSONConverter;
+import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
 
@@ -51,8 +52,8 @@ public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends Dev
     @Getter
     @Setter
     @Column(length = 1000)
-    @Convert(converter = JSONObjectConverter.class)
-    private JSONObject jsonData = new JSONObject();
+    @Convert(converter = JSONConverter.class)
+    private JSON jsonData = new JSON();
 
     private int position;
 

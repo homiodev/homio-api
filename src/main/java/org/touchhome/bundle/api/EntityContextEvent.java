@@ -54,7 +54,7 @@ public interface EntityContextEvent {
             (String entityID, String key, Consumer<T> listener);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
-            (String entityID, String key, EntityContext.EntityUpdateListener<T> listener);
+            (String entityID, String key, EntityUpdateListener<T> listener);
 
     /**
      * Listen any changes fot BaseEntity of concrete type.
@@ -72,7 +72,7 @@ public interface EntityContextEvent {
      * @param listener    handler invoke when entity update. OldValue/NewValue
      */
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
-    (Class<T> entityClass, String key, EntityContext.EntityUpdateListener<T> listener);
+    (Class<T> entityClass, String key, EntityUpdateListener<T> listener);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityCreateListener
             (Class<T> entityClass, String key, Consumer<T> listener);
@@ -97,5 +97,9 @@ public interface EntityContextEvent {
      */
     default void addPortChangeStatusListener(String key, Consumer<Object> listener) {
         addEventListener("any-port-changed", key, listener);
+    }
+
+    interface EntityUpdateListener<T> {
+        void entityUpdated(T newValue, T oldValue);
     }
 }

@@ -14,54 +14,54 @@ import java.util.function.Consumer;
 
 public interface UIInputBuilder extends UILayoutBuilder {
 
-    void from(UIInputBuilder source);
+    void from(@NotNull UIInputBuilder source);
 
     @Unmodifiable
-    Collection<UIInputEntity> buildAll();
+    @NotNull Collection<UIInputEntity> buildAll();
 
-    EntityContext getEntityContext();
+    @NotNull EntityContext getEntityContext();
 
     void fireFetchValues();
 
-    UIActionHandler findActionHandler(@NotNull String key);
+    @Nullable UIActionHandler findActionHandler(@NotNull String key);
 
-    default UIButtonItemBuilder addSelectableButton(@NotNull String text, @NotNull UIActionHandler action) {
+    @NotNull default UIButtonItemBuilder addSelectableButton(@NotNull String text, @NotNull UIActionHandler action) {
         return addSelectableButton(text, null, null, action);
     }
 
-    default UIButtonItemBuilder addSelectableButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
+    @NotNull default UIButtonItemBuilder addSelectableButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
                                                     @NotNull UIActionHandler action) {
         return addSelectableButton(name, icon, iconColor, action, getNextOrder());
     }
 
-    UIButtonItemBuilder addSelectableButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
+    @NotNull UIButtonItemBuilder addSelectableButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
                                             @NotNull UIActionHandler action, int order);
 
-    default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable String icon,
+    @NotNull default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable String icon,
                                                                             @Nullable String color, @Nullable Integer dialogWidth,
                                                                             @NotNull UIActionHandler action) {
         return addOpenDialogSelectableButton(name, icon, color, dialogWidth, action, getNextOrder());
     }
 
-    DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable String icon,
+    @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable String icon,
                                                                     @Nullable String color, @Nullable Integer dialogWidth,
                                                                     @NotNull UIActionHandler action, int order);
 
-    default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
+    @NotNull default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
                                                                             @NotNull UIActionHandler action) {
         return addOpenDialogSelectableButton(name, null, null, dialogWidth, action);
     }
 
-    default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
+    @NotNull default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
                                                                             @NotNull UIActionHandler action, int order) {
         return addOpenDialogSelectableButton(name, null, null, dialogWidth, action, order);
     }
 
     interface DialogEntity<T> {
-        UIInputBuilder up();
+        @NotNull UIInputBuilder up();
 
-        UIInputBuilder edit(Consumer<T> editHandler);
+        @NotNull UIInputBuilder edit(Consumer<T> editHandler);
 
-        UIInputBuilder editDialog(Consumer<UIDialogLayoutBuilder> editDialogHandler);
+        @NotNull UIInputBuilder editDialog(Consumer<UIDialogLayoutBuilder> editDialogHandler);
     }
 }

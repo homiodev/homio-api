@@ -10,7 +10,7 @@ import java.util.List;
  * BaseItemsDiscovery successor that creates list of DevicesScanner based on declared beans
  */
 @RequiredArgsConstructor
-public abstract class BaseBeansItemsDiscovery extends BaseItemsDiscovery {
+public class BeansItemsDiscovery extends BaseItemsDiscovery {
 
     private final Class<? extends ItemDiscoverySupport> declaredBeanClass;
 

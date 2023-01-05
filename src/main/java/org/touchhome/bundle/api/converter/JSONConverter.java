@@ -1,14 +1,14 @@
 package org.touchhome.bundle.api.converter;
 
-import org.json.JSONObject;
+import org.touchhome.bundle.api.model.JSON;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 @Converter(autoApply = true)
-public class JSONObjectConverter implements AttributeConverter<JSONObject, String> {
+public class JSONConverter implements AttributeConverter<JSON, String> {
     @Override
-    public String convertToDatabaseColumn(JSONObject jsonData) {
+    public String convertToDatabaseColumn(JSON jsonData) {
         String json;
         try {
             json = jsonData.toString();
@@ -19,13 +19,11 @@ public class JSONObjectConverter implements AttributeConverter<JSONObject, Strin
     }
 
     @Override
-    public JSONObject convertToEntityAttribute(String jsonDataAsJson) {
-        JSONObject jsonData;
+    public JSON convertToEntityAttribute(String jsonDataAsJson) {
         try {
-            jsonData = new JSONObject(jsonDataAsJson);
+            return new JSON(jsonDataAsJson);
         } catch (Exception ex) {
-            jsonData = new JSONObject();
+            return new JSON();
         }
-        return jsonData;
     }
 }
