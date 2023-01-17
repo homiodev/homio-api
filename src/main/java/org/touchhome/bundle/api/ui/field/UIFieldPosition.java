@@ -20,8 +20,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldPosition {
 
-    /**
-     * Disable to select position at 2x2
-     */
+    /** Disable to select position at 2x2 */
     boolean disableCenter() default true;
 }

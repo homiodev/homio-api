@@ -1,18 +1,16 @@
 package org.touchhome.bundle.api.state;
 
+import java.math.BigDecimal;
+import javax.measure.*;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import tech.units.indriya.AbstractUnit;
 import tech.units.indriya.quantity.Quantities;
 
-import javax.measure.*;
-import java.math.BigDecimal;
-
-/**
- * Value with Unit
- */
+/** Value with Unit */
 @Log4j2
-public class QuantityType<T extends Quantity<T>> extends State implements Comparable<QuantityType<T>> {
+public class QuantityType<T extends Quantity<T>> extends State
+        implements Comparable<QuantityType<T>> {
 
     private final @NotNull Quantity<T> quantity;
 
@@ -30,7 +28,8 @@ public class QuantityType<T extends Quantity<T>> extends State implements Compar
             if (v1 != null && v2 != null) {
                 return Double.compare(v1.doubleValue(), v2.doubleValue());
             } else {
-                throw new IllegalArgumentException("Unable to convert to system unit during compare.");
+                throw new IllegalArgumentException(
+                        "Unable to convert to system unit during compare.");
             }
         } else {
             throw new IllegalArgumentException("Can not compare incompatible units.");
@@ -41,7 +40,8 @@ public class QuantityType<T extends Quantity<T>> extends State implements Compar
         if (!targetUnit.equals(getUnit())) {
             try {
                 UnitConverter uc = getUnit().getConverterToAny(targetUnit);
-                Quantity<?> result = Quantities.getQuantity(uc.convert(quantity.getValue()), targetUnit);
+                Quantity<?> result =
+                        Quantities.getQuantity(uc.convert(quantity.getValue()), targetUnit);
 
                 return new QuantityType<>(result.getValue(), (Unit<T>) targetUnit);
             } catch (UnconvertibleException | IncommensurableException e) {

@@ -1,17 +1,17 @@
 package org.touchhome.bundle.api;
 
+import java.util.Objects;
+import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-import java.util.Objects;
-import java.util.function.Predicate;
-
 public interface EntityContextVar {
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull
+    EntityContext getEntityContext();
 
     Object get(@NotNull String variableId);
 
@@ -42,55 +42,66 @@ public interface EntityContextVar {
         }
     }
 
-    /**
-     * Get variable title - name or defaultTitle
-     */
+    /** Get variable title - name or defaultTitle */
     String getTitle(@NotNull String variableId, @Nullable String defaultTitle);
 
-    /**
-     * Return count of messages
-     */
+    /** Return count of messages */
     long count(@NotNull String variableId);
 
-    /**
-     * Does variable exists in system
-     */
+    /** Does variable exists in system */
     boolean exists(@NotNull String variableId);
 
     boolean existsGroup(@NotNull String groupId);
 
-    boolean renameGroup(@NotNull String groupId, @NotNull String name, @Nullable String description);
+    boolean renameGroup(
+            @NotNull String groupId, @NotNull String name, @Nullable String description);
 
-    boolean renameVariable(@NotNull String variableId, @NotNull String name, @Nullable String description);
+    boolean renameVariable(
+            @NotNull String variableId, @NotNull String name, @Nullable String description);
 
-    /**
-     * Get or create new variable.
-     */
+    /** Get or create new variable. */
     @NotNull
-    default String createVariable(@NotNull String groupId, @NotNull String variableName, @NotNull VariableType variableType) {
-        return createVariable(groupId, null, variableName, variableType, null);
+    default String createVariable(
+            @NotNull String groupId,
+            @NotNull String variableName,
+            @NotNull VariableType variableType,
+            boolean readOnly) {
+        return createVariable(groupId, null, variableName, variableType, null, readOnly);
     }
 
-    /**
-     * Get or create new variable.
-     */
+    /** Get or create new variable. */
     @NotNull
-    default String createVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
-                                  @NotNull VariableType variableType) {
-        return createVariable(groupId, variableId, variableName, variableType, null);
+    default String createVariable(
+            @NotNull String groupId,
+            @Nullable String variableId,
+            @NotNull String variableName,
+            @NotNull VariableType variableType,
+            boolean readOnly) {
+        return createVariable(groupId, variableId, variableName, variableType, null, readOnly);
     }
 
-    /**
-     * Get or create new variable.
-     */
+    /** Get or create new variable. */
     @NotNull
-    default String createVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
-                                  @NotNull VariableType variableType, @Nullable String description) {
-        return createVariable(groupId, variableId, variableName, variableType, description, null);
+    default String createVariable(
+            @NotNull String groupId,
+            @Nullable String variableId,
+            @NotNull String variableName,
+            @NotNull VariableType variableType,
+            @Nullable String description,
+            boolean readOnly) {
+        return createVariable(
+                groupId, variableId, variableName, variableType, description, null, readOnly);
     }
 
-    @NotNull String createVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
-                                   @NotNull VariableType variableType, @Nullable String description, @Nullable String color);
+    @NotNull
+    String createVariable(
+            @NotNull String groupId,
+            @Nullable String variableId,
+            @NotNull String variableName,
+            @NotNull VariableType variableType,
+            @Nullable String description,
+            @Nullable String color,
+            boolean readOnly);
 
     default boolean createGroup(@NotNull String groupId, @NotNull String groupName) {
         return createGroup(groupId, groupName, false, "fas fa-layer-group", "#18C0DB", null);
@@ -100,44 +111,59 @@ public interface EntityContextVar {
      * @param locked - locked group and related variables unable to remove from UI
      * @return false if group already exists
      */
-    boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
-                        @NotNull String iconColor, @Nullable String description);
+    boolean createGroup(
+            @NotNull String groupId,
+            @NotNull String groupName,
+            boolean locked,
+            @NotNull String icon,
+            @NotNull String iconColor,
+            @Nullable String description);
 
-    default boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
-                                @NotNull String iconColor) {
+    default boolean createGroup(
+            @NotNull String groupId,
+            @NotNull String groupName,
+            boolean locked,
+            @NotNull String icon,
+            @NotNull String iconColor) {
         return createGroup(groupId, groupName, locked, icon, iconColor, null);
     }
 
-    /**
-     * Create group and attach it to parent group
-     */
-    boolean createGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, boolean locked,
-                        @NotNull String icon, @NotNull String iconColor, @Nullable String description);
+    /** Create group and attach it to parent group */
+    boolean createGroup(
+            @NotNull String parentGroupId,
+            @NotNull String groupId,
+            @NotNull String groupName,
+            boolean locked,
+            @NotNull String icon,
+            @NotNull String iconColor,
+            @Nullable String description);
 
-    /**
-     * Remove group and all associated variables
-     */
+    /** Remove group and all associated variables */
     boolean removeGroup(@NotNull String groupId);
 
     @Getter
     @RequiredArgsConstructor
     enum VariableType {
         Any(o -> true, 0),
-        Json(o -> {
-            try {
-                new JSONObject(o.toString());
-                return true;
-            } catch (Exception ex) {
-                return false;
-            }
-        }, "{}"),
-        Color(o -> {
-            if (o instanceof String) {
-                String str = o.toString();
-                return (str.length() == 7 || str.length() == 9) && str.startsWith("#");
-            }
-            return false;
-        }, false),
+        Json(
+                o -> {
+                    try {
+                        new JSONObject(o.toString());
+                        return true;
+                    } catch (Exception ex) {
+                        return false;
+                    }
+                },
+                "{}"),
+        Color(
+                o -> {
+                    if (o instanceof String) {
+                        String str = o.toString();
+                        return (str.length() == 7 || str.length() == 9) && str.startsWith("#");
+                    }
+                    return false;
+                },
+                false),
         Boolean(o -> o instanceof Boolean, false),
         Float(o -> o instanceof Number, 0F);
 

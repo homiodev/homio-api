@@ -1,14 +1,13 @@
 package org.touchhome.bundle.api.inmemory;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.touchhome.bundle.api.entity.widget.AggregationType;
+import static org.touchhome.bundle.api.inmemory.InMemoryDB.CREATED;
 
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
-
-import static org.touchhome.bundle.api.inmemory.InMemoryDB.CREATED;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.touchhome.bundle.api.entity.widget.AggregationType;
 
 public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
@@ -32,7 +31,11 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
     long deleteAll();
 
-    List<T> findAllBy(@NotNull String field, @NotNull String value, @Nullable SortBy sort, @Nullable Integer limit);
+    List<T> findAllBy(
+            @NotNull String field,
+            @NotNull String value,
+            @Nullable SortBy sort,
+            @Nullable Integer limit);
 
     default List<T> findAllBy(@NotNull String field, @NotNull String value) {
         return findAllBy(field, value, null, null);
@@ -56,7 +59,11 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
         return findAll(null, null);
     }
 
-    List<T> findByPattern(@NotNull String field, @NotNull String value, @Nullable SortBy sort, @Nullable Integer limit);
+    List<T> findByPattern(
+            @NotNull String field,
+            @NotNull String value,
+            @Nullable SortBy sort,
+            @Nullable Integer limit);
 
     default List<T> findByPattern(@NotNull String field, @NotNull String value) {
         return findByPattern(field, value, null, null);
@@ -72,20 +79,39 @@ public interface InMemoryDBService<T extends InMemoryDBEntity> {
 
     long getUsed();
 
-    default List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value) {
+    default List<Object[]> getTimeSeries(
+            @Nullable Long from,
+            @Nullable Long to,
+            @Nullable String field,
+            @Nullable String value) {
         return getTimeSeries(from, to, field, value, "value");
     }
 
-    List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                                 @NotNull String aggregateField);
+    List<Object[]> getTimeSeries(
+            @Nullable Long from,
+            @Nullable Long to,
+            @Nullable String field,
+            @Nullable String value,
+            @NotNull String aggregateField);
 
-    default Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                             @NotNull AggregationType aggregationType, boolean filterOnlyNumbers) {
+    default Object aggregate(
+            @Nullable Long from,
+            @Nullable Long to,
+            @Nullable String field,
+            @Nullable String value,
+            @NotNull AggregationType aggregationType,
+            boolean filterOnlyNumbers) {
         return aggregate(from, to, field, value, aggregationType, filterOnlyNumbers, "value");
     }
 
-    Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                     @NotNull AggregationType aggregationType, boolean filterOnlyNumbers, @NotNull String aggregateField);
+    Object aggregate(
+            @Nullable Long from,
+            @Nullable Long to,
+            @Nullable String field,
+            @Nullable String value,
+            @NotNull AggregationType aggregationType,
+            boolean filterOnlyNumbers,
+            @NotNull String aggregateField);
 
     InMemoryDBService<T> addSaveListener(String discriminator, Consumer<T> listener);
 }

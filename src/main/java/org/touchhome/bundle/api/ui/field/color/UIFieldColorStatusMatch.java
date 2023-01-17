@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Annotation on org.touchhome.bundle.api.model.Status field for showing color depend on value
- */
+/** Annotation on org.touchhome.bundle.api.model.Status field for showing color depend on value */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorStatusMatch {

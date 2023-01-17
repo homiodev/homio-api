@@ -16,6 +16,7 @@ public @interface UIFieldCodeEditor {
     boolean wordWrap() default false;
 
     enum CodeEditorType {
-        javascript, json
+        javascript,
+        json
     }
 }

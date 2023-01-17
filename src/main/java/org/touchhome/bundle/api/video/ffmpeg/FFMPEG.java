@@ -1,24 +1,21 @@
 package org.touchhome.bundle.api.video.ffmpeg;
 
-import lombok.Getter;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.touchhome.common.util.CommonUtils;
+import static org.touchhome.bundle.api.util.TouchHomeUtils.FFMPEG_LOCATION;
+import static org.touchhome.bundle.api.video.VideoConstants.CHANNEL_FFMPEG_MOTION_ALARM;
+import static org.touchhome.common.util.CommonUtils.addToListSafe;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import lombok.Getter;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.touchhome.common.util.CommonUtils;
 
-import static org.touchhome.bundle.api.util.TouchHomeUtils.FFMPEG_LOCATION;
-import static org.touchhome.bundle.api.video.VideoConstants.CHANNEL_FFMPEG_MOTION_ALARM;
-import static org.touchhome.common.util.CommonUtils.addToListSafe;
-
-/**
- * Responsible for handling multiple ffmpeg conversions which are used for many tasks
- */
+/** Responsible for handling multiple ffmpeg conversions which are used for many tasks */
 public class FFMPEG {
 
     public static Map<String, FFMPEG> ffmpegMap = new HashMap<>();
@@ -26,23 +23,28 @@ public class FFMPEG {
     private final FFMPEGHandler handler;
     private final Logger log;
     private final Runnable destroyListener;
-    @Getter
-    private final String description;
-    @Getter
-    private final Date creationDate = new Date();
+    @Getter private final String description;
+    @Getter private final Date creationDate = new Date();
     private Process process = null;
     private final FFMPEGFormat format;
-    @Getter
-    private final List<String> commandArrayList = new ArrayList<>();
+    @Getter private final List<String> commandArrayList = new ArrayList<>();
     private IpVideoFfmpegThread ipVideoFfmpegThread;
     private int keepAlive = 8;
     private String entityID;
 
-    public FFMPEG(@NotNull String entityID, @NotNull String description,
-                  @NotNull FFMPEGHandler handler, @NotNull Logger log, @NotNull FFMPEGFormat format,
-                  @NotNull String inputArguments, @NotNull String input, @NotNull String outArguments,
-                  @NotNull String output, @NotNull String username, @NotNull String password,
-                  @Nullable Runnable destroyListener) {
+    public FFMPEG(
+            @NotNull String entityID,
+            @NotNull String description,
+            @NotNull FFMPEGHandler handler,
+            @NotNull Logger log,
+            @NotNull FFMPEGFormat format,
+            @NotNull String inputArguments,
+            @NotNull String input,
+            @NotNull String outArguments,
+            @NotNull String output,
+            @NotNull String username,
+            @NotNull String password,
+            @Nullable Runnable destroyListener) {
         FFMPEG.ffmpegMap.put(entityID + "_" + description, this);
 
         this.entityID = entityID;
@@ -72,13 +74,17 @@ public class FFMPEG {
         Collections.addAll(commandArrayList, String.join(" ", builder).split("\\s+"));
         // ffmpegLocation may have a space in its folder
         commandArrayList.add(0, FFMPEG_LOCATION);
-        log.warn("\n\n[{}]: Generated ffmpeg command for: {}.\n{}\n\n", entityID, format, String.join(" ", commandArrayList));
+        log.warn(
+                "\n\n[{}]: Generated ffmpeg command for: {}.\n{}\n\n",
+                entityID,
+                format,
+                String.join(" ", commandArrayList));
     }
 
     public void setKeepAlive(int seconds) {
         // We poll every 8 seconds due to mjpeg stream requirement.
         if (keepAlive == -1 && seconds > 1) {
-            return;// When set to -1 this will not auto turn off stream.
+            return; // When set to -1 this will not auto turn off stream.
         }
         keepAlive = seconds;
     }
@@ -113,7 +119,11 @@ public class FFMPEG {
 
     public void stopConverting() {
         if (ipVideoFfmpegThread.isAlive()) {
-            log.debug("[{}]: Stopping ffmpeg {} now when keepalive is:{}", entityID, format, keepAlive);
+            log.debug(
+                    "[{}]: Stopping ffmpeg {} now when keepalive is:{}",
+                    entityID,
+                    format,
+                    keepAlive);
             if (process != null) {
                 process.destroyForcibly();
             }
@@ -183,7 +193,9 @@ public class FFMPEG {
                     }
                 }
             } catch (IOException ex) {
-                log.warn("[{}]: An error occurred trying to process the messages from FFMPEG.", entityID);
+                log.warn(
+                        "[{}]: An error occurred trying to process the messages from FFMPEG.",
+                        entityID);
                 handler.ffmpegError(CommonUtils.getErrorMessage(ex));
             }
         }

@@ -6,10 +6,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(UIFieldColorsMatch.class)
 public @interface UIFieldColorMatch {
-    /**
-     * Apply 'color' field if string is mathes to 'value'
-     */
-       String value();
+    /** Apply 'color' field if string is matches to 'value' */
+    String value();
 
     String color();
 }

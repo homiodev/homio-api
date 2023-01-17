@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.state;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.function.BiConsumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -10,14 +11,11 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
 import org.touchhome.common.util.CommonUtils;
 
-import java.util.function.BiConsumer;
-
 @Log4j2
 @RequiredArgsConstructor
 public class JsonType extends State implements Comparable<JsonType> {
 
-    @Getter
-    private final JsonNode jsonNode;
+    @Getter private final JsonNode jsonNode;
 
     @SneakyThrows
     public JsonType(String value) {

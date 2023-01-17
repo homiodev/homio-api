@@ -1,17 +1,14 @@
 package org.touchhome.bundle.api.console;
 
+import java.util.Map;
+import javax.validation.constraints.NotNull;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.setting.console.header.ConsoleHeaderSettingPlugin;
 
-import javax.validation.constraints.NotNull;
-import java.util.Map;
-
-/**
- * Uses for implementing page for console tab
- */
+/** Uses for implementing page for console tab */
 public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
 
     EntityContext getEntityContext();
@@ -32,23 +29,17 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
 
     RenderType getRenderType();
 
-    /**
-     * Uses for grouping few bundle pages with same parent
-     */
+    /** Uses for grouping few bundle pages with same parent */
     default String getParentTab() {
         return null;
     }
 
-    /**
-     * Uses when need header buttons for whole plugin
-     */
+    /** Uses when need header buttons for whole plugin */
     default Map<String, Class<? extends ConsoleHeaderSettingPlugin<?>>> getHeaderActions() {
         return null;
     }
 
-    /**
-     * Draw console titles in such order
-     */
+    /** Draw console titles in such order */
     default int order() {
         return 0;
     }
@@ -68,12 +59,18 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
         return true;
     }
 
-    default ActionResponseModel executeAction(String entityID, JSONObject metadata, JSONObject params)
-            throws Exception {
+    default ActionResponseModel executeAction(
+            String entityID, JSONObject metadata, JSONObject params) throws Exception {
         return null;
     }
 
     enum RenderType {
-        lines, comm, table, string, editor, tree, frame
+        lines,
+        comm,
+        table,
+        string,
+        editor,
+        tree,
+        frame
     }
 }

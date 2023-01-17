@@ -1,5 +1,6 @@
 package org.touchhome.bundle.api.entity;
 
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,11 +15,13 @@ import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.touchhome.bundle.api.ui.field.selection.UIFieldSelection;
 
-import javax.persistence.*;
-
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#51145e", overridePath = "devices")
+@UISidebarMenu(
+        icon = "fas fa-shapes",
+        parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
+        bg = "#51145e",
+        overridePath = "devices")
 @NoArgsConstructor
 @Accessors(chain = true)
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
@@ -41,25 +44,15 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Convert(converter = JSONConverter.class)
     private JSON jsonData = new JSON();
 
-    @Getter
-    @Setter
-    private int xb = 0;
+    @Getter @Setter private int xb = 0;
 
-    @Getter
-    @Setter
-    private int yb = 0;
+    @Getter @Setter private int yb = 0;
 
-    @Getter
-    @Setter
-    private int bw = 1;
+    @Getter @Setter private int bw = 1;
 
-    @Getter
-    @Setter
-    private int bh = 1;
+    @Getter @Setter private int bh = 1;
 
-    /**
-     * Define order in which entity will be shown on UI map
-     */
+    /** Define order in which entity will be shown on UI map */
     public int getOrder() {
         return 100;
     }

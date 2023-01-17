@@ -1,11 +1,10 @@
 package org.touchhome.bundle.api.audio;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 public interface AudioSink {
     String getId();
@@ -14,7 +13,8 @@ public interface AudioSink {
 
     String getLabel(@Nullable Locale locale);
 
-    void play(AudioStream audioStream, String sinkSource, Integer startFrame, Integer endFrame) throws Exception;
+    void play(AudioStream audioStream, String sinkSource, Integer startFrame, Integer endFrame)
+            throws Exception;
 
     default int pause() {
         throw new IllegalStateException("Pause action is not implemented");

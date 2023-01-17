@@ -1,8 +1,7 @@
 package org.touchhome.bundle.api.console;
 
-import org.touchhome.bundle.api.entity.TreeConfiguration;
-
 import java.util.List;
+import org.touchhome.bundle.api.entity.TreeConfiguration;
 
 public interface ConsolePluginTree extends ConsolePlugin<List<TreeConfiguration>> {
 

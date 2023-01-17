@@ -19,8 +19,7 @@ public enum Status {
     CLOSING("#992F5D"),
     RESTARTING("#99A040");
 
-    @Getter
-    private final String color;
+    @Getter private final String color;
 
     public boolean isOnline() {
         return this == ONLINE;

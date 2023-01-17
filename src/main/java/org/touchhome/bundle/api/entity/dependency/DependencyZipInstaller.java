@@ -1,11 +1,10 @@
 package org.touchhome.bundle.api.entity.dependency;
 
+import java.nio.file.Path;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.common.model.ProgressBar;
 import org.touchhome.common.util.ArchiveUtil;
 import org.touchhome.common.util.Curl;
-
-import java.nio.file.Path;
 
 public interface DependencyZipInstaller {
 
@@ -13,7 +12,12 @@ public interface DependencyZipInstaller {
         Path targetPath = getRootPath().resolve(dependencyName());
         Curl.downloadWithProgress(getDependencyURL(), targetPath, progressBar);
         progressBar.progress(95, "Extracting files...");
-        ArchiveUtil.unzip(targetPath, targetPath.getParent(), null, false, progressBar,
+        ArchiveUtil.unzip(
+                targetPath,
+                targetPath.getParent(),
+                null,
+                false,
+                progressBar,
                 ArchiveUtil.UnzipFileIssueHandler.replace);
         progressBar.progress(99, "Extracting finished");
         afterDependencyInstalled();

@@ -1,6 +1,11 @@
 package org.touchhome.bundle.api.entity;
 
+import static org.touchhome.bundle.api.ui.field.UIFieldType.StaticDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Date;
+import java.util.Set;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -12,23 +17,13 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
 
-import javax.persistence.*;
-import java.util.Date;
-import java.util.Set;
-
-import static org.touchhome.bundle.api.ui.field.UIFieldType.StaticDate;
-
 @Log4j2
 @MappedSuperclass
 public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIdentifier<T> {
 
-    @Id
-    @GeneratedValue
-    @Getter
-    private Integer id;
+    @Id @GeneratedValue @Getter private Integer id;
 
-    @Version
-    private Integer version;
+    @Version private Integer version;
 
     @NaturalId
     @Getter
@@ -89,9 +84,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         return entityID != null ? entityID.equals(that.entityID) : that.entityID == null;
     }
 
-    /**
-     * Method return default name to store when persist entity
-     */
+    /** Method return default name to store when persist entity */
     @JsonIgnore
     public abstract String getDefaultName();
 
@@ -105,16 +98,12 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
         return getTitle();
     }
 
-    /**
-     * Disable edit entity on UI
-     */
+    /** Disable edit entity on UI */
     public boolean isDisableEdit() {
         return false;
     }
 
-    /**
-     * Disable delete entity on UI
-     */
+    /** Disable delete entity on UI */
     public boolean isDisableDelete() {
         return false;
     }
@@ -143,21 +132,13 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     }
 
     // fires before persist/update
-    protected void validate() {
+    protected void validate() {}
 
-    }
+    protected void beforePersist() {}
 
-    protected void beforePersist() {
+    protected void beforeUpdate() {}
 
-    }
-
-    protected void beforeUpdate() {
-
-    }
-
-    public void beforeDelete(EntityContext entityContext) {
-
-    }
+    public void beforeDelete(EntityContext entityContext) {}
 
     public T setEntityID(@NotNull String entityID) {
         String prefix = getEntityPrefix();
@@ -172,8 +153,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     /**
      * Accumulate list of related entities which has to be refreshed in cache after entity updated
      */
-    public void getAllRelatedEntities(Set<BaseEntity> set) {
-    }
+    public void getAllRelatedEntities(Set<BaseEntity> set) {}
 
     @Override
     public String getIdentifier() {

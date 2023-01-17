@@ -1,8 +1,18 @@
 package org.touchhome.bundle.api.workspace;
 
+import static org.apache.commons.lang3.StringUtils.defaultString;
+
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -16,66 +26,67 @@ import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 import org.touchhome.common.util.Curl;
 import org.touchhome.common.util.SpringUtils;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import static org.apache.commons.lang3.StringUtils.defaultString;
-
 public interface WorkspaceBlock {
-    Set<String> MEDIA_EXTENSIONS = new HashSet<>(
-            Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
-                    ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
-                    ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
-                    ".js", ".mp3"));
+    Set<String> MEDIA_EXTENSIONS =
+            new HashSet<>(
+                    Arrays.asList(
+                            ".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi",
+                            ".webp", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".drc",
+                            ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx",
+                            ".xltx", ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf",
+                            ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz", ".js", ".mp3"));
 
     @SneakyThrows
     static String evalStringWithContext(String value, Function<String, String> valueSupplier) {
-        value = SpringUtils.replaceEnvValues(value, (text, defValue, prefix) -> {
-            text = text.toUpperCase();
-            switch (text) {
-                case "TIMESTAMP":
-                    return String.valueOf(System.currentTimeMillis());
-                case "DATETIME":
-                    return new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(new Date());
-                case "DATE":
-                    return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-                case "TIME":
-                    return new SimpleDateFormat("HH-mm-ss").format(new Date());
-                case "HOUR":
-                    return new SimpleDateFormat("HH").format(new Date());
-                case "MIN":
-                    return new SimpleDateFormat("mm").format(new Date());
-                case "SEC":
-                    return new SimpleDateFormat("ss").format(new Date());
-                case "YEAR":
-                    return new SimpleDateFormat("yyyy").format(new Date());
-                case "MONTH":
-                    return new SimpleDateFormat("MM").format(new Date());
-                case "DAY":
-                    return new SimpleDateFormat("dd").format(new Date());
-                case "UUID":
-                    return UUID.randomUUID().toString();
-                case "FILES":
-                    Path dir = Files.createDirectories(Paths.get(prefix.toString()));
-                    return String.valueOf(Objects.requireNonNull(dir.toFile().list()).length);
-            }
-            return defaultString(valueSupplier.apply(text), defValue);
-        });
+        value =
+                SpringUtils.replaceEnvValues(
+                        value,
+                        (text, defValue, prefix) -> {
+                            text = text.toUpperCase();
+                            switch (text) {
+                                case "TIMESTAMP":
+                                    return String.valueOf(System.currentTimeMillis());
+                                case "DATETIME":
+                                    return new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss")
+                                            .format(new Date());
+                                case "DATE":
+                                    return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                                case "TIME":
+                                    return new SimpleDateFormat("HH-mm-ss").format(new Date());
+                                case "HOUR":
+                                    return new SimpleDateFormat("HH").format(new Date());
+                                case "MIN":
+                                    return new SimpleDateFormat("mm").format(new Date());
+                                case "SEC":
+                                    return new SimpleDateFormat("ss").format(new Date());
+                                case "YEAR":
+                                    return new SimpleDateFormat("yyyy").format(new Date());
+                                case "MONTH":
+                                    return new SimpleDateFormat("MM").format(new Date());
+                                case "DAY":
+                                    return new SimpleDateFormat("dd").format(new Date());
+                                case "UUID":
+                                    return UUID.randomUUID().toString();
+                                case "FILES":
+                                    Path dir =
+                                            Files.createDirectories(Paths.get(prefix.toString()));
+                                    return String.valueOf(
+                                            Objects.requireNonNull(dir.toFile().list()).length);
+                            }
+                            return defaultString(valueSupplier.apply(text), defValue);
+                        });
 
         DoubleEvaluator eval = new DoubleEvaluator();
-        value = SpringUtils.replaceHashValues(value, (text, defValue, prefix) -> {
-            try {
-                return String.valueOf(eval.evaluate(text));
-            } catch (Exception ignore) {
-                return StringUtils.defaultString(defValue, text);
-            }
-        });
+        value =
+                SpringUtils.replaceHashValues(
+                        value,
+                        (text, defValue, prefix) -> {
+                            try {
+                                return String.valueOf(eval.evaluate(text));
+                            } catch (Exception ignore) {
+                                return StringUtils.defaultString(defValue, text);
+                            }
+                        });
         return value;
     }
 
@@ -101,11 +112,13 @@ public interface WorkspaceBlock {
         return getMenuValue(key, menuBlock, String.class);
     }
 
-    default <T extends BaseEntity> T getMenuValueEntity(String key, MenuBlock.ServerMenuBlock menuBlock) {
+    default <T extends BaseEntity> T getMenuValueEntity(
+            String key, MenuBlock.ServerMenuBlock menuBlock) {
         return getEntityContext().getEntity(getMenuValue(key, menuBlock, String.class));
     }
 
-    default <S> S getEntityService(String key, MenuBlock.ServerMenuBlock menuBlock, Class<S> serviceClass) {
+    default <S> S getEntityService(
+            String key, MenuBlock.ServerMenuBlock menuBlock, Class<S> serviceClass) {
         BaseEntity baseEntity = getMenuValueEntityRequired(key, menuBlock);
         if (!(baseEntity instanceof EntityService)) {
             logErrorAndThrow("Entity {} has to implement EntityService", baseEntity.getTitle());
@@ -113,12 +126,16 @@ public interface WorkspaceBlock {
         EntityService entityService = (EntityService) baseEntity;
         S service = (S) entityService.getService();
         if (!serviceClass.isAssignableFrom(service.getClass())) {
-            logErrorAndThrow("Entity {} has no service {}", baseEntity.getTitle(), serviceClass.getSimpleName());
+            logErrorAndThrow(
+                    "Entity {} has no service {}",
+                    baseEntity.getTitle(),
+                    serviceClass.getSimpleName());
         }
         return service;
     }
 
-    default <T extends BaseEntity> T getMenuValueEntityRequired(String key, MenuBlock.ServerMenuBlock menuBlock) {
+    default <T extends BaseEntity> T getMenuValueEntityRequired(
+            String key, MenuBlock.ServerMenuBlock menuBlock) {
         String entityID = getMenuValue(key, menuBlock, String.class);
         if ("-".equals(entityID)) {
             logErrorAndThrow("Menu entity not selected for block: {}", key);
@@ -178,8 +195,8 @@ public interface WorkspaceBlock {
     }
 
     @SneakyThrows
-
-    default void handleAndRelease(ThrowingRunnable<Exception> runHandler, ThrowingRunnable<Exception> releaseHandler) {
+    default void handleAndRelease(
+            ThrowingRunnable<Exception> runHandler, ThrowingRunnable<Exception> releaseHandler) {
         runHandler.run();
         onRelease(releaseHandler);
     }
@@ -188,16 +205,22 @@ public interface WorkspaceBlock {
         subscribeToLock(lock, o -> true, 0, null, handler);
     }
 
-    default <T> void subscribeToLock(BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
+    default <T> void subscribeToLock(
+            BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
         subscribeToLock(lock, o -> true, timeout, timeUnit, handler);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, Runnable handler) {
+    default void subscribeToLock(
+            BroadcastLock lock, Function<Object, Boolean> checkFn, Runnable handler) {
         subscribeToLock(lock, checkFn, 0, null, handler);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
-                                 Runnable runnable) {
+    default void subscribeToLock(
+            BroadcastLock lock,
+            Function<Object, Boolean> checkFn,
+            int timeout,
+            TimeUnit timeUnit,
+            Runnable runnable) {
         while (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit) && checkFn.apply(lock.getValue())) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
@@ -211,7 +234,8 @@ public interface WorkspaceBlock {
         waitForLock(lock, 0, null, handler);
     }
 
-    default <T> void waitForLock(BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
+    default <T> void waitForLock(
+            BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
         if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit)) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
@@ -372,17 +396,17 @@ public interface WorkspaceBlock {
                 content = Files.readAllBytes(path);
                 name = path.getFileName().toString();
             } /*else if (mediaURL.startsWith("data:")) {
-                String mediaStringValue = mediaURL;
-                if (mediaURL.startsWith("data:")) { // support data URI scheme
-                    String[] urlParts = mediaURL.split(",");
-                    if (urlParts.length > 1) {
-                        mediaStringValue = urlParts[1];
-                    }
-                }
-                InputStream is = Base64.getDecoder().wrap(new ByteArrayInputStream(mediaStringValue.getBytes(StandardCharsets
-                .UTF_8)));
-                content = IOUtils.toByteArray(is);
-            }*/ else {
+                  String mediaStringValue = mediaURL;
+                  if (mediaURL.startsWith("data:")) { // support data URI scheme
+                      String[] urlParts = mediaURL.split(",");
+                      if (urlParts.length > 1) {
+                          mediaStringValue = urlParts[1];
+                      }
+                  }
+                  InputStream is = Base64.getDecoder().wrap(new ByteArrayInputStream(mediaStringValue.getBytes(StandardCharsets
+                  .UTF_8)));
+                  content = IOUtils.toByteArray(is);
+              }*/ else {
                 content = mediaURL.getBytes();
             }
         } else if (input instanceof RawType) {

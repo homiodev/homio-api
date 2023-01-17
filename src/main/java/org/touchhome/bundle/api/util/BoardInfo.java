@@ -1,11 +1,10 @@
 package org.touchhome.bundle.api.util;
 
-import lombok.Getter;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Getter;
 
 @Getter
 public final class BoardInfo {
@@ -44,9 +43,12 @@ public final class BoardInfo {
         // determine the board info by deciphering the revision number
         long irevision = Long.parseLong(revision, 16);
         long scheme = (irevision >> 23) & 0x1;
-        @SuppressWarnings("unused") long ram = (irevision >> 20) & 0x7;
-        @SuppressWarnings("unused") long manufacturer = (irevision >> 16) & 0xF;
-        @SuppressWarnings("unused") long processor = (irevision >> 12) & 0xF;
+        @SuppressWarnings("unused")
+        long ram = (irevision >> 20) & 0x7;
+        @SuppressWarnings("unused")
+        long manufacturer = (irevision >> 16) & 0xF;
+        @SuppressWarnings("unused")
+        long processor = (irevision >> 12) & 0xF;
         long model = (irevision >> 4) & 0xFF;
         long pcbrev = irevision & 0xF;
 
@@ -125,47 +127,47 @@ public final class BoardInfo {
             // 0014   ?? ????   CM       1.0    512 MB	(Mfg by Sony)
             // 0015   ?? ????   A+       1.1    256 MB 	(Mfg by Sony)|
             switch (revision.trim()) {
-                case "Beta":  // Model B Beta
-                case "0002":  // Model B Revision 1
-                case "0003":  // Model B Revision 1 (Egoman) + Fuses mod and D14 removed
+                case "Beta": // Model B Beta
+                case "0002": // Model B Revision 1
+                case "0003": // Model B Revision 1 (Egoman) + Fuses mod and D14 removed
                     return "RaspberryPi_B_Rev1";
 
-                case "0004":  // Model B Revision 2 256MB (Sony)
-                case "0005":  // Model B Revision 2 256MB (Qisda)
-                case "0006":  // Model B Revision 2 256MB (Egoman)
+                case "0004": // Model B Revision 2 256MB (Sony)
+                case "0005": // Model B Revision 2 256MB (Qisda)
+                case "0006": // Model B Revision 2 256MB (Egoman)
                     return "RaspberryPi_B_Rev2";
 
-                case "0007":  // Model A 256MB (Egoman)
-                case "0008":  // Model A 256MB (Sony)
-                case "0009":  // Model A 256MB (Qisda)
+                case "0007": // Model A 256MB (Egoman)
+                case "0008": // Model A 256MB (Sony)
+                case "0009": // Model A 256MB (Qisda)
                     return "RaspberryPi_A";
 
-                case "000d":  // Model B Revision 2 512MB (Egoman)
-                case "000e":  // Model B Revision 2 512MB (Sony)
-                case "000f":  // Model B Revision 2 512MB (Egoman)
+                case "000d": // Model B Revision 2 512MB (Egoman)
+                case "000e": // Model B Revision 2 512MB (Sony)
+                case "000f": // Model B Revision 2 512MB (Egoman)
                     return "RaspberryPi_B_Rev2";
 
-                case "0010":  // Model B Plus 512MB (Sony)
+                case "0010": // Model B Plus 512MB (Sony)
                     return "RaspberryPi_B_Plus";
 
-                case "0011":  // Compute Module 512MB (Sony)
+                case "0011": // Compute Module 512MB (Sony)
                     return "RaspberryPi_ComputeModule";
 
-                case "0012":  // Model A Plus 512MB (Sony)
+                case "0012": // Model A Plus 512MB (Sony)
                     return "RaspberryPi_A_Plus";
 
-                case "0013":  // Model B Plus 512MB (Egoman)
+                case "0013": // Model B Plus 512MB (Egoman)
                     return "RaspberryPi_B_Plus";
 
-                /* UNDOCUMENTED */
-                case "0014":  // Compute Module Rev 1.2, 512MB, (Sony)
+                    /* UNDOCUMENTED */
+                case "0014": // Compute Module Rev 1.2, 512MB, (Sony)
                     return "RaspberryPi_ComputeModule";
 
-                /* UNDOCUMENTED */
-                case "0015":  // Model A Plus 256MB (Sony)
+                    /* UNDOCUMENTED */
+                case "0015": // Model A Plus 256MB (Sony)
                     return "RaspberryPi_A_Plus";
 
-                // unknown
+                    // unknown
                 default:
                     return "RaspberryPi_Unknown";
             }

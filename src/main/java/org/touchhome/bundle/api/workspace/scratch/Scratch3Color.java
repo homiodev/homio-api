@@ -1,8 +1,7 @@
 package org.touchhome.bundle.api.workspace.scratch;
 
-import lombok.Getter;
-
 import java.awt.*;
+import lombok.Getter;
 
 @Getter
 public class Scratch3Color {
@@ -13,8 +12,14 @@ public class Scratch3Color {
     public Scratch3Color(String color) {
         this.color1 = color;
         Color darkerColor = Color.decode(color).darker();
-        this.color2 = String.format("#%02x%02x%02x", darkerColor.getRed(), darkerColor.getGreen(), darkerColor.getBlue());
+        this.color2 =
+                String.format(
+                        "#%02x%02x%02x",
+                        darkerColor.getRed(), darkerColor.getGreen(), darkerColor.getBlue());
         darkerColor = darkerColor.darker();
-        this.color3 = String.format("#%02x%02x%02x", darkerColor.getRed(), darkerColor.getGreen(), darkerColor.getBlue());
+        this.color3 =
+                String.format(
+                        "#%02x%02x%02x",
+                        darkerColor.getRed(), darkerColor.getGreen(), darkerColor.getBlue());
     }
 }

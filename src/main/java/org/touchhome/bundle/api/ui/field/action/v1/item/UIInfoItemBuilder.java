@@ -7,6 +7,8 @@ public interface UIInfoItemBuilder extends UIEntityItemBuilder<UIInfoItemBuilder
     InfoType getInfoType();
 
     enum InfoType {
-        Text, HTML, Markdown
+        Text,
+        HTML,
+        Markdown
     }
 }

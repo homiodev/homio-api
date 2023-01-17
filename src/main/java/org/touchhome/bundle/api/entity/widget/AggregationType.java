@@ -1,12 +1,11 @@
 package org.touchhome.bundle.api.entity.widget;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public enum AggregationType {
@@ -19,12 +18,9 @@ public enum AggregationType {
     Average(false),
     Median(false);
 
-    @Getter
-    private final boolean requireSorting;
+    @Getter private final boolean requireSorting;
 
-    /**
-     * Stream must be already sorted for First, Last
-     */
+    /** Stream must be already sorted for First, Last */
     public float evaluate(@NotNull Stream<Float> stream) {
         switch (this) {
             case First:

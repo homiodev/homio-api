@@ -1,12 +1,11 @@
 package org.touchhome.bundle.api.state;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.nio.charset.Charset;
+import java.util.Map;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.common.util.CommonUtils;
-
-import java.nio.charset.Charset;
-import java.util.Map;
 
 public abstract class State {
 
@@ -82,7 +81,9 @@ public abstract class State {
 
     @SneakyThrows
     public State optional(String value) {
-        return StringUtils.isEmpty(value) ? this :
-                CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+        return StringUtils.isEmpty(value)
+                ? this
+                : CommonUtils.findObjectConstructor(this.getClass(), String.class)
+                        .newInstance(value);
     }
 }

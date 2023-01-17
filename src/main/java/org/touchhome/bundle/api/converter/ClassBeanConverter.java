@@ -1,9 +1,8 @@
 package org.touchhome.bundle.api.converter;
 
-import lombok.extern.log4j.Log4j2;
-
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Converter(autoApply = true)

@@ -1,8 +1,7 @@
 package org.touchhome.bundle.api.audio;
 
-import org.touchhome.bundle.api.model.OptionModel;
-
 import java.util.Collection;
+import org.touchhome.bundle.api.model.OptionModel;
 
 public interface SelfContainedAudioSourceContainer {
     Collection<OptionModel> getAudioSource();

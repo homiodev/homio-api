@@ -1,6 +1,10 @@
 package org.touchhome.bundle.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Set;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -12,11 +16,6 @@ import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.util.Constants;
 import org.touchhome.common.util.SslUtil;
 
-import javax.persistence.*;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
-
 @Entity
 @Accessors(chain = true)
 public final class UserEntity extends BaseEntity<UserEntity> {
@@ -25,16 +24,12 @@ public final class UserEntity extends BaseEntity<UserEntity> {
 
     public static final String ADMIN_USER = PREFIX + "user";
 
-    public static final UserEntity ANONYMOUS_USER = new UserEntity()
-            .setRoles(Collections.emptySet());
+    public static final UserEntity ANONYMOUS_USER =
+            new UserEntity().setRoles(Collections.emptySet());
 
-    @Getter
-    @Setter
-    private String userId;
+    @Getter @Setter private String userId;
 
-    @Getter
-    @JsonIgnore
-    private String password;
+    @Getter @JsonIgnore private String password;
 
     @Lob
     @Getter
@@ -42,13 +37,9 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     @JsonIgnore
     private byte[] keystore;
 
-    @Getter
-    @Setter
-    private Date keystoreDate;
+    @Getter @Setter private Date keystoreDate;
 
-    @Getter
-    @Setter
-    private String lang = "en";
+    @Getter @Setter private String lang = "en";
 
     @Getter
     @Setter
@@ -69,8 +60,10 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     private Set<String> roles;
 
     public boolean matchPassword(String password, PasswordEncoder passwordEncoder) {
-        return this.password != null && (this.password.equals(password) ||
-                (passwordEncoder != null && passwordEncoder.matches(password, this.password)));
+        return this.password != null
+                && (this.password.equals(password)
+                        || (passwordEncoder != null
+                                && passwordEncoder.matches(password, this.password)));
     }
 
     public UserEntity setPassword(String password, PasswordEncoder passwordEncoder) {
@@ -93,7 +86,9 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     }
 
     public boolean isAdmin() {
-        return this.userType == UserType.REGULAR && this.roles != null && this.roles.contains(Constants.ADMIN_ROLE);
+        return this.userType == UserType.REGULAR
+                && this.roles != null
+                && this.roles.contains(Constants.ADMIN_ROLE);
     }
 
     @Override
@@ -107,6 +102,7 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     }
 
     public enum UserType {
-        REGULAR, OTHER
+        REGULAR,
+        OTHER
     }
 }

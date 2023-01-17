@@ -1,11 +1,10 @@
 package org.touchhome.bundle.api.inmemory;
 
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
 @Setter

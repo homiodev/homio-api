@@ -1,15 +1,14 @@
 package org.touchhome.bundle.api.setting;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
+
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
-
-import java.util.List;
-
-import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
 
 public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
@@ -33,10 +32,9 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
         return UIFieldType.Button;
     }
 
-    /**
-     * In case of action require user input. Dialog popup shows
-     */
-    default List<ActionInputParameter> getInputParameters(EntityContext entityContext, String value) {
+    /** In case of action require user input. Dialog popup shows */
+    default List<ActionInputParameter> getInputParameters(
+            EntityContext entityContext, String value) {
         return null;
     }
 

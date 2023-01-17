@@ -1,10 +1,9 @@
 package org.touchhome.bundle.api.ui.field;
 
+import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.touchhome.bundle.api.state.State;
-
-import java.util.function.Function;
 
 @Getter
 @AllArgsConstructor
@@ -28,46 +27,50 @@ public enum UIFieldType {
     TextArea(Object::toString),
 
     // Slider with min/max/step parameters
-    Slider(o -> {
-        if (o instanceof State) {
-            return ((State) o).intValue();
-        }
-        return java.lang.Integer.parseInt(o.toString());
-    }),
+    Slider(
+            o -> {
+                if (o instanceof State) {
+                    return ((State) o).intValue();
+                }
+                return java.lang.Integer.parseInt(o.toString());
+            }),
 
     IpAddress(Object::toString),
     Password(Object::toString), // shows *** for users without admin rights
 
     SelectBox(Object::toString),
     // Input text with additional button that able to fetch values from server
-    TextSelectBoxDynamic(Object::toString), // text input type with ability to select values from server
+    TextSelectBoxDynamic(
+            Object::toString), // text input type with ability to select values from server
 
-    Float(o -> {
-        if (o instanceof State) {
-            return ((State) o).floatValue();
-        }
-        return java.lang.Float.parseFloat(o.toString());
-    }),
+    Float(
+            o -> {
+                if (o instanceof State) {
+                    return ((State) o).floatValue();
+                }
+                return java.lang.Float.parseFloat(o.toString());
+            }),
     Duration(Object::toString),
     StaticDate(Object::toString),
 
     String(Object::toString),
     // template with prefix and suffix
     StringTemplate(Object::toString),
-    Boolean(o -> {
-        if (o instanceof State) {
-            return ((State) o).boolValue();
-        }
-        return java.lang.Boolean.parseBoolean(o.toString());
-
-    }),
+    Boolean(
+            o -> {
+                if (o instanceof State) {
+                    return ((State) o).boolValue();
+                }
+                return java.lang.Boolean.parseBoolean(o.toString());
+            }),
     // for integer we may set metadata as min, max
-    Integer(o -> {
-        if (o instanceof State) {
-            return ((State) o).intValue();
-        }
-        return java.lang.Integer.parseInt(o.toString());
-    }),
+    Integer(
+            o -> {
+                if (o instanceof State) {
+                    return ((State) o).intValue();
+                }
+                return java.lang.Integer.parseInt(o.toString());
+            }),
     // String type
     ColorPicker(Object::toString),
     Chips(Object::toString), // https://material.angular.io/components/chips/examples

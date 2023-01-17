@@ -21,12 +21,12 @@ public @interface UISidebarMenu {
 
     int order() default 1000;
 
-    /**
-     * Path uses in ui as navigation link
-     */
+    /** Path uses in ui as navigation link */
     String overridePath() default "";
 
     enum TopSidebarMenu {
-        HARDWARE, ITEMS, MEDIA
+        HARDWARE,
+        ITEMS,
+        MEDIA
     }
 }

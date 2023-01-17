@@ -1,16 +1,16 @@
 package org.touchhome.bundle.api.ui.field.action.v1.layout.dialog;
 
+import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.touchhome.bundle.api.ui.field.action.v1.UIEntityBuilder;
 import org.touchhome.bundle.api.ui.field.action.v1.layout.UIFlexLayoutBuilder;
-
-import java.util.function.Consumer;
 
 public interface UIDialogLayoutBuilder extends UIEntityBuilder {
 
     DialogEntity<UIFlexLayoutBuilder> addFlex(@NotNull String name);
 
-    default DialogEntity<UIFlexLayoutBuilder> addFlex(@NotNull String name, Consumer<UIFlexLayoutBuilder> flexConsumer) {
+    default DialogEntity<UIFlexLayoutBuilder> addFlex(
+            @NotNull String name, Consumer<UIFlexLayoutBuilder> flexConsumer) {
         DialogEntity<UIFlexLayoutBuilder> flex = addFlex(name);
         flex.edit(flexConsumer);
         return flex;

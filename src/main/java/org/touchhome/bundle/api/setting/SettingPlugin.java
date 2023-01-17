@@ -1,7 +1,10 @@
 package org.touchhome.bundle.api.setting;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fazecast.jSerialComm.SerialPort;
+import java.nio.file.Paths;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
@@ -9,16 +12,10 @@ import org.touchhome.bundle.api.model.KeyValueEnum;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 
-import java.nio.file.Paths;
-
-import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPlugin<T> {
 
-    /**
-     * If want to show setting direct on top header panel instead of settings
-     */
+    /** If want to show setting direct on top header panel instead of settings */
     default Class<? extends BaseEntity> availableForEntity() {
         return null;
     }
@@ -125,9 +122,7 @@ public interface SettingPlugin<T> {
         return true;
     }
 
-    /**
-     * Values of settings with transient state doesn't save to db
-     */
+    /** Values of settings with transient state doesn't save to db */
     default boolean transientState() {
         if (this.getSettingType() == UIFieldType.Button) {
             JSONObject parameters = this.getParameters(null, null);
@@ -140,16 +135,12 @@ public interface SettingPlugin<T> {
 
     int order();
 
-    /**
-     * Advances settings opens in additional panel on ui
-     */
+    /** Advances settings opens in additional panel on ui */
     default boolean isAdvanced() {
         return false;
     }
 
-    /**
-     * Covnerter from target type to string
-     */
+    /** Covnerter from target type to string */
     default String writeValue(T value) {
         if (value == null) {
             return "";
@@ -162,17 +153,24 @@ public interface SettingPlugin<T> {
         try {
             parseValue = Integer.valueOf(value);
         } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Unable parse setting value <" + value + "> as integer value");
+            throw new IllegalArgumentException(
+                    "Unable parse setting value <" + value + "> as integer value");
         }
         JSONObject parameters = getParameters(entityContext, value);
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
                 throw new IllegalArgumentException(
-                        "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+                        "Setting value <"
+                                + value
+                                + "> less than minimum value: "
+                                + parameters.getInt("min"));
             }
             if (parameters.has("max") && parseValue > parameters.getInt("max")) {
                 throw new IllegalArgumentException(
-                        "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+                        "Setting value <"
+                                + value
+                                + "> more than maximum value: "
+                                + parameters.getInt("max"));
             }
         }
         return (T) parseValue;

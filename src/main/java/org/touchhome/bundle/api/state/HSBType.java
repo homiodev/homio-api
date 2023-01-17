@@ -1,12 +1,11 @@
 package org.touchhome.bundle.api.state;
 
-import lombok.Getter;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Getter;
 
 public class HSBType extends State {
 
@@ -22,18 +21,19 @@ public class HSBType extends State {
     public static final HSBType BLUE = new HSBType("240,100,100");
     private static final long serialVersionUID = 322902950356613226L;
     // 1931 CIE XYZ to sRGB (D65 reference white)
-    private static final float[][] XY2RGB = {{3.2406f, -1.5372f, -0.4986f}, {-0.9689f, 1.8758f, 0.0415f},
-            {0.0557f, -0.2040f, 1.0570f}};
+    private static final float[][] XY2RGB = {
+        {3.2406f, -1.5372f, -0.4986f}, {-0.9689f, 1.8758f, 0.0415f}, {0.0557f, -0.2040f, 1.0570f}
+    };
 
     // sRGB to 1931 CIE XYZ (D65 reference white)
-    private static final float[][] RGB2XY = {{0.4124f, 0.3576f, 0.1805f}, {0.2126f, 0.7152f, 0.0722f},
-            {0.0193f, 0.1192f, 0.9505f}};
+    private static final float[][] RGB2XY = {
+        {0.4124f, 0.3576f, 0.1805f}, {0.2126f, 0.7152f, 0.0722f}, {0.0193f, 0.1192f, 0.9505f}
+    };
 
     protected BigDecimal hue;
     protected BigDecimal saturation;
 
-    @Getter
-    private final BigDecimal value;
+    @Getter private final BigDecimal value;
 
     public HSBType() {
         this("0,0,0");
@@ -54,15 +54,16 @@ public class HSBType extends State {
     }
 
     /**
-     * Constructs a HSBType instance from a given string.
-     * The string has to be in comma-separated format with exactly three segments, which correspond to the hue,
-     * saturation and brightness values.
-     * where the hue value in the range from 0 <= h < 360 and the saturation and brightness are percent values.
+     * Constructs a HSBType instance from a given string. The string has to be in comma-separated
+     * format with exactly three segments, which correspond to the hue, saturation and brightness
+     * values. where the hue value in the range from 0 <= h < 360 and the saturation and brightness
+     * are percent values.
      *
      * @param value a stringified HSBType value in the format "hue,saturation,brightness"
      */
     public HSBType(String value) {
-        List<String> constituents = Arrays.stream(value.split(",")).map(in -> in.trim()).collect(Collectors.toList());
+        List<String> constituents =
+                Arrays.stream(value.split(",")).map(in -> in.trim()).collect(Collectors.toList());
         if (constituents.size() == 3) {
             this.hue = new BigDecimal(constituents.get(0));
             this.saturation = new BigDecimal(constituents.get(1));
@@ -115,14 +116,16 @@ public class HSBType extends State {
             }
         }
 
-        return new HSBType(new DecimalType((int) tmpHue), new DecimalType((int) tmpSaturation),
+        return new HSBType(
+                new DecimalType((int) tmpHue),
+                new DecimalType((int) tmpSaturation),
                 new DecimalType((int) tmpBrightness));
     }
 
     /**
      * Returns a HSBType object representing the provided xy color values in CIE XY color model.
-     * Conversion from CIE XY color model to sRGB using D65 reference white
-     * Returned color is set to full brightness
+     * Conversion from CIE XY color model to sRGB using D65 reference white Returned color is set to
+     * full brightness
      *
      * @param x, y color information 0.0 - 1.0
      * @return new HSBType object representing the given CIE XY color, full brightness
@@ -145,7 +148,8 @@ public class HSBType extends State {
         g = gammaCompress(g / max);
         b = gammaCompress(b / max);
 
-        return HSBType.fromRGB((int) (r * 255.0f + 0.5f), (int) (g * 255.0f + 0.5f), (int) (b * 255.0f + 0.5f));
+        return HSBType.fromRGB(
+                (int) (r * 255.0f + 0.5f), (int) (g * 255.0f + 0.5f), (int) (b * 255.0f + 0.5f));
     }
 
     // Gamma compression (sRGB) for a single component, in the 0.0 - 1.0 range
@@ -156,7 +160,9 @@ public class HSBType extends State {
             c = 1.0f;
         }
 
-        return c <= 0.0031308f ? 12.92f * c : (1.0f + 0.055f) * (float) Math.pow(c, 1.0f / 2.4f) - 0.055f;
+        return c <= 0.0031308f
+                ? 12.92f * c
+                : (1.0f + 0.055f) * (float) Math.pow(c, 1.0f / 2.4f) - 0.055f;
     }
 
     // Gamma decompression (sRGB) for a single component, in the 0.0 - 1.0 range
@@ -170,7 +176,7 @@ public class HSBType extends State {
         return c <= 0.04045f ? c / 12.92f : (float) Math.pow((c + 0.055f) / (1.0f + 0.055f), 2.4f);
     }
 
-   /* @Override
+    /* @Override
     public SortedMap<String, PrimitiveType> getConstituents() {
         TreeMap<String, PrimitiveType> map = new TreeMap<>();
         map.put(KEY_HUE, getHue());
@@ -188,7 +194,8 @@ public class HSBType extends State {
         if (BigDecimal.ZERO.compareTo(hue) > 0 || BigDecimal.valueOf(360).compareTo(hue) <= 0) {
             throw new IllegalArgumentException("Hue must be between 0 and 360");
         }
-        if (BigDecimal.ZERO.compareTo(saturation) > 0 || BigDecimal.valueOf(100).compareTo(saturation) < 0) {
+        if (BigDecimal.ZERO.compareTo(saturation) > 0
+                || BigDecimal.valueOf(100).compareTo(saturation) < 0) {
             throw new IllegalArgumentException("Saturation must be between 0 and 100");
         }
         if (BigDecimal.ZERO.compareTo(value) > 0 || BigDecimal.valueOf(100).compareTo(value) < 0) {
@@ -221,16 +228,17 @@ public class HSBType extends State {
     }
 
     /**
-     * Returns the RGB value representing the color in the default sRGB
-     * color model.
-     * (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue).
+     * Returns the RGB value representing the color in the default sRGB color model. (Bits 24-31 are
+     * alpha, 16-23 are red, 8-15 are green, 0-7 are blue).
      *
      * @return the RGB value of the color in the default sRGB color model
      */
     public int getRGB() {
         DecimalType[] rgb = toRGB();
-        return ((0xFF) << 24) | ((convertPercentToByte(rgb[0]) & 0xFF) << 16)
-                | ((convertPercentToByte(rgb[1]) & 0xFF) << 8) | ((convertPercentToByte(rgb[2]) & 0xFF) << 0);
+        return ((0xFF) << 24)
+                | ((convertPercentToByte(rgb[0]) & 0xFF) << 16)
+                | ((convertPercentToByte(rgb[1]) & 0xFF) << 8)
+                | ((convertPercentToByte(rgb[2]) & 0xFF) << 0);
     }
 
     @Override
@@ -262,7 +270,8 @@ public class HSBType extends State {
             return false;
         }
         HSBType other = (HSBType) obj;
-        return getHue().equals(other.getHue()) && getSaturation().equals(other.getSaturation())
+        return getHue().equals(other.getHue())
+                && getSaturation().equals(other.getSaturation())
                 && getBrightness().equals(other.getBrightness());
     }
 
@@ -274,14 +283,20 @@ public class HSBType extends State {
         BigDecimal h = hue.divide(BigDecimal.valueOf(100), 10, BigDecimal.ROUND_HALF_UP);
         BigDecimal s = saturation.divide(BigDecimal.valueOf(100));
 
-        int hInt = h.multiply(BigDecimal.valueOf(5)).divide(BigDecimal.valueOf(3), 10, BigDecimal.ROUND_HALF_UP)
-                .intValue();
-        BigDecimal f = h.multiply(BigDecimal.valueOf(5)).divide(BigDecimal.valueOf(3), 10, BigDecimal.ROUND_HALF_UP)
-                .remainder(BigDecimal.ONE);
+        int hInt =
+                h.multiply(BigDecimal.valueOf(5))
+                        .divide(BigDecimal.valueOf(3), 10, BigDecimal.ROUND_HALF_UP)
+                        .intValue();
+        BigDecimal f =
+                h.multiply(BigDecimal.valueOf(5))
+                        .divide(BigDecimal.valueOf(3), 10, BigDecimal.ROUND_HALF_UP)
+                        .remainder(BigDecimal.ONE);
         DecimalType a = new DecimalType(value.multiply(BigDecimal.ONE.subtract(s)));
         DecimalType b = new DecimalType(value.multiply(BigDecimal.ONE.subtract(s.multiply(f))));
-        DecimalType c = new DecimalType(
-                value.multiply(BigDecimal.ONE.subtract((BigDecimal.ONE.subtract(f)).multiply(s))));
+        DecimalType c =
+                new DecimalType(
+                        value.multiply(
+                                BigDecimal.ONE.subtract((BigDecimal.ONE.subtract(f)).multiply(s))));
 
         switch (hInt) {
             case 0:
@@ -318,14 +333,13 @@ public class HSBType extends State {
             default:
                 throw new IllegalArgumentException("Could not convert to RGB.");
         }
-        return new DecimalType[]{red, green, blue};
+        return new DecimalType[] {red, green, blue};
     }
 
     /**
-     * Returns the xyY values representing this object's color in CIE XY color model.
-     * Conversion from sRGB to CIE XY using D65 reference white
-     * xy pair contains color information
-     * Y represents relative luminance
+     * Returns the xyY values representing this object's color in CIE XY color model. Conversion
+     * from sRGB to CIE XY using D65 reference white xy pair contains color information Y represents
+     * relative luminance
      *
      * @return DecimalType[x, y, Y] values in the CIE XY color model
      */
@@ -344,14 +358,18 @@ public class HSBType extends State {
         float x = tmpX / (tmpX + tmpY + tmpZ);
         float y = tmpY / (tmpX + tmpY + tmpZ);
 
-        return new DecimalType[]{new DecimalType(x * 100.0f),
-                new DecimalType(y * 100.0f),
-                new DecimalType(tmpY * getBrightness().floatValue())};
+        return new DecimalType[] {
+            new DecimalType(x * 100.0f),
+            new DecimalType(y * 100.0f),
+            new DecimalType(tmpY * getBrightness().floatValue())
+        };
     }
 
     private int convertPercentToByte(DecimalType percent) {
-        return percent.getValue().multiply(BigDecimal.valueOf(255))
-                .divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP).intValue();
+        return percent.getValue()
+                .multiply(BigDecimal.valueOf(255))
+                .divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP)
+                .intValue();
     }
 
     @Override
@@ -372,10 +390,14 @@ public class HSBType extends State {
     public <T extends State> T as(Class<T> target) {
         if (target == OnOffType.class) {
             // if brightness is not completely off, we consider the state to be on
-            return target.cast(getBrightness().equals(DecimalType.ZERO) ? OnOffType.OFF : OnOffType.ON);
+            return target.cast(
+                    getBrightness().equals(DecimalType.ZERO) ? OnOffType.OFF : OnOffType.ON);
         } else if (target == DecimalType.class) {
-            return target.cast(new DecimalType(
-                    getBrightness().toBigDecimal().divide(BigDecimal.valueOf(100), 8, RoundingMode.UP)));
+            return target.cast(
+                    new DecimalType(
+                            getBrightness()
+                                    .toBigDecimal()
+                                    .divide(BigDecimal.valueOf(100), 8, RoundingMode.UP)));
         } else if (target == DecimalType.class) {
             return target.cast(new DecimalType(getBrightness().toBigDecimal()));
         } else {

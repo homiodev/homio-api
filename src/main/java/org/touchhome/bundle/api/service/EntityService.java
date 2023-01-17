@@ -1,6 +1,10 @@
 package org.touchhome.bundle.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,23 +13,18 @@ import org.touchhome.bundle.api.entity.HasStatusAndMsg;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.common.exception.NotFoundException;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
- * Configure service for entities. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
+ * Configure service for entities. I.e. MongoEntity has MongoService which correspond for
+ * communications, RabbitMQ, etc...
  */
-public interface EntityService<S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
+public interface EntityService<
+                S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
         extends HasStatusAndMsg<T> {
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
     Map<String, Object> entityToService = new ConcurrentHashMap<>();
 
-    /**
-     * Get service or throw error if not found
-     */
+    /** Get service or throw error if not found */
     @JsonIgnore
     default @NotNull S getService() throws NotFoundException {
         Object service = entityToService.get(getEntityID());
@@ -41,7 +40,8 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     }
 
     @JsonIgnore
-    @NotNull Class<S> getEntityServiceItemClass();
+    @NotNull
+    Class<S> getEntityServiceItemClass();
 
     @SneakyThrows
     default @NotNull Optional<S> getOrCreateService(@NotNull EntityContext entityContext) {
@@ -80,9 +80,11 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
      *
      * @return service or null if service has to be created during some external process
      */
-    @Nullable S createService(@NotNull EntityContext entityContext);
+    @Nullable
+    S createService(@NotNull EntityContext entityContext);
 
-    @NotNull String getEntityID();
+    @NotNull
+    String getEntityID();
 
     default void destroyService() throws Exception {
         S service = (S) entityToService.remove(getEntityID());
@@ -100,7 +102,8 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
          */
         boolean entityUpdated(@NotNull E entity);
 
-        @NotNull E getEntity();
+        @NotNull
+        E getEntity();
 
         /**
          * Test service must check if service became/still available.
@@ -124,4 +127,3 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         void destroy() throws Exception;
     }
 }
-

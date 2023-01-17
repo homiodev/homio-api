@@ -1,13 +1,12 @@
 package org.touchhome.bundle.api.video.ffmpeg;
 
-import org.apache.commons.lang3.SystemUtils;
-import org.springframework.data.util.Pair;
-import org.touchhome.bundle.api.hquery.api.*;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.SystemUtils;
+import org.springframework.data.util.Pair;
+import org.touchhome.bundle.api.hquery.api.*;
 
 @HardwareRepositoryAnnotation
 public interface FfmpegInputDeviceHardwareRepository {
@@ -15,13 +14,15 @@ public interface FfmpegInputDeviceHardwareRepository {
     @HardwareQuery(
             name = "Run ffmpeg command",
             redirectErrorsToInputs = true,
-            value = ":ffmpeg :inputOptions -i :source :output", win = ":ffmpeg :inputOptions -i :source :output")
+            value = ":ffmpeg :inputOptions -i :source :output",
+            win = ":ffmpeg :inputOptions -i :source :output")
     @ErrorsHandler(throwError = true, logError = false)
-    void fireFfmpeg(@HQueryParam("ffmpeg") String ffmpeg,
-                    @HQueryParam("inputOptions") String inputOptions,
-                    @HQueryParam("source") String source,
-                    @HQueryParam("output") String output,
-                    @HQueryMaxWaitTimeout int maxWaitTimeout);
+    void fireFfmpeg(
+            @HQueryParam("ffmpeg") String ffmpeg,
+            @HQueryParam("inputOptions") String inputOptions,
+            @HQueryParam("source") String source,
+            @HQueryParam("output") String output,
+            @HQueryMaxWaitTimeout int maxWaitTimeout);
 
     @RawParse(nix = LinuxInputDeviceBuilder.class, win = WindowsInputDeviceBuilder.class)
     @HardwareQuery(
@@ -29,12 +30,19 @@ public interface FfmpegInputDeviceHardwareRepository {
             value = ":ffmpeg -f v4l2 -hide_banner -list_formats all -i :vfile",
             win = ":ffmpeg -list_options true -f dshow -hide_banner -i \"video=:vfile\"",
             redirectErrorsToInputs = true)
-    FFMPEGVideoDevice createVideoInputDevice(@HQueryParam("ffmpeg") String ffmpeg, @HQueryParam("vfile") String vfile);
+    FFMPEGVideoDevice createVideoInputDevice(
+            @HQueryParam("ffmpeg") String ffmpeg, @HQueryParam("vfile") String vfile);
 
-    @RawParse(nix = WindowsInputVideoDevicesParser.class, win = WindowsInputVideoDevicesParser.class)
-    @HardwareQuery(name = "Ffmpeg get window devices", value = "",
+    @RawParse(
+            nix = WindowsInputVideoDevicesParser.class,
+            win = WindowsInputVideoDevicesParser.class)
+    @HardwareQuery(
+            name = "Ffmpeg get window devices",
+            value = "",
             win = ":ffmpeg -list_devices true -f dshow -hide_banner -i dummy",
-            printOutput = true, cacheValid = 60, redirectErrorsToInputs = true)
+            printOutput = true,
+            cacheValid = 60,
+            redirectErrorsToInputs = true)
     Pair<List<String>, List<String>> getWindowsInputDevices(@HQueryParam("ffmpeg") String ffmpeg);
 
     default Set<String> getVideoDevices(String ffmpegPath) {
@@ -49,8 +57,12 @@ public interface FfmpegInputDeviceHardwareRepository {
         Set<String> devices = new HashSet<>();
         if (SystemUtils.IS_OS_LINUX) {
             File DEV = new File("/dev");
-            String[] names = DEV.list(
-                    (dir, name) -> dir.getName().equals("dev") && name.startsWith(prefix) && Character.isDigit(name.charAt(5)));
+            String[] names =
+                    DEV.list(
+                            (dir, name) ->
+                                    dir.getName().equals("dev")
+                                            && name.startsWith(prefix)
+                                            && Character.isDigit(name.charAt(5)));
             for (String name : names) {
                 devices.add(new File(DEV, name).getAbsolutePath());
             }
@@ -69,7 +81,8 @@ public interface FfmpegInputDeviceHardwareRepository {
         @Override
         public Pair<List<String>, List<String>> handle(List<String> inputs, Field field) {
             boolean startDevices = false;
-            Pair<List<String>, List<String>> result = Pair.of(new ArrayList<>(2), new ArrayList<>(2));
+            Pair<List<String>, List<String>> result =
+                    Pair.of(new ArrayList<>(2), new ArrayList<>(2));
             List<String> devices = result.getFirst();
             for (String line : inputs) {
                 if (line.startsWith(STARTER) && line.contains(VIDEO_MARKER)) {
@@ -78,7 +91,8 @@ public interface FfmpegInputDeviceHardwareRepository {
                 }
                 if (startDevices) {
                     if (line.startsWith(STARTER) && line.contains(NAME_MARKER)) {
-                        String deviceName = line.substring(line.indexOf(NAME_MARKER) + NAME_MARKER.length());
+                        String deviceName =
+                                line.substring(line.indexOf(NAME_MARKER) + NAME_MARKER.length());
                         deviceName = deviceName.substring(0, deviceName.length() - 1);
                         devices.add(deviceName);
                         continue;

@@ -1,18 +1,14 @@
 package org.touchhome.bundle.api.state;
 
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Objects;
-
 public class ObjectType extends State {
 
-    @Getter
-    private final Object value;
+    @Getter private final Object value;
 
-    @Getter
-    @Setter
-    private Object oldValue;
+    @Getter @Setter private Object oldValue;
 
     public ObjectType(Object value) {
         this.value = value;

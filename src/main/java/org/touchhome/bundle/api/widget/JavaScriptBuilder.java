@@ -1,11 +1,10 @@
 package org.touchhome.bundle.api.widget;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import lombok.SneakyThrows;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
-
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public interface JavaScriptBuilder {
 
@@ -80,17 +79,11 @@ public interface JavaScriptBuilder {
         JsMethod clientJs(String clientCode);
     }
 
-    interface IterContext extends Builder {
+    interface IterContext extends Builder {}
 
-    }
+    interface JSWindow extends JSONParameterContext {}
 
-    interface JSWindow extends JSONParameterContext {
-
-    }
-
-    interface EvaluableValue extends Supplier<String> {
-
-    }
+    interface EvaluableValue extends Supplier<String> {}
 
     interface ProxyEntityContextValue {
         void apply(EntityContext entityContext);

@@ -1,17 +1,15 @@
 package org.touchhome.bundle.api.audio.stream;
 
+import javax.sound.sampled.TargetDataLine;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.audio.AudioFormat;
 import org.touchhome.bundle.api.audio.AudioStream;
 
-import javax.sound.sampled.TargetDataLine;
-
 public class JavaSoundInputStream extends AudioStream {
 
-    /**
-     * TargetDataLine for the input
-     */
+    /** TargetDataLine for the input */
     private final TargetDataLine input;
+
     private final AudioFormat format;
 
     /**

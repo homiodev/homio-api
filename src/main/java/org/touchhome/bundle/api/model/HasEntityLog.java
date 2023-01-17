@@ -31,4 +31,3 @@ public interface HasEntityLog extends HasJsonData {
         }
     }
 }
-

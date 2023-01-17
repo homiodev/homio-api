@@ -1,23 +1,18 @@
 package org.touchhome.bundle.api.entity.widget.ability;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.text.NumberFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
-import java.text.NumberFormat;
-
-/**
- * For widget dataSource to set status value
- */
+/** For widget dataSource to set status value */
 public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueListener {
     void setStatusValue(SetStatusValueRequest request);
 
-    /**
-     * Uses for UI to determine class type description
-     */
+    /** Uses for UI to determine class type description */
     @JsonIgnore
     @SelectDataSourceDescription
     String getSetStatusDescription();

@@ -1,15 +1,15 @@
 package org.touchhome.bundle.api.setting;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-public interface SettingPluginOptionsInteger extends SettingPluginInteger, SettingPluginOptions<Integer> {
+public interface SettingPluginOptionsInteger
+        extends SettingPluginInteger, SettingPluginOptions<Integer> {
     @Override
     default UIFieldType getSettingType() {
         return UIFieldType.SelectBox;

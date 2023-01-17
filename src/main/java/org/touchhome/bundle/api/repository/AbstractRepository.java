@@ -1,5 +1,16 @@
 package org.touchhome.bundle.api.repository;
 
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.Hibernate;
@@ -8,30 +19,20 @@ import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.common.util.CommonUtils;
 
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @Log4j2
 public class AbstractRepository<T extends BaseEntity> implements PureRepository<T> {
 
     private final Class<T> clazz;
     private final String prefix;
 
-    @PersistenceContext
-    protected EntityManager em;
+    @PersistenceContext protected EntityManager em;
 
     public AbstractRepository(Class<T> clazz) {
         this.clazz = clazz;
-        this.prefix = Modifier.isAbstract(clazz.getModifiers()) ? null : CommonUtils.newInstance(clazz).getEntityPrefix();
+        this.prefix =
+                Modifier.isAbstract(clazz.getModifiers())
+                        ? null
+                        : CommonUtils.newInstance(clazz).getEntityPrefix();
     }
 
     @Transactional(readOnly = true)
@@ -39,10 +40,7 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
         return findSingleByField("name", name);
     }
 
-    /**
-     * Warning!!!
-     * Must be called only from EntityManager. That's why it's not transactional
-     */
+    /** Warning!!! Must be called only from EntityManager. That's why it's not transactional */
     public T save(T entity) {
         return em.merge(entity);
     }
@@ -74,21 +72,37 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
     }
 
     protected List<T> findByField(String fieldName, Object value) {
-        return em.createQuery("FROM " + getEntityClass().getSimpleName() + " where " + fieldName + " = :value", getEntityClass())
-                .setParameter("value", value).getResultList();
+        return em.createQuery(
+                        "FROM "
+                                + getEntityClass().getSimpleName()
+                                + " where "
+                                + fieldName
+                                + " = :value",
+                        getEntityClass())
+                .setParameter("value", value)
+                .getResultList();
     }
 
     protected List<T> findByFieldRange(String fieldName, Object... values) {
-        String inStatement = Stream.of(values).map(Object::toString).collect(Collectors.joining(",", "'", "'"));
-        TypedQuery<T> query = em.createQuery("FROM " + getEntityClass().getSimpleName() + " where " + fieldName + " in (:value)",
-                        getEntityClass())
-                .setParameter("value", inStatement);
+        String inStatement =
+                Stream.of(values).map(Object::toString).collect(Collectors.joining(",", "'", "'"));
+        TypedQuery<T> query =
+                em.createQuery(
+                                "FROM "
+                                        + getEntityClass().getSimpleName()
+                                        + " where "
+                                        + fieldName
+                                        + " in (:value)",
+                                getEntityClass())
+                        .setParameter("value", inStatement);
         return query.getResultList();
     }
 
     @Transactional(readOnly = true)
     public Long size() {
-        return em.createQuery("SELECT count(t.id) FROM " + getEntityClass().getSimpleName() + " as t", Long.class)
+        return em.createQuery(
+                        "SELECT count(t.id) FROM " + getEntityClass().getSimpleName() + " as t",
+                        Long.class)
                 .getSingleResult();
     }
 
@@ -107,27 +121,37 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
     }
 
     private void fetchLazy(Object entity, Set<Object> visitedEntities, boolean ignoreNotUI) {
-        FieldUtils.getAllFieldsList(entity.getClass()).forEach(field -> {
-            try {
-                if (ignoreNotUI && field.getAnnotation(UIField.class) == null) {
-                    return;
-                }
-                if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(OneToOne.class) ||
-                        field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(ManyToMany.class)) {
-                    Object proxy = FieldUtils.readField(field, entity, true);
-                    Hibernate.initialize(proxy);
-                    if (proxy != null && visitedEntities.add(proxy)) {
-                        if (proxy instanceof Collection) {
-                            ((Collection<?>) proxy).forEach(o -> fetchLazy(o, visitedEntities, ignoreNotUI));
-                        } else {
-                            fetchLazy(proxy, visitedEntities, ignoreNotUI);
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        FieldUtils.getAllFieldsList(entity.getClass())
+                .forEach(
+                        field -> {
+                            try {
+                                if (ignoreNotUI && field.getAnnotation(UIField.class) == null) {
+                                    return;
+                                }
+                                if (field.isAnnotationPresent(OneToMany.class)
+                                        || field.isAnnotationPresent(OneToOne.class)
+                                        || field.isAnnotationPresent(ManyToOne.class)
+                                        || field.isAnnotationPresent(ManyToMany.class)) {
+                                    Object proxy = FieldUtils.readField(field, entity, true);
+                                    Hibernate.initialize(proxy);
+                                    if (proxy != null && visitedEntities.add(proxy)) {
+                                        if (proxy instanceof Collection) {
+                                            ((Collection<?>) proxy)
+                                                    .forEach(
+                                                            o ->
+                                                                    fetchLazy(
+                                                                            o,
+                                                                            visitedEntities,
+                                                                            ignoreNotUI));
+                                        } else {
+                                            fetchLazy(proxy, visitedEntities, ignoreNotUI);
+                                        }
+                                    }
+                                }
+                            } catch (Exception ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        });
     }
 
     @Transactional

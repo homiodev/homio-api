@@ -1,12 +1,11 @@
 package org.touchhome.bundle.api.setting;
 
+import java.util.Collection;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.KeyValueEnum;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
-
-import java.util.Collection;
 
 public interface SettingPluginOptionsEnum<T extends Enum<T>> extends SettingPluginOptions<T> {
     @Override
@@ -19,7 +18,9 @@ public interface SettingPluginOptionsEnum<T extends Enum<T>> extends SettingPlug
         if (KeyValueEnum.class.isAssignableFrom(getType())) {
             return OptionModel.list((Class<? extends KeyValueEnum>) getType());
         }
-        return allowEmpty() ? OptionModel.enumWithEmpty(getType()) : OptionModel.enumList(getType());
+        return allowEmpty()
+                ? OptionModel.enumWithEmpty(getType())
+                : OptionModel.enumList(getType());
     }
 
     default boolean allowEmpty() {

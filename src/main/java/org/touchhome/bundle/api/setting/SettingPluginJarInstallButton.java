@@ -1,10 +1,9 @@
 package org.touchhome.bundle.api.setting;
 
-import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 public interface SettingPluginJarInstallButton extends SettingPluginButton {
 
@@ -20,6 +19,8 @@ public interface SettingPluginJarInstallButton extends SettingPluginButton {
     String getServerJarPath();
 
     default Path getLocalPath() {
-        return TouchHomeUtils.getExternalJarClassPath().resolve(getFolder()).resolve(getJarFileName());
+        return TouchHomeUtils.getExternalJarClassPath()
+                .resolve(getFolder())
+                .resolve(getJarFileName());
     }
 }

@@ -14,16 +14,17 @@ public interface HasAggregateValueFromSeries extends HasEntityIdentifier, HasUpd
      *
      * @param request
      * @param aggregationType
-     * @param exactNumber     - if aggregate exact number values or take any value (i.e.: for display widget)
+     * @param exactNumber - if aggregate exact number values or take any value (i.e.: for display
+     *     widget)
      * @return
      */
-    @Nullable Object getAggregateValueFromSeries(@NotNull ChartRequest request,
-                                                 @NotNull AggregationType aggregationType,
-                                                 boolean exactNumber);
+    @Nullable
+    Object getAggregateValueFromSeries(
+            @NotNull ChartRequest request,
+            @NotNull AggregationType aggregationType,
+            boolean exactNumber);
 
-    /**
-     * Uses for UI to determine class type description
-     */
+    /** Uses for UI to determine class type description */
     @JsonIgnore
     @SelectDataSourceDescription
     String getAggregateValueDescription();

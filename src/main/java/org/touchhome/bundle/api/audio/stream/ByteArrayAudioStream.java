@@ -1,10 +1,9 @@
 package org.touchhome.bundle.api.audio.stream;
 
-import org.touchhome.bundle.api.audio.AudioFormat;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.touchhome.bundle.api.audio.AudioFormat;
 
 public class ByteArrayAudioStream extends FixedLengthAudioStream {
 

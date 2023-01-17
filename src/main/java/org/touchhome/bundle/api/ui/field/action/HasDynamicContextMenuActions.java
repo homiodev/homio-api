@@ -6,13 +6,12 @@ import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 
-/**
- * For BaseItems that wants dynamic context menu items
- */
+/** For BaseItems that wants dynamic context menu items */
 public interface HasDynamicContextMenuActions {
     void assembleActions(UIInputBuilder uiInputBuilder);
 
-    default ActionResponseModel handleAction(EntityContext entityContext, String actionID, JSONObject params) throws Exception {
+    default ActionResponseModel handleAction(
+            EntityContext entityContext, String actionID, JSONObject params) throws Exception {
         UIInputBuilder uiInputBuilder = entityContext.ui().inputBuilder();
         this.assembleActions(uiInputBuilder);
 
@@ -23,6 +22,7 @@ public interface HasDynamicContextMenuActions {
             }
             return actionHandler.handleAction(entityContext, params);
         }
-        throw new IllegalArgumentException("Unable to find execution handler for action: <" + actionID + ">. Entity: " + this);
+        throw new IllegalArgumentException(
+                "Unable to find execution handler for action: <" + actionID + ">. Entity: " + this);
     }
 }

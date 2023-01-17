@@ -1,21 +1,17 @@
 package org.touchhome.bundle.api.state;
 
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Objects;
 
 public class OnOffType extends State {
 
     public static final OnOffType ON = new OnOffType(true);
     public static final OnOffType OFF = new OnOffType(false);
 
-    @Getter
-    private final boolean value;
+    @Getter private final boolean value;
 
-    @Getter
-    @Setter
-    private Boolean oldValue;
+    @Getter @Setter private Boolean oldValue;
 
     private OnOffType(boolean value) {
         this(value, value);
@@ -95,7 +91,8 @@ public class OnOffType extends State {
     }
 
     public enum OnOffTypeEnum {
-        Off, On;
+        Off,
+        On;
 
         public boolean boolValue() {
             return this == On;
