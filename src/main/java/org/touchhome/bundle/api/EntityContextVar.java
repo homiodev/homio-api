@@ -42,13 +42,19 @@ public interface EntityContextVar {
         }
     }
 
-    /** Get variable title - name or defaultTitle */
+    /**
+     * Get variable title - name or defaultTitle
+     */
     String getTitle(@NotNull String variableId, @Nullable String defaultTitle);
 
-    /** Return count of messages */
+    /**
+     * Return count of messages
+     */
     long count(@NotNull String variableId);
 
-    /** Does variable exists in system */
+    /**
+     * Does variable exists in system
+     */
     boolean exists(@NotNull String variableId);
 
     boolean existsGroup(@NotNull String groupId);
@@ -59,7 +65,9 @@ public interface EntityContextVar {
     boolean renameVariable(
             @NotNull String variableId, @NotNull String name, @Nullable String description);
 
-    /** Get or create new variable. */
+    /**
+     * Get or create new variable.
+     */
     @NotNull
     default String createVariable(
             @NotNull String groupId,
@@ -69,7 +77,9 @@ public interface EntityContextVar {
         return createVariable(groupId, null, variableName, variableType, null, readOnly);
     }
 
-    /** Get or create new variable. */
+    /**
+     * Get or create new variable.
+     */
     @NotNull
     default String createVariable(
             @NotNull String groupId,
@@ -80,7 +90,9 @@ public interface EntityContextVar {
         return createVariable(groupId, variableId, variableName, variableType, null, readOnly);
     }
 
-    /** Get or create new variable. */
+    /**
+     * Get or create new variable.
+     */
     @NotNull
     default String createVariable(
             @NotNull String groupId,
@@ -128,7 +140,9 @@ public interface EntityContextVar {
         return createGroup(groupId, groupName, locked, icon, iconColor, null);
     }
 
-    /** Create group and attach it to parent group */
+    /**
+     * Create group and attach it to parent group
+     */
     boolean createGroup(
             @NotNull String parentGroupId,
             @NotNull String groupId,
@@ -138,7 +152,9 @@ public interface EntityContextVar {
             @NotNull String iconColor,
             @Nullable String description);
 
-    /** Remove group and all associated variables */
+    /**
+     * Remove group and all associated variables
+     */
     boolean removeGroup(@NotNull String groupId);
 
     @Getter
