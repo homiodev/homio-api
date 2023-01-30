@@ -1,11 +1,12 @@
 package org.touchhome.bundle.api.entity;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.Serializable;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
+
+import java.io.Serializable;
+
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
 public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializable {
 
@@ -22,12 +23,18 @@ public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializab
 
     String getName();
 
-    default void afterDelete(EntityContext entityContext) {}
+    default void afterDelete(EntityContext entityContext) {
 
-    default void afterUpdate(EntityContext entityContext, boolean persis) {}
+    }
+
+    default void afterUpdate(EntityContext entityContext, boolean persis) {
+
+    }
 
     // fires after fetch from db/cache
-    default void afterFetch(EntityContext entityContext) {}
+    default void afterFetch(EntityContext entityContext) {
+
+    }
 
     @JsonIgnore
     default String refreshName() {

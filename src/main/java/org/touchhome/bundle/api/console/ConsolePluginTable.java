@@ -1,10 +1,10 @@
 package org.touchhome.bundle.api.console;
 
-import java.util.Collection;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
-public interface ConsolePluginTable<T extends HasEntityIdentifier>
-        extends ConsolePlugin<Collection<T>> {
+import java.util.Collection;
+
+public interface ConsolePluginTable<T extends HasEntityIdentifier> extends ConsolePlugin<Collection<T>> {
 
     @Override
     default RenderType getRenderType() {

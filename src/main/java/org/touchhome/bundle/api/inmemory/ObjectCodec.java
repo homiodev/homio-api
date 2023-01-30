@@ -22,8 +22,7 @@ public class ObjectCodec implements Codec<Object> {
             case STRING:
                 return reader.readString();
         }
-        throw new RuntimeException(
-                "Unable to find corresponding decoder for type: " + reader.getCurrentBsonType());
+        throw new RuntimeException("Unable to find corresponding decoder for type: " + reader.getCurrentBsonType());
     }
 
     @Override
@@ -39,9 +38,7 @@ public class ObjectCodec implements Codec<Object> {
         } else if (Number.class.isAssignableFrom(value.getClass())) {
             writer.writeDouble(((Number) value).doubleValue());
         } else {
-            throw new RuntimeException(
-                    "Unable to find corresponding encoder for type: "
-                            + value.getClass().getSimpleName());
+            throw new RuntimeException("Unable to find corresponding encoder for type: " + value.getClass().getSimpleName());
         }
     }
 

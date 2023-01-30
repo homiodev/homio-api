@@ -5,10 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Annotate to allow to show field with full width inside table and ignore all rest fields */
+/**
+ * Annotate to allow to show field with full width inside table and ignore all rest fields
+ */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldInlineGroup {
-    /** Condition when apply field */
+    /**
+     * Condition when apply field
+     */
     String value();
 }

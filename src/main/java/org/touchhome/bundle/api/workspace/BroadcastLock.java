@@ -14,7 +14,7 @@ public interface BroadcastLock {
     default boolean await(WorkspaceBlock workspaceBlock) {
         return await(workspaceBlock, 0, null);
     }
-
+    
     boolean await(WorkspaceBlock workspaceBlock, int timeout, TimeUnit timeUnit);
 
     // signal all broadcast locks with no value

@@ -8,7 +8,5 @@ import java.lang.annotation.*;
 public @interface UIFieldBeanSelection {
     boolean lazyLoading() default false;
 
-    Class<?> value() default
-            Object.class; // if value is Object.class then uses method return type or field type
-    // to evalueate
+    Class<?> value() default Object.class; // if value is Object.class then uses method return type or field type to evalueate
 }

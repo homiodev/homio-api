@@ -24,7 +24,6 @@ public interface UISliderItemBuilder extends UIEntityItemBuilder<UISliderItemBui
     UISliderItemBuilder setSliderType(SliderType sliderType);
 
     enum SliderType {
-        Regular,
-        Input
+        Regular, Input
     }
 }

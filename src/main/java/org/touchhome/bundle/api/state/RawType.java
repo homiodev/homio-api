@@ -1,9 +1,5 @@
 package org.touchhome.bundle.api.state;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -14,12 +10,20 @@ import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.common.util.CommonUtils;
 import org.touchhome.common.util.Curl;
 
-@Accessors(chain = true)
-public class RawType extends State {
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Base64;
 
-    @Getter @Setter protected String name;
+@Accessors(chain = true)
+public class RawType implements State {
+
+    @Getter
+    @Setter
+    protected String name;
     protected byte[] bytes;
-    @Getter protected String mimeType;
+    @Getter
+    protected String mimeType;
     private Path relatedFile;
 
     public RawType(byte[] bytes) {
@@ -67,8 +71,7 @@ public class RawType extends State {
         } else if ((idx2 = value.indexOf(";")) <= 5) {
             throw new IllegalArgumentException("Missing MIME type in argument " + value);
         }
-        return new RawType(
-                Base64.getDecoder().decode(value.substring(idx + 1)), value.substring(5, idx2));
+        return new RawType(Base64.getDecoder().decode(value.substring(idx + 1)), value.substring(5, idx2));
     }
 
     public Path toPath() {
@@ -77,9 +80,7 @@ public class RawType extends State {
             if (fileName == null) {
                 fileName = String.valueOf(Arrays.hashCode(bytes));
             }
-            relatedFile =
-                    TouchHomeUtils.writeToFile(
-                            CommonUtils.getTmpPath().resolve(fileName), bytes, false);
+            relatedFile = TouchHomeUtils.writeToFile(CommonUtils.getTmpPath().resolve(fileName), bytes, false);
         }
         return relatedFile;
     }

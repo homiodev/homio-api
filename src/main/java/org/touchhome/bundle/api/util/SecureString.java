@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * This is not a string but a CharSequence that can be cleared of its memory. Important for handling
- * passwords. Represents text that should be kept confidential, such as by deleting it from computer
- * memory when no longer needed or garbaged collected.
+ * This is not a string but a CharSequence that can be cleared of its memory.
+ * Important for handling passwords. Represents text that should be kept
+ * confidential, such as by deleting it from computer memory when no longer
+ * needed or garbaged collected.
  */
 public class SecureString implements CharSequence {
 
@@ -44,7 +45,10 @@ public class SecureString implements CharSequence {
         return new SecureString(start, end, this);
     }
 
-    /** Convert array back to String but not using toString(). See toString() docs below. */
+    /**
+     * Convert array back to String but not using toString(). See toString() docs
+     * below.
+     */
     public String asString() {
         final char[] value = new char[chars.length];
         for (int i = 0; i < value.length; i++) {
@@ -53,7 +57,9 @@ public class SecureString implements CharSequence {
         return new String(value);
     }
 
-    /** Manually clear the underlying array holding the characters */
+    /**
+     * Manually clear the underlying array holding the characters
+     */
     public void clear() {
         Arrays.fill(chars, '0');
         Arrays.fill(pad, 0);
@@ -61,8 +67,8 @@ public class SecureString implements CharSequence {
 
     /**
      * Protect against using this class in log statements.
-     *
-     * <p>{@inheritDoc}
+     * <p>
+     * {@inheritDoc}
      */
     @Override
     public String toString() {
@@ -71,8 +77,8 @@ public class SecureString implements CharSequence {
 
     /**
      * Called by garbage collector.
-     *
-     * <p>{@inheritDoc}
+     * <p>
+     * {@inheritDoc}
      */
     @Override
     public void finalize() throws Throwable {
@@ -83,8 +89,8 @@ public class SecureString implements CharSequence {
     /**
      * Randomly pad the characters to not store the real character in memory.
      *
-     * @param start start of the {@code CharSequence}
-     * @param length length of the {@code CharSequence}
+     * @param start      start of the {@code CharSequence}
+     * @param length     length of the {@code CharSequence}
      * @param characters the {@code CharSequence} to scramble
      */
     private void scramble(final int start, final int length, final CharSequence characters) {

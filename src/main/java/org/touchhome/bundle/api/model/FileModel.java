@@ -1,10 +1,11 @@
 package org.touchhome.bundle.api.model;
 
-import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -14,8 +15,7 @@ public class FileModel implements Comparable<FileModel> {
     private String name;
     private String content;
     private FileContentType contentType;
-    // for now only readOnly supports because don't where to pass save handler yet
-    private boolean readOnly;
+    private boolean readOnly; // for now only readOnly supports because don't where to pass save handler yet
 
     @Override
     public int compareTo(FileModel o) {

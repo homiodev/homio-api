@@ -1,5 +1,14 @@
 package org.touchhome.bundle.api.service;
 
+import lombok.Getter;
+import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.Nullable;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.common.exception.ServerException;
+import org.touchhome.common.util.CommonUtils;
+
 import java.io.File;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -12,32 +21,25 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.Nullable;
-import org.touchhome.bundle.api.util.TouchHomeUtils;
-import org.touchhome.common.exception.ServerException;
-import org.touchhome.common.util.CommonUtils;
 
-/** Interface for entities who have ability to convert text to sound */
+/**
+ * Interface for entities who have ability to convert text to sound
+ */
 @Log4j2
 public abstract class TextToSpeechEntityService {
 
-    @Getter private final Path cacheFolder;
+    @Getter
+    private final Path cacheFolder;
     private final Integer maxQuota;
     public long lastTimeCleanOldCache = 0;
 
     /**
      * @param folderName - cache folder name
-     * @param maxQuota if null - no quota
+     * @param maxQuota   if null - no quota
      */
     @SneakyThrows
     public TextToSpeechEntityService(String folderName, @Nullable Integer maxQuota) {
-        this.cacheFolder =
-                CommonUtils.createDirectoriesIfNotExists(
-                        TouchHomeUtils.getAudioPath().resolve(folderName));
+        this.cacheFolder = CommonUtils.createDirectoriesIfNotExists(TouchHomeUtils.getAudioPath().resolve(folderName));
         this.maxQuota = maxQuota;
         cleanOldCache();
     }
@@ -61,9 +63,7 @@ public abstract class TextToSpeechEntityService {
 
     @SneakyThrows
     public void cleanOldCache() {
-        boolean requireToCheckCache =
-                TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastTimeCleanOldCache)
-                        > 1;
+        boolean requireToCheckCache = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastTimeCleanOldCache) > 1;
         if (requireToCheckCache) {
             lastTimeCleanOldCache = System.currentTimeMillis();
             cleanOldCharacterFiles();
@@ -73,12 +73,9 @@ public abstract class TextToSpeechEntityService {
 
     @SneakyThrows
     private void cleanOldAudioFiles() {
-        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[] {".mp3"}, true)) {
-            BasicFileAttributes attributes =
-                    Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-            if (TimeUnit.MILLISECONDS.toDays(
-                            System.currentTimeMillis() - attributes.lastAccessTime().toMillis())
-                    > 31) {
+        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".mp3"}, true)) {
+            BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+            if (TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - attributes.lastAccessTime().toMillis()) > 31) {
                 log.info("Delete old audio file <{}>", file.getName());
                 file.delete();
             }
@@ -87,7 +84,7 @@ public abstract class TextToSpeechEntityService {
 
     protected void cleanOldCharacterFiles() {
         String currentCharactersFileName = getCharacters().getFileName().toString();
-        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[] {".txt"}, true)) {
+        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".txt"}, true)) {
             if (!file.getName().equals(currentCharactersFileName)) {
                 log.info("Delete old character file <{}>", file.getName());
                 file.delete();
@@ -140,8 +137,7 @@ public abstract class TextToSpeechEntityService {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] bytesOfMessage = text.getBytes(StandardCharsets.UTF_8);
-            String fileNameHash =
-                    String.format("%032x", new BigInteger(1, md.digest(bytesOfMessage)));
+            String fileNameHash = String.format("%032x", new BigInteger(1, md.digest(bytesOfMessage)));
             return getUniqueFilenameForText() + "_" + fileNameHash;
         } catch (NoSuchAlgorithmException e) {
             // should not happen

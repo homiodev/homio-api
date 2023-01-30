@@ -5,7 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Number field */
+/**
+ * Number field
+ */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldNumber {
@@ -13,9 +15,13 @@ public @interface UIFieldNumber {
 
     int max() default Integer.MAX_VALUE;
 
-    /** fetch min value from minRef field instead of min if specified */
+    /**
+     * fetch min value from minRef field instead of min if specified
+     */
     String minRef() default "";
 
-    /** fetch max value from maxRef field instead of ax if specified */
+    /**
+     * fetch max value from maxRef field instead of ax if specified
+     */
     String maxRef() default "";
 }

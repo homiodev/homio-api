@@ -6,6 +6,6 @@ import org.touchhome.common.model.ProgressBar;
 public interface ItemDiscoverySupport {
     String getName();
 
-    BaseItemsDiscovery.DeviceScannerResult scan(
-            EntityContext entityContext, ProgressBar progressBar, String headerConfirmButtonKey);
+    BaseItemsDiscovery.DeviceScannerResult scan(EntityContext entityContext, ProgressBar progressBar,
+                                                String headerConfirmButtonKey);
 }

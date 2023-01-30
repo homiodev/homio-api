@@ -5,7 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Disable create new tab(entity) */
+/**
+ * Disable create new tab(entity)
+ */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldDisableCreateTab {}
+public @interface UIFieldDisableCreateTab {
+}

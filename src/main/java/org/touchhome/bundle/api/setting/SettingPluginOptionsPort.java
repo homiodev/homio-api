@@ -1,14 +1,14 @@
 package org.touchhome.bundle.api.setting;
 
 import com.fazecast.jSerialComm.SerialPort;
-import java.util.Collection;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 
-public interface SettingPluginOptionsPort
-        extends SettingPlugin<SerialPort>, SettingPluginOptions<SerialPort> {
+import java.util.Collection;
+
+public interface SettingPluginOptionsPort extends SettingPlugin<SerialPort>, SettingPluginOptions<SerialPort> {
 
     @Override
     default UIFieldType getSettingType() {

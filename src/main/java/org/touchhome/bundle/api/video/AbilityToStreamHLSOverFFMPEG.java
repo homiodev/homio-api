@@ -1,11 +1,12 @@
 package org.touchhome.bundle.api.video;
 
-import java.util.List;
 import org.touchhome.bundle.api.entity.HasJsonData;
 import org.touchhome.bundle.api.entity.RestartHandlerOnChange;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldGroup;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
+
+import java.util.List;
 
 public interface AbilityToStreamHLSOverFFMPEG<T> extends HasJsonData {
     @UIField(order = 1000, hideInView = true, type = UIFieldType.Chips)

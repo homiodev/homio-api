@@ -1,24 +1,8 @@
 package org.touchhome.bundle.api.util;
 
-import static java.nio.file.StandardOpenOption.*;
-import static org.touchhome.common.util.Lang.getServerMessage;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingFunction;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -39,34 +23,55 @@ import org.touchhome.bundle.api.entity.RestartHandlerOnChange;
 import org.touchhome.bundle.api.hardware.network.NetworkHardwareRepository;
 import org.touchhome.common.util.CommonUtils;
 
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static java.nio.file.StandardOpenOption.*;
+import static org.touchhome.common.util.Lang.getServerMessage;
+
 @Log4j2
 public class TouchHomeUtils {
 
     public static final String APP_UUID;
     public static final int RUN_COUNT;
     public static final Tika TIKA = new Tika();
-    @Getter private static final Path logsPath = getOrCreatePath("logs");
-    @Getter private static final Path configPath = getOrCreatePath("conf");
-    @Getter private static final Path filesPath = getOrCreatePath("asm_files");
-    @Getter private static final Path installPath = getOrCreatePath("installs");
-
     @Getter
-    public static final String FFMPEG_LOCATION =
-            SystemUtils.IS_OS_LINUX
-                    ? "ffmpeg"
-                    : TouchHomeUtils.getInstallPath()
-                            .resolve("ffmpeg")
-                            .resolve("ffmpeg.exe")
-                            .toString();
-
-    @Getter private static final Path externalJarClassPath = getOrCreatePath("external_jars");
-    @Getter private static final Path bundlePath = getOrCreatePath("bundles");
-    @Getter private static final Path mediaPath = getOrCreatePath("media");
-    @Getter private static final Path audioPath = getOrCreatePath("media/audio");
-    @Getter private static final Path imagePath = getOrCreatePath("media/image");
-    @Getter private static final Path sshPath = getOrCreatePath("ssh");
+    private static final Path logsPath = getOrCreatePath("logs");
+    @Getter
+    private static final Path configPath = getOrCreatePath("conf");
+    @Getter
+    private static final Path filesPath = getOrCreatePath("asm_files");
+    @Getter
+    private static final Path installPath = getOrCreatePath("installs");
+    @Getter
+    public static final String FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
+            TouchHomeUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
+    @Getter
+    private static final Path externalJarClassPath = getOrCreatePath("external_jars");
+    @Getter
+    private static final Path bundlePath = getOrCreatePath("bundles");
+    @Getter
+    private static final Path mediaPath = getOrCreatePath("media");
+    @Getter
+    private static final Path audioPath = getOrCreatePath("media/audio");
+    @Getter
+    private static final Path imagePath = getOrCreatePath("media/image");
+    @Getter
+    private static final Path sshPath = getOrCreatePath("ssh");
     // map for store different statuses
-    @Getter private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
+    @Getter
+    private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
@@ -83,8 +88,7 @@ public class TouchHomeUtils {
         return jsonObject;
     }
 
-    public static ResponseEntity<InputStreamResource> inputStreamToResource(
-            InputStream stream, MediaType contentType) {
+    public static ResponseEntity<InputStreamResource> inputStreamToResource(InputStream stream, MediaType contentType) {
         try {
             return ResponseEntity.ok()
                     .contentLength(stream.available())
@@ -164,9 +168,7 @@ public class TouchHomeUtils {
         if (oldEntity == null) { // in case if just created
             return false;
         }
-        Method[] methods =
-                MethodUtils.getMethodsWithAnnotation(
-                        newEntity.getClass(), RestartHandlerOnChange.class, true, false);
+        Method[] methods = MethodUtils.getMethodsWithAnnotation(newEntity.getClass(), RestartHandlerOnChange.class, true, false);
         for (Method method : methods) {
             Object newValue = MethodUtils.invokeMethod(newEntity, method.getName());
             Object oldValue = MethodUtils.invokeMethod(oldEntity, method.getName());
@@ -178,12 +180,9 @@ public class TouchHomeUtils {
     }
 
     public static SerialPort getSerialPort(String value) {
-        return StringUtils.isEmpty(value)
-                ? null
-                : Stream.of(SerialPort.getCommPorts())
-                        .filter(p -> p.getSystemPortName().equals(value))
-                        .findAny()
-                        .orElse(null);
+        return StringUtils.isEmpty(value) ? null :
+                Stream.of(SerialPort.getCommPorts())
+                        .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
     }
 
     public static boolean isValidJson(String json) {
@@ -199,57 +198,35 @@ public class TouchHomeUtils {
         return true;
     }
 
-    /** Simple utility for scan for ip range */
-    public static void scanForDevice(
-            EntityContext entityContext,
-            int devicePort,
-            String deviceName,
-            ThrowingFunction<String, Boolean, Exception> testDevice,
-            Consumer<String> createDeviceHandler) {
-        Consumer<String> deviceHandler =
-                (ip) -> {
-                    try {
-                        if (testDevice.apply("127.0.0.1")) {
-                            List<String> messages = new ArrayList<>();
-                            messages.add(
-                                    getServerMessage(
-                                            "NEW_DEVICE.GENERAL_QUESTION", "NAME", deviceName));
-                            messages.add(
-                                    getServerMessage(
-                                            "NEW_DEVICE.TITLE",
-                                            "NAME",
-                                            deviceName + "(" + ip + ":" + devicePort + ")"));
-                            messages.add(
-                                    getServerMessage(
-                                            "NEW_DEVICE.URL", "URL", ip + ":" + devicePort));
-                            entityContext
-                                    .ui()
-                                    .sendConfirmation(
-                                            "Confirm-" + deviceName + "-" + ip,
-                                            getServerMessage(
-                                                    "NEW_DEVICE.TITLE", "NAME", deviceName),
-                                            () -> createDeviceHandler.accept(ip),
-                                            messages,
-                                            "confirm-create-" + deviceName + "-" + ip);
-                        }
-                    } catch (Exception ignore) {
-                    }
-                };
+    /**
+     * Simple utility for scan for ip range
+     */
+    public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
+                                     ThrowingFunction<String, Boolean, Exception> testDevice,
+                                     Consumer<String> createDeviceHandler) {
+        Consumer<String> deviceHandler = (ip) -> {
+            try {
+                if (testDevice.apply("127.0.0.1")) {
+                    List<String> messages = new ArrayList<>();
+                    messages.add(getServerMessage("NEW_DEVICE.GENERAL_QUESTION", "NAME", deviceName));
+                    messages.add(getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName + "(" + ip + ":" + devicePort + ")"));
+                    messages.add(getServerMessage("NEW_DEVICE.URL", "URL", ip + ":" + devicePort));
+                    entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
+                            getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName), () ->
+                                    createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
+                }
+            } catch (Exception ignore) {
+            }
+        };
 
-        NetworkHardwareRepository networkHardwareRepository =
-                entityContext.getBean(NetworkHardwareRepository.class);
-        String ipAddressRange =
-                MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
+        NetworkHardwareRepository networkHardwareRepository = entityContext.getBean(NetworkHardwareRepository.class);
+        String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
         deviceHandler.accept("127.0.0.1");
-        networkHardwareRepository.buildPingIpAddressTasks(
-                ipAddressRange,
-                log,
-                Collections.singleton(devicePort),
-                500,
+        networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log, Collections.singleton(devicePort), 500,
                 (url, port) -> deviceHandler.accept(url));
     }
 
-    /*   @SneakyThrows
+ /*   @SneakyThrows
     public static void tempDir(Consumer<Path> consumer) {
         Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
         Files.createDirectories(tmpDir);
@@ -268,17 +245,13 @@ public class TouchHomeUtils {
         ConfFile confFile = null;
         if (Files.exists(confFilePath)) {
             try {
-                confFile =
-                        CommonUtils.OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
+                confFile = CommonUtils.OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
             } catch (Exception ex) {
                 log.error("Found corrupted config file. Regenerate new one.");
             }
         }
         if (confFile == null) {
-            confFile =
-                    new ConfFile()
-                            .setRunCount(0)
-                            .setUuid(String.valueOf(System.currentTimeMillis()));
+            confFile = new ConfFile().setRunCount(0).setUuid(String.valueOf(System.currentTimeMillis()));
         }
         confFile.setRunCount(confFile.getRunCount() + 1);
         CommonUtils.OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
@@ -290,7 +263,6 @@ public class TouchHomeUtils {
     @Accessors(chain = true)
     private static class ConfFile {
         private String uuid;
-
         @JsonProperty("run_count")
         private int runCount;
     }

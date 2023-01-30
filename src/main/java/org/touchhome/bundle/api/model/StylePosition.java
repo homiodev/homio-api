@@ -3,7 +3,9 @@ package org.touchhome.bundle.api.model;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/** Uses for styling html input element position */
+/**
+ * Uses for styling html input element position
+ */
 @Getter
 @RequiredArgsConstructor
 public enum StylePosition implements KeyValueEnum {
@@ -19,6 +21,7 @@ public enum StylePosition implements KeyValueEnum {
     MiddleRight("Middle Right");
 
     private final String textValue;
+
 
     @Override
     public String getValue() {

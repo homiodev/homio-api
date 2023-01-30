@@ -1,10 +1,11 @@
 package org.touchhome.bundle.api.converter;
 
 import com.fazecast.jSerialComm.SerialPort;
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 @Log4j2
 @Converter(autoApply = true)

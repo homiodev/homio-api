@@ -43,8 +43,7 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
     }
 
     default T setStatus(@Nullable Status status, @Nullable String msg) {
-        EntityContextSetting.setStatus(
-                (BaseEntityIdentifier) this, DISTINGUISH_KEY, "Status", status, msg);
+        EntityContextSetting.setStatus((BaseEntityIdentifier) this, DISTINGUISH_KEY, "Status", status, msg);
         return (T) this;
     }
 

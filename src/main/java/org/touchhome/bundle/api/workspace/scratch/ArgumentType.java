@@ -1,23 +1,33 @@
 package org.touchhome.bundle.api.workspace.scratch;
 
 public enum ArgumentType {
-    /** Boolean value with hexagonal placeholder */
+    /**
+     * Boolean value with hexagonal placeholder
+     */
     Boolean,
 
-    /** Numeric value with color picker */
+    /**
+     * Numeric value with color picker
+     */
     color,
 
-    /** Numeric value with text field */
+    /**
+     * Numeric value with text field
+     */
     number,
 
-    /** String value with text field */
+    /**
+     * String value with text field
+     */
     string,
 
     reference,
 
     variable,
 
-    /** Boolean checkbox UI representation */
+    /**
+     * Boolean checkbox UI representation
+     */
     checkbox,
 
     icon,

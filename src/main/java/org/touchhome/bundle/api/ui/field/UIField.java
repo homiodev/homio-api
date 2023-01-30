@@ -9,16 +9,24 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIField {
 
-    /** Show field in context menu */
+    /**
+     * Show field in context menu
+     */
     boolean showInContextMenu() default false;
 
-    /** Hide field from edit mode */
+    /**
+     * Hide field from edit mode
+     */
     boolean hideInEdit() default false;
 
-    /** Hide field in view mode */
+    /**
+     * Hide field in view mode
+     */
     boolean hideInView() default false;
 
-    /** Disable editing but show in view/edit mode */
+    /**
+     * Disable editing but show in view/edit mode
+     */
     boolean disableEdit() default false;
 
     UIFieldType type() default UIFieldType.AutoDetect;
@@ -35,7 +43,9 @@ public @interface UIField {
 
     boolean copyButton() default false;
 
-    /** Show revert button to set initial value */
+    /**
+     * Show revert button to set initial value
+     */
     boolean isRevert() default false;
 
     boolean inlineEditWhenEmpty() default false;

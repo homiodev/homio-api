@@ -1,14 +1,15 @@
 package org.touchhome.bundle.api.state;
 
-import java.math.BigDecimal;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+
 @Log4j2
-public class DecimalType extends State implements Comparable<DecimalType> {
+public class DecimalType implements State, Comparable<DecimalType> {
 
     public static final DecimalType TRUE = new DecimalType(1);
     public static final DecimalType FALSE = new DecimalType(0);
@@ -16,9 +17,12 @@ public class DecimalType extends State implements Comparable<DecimalType> {
     public static final DecimalType ZERO = new DecimalType(0);
     public static final DecimalType HUNDRED = new DecimalType(100);
 
-    @Getter private final @NotNull BigDecimal value;
+    @Getter
+    private final @NotNull BigDecimal value;
 
-    @Getter @Setter private BigDecimal oldValue;
+    @Getter
+    @Setter
+    private BigDecimal oldValue;
 
     public DecimalType(Number value) {
         this.value = new BigDecimal(value.toString());

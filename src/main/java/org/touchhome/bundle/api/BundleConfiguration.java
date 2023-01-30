@@ -1,9 +1,12 @@
 package org.touchhome.bundle.api;
 
-import java.lang.annotation.*;
 import org.springframework.context.annotation.Configuration;
 
-/** Defines entry root for loading bundle spring context */
+import java.lang.annotation.*;
+
+/**
+ * Defines entry root for loading bundle spring context
+ */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited

@@ -1,16 +1,20 @@
 package org.touchhome.bundle.api.state;
 
-import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-public class StringType extends State {
+import java.util.Objects;
+
+public class StringType implements State {
     public static StringType EMPTY = new StringType("");
 
-    @Getter private final @NotNull String value;
+    @Getter
+    private final @NotNull String value;
 
-    @Getter @Setter private String oldValue;
+    @Getter
+    @Setter
+    private String oldValue;
 
     public StringType(String value) {
         this.value = value != null ? value : "";
@@ -58,5 +62,10 @@ public class StringType extends State {
     @Override
     public int hashCode() {
         return value.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return stringValue();
     }
 }

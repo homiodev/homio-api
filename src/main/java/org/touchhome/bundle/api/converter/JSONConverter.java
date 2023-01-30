@@ -1,8 +1,9 @@
 package org.touchhome.bundle.api.converter;
 
+import org.touchhome.bundle.api.model.JSON;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-import org.touchhome.bundle.api.model.JSON;
 
 @Converter(autoApply = true)
 public class JSONConverter implements AttributeConverter<JSON, String> {

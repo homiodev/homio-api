@@ -6,7 +6,8 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class FFMPEGBaseDevice {
 
-    @Setter private String name;
+    @Setter
+    private String name;
 
     @Override
     public String toString() {

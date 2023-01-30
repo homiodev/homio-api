@@ -1,16 +1,18 @@
 package org.touchhome.bundle.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
-import java.util.Set;
-import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
+import org.json.JSONObject;
 import org.touchhome.bundle.api.converter.JSONConverter;
 import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.ui.field.UIField;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
+
+import javax.persistence.*;
+import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter

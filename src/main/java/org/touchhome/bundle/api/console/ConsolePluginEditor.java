@@ -1,7 +1,5 @@
 package org.touchhome.bundle.api.console;
 
-import static org.touchhome.common.util.CommonUtils.OBJECT_MAPPER;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +11,8 @@ import org.touchhome.bundle.api.model.FileContentType;
 import org.touchhome.bundle.api.model.FileModel;
 import org.touchhome.bundle.api.setting.console.header.ConsoleHeaderSettingPlugin;
 
+import static org.touchhome.common.util.CommonUtils.OBJECT_MAPPER;
+
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 
     @Override
@@ -23,10 +23,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
     ActionResponseModel save(FileModel content);
 
     default void sendValueToConsoleEditor(EntityContext entityContext) {
-        entityContext
-                .ui()
-                .sendNotification(
-                        "-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
+        entityContext.ui().sendNotification("-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
     }
 
     default MonacoGlyphAction getGlyphAction() {
@@ -43,15 +40,14 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 
     FileContentType getContentType();
 
-    /** Uses for uploading files. If null - no upload button visible */
+    /**
+     * Uses for uploading files. If null - no upload button visible
+     */
     String accept();
 
     @Override
     default JSONObject getOptions() {
-        return new JSONObject()
-                .put("contentType", getContentType())
-                .put("accept", accept())
-                .putOpt("glyph", getGlyphAction());
+        return new JSONObject().put("contentType", getContentType()).put("accept", accept()).putOpt("glyph", getGlyphAction());
     }
 
     default Class<? extends ConsoleHeaderSettingPlugin<?>> getFileNameHeaderAction() {

@@ -1,14 +1,18 @@
 package org.touchhome.bundle.api.state;
 
-import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
-public class ObjectType extends State {
+import java.util.Objects;
 
-    @Getter private final Object value;
+public class ObjectType implements State {
 
-    @Getter @Setter private Object oldValue;
+    @Getter
+    private final Object value;
+
+    @Getter
+    @Setter
+    private Object oldValue;
 
     public ObjectType(Object value) {
         this.value = value;
@@ -37,6 +41,11 @@ public class ObjectType extends State {
     @Override
     public String stringValue() {
         return value == null ? "" : value.toString();
+    }
+
+    @Override
+    public String toString() {
+        return stringValue();
     }
 
     @Override

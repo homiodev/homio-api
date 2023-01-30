@@ -1,11 +1,12 @@
 package org.touchhome.bundle.api.setting;
 
+import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 public interface SettingPluginTextSet extends SettingPlugin<Set<String>> {
 
@@ -27,9 +28,7 @@ public interface SettingPluginTextSet extends SettingPlugin<Set<String>> {
 
     @Override
     default Set<String> parseValue(EntityContext entityContext, String value) {
-        return value == null
-                ? Collections.emptySet()
-                : Stream.of(value.split("~~~")).collect(Collectors.toSet());
+        return value == null ? Collections.emptySet() : Stream.of(value.split("~~~")).collect(Collectors.toSet());
     }
 
     @Override

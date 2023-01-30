@@ -1,22 +1,19 @@
 package org.touchhome.bundle.api.entity.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import javax.persistence.Entity;
 import org.touchhome.bundle.api.entity.DeviceBaseEntity;
 import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.ui.UISidebarMenu;
 import org.touchhome.bundle.api.ui.field.UIFieldIgnore;
 
-/** Common class for entities which respond for communications. i.e. telegram */
+import javax.persistence.Entity;
+
+/**
+ * Common class for entities which respond for communications. i.e. telegram
+ */
 @Entity
-@UISidebarMenu(
-        icon = "fab fa-facebook-messenger",
-        order = 200,
-        bg = "#A16427",
-        allowCreateNewItems = true,
-        overridePath = "comm")
-public abstract class CommunicationEntity<T extends CommunicationEntity>
-        extends DeviceBaseEntity<T> {
+@UISidebarMenu(icon = "fab fa-facebook-messenger", order = 200, bg = "#A16427", allowCreateNewItems = true, overridePath = "comm")
+public abstract class CommunicationEntity<T extends CommunicationEntity> extends DeviceBaseEntity<T> {
 
     @Override
     @JsonIgnore

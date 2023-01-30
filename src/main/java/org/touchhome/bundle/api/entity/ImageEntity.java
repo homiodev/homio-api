@@ -1,15 +1,16 @@
 package org.touchhome.bundle.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.regex.Pattern;
-import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.touchhome.common.util.CommonUtils;
+
+import javax.persistence.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 @Entity
 @Getter
@@ -17,7 +18,8 @@ import org.touchhome.common.util.CommonUtils;
 public final class ImageEntity extends BaseEntity<ImageEntity> {
 
     private static final Pattern TRANSLATE = Pattern.compile(".*translate(\\d+,\\d+)");
-    @Column private String path;
+    @Column
+    private String path;
 
     @Column(nullable = false)
     private Integer originalWidth;
@@ -28,7 +30,8 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     @Column(nullable = false)
     private String color;
 
-    @Column private String fileSystem;
+    @Column
+    private String fileSystem;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -66,9 +69,7 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     }
 
     public String getMimeType() {
-        return getEntityID().length() > 3
-                ? ("image/" + getEntityID().substring(getEntityID().length() - 3))
-                : "";
+        return getEntityID().length() > 3 ? ("image/" + getEntityID().substring(getEntityID().length() - 3)) : "";
     }
 
     @Override
@@ -117,14 +118,10 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     }*/
 
     public enum ImageType {
-        PNG,
-        SVG
+        PNG, SVG
     }
 
     public enum UserType {
-        OutputType,
-        InputType,
-        CommonType,
-        WidgetTemplate
+        OutputType, InputType, CommonType, WidgetTemplate
     }
 }

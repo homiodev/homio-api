@@ -1,10 +1,16 @@
 package org.touchhome.bundle.api.port;
 
 public enum PortFlowControl {
-    /** No flow control */
+    /**
+     * No flow control
+     */
     FLOWCONTROL_OUT_NONE,
-    /** XOn / XOff (software) flow control */
+    /**
+     * XOn / XOff (software) flow control
+     */
     FLOWCONTROL_OUT_XONOFF,
-    /** RTS / CTS (hardware) flow control */
+    /**
+     * RTS / CTS (hardware) flow control
+     */
     FLOWCONTROL_OUT_RTSCTS
 }

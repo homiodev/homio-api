@@ -1,11 +1,12 @@
 package org.touchhome.bundle.api.converter;
 
-import java.util.Map;
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.touchhome.bundle.api.EntityContext;
+
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
+import java.util.Map;
 
 @Log4j2
 @Converter
@@ -21,9 +22,7 @@ public class JsonBeanConverter implements AttributeConverter<Object, String> {
         }
         return entityContext.getBeansOfTypeWithBeanName(provider.getClass()).entrySet().stream()
                 .filter(e -> e.getValue().getClass().equals(provider.getClass()))
-                .map(Map.Entry::getKey)
-                .findAny()
-                .orElse(null);
+                .map(Map.Entry::getKey).findAny().orElse(null);
     }
 
     @Override

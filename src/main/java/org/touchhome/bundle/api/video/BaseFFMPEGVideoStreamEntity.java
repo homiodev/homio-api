@@ -2,10 +2,6 @@ package org.touchhome.bundle.api.video;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
@@ -30,14 +26,20 @@ import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.common.exception.NotFoundException;
 import org.touchhome.common.exception.ServerException;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 @Log4j2
-public abstract class BaseFFMPEGVideoStreamEntity<
-                T extends BaseFFMPEGVideoStreamEntity, S extends BaseVideoService<T>>
+public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStreamEntity, S extends BaseVideoService<T>>
         extends BaseVideoStreamEntity<T> implements EntityService<S, T> {
 
     /**
-     * Ignore set status because for stream we always create service. Actual status is
-     * 'StreamService'
+     * Ignore set status because for stream we always create service. Actual status is 'StreamService'
      */
     @Override
     public T setStatus(@Nullable Status status, @Nullable String msg) {
@@ -92,56 +94,34 @@ public abstract class BaseFFMPEGVideoStreamEntity<
         return this;
     }
 
-    @UIContextMenuAction(
-            value = "VIDEO.RECORD_MP4",
-            icon = "fas fa-file-video",
-            inputs = {
-                @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
-                @UIActionInput(
-                        name = "secondsToRecord",
-                        type = UIActionInput.Type.number,
-                        value = "10",
-                        min = 5,
-                        max = 100)
-            })
+    @UIContextMenuAction(value = "VIDEO.RECORD_MP4", icon = "fas fa-file-video", inputs = {
+            @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
+            @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "10", min = 5, max = 100)
+    })
     public ActionResponseModel recordMP4(JSONObject params) {
         S service = getService();
-        Path filePath =
-                buildFilePathForRecord(
-                        service.getFfmpegMP4OutputPath(), params.getString("fileName"), ".mp4");
+        Path filePath = buildFilePathForRecord(service.getFfmpegMP4OutputPath(), params.getString("fileName"), ".mp4");
         int secondsToRecord = params.getInt("secondsToRecord");
-        log.debug(
-                "[{}]: Recording {}.mp4 for {} seconds.", getEntityID(), filePath, secondsToRecord);
+        log.debug("[{}]: Recording {}.mp4 for {} seconds.", getEntityID(), filePath, secondsToRecord);
         service.recordMp4(filePath, null, secondsToRecord);
         return ActionResponseModel.showSuccess("SUCCESS");
     }
 
-    @UIContextMenuAction(
-            value = "VIDEO.RECORD_GIF",
-            icon = "fas fa-magic",
-            inputs = {
-                @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
-                @UIActionInput(
-                        name = "secondsToRecord",
-                        type = UIActionInput.Type.number,
-                        value = "3",
-                        min = 1,
-                        max = 10)
-            })
+    @UIContextMenuAction(value = "VIDEO.RECORD_GIF", icon = "fas fa-magic", inputs = {
+            @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
+            @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "3", min = 1, max = 10)
+    })
     public ActionResponseModel recordGif(JSONObject params) {
         S service = getService();
-        Path filePath =
-                buildFilePathForRecord(
-                        service.getFfmpegGifOutputPath(), params.getString("fileName"), ".gif");
+        Path filePath = buildFilePathForRecord(service.getFfmpegGifOutputPath(), params.getString("fileName"), ".gif");
         int secondsToRecord = params.getInt("secondsToRecord");
-        log.debug(
-                "[{}]: Recording {}.gif for {} seconds.", getEntityID(), filePath, secondsToRecord);
+        log.debug("[{}]: Recording {}.gif for {} seconds.", getEntityID(), filePath, secondsToRecord);
         service.recordGif(filePath, null, secondsToRecord);
         return ActionResponseModel.showSuccess("SUCCESS");
     }
 
     @UIField(order = 200, hideInEdit = true)
-    @UIFieldCodeEditor(editorType = UIFieldCodeEditor.CodeEditorType.json, autoFormat = true)
+    @UIFieldCodeEditor(editorType = MonacoLanguage.Json, autoFormat = true)
     public Map<String, State> getAttributes() {
         return optService().map(s -> s.getAttributes()).orElse(null);
     }
@@ -175,9 +155,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @UIField(order = 500, hideInEdit = true)
     @UIFieldImage
-    @UIActionButton(
-            name = "refresh",
-            icon = "fas fa-sync",
+    @UIActionButton(name = "refresh", icon = "fas fa-sync",
             actionHandler = BaseVideoStreamEntity.UpdateSnapshotActionHandler.class)
     public byte[] getLastSnapshot() {
         return optService().map(s -> s.getLatestSnapshot()).orElse(null);
@@ -306,54 +284,39 @@ public abstract class BaseFFMPEGVideoStreamEntity<
         setMjpegOutOptions("-q:v 5~~~-r 2~~~-vf scale=640:-2~~~-update 1");
         setSnapshotOutOptions("-vsync vfr~~~-q:v 2~~~-update 1~~~-frames:v 1");
         setGifOutOptions(
-                "-r 2~~~-filter_complex scale=-2:360:flags=lanczos,setpts=0.5*PTS,split[o1][o2];[o1]palettegen[p];[o2]fifo[o3];"
-                        + "[o3][p]paletteuse");
+                "-r 2~~~-filter_complex scale=-2:360:flags=lanczos,setpts=0.5*PTS,split[o1][o2];[o1]palettegen[p];[o2]fifo[o3];" +
+                        "[o3][p]paletteuse");
         setServerPort(BaseVideoService.findFreeBootstrapServerPort());
     }
 
     @JsonIgnore
     public String getHlsStreamUrl() {
-        return "http://"
-                + TouchHomeUtils.MACHINE_IP_ADDRESS
-                + ":"
-                + getService().getServerPort()
-                + "/ipvideo.m3u8";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+                "/ipvideo.m3u8";
     }
 
     @JsonIgnore
     public String getSnapshotsMjpegUrl() {
-        return "http://"
-                + TouchHomeUtils.MACHINE_IP_ADDRESS
-                + ":"
-                + getService().getServerPort()
-                + "/snapshots.mjpeg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+                "/snapshots.mjpeg";
     }
 
     @JsonIgnore
     public String getAutofpsMjpegUrl() {
-        return "http://"
-                + TouchHomeUtils.MACHINE_IP_ADDRESS
-                + ":"
-                + getService().getServerPort()
-                + "/autofps.mjpeg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+                "/autofps.mjpeg";
     }
 
     @JsonIgnore
     public String getImageUrl() {
-        return "http://"
-                + TouchHomeUtils.MACHINE_IP_ADDRESS
-                + ":"
-                + getService().getServerPort()
-                + "/ipvideo.jpg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+                "/ipvideo.jpg";
     }
 
     @JsonIgnore
     public String getIpVideoMjpeg() {
-        return "http://"
-                + TouchHomeUtils.MACHINE_IP_ADDRESS
-                + ":"
-                + getService().getServerPort()
-                + "/ipvideo.mjpeg";
+        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+                "/ipvideo.mjpeg";
     }
 
     @Override

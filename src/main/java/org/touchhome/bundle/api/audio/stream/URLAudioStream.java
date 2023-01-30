@@ -1,5 +1,13 @@
 package org.touchhome.bundle.api.audio.stream;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
+import org.touchhome.bundle.api.audio.AudioFormat;
+import org.touchhome.bundle.api.audio.AudioStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,13 +20,6 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
-import org.touchhome.bundle.api.audio.AudioFormat;
-import org.touchhome.bundle.api.audio.AudioStream;
 
 @Log4j2
 public class URLAudioStream extends AudioStream {
@@ -28,27 +29,25 @@ public class URLAudioStream extends AudioStream {
     private static final Pattern PLS_STREAM_PATTERN = Pattern.compile("^File[0-9]=(.+)$");
     private final AudioFormat audioFormat;
     private final InputStream inputStream;
-    @Getter private String url;
+    @Getter
+    private String url;
 
-    private @Nullable Socket shoutCastSocket;
+    private @Nullable
+    Socket shoutCastSocket;
 
     public URLAudioStream(String url) throws Exception {
         this.url = url;
-        this.audioFormat =
-                new AudioFormat(
-                        AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_MP3, false, 16, null, null);
+        this.audioFormat = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_MP3, false, 16, null, null);
         this.inputStream = createInputStream();
     }
 
     private InputStream createInputStream() throws Exception {
         final String filename = url.toLowerCase();
-        final String extension =
-                StringUtils.defaultString(FilenameUtils.getExtension(filename), "");
+        final String extension = StringUtils.defaultString(FilenameUtils.getExtension(filename), "");
         try {
             switch (extension) {
                 case M3U_EXTENSION:
-                    try (Scanner scanner =
-                            new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
+                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
                         while (true) {
                             String line = scanner.nextLine();
                             if (!line.isEmpty() && !line.startsWith("#")) {
@@ -61,8 +60,7 @@ public class URLAudioStream extends AudioStream {
                     }
                     break;
                 case PLS_EXTENSION:
-                    try (Scanner scanner =
-                            new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
+                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
                         while (true) {
                             String line = scanner.nextLine();
                             if (!line.isEmpty() && line.startsWith("File")) {
@@ -91,10 +89,8 @@ public class URLAudioStream extends AudioStream {
 
                 OutputStream os = socket.getOutputStream();
                 String userAgent = "WinampMPEG/5.09";
-                String req =
-                        "GET / HTTP/1.0\r\nuser-agent: "
-                                + userAgent
-                                + "\r\nIcy-MetaData: 1\r\nConnection: keep-alive\r\n\r\n";
+                String req = "GET / HTTP/1.0\r\nuser-agent: " + userAgent
+                        + "\r\nIcy-MetaData: 1\r\nConnection: keep-alive\r\n\r\n";
                 os.write(req.getBytes());
                 return socket.getInputStream();
             } else {

@@ -1,13 +1,6 @@
 package org.touchhome.bundle.api.workspace.scratch;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +9,19 @@ import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.model.KeyValueEnum;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Getter
 @RequiredArgsConstructor
 public abstract class MenuBlock {
-    @JsonIgnore private final String name;
+    @JsonIgnore
+    private final String name;
 
     protected boolean multiSelect;
     protected String uiDelimiter;
@@ -32,33 +34,19 @@ public abstract class MenuBlock {
         private final boolean acceptReporters = true;
         private final boolean async = true;
         private final MenuBlockFunction items;
-        @JsonIgnore private final Integer[] clusters;
+        @JsonIgnore
+        private final Integer[] clusters;
         private final boolean require;
 
-        ServerMenuBlock(
-                String name,
-                String url,
-                String keyName,
-                String valueName,
-                String firstKey,
-                String firstValue,
-                Integer[] clusters,
-                boolean require) {
+        ServerMenuBlock(String name, String url, String keyName, String valueName, String firstKey, String firstValue,
+                        Integer[] clusters, boolean require) {
             super(name);
             this.clusters = clusters;
             this.require = require;
-            this.items =
-                    new MenuBlockFunction(
-                            url, keyName, valueName, new String[] {firstKey, firstValue});
+            this.items = new MenuBlockFunction(url, keyName, valueName, new String[]{firstKey, firstValue});
         }
 
-        ServerMenuBlock(
-                String name,
-                String url,
-                String firstKey,
-                String firstValue,
-                Integer[] clusters,
-                boolean require) {
+        ServerMenuBlock(String name, String url, String firstKey, String firstValue, Integer[] clusters, boolean require) {
             this(name, url, null, null, firstKey, firstValue, clusters, require);
         }
 
@@ -81,8 +69,7 @@ public abstract class MenuBlock {
         }
 
         public ServerMenuBlock setDependency(MenuBlock... dependencies) {
-            this.items.dependencies =
-                    Stream.of(dependencies).map(MenuBlock::getName).collect(Collectors.toList());
+            this.items.dependencies = Stream.of(dependencies).map(MenuBlock::getName).collect(Collectors.toList());
             return this;
         }
 
@@ -112,7 +99,8 @@ public abstract class MenuBlock {
         private final boolean acceptReporters = true;
         private final List<StaticMenuItem> items = new ArrayList<>();
         private Map<String, List> subMenu;
-        @Setter private Object defaultValue;
+        @Setter
+        private Object defaultValue;
         private final Class<T> typeClass;
 
         StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
@@ -163,11 +151,8 @@ public abstract class MenuBlock {
             if (this.subMenu == null) {
                 this.subMenu = new HashMap<>();
             }
-            this.subMenu.put(
-                    key.name(),
-                    Stream.of(subMenu.getEnumConstants())
-                            .map(Enum::name)
-                            .collect(Collectors.toList()));
+            this.subMenu.put(key.name(), Stream.of(subMenu.getEnumConstants()).map(Enum::name).collect(Collectors.toList()));
+
         }
 
         public String getFirstValue() {

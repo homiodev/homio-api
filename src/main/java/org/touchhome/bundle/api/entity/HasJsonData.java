@@ -1,11 +1,6 @@
 package org.touchhome.bundle.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -14,11 +9,17 @@ import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.util.SecureString;
 import org.touchhome.common.util.CommonUtils;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public interface HasJsonData {
 
     @JsonIgnore
-    @NotNull
-    JSON getJsonData();
+    @NotNull JSON getJsonData();
 
     default <P> void setJsonData(@NotNull String key, @Nullable P value) {
         getJsonData().put(key, value);
@@ -40,8 +41,7 @@ public interface HasJsonData {
         return null;
     }
 
-    default <E extends Enum> @NotNull E getJsonDataEnum(
-            @NotNull String key, @NotNull E defaultValue) {
+    default <E extends Enum> @NotNull E getJsonDataEnum(@NotNull String key, @NotNull E defaultValue) {
         String jsonData = getJsonData(key);
 
         E[] enumConstants = (E[]) defaultValue.getDeclaringClass().getEnumConstants();
@@ -81,8 +81,7 @@ public interface HasJsonData {
         return getJsonDataStream(key, delimiter).collect(Collectors.toSet());
     }
 
-    default @NotNull Stream<String> getJsonDataStream(
-            @NotNull String key, @NotNull String delimiter) {
+    default @NotNull Stream<String> getJsonDataStream(@NotNull String key, @NotNull String delimiter) {
         return Stream.of(getJsonData().optString(key, "").split(delimiter))
                 .filter(StringUtils::isNotEmpty);
     }

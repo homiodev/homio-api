@@ -1,38 +1,38 @@
 package org.touchhome.bundle.api.workspace.scratch;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.touchhome.bundle.api.state.State;
+import org.touchhome.bundle.api.workspace.WorkspaceBlock;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
-import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
-import org.touchhome.bundle.api.state.State;
-import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
     public static final String CONDITION = "CONDITION";
     Object text;
-    @JsonIgnore private final int order;
+    @JsonIgnore
+    private final int order;
     private final String opcode;
     private final BlockType blockType;
     private final Map<String, ArgumentTypeDescription> arguments = new HashMap<>();
-    @JsonIgnore private final Scratch3BlockHandler handler;
-    @JsonIgnore private final Scratch3BlockEvaluateHandler evaluateHandler;
-    @JsonIgnore private int spaceCount = 0;
+    @JsonIgnore
+    private final Scratch3BlockHandler handler;
+    @JsonIgnore
+    private final Scratch3BlockEvaluateHandler evaluateHandler;
+    @JsonIgnore
+    private int spaceCount = 0;
 
     private Scratch3Color scratch3Color;
 
-    protected Scratch3Block(
-            int order,
-            String opcode,
-            BlockType blockType,
-            Object text,
-            Scratch3BlockHandler handler,
-            Scratch3BlockEvaluateHandler evaluateHandler) {
+    protected Scratch3Block(int order, String opcode, BlockType blockType, Object text, Scratch3BlockHandler handler,
+                            Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
         this.opcode = opcode;
         this.blockType = blockType;
@@ -49,7 +49,9 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return addArgument(argumentName, ArgumentType.checkbox, Boolean.toString(defaultValue));
     }
 
-    /** Add argument with type string and default empty value */
+    /**
+     * Add argument with type string and default empty value
+     */
     public ArgumentTypeDescription addArgument(String argumentName) {
         return addArgument(argumentName, "");
     }
@@ -70,17 +72,14 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 
-    public ArgumentTypeDescription addArgument(
-            String argumentName, ArgumentType type, String defaultValue) {
-        ArgumentTypeDescription argumentTypeDescription =
-                new ArgumentTypeDescription(type, defaultValue, null);
+    public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type, String defaultValue) {
+        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(type, defaultValue, null);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;
     }
 
     public ArgumentTypeDescription addArgument(String argumentName, MenuBlock menu) {
-        ArgumentTypeDescription argumentTypeDescription =
-                new ArgumentTypeDescription(ArgumentType.string, menu);
+        ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(ArgumentType.string, menu);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;
     }
@@ -139,7 +138,8 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         private final String defaultValue;
         private final String menu;
 
-        @JsonIgnore private final MenuBlock menuBlock;
+        @JsonIgnore
+        private final MenuBlock menuBlock;
 
         ArgumentTypeDescription(ArgumentType type, String defaultValue, MenuBlock menuBlock) {
             this.type = type;
@@ -166,9 +166,7 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
             }
             if (menuBlock != null) {
                 Object defaultValue = menuBlock.getDefaultValue();
-                return defaultValue instanceof Enum
-                        ? ((Enum) defaultValue).name()
-                        : defaultValue.toString();
+                return defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
             }
             return null;
         }

@@ -19,6 +19,7 @@ public interface UIFlexLayoutBuilder extends UILayoutBuilder {
             removeStyle("border");
         } else {
             appendStyle("border", "1px solid " + borderColor);
+            setTitle(getTitle(), borderColor);
         }
         return this;
     }
@@ -33,7 +34,13 @@ public interface UIFlexLayoutBuilder extends UILayoutBuilder {
         return this;
     }
 
-    UIFlexLayoutBuilder setTitle(String title);
+    default UIFlexLayoutBuilder setTitle(String title) {
+        return setTitle(title, null);
+    }
+
+    UIFlexLayoutBuilder setTitle(String title, @Nullable String color);
+
+    String getTitle();
 
     default UIFlexLayoutBuilder setBackgroundColor(String backgroundColor) {
         appendStyle("background", backgroundColor);

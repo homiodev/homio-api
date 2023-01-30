@@ -1,12 +1,13 @@
 package org.touchhome.bundle.api.setting;
 
+import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.ui.field.UIFieldType;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.bundle.api.ui.field.UIFieldType;
 
 public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
 

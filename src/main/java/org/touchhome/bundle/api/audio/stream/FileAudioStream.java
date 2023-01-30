@@ -1,10 +1,11 @@
 package org.touchhome.bundle.api.audio.stream;
 
-import java.io.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.bundle.api.audio.AudioFormat;
 import org.touchhome.common.exception.NotFoundException;
+
+import java.io.*;
 
 public class FileAudioStream extends FixedLengthAudioStream {
 
@@ -31,16 +32,10 @@ public class FileAudioStream extends FixedLengthAudioStream {
 
     private static AudioFormat getAudioFormat(File file) {
         final String filename = file.getName().toLowerCase();
-        final String extension =
-                StringUtils.defaultString(FilenameUtils.getExtension(filename), "");
+        final String extension = StringUtils.defaultString(FilenameUtils.getExtension(filename), "");
         switch (extension) {
             case WAV_EXTENSION:
-                return new AudioFormat(
-                        AudioFormat.CONTAINER_WAVE,
-                        AudioFormat.CODEC_PCM_SIGNED,
-                        false,
-                        16,
-                        705600,
+                return new AudioFormat(AudioFormat.CONTAINER_WAVE, AudioFormat.CODEC_PCM_SIGNED, false, 16, 705600,
                         44100L);
             case MP3_EXTENSION:
                 return AudioFormat.MP3;

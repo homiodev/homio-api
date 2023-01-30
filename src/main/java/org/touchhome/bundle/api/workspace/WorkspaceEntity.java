@@ -1,19 +1,20 @@
 package org.touchhome.bundle.api.workspace;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
 import org.touchhome.bundle.api.entity.BaseEntity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Lob;
 
 @Getter
 @Setter
 @Entity
 @Accessors(chain = true)
-public final class WorkspaceEntity extends BaseEntity<WorkspaceEntity>
-        implements Comparable<WorkspaceEntity> {
+public final class WorkspaceEntity extends BaseEntity<WorkspaceEntity> {
 
     public static final String PREFIX = "ws_";
 
@@ -22,7 +23,7 @@ public final class WorkspaceEntity extends BaseEntity<WorkspaceEntity>
     private String content;
 
     @Override
-    public int compareTo(WorkspaceEntity o) {
+    public int compareTo(@NotNull BaseEntity o) {
         return this.getCreationTime().compareTo(o.getCreationTime());
     }
 

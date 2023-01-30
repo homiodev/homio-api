@@ -1,7 +1,8 @@
 package org.touchhome.bundle.api.ui.field.action;
 
-import java.lang.annotation.*;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
+
+import java.lang.annotation.*;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

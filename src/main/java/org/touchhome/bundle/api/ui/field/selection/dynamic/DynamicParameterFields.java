@@ -1,6 +1,8 @@
 package org.touchhome.bundle.api.ui.field.selection.dynamic;
 
-/** Marker interface for dynamic inner fields */
+/**
+ * Marker interface for dynamic inner fields
+ */
 public interface DynamicParameterFields {
 
     default String getGroupName() {

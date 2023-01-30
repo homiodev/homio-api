@@ -1,9 +1,6 @@
 package org.touchhome.bundle.api.setting;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +10,10 @@ import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.common.model.ProgressBar;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPluginPackageInstall extends SettingPluginButton {
@@ -41,13 +42,9 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
 
     PackageContext installedPackages(EntityContext entityContext) throws Exception;
 
-    void installPackage(
-            EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar)
-            throws Exception;
+    void installPackage(EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
 
-    void unInstallPackage(
-            EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar)
-            throws Exception;
+    void unInstallPackage(EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
 
     @Getter
     @Setter

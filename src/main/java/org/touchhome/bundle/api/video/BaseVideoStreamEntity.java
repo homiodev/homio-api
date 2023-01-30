@@ -1,10 +1,6 @@
 package org.touchhome.bundle.api.video;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Collection;
-import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
@@ -23,19 +19,19 @@ import org.touchhome.bundle.api.ui.field.action.HasDynamicContextMenuActions;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.touchhome.bundle.api.ui.field.color.UIFieldColorStatusMatch;
 
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import java.util.Collection;
+
 @Setter
 @Getter
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@UISidebarMenu(
-        icon = "fas fa-video",
-        order = 1,
-        parent = UISidebarMenu.TopSidebarMenu.MEDIA,
-        bg = "#5950A7",
-        allowCreateNewItems = true,
-        overridePath = "vstreams")
-public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity>
-        extends DeviceBaseEntity<T> implements HasDynamicContextMenuActions {
+@UISidebarMenu(icon = "fas fa-video", order = 1, parent = UISidebarMenu.TopSidebarMenu.MEDIA,
+        bg = "#5950A7", allowCreateNewItems = true, overridePath = "vstreams")
+public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> extends DeviceBaseEntity<T>
+        implements HasDynamicContextMenuActions {
 
     @UIField(order = 300, hideInView = true)
     public boolean isHasAudioStream() {

@@ -1,11 +1,6 @@
 package org.touchhome.bundle.api.console;
 
 import com.pivovarit.function.ThrowingSupplier;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,11 +9,18 @@ import org.springframework.stereotype.Component;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.ui.UI;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
-    @Getter private final EntityContext entityContext;
+    @Getter
+    private final EntityContext entityContext;
     private final List<ConsolePluginComplexLines.ComplexString> values = new ArrayList<>();
 
     @Override
@@ -38,26 +40,19 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
     public void add(String value, boolean error) {
         ComplexString complexString =
-                ComplexString.of(
-                        value,
-                        System.currentTimeMillis(),
-                        error ? UI.Color.PRIMARY_COLOR : null,
-                        null);
+                ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
         values.add(complexString);
         entityContext.ui().sendNotification("-lines-icl", complexString.toString());
     }
 
     @SneakyThrows
-    public <T> T consoleLogUsingStdout(
-            ThrowingSupplier<T, Exception> throwingRunnable, Runnable finallyBlock) {
+    public <T> T consoleLogUsingStdout(ThrowingSupplier<T, Exception> throwingRunnable, Runnable finallyBlock) {
         this.clear();
         PrintStream savedOutStream = System.out;
         PrintStream savedErrStream = System.out;
 
-        TeeOutputStream outOutputStream =
-                new TeeOutputStream(savedOutStream, new StdoutOutputStream(false));
-        TeeOutputStream errorOutputStream =
-                new TeeOutputStream(savedErrStream, new StdoutOutputStream(true));
+        TeeOutputStream outOutputStream = new TeeOutputStream(savedOutStream, new StdoutOutputStream(false));
+        TeeOutputStream errorOutputStream = new TeeOutputStream(savedErrStream, new StdoutOutputStream(true));
 
         try {
             System.setOut(new PrintStream(outOutputStream, true));

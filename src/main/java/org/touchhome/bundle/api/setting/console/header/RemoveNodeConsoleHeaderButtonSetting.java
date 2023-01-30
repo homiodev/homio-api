@@ -1,8 +1,5 @@
 package org.touchhome.bundle.api.setting.console.header;
 
-import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
-import static org.touchhome.common.util.CommonUtils.OBJECT_MAPPER;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -13,11 +10,15 @@ import org.touchhome.bundle.api.setting.SettingPlugin;
 import org.touchhome.bundle.api.ui.UI;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 
-/** 'Remove button' console header button for tree/table console blocks. */
-public class RemoveNodeConsoleHeaderButtonSetting
-        implements ConsoleHeaderSettingPlugin<
-                        RemoveNodeConsoleHeaderButtonSetting.NodeRemoveRequest>,
-                SettingPlugin<RemoveNodeConsoleHeaderButtonSetting.NodeRemoveRequest> {
+import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
+import static org.touchhome.common.util.CommonUtils.OBJECT_MAPPER;
+
+/**
+ * 'Remove button' console header button for tree/table console blocks.
+ */
+public class RemoveNodeConsoleHeaderButtonSetting implements
+        ConsoleHeaderSettingPlugin<RemoveNodeConsoleHeaderButtonSetting.NodeRemoveRequest>,
+        SettingPlugin<RemoveNodeConsoleHeaderButtonSetting.NodeRemoveRequest> {
 
     @Override
     public String getIcon() {
@@ -59,9 +60,7 @@ public class RemoveNodeConsoleHeaderButtonSetting
     @Override
     @SneakyThrows
     public NodeRemoveRequest parseValue(EntityContext entityContext, String value) {
-        return StringUtils.isEmpty(value)
-                ? null
-                : OBJECT_MAPPER.readValue(value, NodeRemoveRequest.class);
+        return StringUtils.isEmpty(value) ? null : OBJECT_MAPPER.readValue(value, NodeRemoveRequest.class);
     }
 
     @Override

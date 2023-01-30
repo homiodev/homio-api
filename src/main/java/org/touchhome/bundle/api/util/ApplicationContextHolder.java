@@ -4,7 +4,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-/** Try not use this */
+/**
+ * Try not use this
+ */
 @Deprecated
 public class ApplicationContextHolder implements ApplicationContextAware {
 

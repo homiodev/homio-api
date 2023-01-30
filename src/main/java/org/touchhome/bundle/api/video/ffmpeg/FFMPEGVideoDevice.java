@@ -1,9 +1,10 @@
 package org.touchhome.bundle.api.video.ffmpeg;
 
+import lombok.experimental.Accessors;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.experimental.Accessors;
 
 @Accessors(chain = true)
 public class FFMPEGVideoDevice extends FFMPEGBaseDevice {

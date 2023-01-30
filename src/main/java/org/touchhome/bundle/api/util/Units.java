@@ -1,15 +1,5 @@
 package org.touchhome.bundle.api.util;
 
-import static tech.units.indriya.AbstractUnit.ONE;
-import static tech.units.indriya.unit.Units.*;
-
-import java.math.BigInteger;
-import java.util.Set;
-import javax.measure.MetricPrefix;
-import javax.measure.Quantity;
-import javax.measure.Unit;
-import javax.measure.quantity.*;
-import javax.measure.spi.SystemOfUnits;
 import org.jetbrains.annotations.Nullable;
 import tech.units.indriya.AbstractSystemOfUnits;
 import tech.units.indriya.AbstractUnit;
@@ -18,13 +8,28 @@ import tech.units.indriya.function.LogConverter;
 import tech.units.indriya.function.MultiplyConverter;
 import tech.units.indriya.unit.*;
 
-interface DataAmount extends Quantity<DataAmount> {}
+import javax.measure.MetricPrefix;
+import javax.measure.Quantity;
+import javax.measure.Unit;
+import javax.measure.quantity.*;
+import javax.measure.spi.SystemOfUnits;
+import java.math.BigInteger;
+import java.util.Set;
 
-interface DataTransferRate extends Quantity<DataTransferRate> {}
+import static tech.units.indriya.AbstractUnit.ONE;
+import static tech.units.indriya.unit.Units.*;
 
-interface Density extends Quantity<Density> {}
+interface DataAmount extends Quantity<DataAmount> {
+}
 
-interface VolumetricFlowRate extends Quantity<VolumetricFlowRate> {}
+interface DataTransferRate extends Quantity<DataTransferRate> {
+}
+
+interface Density extends Quantity<Density> {
+}
+
+interface VolumetricFlowRate extends Quantity<VolumetricFlowRate> {
+}
 
 public final class Units extends AbstractSystemOfUnits {
     public static final Unit<Acceleration> STANDARD_GRAVITY;
@@ -50,68 +55,28 @@ public final class Units extends AbstractSystemOfUnits {
     private static final Units INSTANCE = new Units();
 
     static {
-        MILLI_VOLT =
-                addUnit(
-                        new TransformedUnit(
-                                "mV",
-                                tech.units.indriya.unit.Units.VOLT,
-                                MultiplyConverter.of(1000)));
+        MILLI_VOLT = addUnit(new TransformedUnit("mV", tech.units.indriya.unit.Units.VOLT, MultiplyConverter.of(1000)));
         STANDARD_GRAVITY = addUnit(METRE_PER_SQUARE_SECOND.multiply(9.80665));
-        DEGREE_ANGLE =
-                addUnit(
-                        new TransformedUnit(
-                                "deg",
-                                tech.units.indriya.unit.Units.RADIAN,
-                                MultiplyConverter.ofPiExponent(1)
-                                        .concatenate(MultiplyConverter.ofRational(1L, 180L))));
-        KILOGRAM_PER_CUBICMETRE =
-                addUnit(
-                        new ProductUnit(
-                                tech.units.indriya.unit.Units.KILOGRAM.divide(
-                                        tech.units.indriya.unit.Units.CUBIC_METRE)));
-        MICROGRAM_PER_CUBICMETRE =
-                addUnit(
-                        new TransformedUnit(
-                                KILOGRAM_PER_CUBICMETRE,
-                                MultiplyConverter.ofRational(
-                                        BigInteger.ONE, BigInteger.valueOf(1000000000L))));
-        LQI =
-                addUnit(
-                        new BaseUnit<>("LQI", "LinkQuality", UnitDimension.LENGTH),
-                        Dimensionless.class);
-        DECIBEL =
-                addUnit(
-                        ONE.transform(
-                                (new LogConverter(10.0))
-                                        .inverse()
-                                        .concatenate(
-                                                MultiplyConverter.ofRational(
-                                                        BigInteger.ONE, BigInteger.TEN))));
+        DEGREE_ANGLE = addUnit(new TransformedUnit("deg", tech.units.indriya.unit.Units.RADIAN,
+                MultiplyConverter.ofPiExponent(1).concatenate(MultiplyConverter.ofRational(1L, 180L))));
+        KILOGRAM_PER_CUBICMETRE = addUnit(new ProductUnit(
+                tech.units.indriya.unit.Units.KILOGRAM.divide(tech.units.indriya.unit.Units.CUBIC_METRE)));
+        MICROGRAM_PER_CUBICMETRE = addUnit(new TransformedUnit(KILOGRAM_PER_CUBICMETRE,
+                MultiplyConverter.ofRational(BigInteger.ONE, BigInteger.valueOf(1000000000L))));
+        LQI = addUnit(new BaseUnit<>("LQI", "LinkQuality", UnitDimension.LENGTH), Dimensionless.class);
+        DECIBEL = addUnit(ONE.transform(
+                (new LogConverter(10.0)).inverse().concatenate(MultiplyConverter.ofRational(BigInteger.ONE, BigInteger.TEN))));
         AMPERE_HOUR = addUnit(tech.units.indriya.unit.Units.COULOMB.multiply(3600.0));
         WATT_SECOND = addUnit(new ProductUnit(WATT.multiply(tech.units.indriya.unit.Units.SECOND)));
         WATT_HOUR = addUnit(new ProductUnit(WATT.multiply(tech.units.indriya.unit.Units.HOUR)));
         KILOWATT_HOUR = addUnit(MetricPrefix.KILO(WATT_HOUR));
         VOLT_AMPERE = addUnit(new AlternateUnit(WATT, "VA"));
-        VOLT_AMPERE_HOUR =
-                addUnit(
-                        new ProductUnit(VOLT_AMPERE.multiply(tech.units.indriya.unit.Units.HOUR)),
-                        Energy.class);
-        BAR =
-                addUnit(
-                        new TransformedUnit(
-                                "bar",
-                                tech.units.indriya.unit.Units.PASCAL,
-                                MultiplyConverter.ofRational(
-                                        BigInteger.valueOf(100000L), BigInteger.ONE)));
-        MILLIMETRE_PER_HOUR =
-                addUnit(
-                        new TransformedUnit(
-                                "mm/h",
-                                tech.units.indriya.unit.Units.KILOMETRE_PER_HOUR,
-                                MultiplyConverter.ofRational(
-                                        BigInteger.ONE, BigInteger.valueOf(1000000L))));
-        LITRE_PER_MINUTE =
-                addUnit(new ProductUnit(LITRE.divide(tech.units.indriya.unit.Units.MINUTE)));
+        VOLT_AMPERE_HOUR = addUnit(new ProductUnit(VOLT_AMPERE.multiply(tech.units.indriya.unit.Units.HOUR)), Energy.class);
+        BAR = addUnit(new TransformedUnit("bar", tech.units.indriya.unit.Units.PASCAL,
+                MultiplyConverter.ofRational(BigInteger.valueOf(100000L), BigInteger.ONE)));
+        MILLIMETRE_PER_HOUR = addUnit(new TransformedUnit("mm/h", tech.units.indriya.unit.Units.KILOMETRE_PER_HOUR,
+                MultiplyConverter.ofRational(BigInteger.ONE, BigInteger.valueOf(1000000L))));
+        LITRE_PER_MINUTE = addUnit(new ProductUnit(LITRE.divide(tech.units.indriya.unit.Units.MINUTE)));
         BIT = addUnit(new AlternateUnit(ONE, "bit"));
         BYTE = addUnit(BIT.multiply(8.0));
         OCTET = addUnit(BIT.multiply(8.0));
@@ -133,7 +98,8 @@ public final class Units extends AbstractSystemOfUnits {
         SimpleUnitFormat.getInstance().label(WATT_SECOND, "Ws");
     }
 
-    private Units() {}
+    private Units() {
+    }
 
     public static SystemOfUnits getInstance() {
         return INSTANCE;
@@ -144,8 +110,7 @@ public final class Units extends AbstractSystemOfUnits {
         return unit;
     }
 
-    private static <U extends AbstractUnit<?>> U addUnit(
-            U unit, Class<? extends Quantity<?>> type) {
+    private static <U extends AbstractUnit<?>> U addUnit(U unit, Class<? extends Quantity<?>> type) {
         INSTANCE.units.add(unit);
         INSTANCE.quantityToUnit.put(type, unit);
         return unit;
@@ -165,9 +130,6 @@ public final class Units extends AbstractSystemOfUnits {
     }
 
     private static Unit findUnit(Set<Unit<?>> units, String name) {
-        return units.stream()
-                .filter((u) -> name.equalsIgnoreCase(u.toString()))
-                .findAny()
-                .orElse(null);
+        return units.stream().filter((u) -> name.equalsIgnoreCase(u.toString())).findAny().orElse(null);
     }
 }

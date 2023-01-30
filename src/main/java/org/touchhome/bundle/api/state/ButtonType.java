@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ButtonType extends State {
+public class ButtonType implements State {
     private final ButtonPressType buttonPressType;
 
     @Override

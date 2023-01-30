@@ -3,9 +3,10 @@ package org.touchhome.bundle.api.converter.bean;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import java.io.IOException;
 import lombok.extern.log4j.Log4j2;
 import org.touchhome.bundle.api.util.ApplicationContextHolder;
+
+import java.io.IOException;
 
 @Log4j2
 public class SpringBeanDeserializer extends JsonDeserializer<Object> {

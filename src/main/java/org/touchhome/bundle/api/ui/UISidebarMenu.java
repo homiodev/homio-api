@@ -15,18 +15,21 @@ public @interface UISidebarMenu {
 
     String bg();
 
-    Class<?> itemType() default UISidebarMenu.class;
-
     boolean allowCreateNewItems() default false;
 
     int order() default 1000;
 
-    /** Path uses in ui as navigation link */
+    /**
+     * Available sorting fields. May contains 'name:icon:color' or 'name:icon' or 'name'
+     */
+    String[] sort() default "";
+
+    /**
+     * Path uses in ui as navigation link
+     */
     String overridePath() default "";
 
     enum TopSidebarMenu {
-        HARDWARE,
-        ITEMS,
-        MEDIA
+        HARDWARE, ITEMS, MEDIA
     }
 }

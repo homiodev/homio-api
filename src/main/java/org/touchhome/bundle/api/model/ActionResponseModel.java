@@ -1,8 +1,6 @@
 package org.touchhome.bundle.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -12,6 +10,9 @@ import org.json.JSONObject;
 import org.touchhome.common.util.CommonUtils;
 import org.touchhome.common.util.Lang;
 
+import java.util.Collections;
+import java.util.Set;
+
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -20,14 +21,10 @@ public class ActionResponseModel {
     private ResponseAction responseAction = ResponseAction.info;
 
     private ActionResponseModel(Object value, String param0, String value0) {
-        this.value =
-                value instanceof String
-                        ? Lang.getServerMessage((String) value, param0, value0)
-                        : value;
+        this.value = value instanceof String ? Lang.getServerMessage((String) value, param0, value0) : value;
     }
 
-    private ActionResponseModel(
-            Object value, String param0, String value0, ResponseAction responseAction) {
+    private ActionResponseModel(Object value, String param0, String value0, ResponseAction responseAction) {
         this(value, param0, value0);
         this.responseAction = responseAction;
     }
@@ -49,8 +46,7 @@ public class ActionResponseModel {
         } else {
             content = new ObjectMapper().writeValueAsString(value);
         }
-        return showFiles(
-                Collections.singleton(new FileModel(title, content, FileContentType.json, true)));
+        return showFiles(Collections.singleton(new FileModel(title, content, FileContentType.json, true)));
     }
 
     public static ActionResponseModel showFiles(Set<FileModel> fileModels) {
@@ -98,10 +94,6 @@ public class ActionResponseModel {
     }
 
     public enum ResponseAction {
-        info,
-        error,
-        warning,
-        success,
-        files
+        info, error, warning, success, files
     }
 }

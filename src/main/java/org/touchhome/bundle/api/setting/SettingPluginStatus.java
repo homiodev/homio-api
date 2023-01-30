@@ -1,20 +1,23 @@
 package org.touchhome.bundle.api.setting;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.List;
-import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.touchhome.bundle.api.util.NotificationLevel;
 import org.touchhome.common.util.CommonUtils;
+
+import java.util.List;
+import java.util.function.Consumer;
+
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.BundleStatusInfo> {
 
@@ -48,10 +51,7 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     default BundleStatusInfo parseValue(EntityContext entityContext, String value) {
         String[] split = value.split("#~#", -1);
         try {
-            return split.length == 0
-                    ? null
-                    : new BundleStatusInfo(
-                            Status.valueOf(split[0]), split.length > 1 ? split[1] : null);
+            return split.length == 0 ? null : new BundleStatusInfo(Status.valueOf(split[0]), split.length > 1 ? split[1] : null);
         } catch (Exception ex) {
             return null;
         }
@@ -61,7 +61,9 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
         return null;
     }
 
-    default void setActions(UIInputBuilder actionSupplier) {}
+    default void setActions(UIInputBuilder actionSupplier) {
+
+    }
 
     @Override
     default String writeValue(BundleStatusInfo value) {
@@ -71,11 +73,16 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     @RequiredArgsConstructor
     @Accessors(chain = true)
     class BundleStatusInfo {
+        @NotNull
         private final Status status;
 
-        @Getter private final String message;
+        @Getter
+        @Nullable
+        private final String message;
 
-        @Setter @Getter private Consumer<UIInputBuilder> actionHandler;
+        @Setter
+        @Getter
+        private Consumer<UIInputBuilder> actionHandler;
 
         public boolean isOnline() {
             return status == Status.ONLINE;

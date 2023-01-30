@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldCodeEditor {
 
-    CodeEditorType editorType();
+    MonacoLanguage editorType() default MonacoLanguage.PlainText;
+
+    /**
+     * Link to another field that holds current editor type
+     */
+    String editorTypeRef() default "";
 
     boolean autoFormat() default false;
 
     boolean wordWrap() default false;
-
-    enum CodeEditorType {
-        javascript,
-        json
-    }
 }

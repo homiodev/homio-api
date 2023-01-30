@@ -2,7 +2,6 @@ package org.touchhome.bundle.api.ui.dialog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingConsumer;
-import java.util.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -11,16 +10,21 @@ import lombok.experimental.Accessors;
 import org.touchhome.bundle.api.EntityContextUI;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
 
+import java.util.*;
+
 @Getter
 @RequiredArgsConstructor
 public class DialogModel {
     private final String entityID;
     private final String title;
-    @JsonIgnore private final EntityContextUI.DialogRequestHandler actionHandler;
+    @JsonIgnore
+    private final EntityContextUI.DialogRequestHandler actionHandler;
     private final List<DialogGroup> groups = new ArrayList<>();
     private final List<DialogButton> buttons = new ArrayList<>();
-    @JsonIgnore private final Date creationTime = new Date();
-    @JsonIgnore private int maxTimeoutInSec = 0;
+    @JsonIgnore
+    private final Date creationTime = new Date();
+    @JsonIgnore
+    private int maxTimeoutInSec = 0;
     private String headerButtonAttachTo;
     private String icon;
     private String iconColor;
@@ -41,39 +45,36 @@ public class DialogModel {
         return this;
     }
 
-    public DialogModel submitButton(
-            String title, ThrowingConsumer<DialogButton, Exception> consumer) {
+    public DialogModel submitButton(String title, ThrowingConsumer<DialogButton, Exception> consumer) {
         return button(null, title, DialogButton.ButtonType.submit, consumer);
     }
 
     public DialogModel submitButton(String title) {
-        return button(null, title, DialogButton.ButtonType.submit, dialogButton -> {});
+        return button(null, title, DialogButton.ButtonType.submit, dialogButton -> {
+        });
     }
 
-    public DialogModel cancelButton(
-            String title, ThrowingConsumer<DialogButton, Exception> consumer) {
+    public DialogModel cancelButton(String title, ThrowingConsumer<DialogButton, Exception> consumer) {
         return button(null, title, DialogButton.ButtonType.cancel, consumer);
     }
 
     public DialogModel cancelButton(String title) {
-        return button(null, title, DialogButton.ButtonType.cancel, dialogButton -> {});
+        return button(null, title, DialogButton.ButtonType.cancel, dialogButton -> {
+        });
     }
 
-    public DialogModel extraButton(
-            String entityID, String title, ThrowingConsumer<DialogButton, Exception> consumer) {
+    public DialogModel extraButton(String entityID, String title, ThrowingConsumer<DialogButton, Exception> consumer) {
         return button(entityID, title, DialogButton.ButtonType.extra, consumer);
     }
 
     public DialogModel extraButton(String entityID, String title) {
-        return button(entityID, title, DialogButton.ButtonType.extra, dialogButton -> {});
+        return button(entityID, title, DialogButton.ButtonType.extra, dialogButton -> {
+        });
     }
 
     @SneakyThrows
-    private DialogModel button(
-            String entityID,
-            String title,
-            DialogButton.ButtonType buttonType,
-            ThrowingConsumer<DialogButton, Exception> consumer) {
+    private DialogModel button(String entityID, String title, DialogButton.ButtonType buttonType,
+                               ThrowingConsumer<DialogButton, Exception> consumer) {
         DialogButton dialogButton = new DialogButton(entityID, title, buttonType);
         consumer.accept(dialogButton);
         buttons.add(dialogButton);
@@ -122,9 +123,7 @@ public class DialogModel {
         private String icon;
 
         private enum ButtonType {
-            submit,
-            cancel,
-            extra
+            submit, cancel, extra
         }
     }
 }

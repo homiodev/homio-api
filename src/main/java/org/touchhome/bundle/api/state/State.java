@@ -1,15 +1,16 @@
 package org.touchhome.bundle.api.state;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.nio.charset.Charset;
-import java.util.Map;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.touchhome.common.util.CommonUtils;
 
-public abstract class State {
+import java.nio.charset.Charset;
+import java.util.Map;
 
-    public static State of(Object value) {
+public interface State {
+
+    static State of(Object value) {
         if (value == null || value instanceof State) return (State) value;
         if (value instanceof Map) {
             return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
@@ -31,13 +32,13 @@ public abstract class State {
         return new ObjectType(value);
     }
 
-    public boolean equalToOldValue() {
+    default boolean equalToOldValue() {
         throw new IllegalStateException("Unable to invoke equality for non state class");
     }
 
-    public abstract float floatValue();
+    float floatValue();
 
-    public float floatValue(float defaultValue) {
+    default float floatValue(float defaultValue) {
         try {
             return floatValue();
         } catch (Exception ex) {
@@ -45,33 +46,28 @@ public abstract class State {
         }
     }
 
-    public abstract int intValue();
+    int intValue();
 
-    public abstract String stringValue();
+    String stringValue();
 
-    public long longValue() {
+    default long longValue() {
         return intValue();
     }
 
-    public RawType toRawType() {
+    default RawType toRawType() {
         return RawType.ofPlainText(stringValue());
     }
 
-    public boolean boolValue() {
+    default boolean boolValue() {
         String value = stringValue();
         return value.equals("1") || value.equalsIgnoreCase("true");
     }
 
-    public byte[] byteArrayValue() {
+    default byte[] byteArrayValue() {
         return toString().getBytes(Charset.defaultCharset());
     }
 
-    @Override
-    public String toString() {
-        return stringValue();
-    }
-
-    public <T extends State> T as(Class<T> target) {
+    default <T extends State> T as(Class<T> target) {
         if (target != null && target.isInstance(this)) {
             return target.cast(this);
         } else {
@@ -80,10 +76,8 @@ public abstract class State {
     }
 
     @SneakyThrows
-    public State optional(String value) {
-        return StringUtils.isEmpty(value)
-                ? this
-                : CommonUtils.findObjectConstructor(this.getClass(), String.class)
-                        .newInstance(value);
+    default State optional(String value) {
+        return StringUtils.isEmpty(value) ? this :
+                CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
     }
 }
