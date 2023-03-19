@@ -16,6 +16,19 @@
 
     <artifactId>touchhome-bundle-api</artifactId>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <!--suppress MavenModelInspection -->
+            <url>${ARTIFACTORY_HOST}/libs-snapshot-local</url>
+        </snapshotRepository>
+        <repository>
+            <id>releases</id>
+            <!--suppress MavenModelInspection -->
+            <url>${ARTIFACTORY_HOST}/libs-release-local</url>
+        </repository>
+    </distributionManagement>
+
     <scm>
         <url>https://github.com/touchhome/${project.artifactId}</url>
         <connection>scm:git:git://github.com/github.com/touchhome/${project.artifactId}.git</connection>
