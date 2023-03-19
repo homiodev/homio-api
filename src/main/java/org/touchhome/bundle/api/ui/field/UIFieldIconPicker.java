@@ -30,4 +30,9 @@ public @interface UIFieldIconPicker {
      * Add Spin selector to icon picker. Works only if allowThreshold is true
      */
     boolean allowSpin() default true;
+
+    /**
+     * Enable to select background shadow
+     */
+    boolean allowBackground() default false;
 }

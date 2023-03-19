@@ -139,7 +139,7 @@ public interface SettingPlugin<T> {
                 return true;
             }
         }
-        return this.getSettingType() == UIFieldType.Info || !this.isStorable();
+        return !this.isStorable();
     }
 
     int order();

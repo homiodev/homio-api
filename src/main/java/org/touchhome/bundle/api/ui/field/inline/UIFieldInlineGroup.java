@@ -15,4 +15,7 @@ public @interface UIFieldInlineGroup {
      * Condition when apply field
      */
     String value();
+
+    // If able to edit group
+    boolean editable() default false;
 }

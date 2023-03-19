@@ -7,8 +7,8 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.touchhome.common.util.CommonUtils;
-import org.touchhome.common.util.Lang;
+import org.touchhome.bundle.api.util.Lang;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collections;
 import java.util.Set;
@@ -66,7 +66,7 @@ public class ActionResponseModel {
     }
 
     public static ActionResponseModel showError(Exception ex) {
-        return new ActionResponseModel(CommonUtils.getErrorMessage(ex), ResponseAction.error);
+        return new ActionResponseModel(TouchHomeUtils.getErrorMessage(ex), ResponseAction.error);
     }
 
     public static ActionResponseModel success() {

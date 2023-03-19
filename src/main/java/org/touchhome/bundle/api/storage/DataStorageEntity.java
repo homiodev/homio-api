@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.inmemory;
+package org.touchhome.bundle.api.storage;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Getter
 @Setter
 @ToString
-public abstract class InMemoryDBEntity implements Comparable<InMemoryDBEntity> {
+public abstract class DataStorageEntity implements Comparable<DataStorageEntity> {
 
     private static final AtomicLong sequence = new AtomicLong();
 
@@ -22,7 +22,7 @@ public abstract class InMemoryDBEntity implements Comparable<InMemoryDBEntity> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        InMemoryDBEntity that = (InMemoryDBEntity) o;
+        DataStorageEntity that = (DataStorageEntity) o;
 
         return id == that.id;
     }
@@ -33,7 +33,9 @@ public abstract class InMemoryDBEntity implements Comparable<InMemoryDBEntity> {
     }
 
     @Override
-    public int compareTo(@NotNull InMemoryDBEntity o) {
+    public int compareTo(@NotNull DataStorageEntity o) {
         return Long.compare(this.id, o.id);
     }
+
+    public abstract Object getValue();
 }

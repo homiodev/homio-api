@@ -10,8 +10,8 @@ import org.touchhome.bundle.api.setting.SettingPlugin;
 import org.touchhome.bundle.api.ui.UI;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 
+import static org.touchhome.bundle.api.util.TouchHomeUtils.OBJECT_MAPPER;
 import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
-import static org.touchhome.common.util.CommonUtils.OBJECT_MAPPER;
 
 /**
  * 'Remove button' console header button for tree/table console blocks.

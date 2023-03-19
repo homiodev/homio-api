@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
-import org.touchhome.common.model.ProgressBar;
+import org.touchhome.bundle.api.ui.field.ProgressBar;
 
 import java.nio.file.Path;
 import java.time.Duration;

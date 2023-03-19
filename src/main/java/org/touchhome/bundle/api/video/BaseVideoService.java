@@ -26,14 +26,13 @@ import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.state.*;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
+import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.video.ffmpeg.FFMPEG;
 import org.touchhome.bundle.api.video.ffmpeg.FFMPEGFormat;
 import org.touchhome.bundle.api.video.ffmpeg.FfmpegInputDeviceHardwareRepository;
 import org.touchhome.bundle.api.video.ui.UIVideoAction;
 import org.touchhome.bundle.api.video.ui.UIVideoActionGetter;
-import org.touchhome.common.util.CommonUtils;
-import org.touchhome.common.util.FlowMap;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -118,10 +117,10 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
         entity.setSourceStatus(Status.UNKNOWN, null);
 
         Path ffmpegOutputPath = TouchHomeUtils.getMediaPath().resolve(getEntity().getFolderName()).resolve(entityID);
-        ffmpegImageOutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("images"));
-        ffmpegGifOutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("gif"));
-        ffmpegMP4OutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("mp4"));
-        ffmpegHLSOutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("hls"));
+        ffmpegImageOutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("images"));
+        ffmpegGifOutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("gif"));
+        ffmpegMP4OutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("mp4"));
+        ffmpegHLSOutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("hls"));
         try {
             FileUtils.cleanDirectory(ffmpegHLSOutputPath.toFile());
         } catch (IOException e) {
@@ -160,9 +159,9 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
                     initialize();
                 }
             } catch (BadCredentialsException ex) {
-                this.disposeAndSetStatus(Status.REQUIRE_AUTH, CommonUtils.getErrorMessage(ex));
+                this.disposeAndSetStatus(Status.REQUIRE_AUTH, TouchHomeUtils.getErrorMessage(ex));
             } catch (Exception ex) {
-                this.disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+                this.disposeAndSetStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
             }
         }
         this.oldEntity = entity;
@@ -204,8 +203,9 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
             videoConnectionJob = entityContext.bgp().builder("poll-video-connection-" + entityID)
                     .interval(Duration.ofSeconds(60)).execute(this::pollingVideoConnection);
             entity.setSourceStatus(Status.ONLINE, null);
+            afterInitialize();
         } catch (Exception ex) {
-            disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+            disposeAndSetStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
         }
     }
 
@@ -227,7 +227,12 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
         if (entity.isStart()) {
             entityContext.save(entity.setStart(false), false);
         }
+        this.afterDispose();
     }
+
+    public abstract void afterInitialize();
+
+    public abstract void afterDispose();
 
     private void dispose() {
         if (isHandlerInitialized) {
@@ -294,9 +299,9 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
     }
 
     public void deleteDirectories() {
-        CommonUtils.deleteDirectory(ffmpegGifOutputPath);
-        CommonUtils.deleteDirectory(ffmpegMP4OutputPath);
-        CommonUtils.deleteDirectory(ffmpegImageOutputPath);
+        TouchHomeUtils.deleteDirectory(ffmpegGifOutputPath);
+        TouchHomeUtils.deleteDirectory(ffmpegMP4OutputPath);
+        TouchHomeUtils.deleteDirectory(ffmpegImageOutputPath);
     }
 
     public void addVideoChangeState(String key, Consumer<Status> handler) {
@@ -334,7 +339,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
         }
     }
 
-    protected void initialize0() throws Exception {
+    protected void initialize0() {
         this.snapshotSource = initSnapshotInput();
         T videoStreamEntity = getEntity();
         this.snapshotInputOptions = getFFMPEGInputOptions() + " -threads 1 -skip_frame nokey -hide_banner -loglevel warning -an";

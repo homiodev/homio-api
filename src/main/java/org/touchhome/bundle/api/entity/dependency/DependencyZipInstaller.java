@@ -1,9 +1,9 @@
 package org.touchhome.bundle.api.entity.dependency;
 
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.common.model.ProgressBar;
-import org.touchhome.common.util.ArchiveUtil;
-import org.touchhome.common.util.Curl;
+import org.touchhome.bundle.api.fs.archive.ArchiveUtil;
+import org.touchhome.bundle.api.ui.field.ProgressBar;
+import org.touchhome.bundle.api.util.Curl;
 
 import java.nio.file.Path;
 

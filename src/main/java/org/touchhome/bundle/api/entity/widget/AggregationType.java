@@ -18,6 +18,7 @@ public enum AggregationType {
     Sum(false),
     Count(false),
     Average(false),
+    AverageNoZero(false),
     Median(false);
 
     @Getter
@@ -42,6 +43,8 @@ public enum AggregationType {
                 return (float) stream.count();
             case Average:
                 return stream.collect(Collectors.averagingDouble(value -> value)).floatValue();
+            case AverageNoZero:
+                return stream.filter(v -> v != 0).collect(Collectors.averagingDouble(value -> value)).floatValue();
             case Median:
                 long size = stream.count();
                 DoubleStream sortedAges = stream.mapToDouble(h -> h).sorted();

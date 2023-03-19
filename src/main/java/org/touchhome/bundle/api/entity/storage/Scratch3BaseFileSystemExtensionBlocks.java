@@ -8,15 +8,15 @@ import org.springframework.util.MimeTypeUtils;
 import org.touchhome.bundle.api.BundleEntrypoint;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.fs.FileSystemProvider;
+import org.touchhome.bundle.api.fs.TreeNode;
 import org.touchhome.bundle.api.state.DecimalType;
 import org.touchhome.bundle.api.state.RawType;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.workspace.WorkspaceBlock;
 import org.touchhome.bundle.api.workspace.scratch.ArgumentType;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
 import org.touchhome.bundle.api.workspace.scratch.Scratch3ExtensionBlocks;
-import org.touchhome.common.fs.FileSystemProvider;
-import org.touchhome.common.fs.TreeNode;
-import org.touchhome.common.util.CommonUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -160,7 +160,8 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
             try {
                 getDrive(workspaceBlock).getFileSystem(entityContext).delete(Collections.singleton(fileId));
             } catch (Exception ex) {
-                workspaceBlock.logErrorAndThrow("Unable to delete file: <{}>. Msg: ", fileId, CommonUtils.getErrorMessage(ex));
+                workspaceBlock.logErrorAndThrow("Unable to delete file: <{}>. Msg: ",
+                        fileId, TouchHomeUtils.getErrorMessage(ex));
             }
         } else {
             workspaceBlock.logErrorAndThrow("Delete file block requires file name");

@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.server.PortInUseException;
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.common.util.CommonUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,7 +129,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
             } catch (IOException e) {
                 log.warn("[{}]: Processing DATA_AVAILABLE event: received IOException in serial port event", entityID, e);
             } catch (Exception ex) {
-                log.warn("[{}]: Port read exception: {}", entityID, CommonUtils.getErrorMessage(ex));
+                log.warn("[{}]: Port read exception: {}", entityID, TouchHomeUtils.getErrorMessage(ex));
                 if (this.portUnavailableListener != null) {
                     this.portUnavailableListener.run();
                 }

@@ -3,7 +3,6 @@ package org.touchhome.bundle.api.entity.zigbee;
 import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.state.State;
 
-import javax.measure.Unit;
 import java.time.Duration;
 import java.util.function.Consumer;
 

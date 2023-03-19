@@ -8,7 +8,7 @@ import org.touchhome.bundle.api.entity.widget.PeriodRequest;
 import org.touchhome.bundle.api.exception.ProhibitedExecution;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,7 +17,10 @@ import java.util.Objects;
  * Implementation must override either {@link HasTimeValueSeries#getTimeValueSeries(PeriodRequest)} or
  * {@link HasTimeValueSeries#getMultipleTimeValueSeries(PeriodRequest)}
  */
-public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueListener {
+public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueListener,
+        // we extend HasGetStatusValue for time-series values to be able to fetch last value in case
+        // if no data found in time range, but we need fill chart with empty values
+        HasGetStatusValue {
 
     /**
      * Uses for UI to determine class type description
@@ -37,9 +40,8 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
     default @NotNull Map<TimeValueDatasetDescription, List<Object[]>> getMultipleTimeValueSeries(@NotNull PeriodRequest request) {
         Object params = request.getParameters();
         int paramCode = (params == null ? "" : params).toString().hashCode();
-        return Collections.singletonMap(new TimeValueDatasetDescription(getEntityID() + "_" +
-                        paramCode),
-                getTimeValueSeries(request));
+        return new HashMap<>(Map.of(new TimeValueDatasetDescription(getEntityID() + "_" + paramCode),
+                getTimeValueSeries(request)));
     }
 
     default @NotNull List<Object[]> getTimeValueSeries(@NotNull PeriodRequest request) {

@@ -3,17 +3,19 @@ package org.touchhome.bundle.api.state;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.touchhome.common.util.CommonUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.nio.charset.Charset;
 import java.util.Map;
+
+import static org.touchhome.bundle.api.util.TouchHomeUtils.OBJECT_MAPPER;
 
 public interface State {
 
     static State of(Object value) {
         if (value == null || value instanceof State) return (State) value;
         if (value instanceof Map) {
-            return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
+            return new JsonType(OBJECT_MAPPER.convertValue(value, JsonNode.class));
         }
         if (Number.class.isAssignableFrom(value.getClass())) {
             if (value instanceof Double) {
@@ -78,6 +80,6 @@ public interface State {
     @SneakyThrows
     default State optional(String value) {
         return StringUtils.isEmpty(value) ? this :
-                CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+                TouchHomeUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
     }
 }

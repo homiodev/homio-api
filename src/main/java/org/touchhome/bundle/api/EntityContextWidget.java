@@ -14,8 +14,10 @@ public interface EntityContextWidget {
 
     @NotNull EntityContext getEntityContext();
 
+    // get dashboard tabs
     @NotNull List<OptionModel> getDashboardTabs();
 
+    // Get default dashboard tab id
     @NotNull String getDashboardDefaultID();
 
     void createLayoutWidget(
@@ -53,30 +55,85 @@ public interface EntityContextWidget {
             @NotNull String entityID,
             @NotNull Consumer<SimpleColorWidgetBuilder> widgetBuilder);
 
-    /**
-     * @param entityID      -unique cline chart entity id. Must starts with EntityContextWidget.LINE_CHART_WIDGET_PREFIX
-     * @param widgetBuilder - chart builder
-     */
+    void createBarTimeChartWidget(
+            @NotNull String entityID,
+            @NotNull Consumer<BarTimeChartBuilder> widgetBuilder);
+
     void createLineChartWidget(
             @NotNull String entityID,
             @NotNull Consumer<LineChartBuilder> widgetBuilder);
 
-
-    interface LineChartBuilder {
-        // void addLineChart(String color, HasTimeValueSeries lineChartSeries);
-
-        // @NotNull Consumer<LineChartSeriesWidgetBuilder> seriesWidgetBuilder
+    enum AnimateColor {
+        black, red, blue, green, yellow
     }
 
-    interface LineChartSeriesWidgetBuilder extends WidgetBaseBuilder<LineChartSeriesWidgetBuilder> {
+    @RequiredArgsConstructor
+    enum ValueCompare {
+        gt(">"), lt("<"), eq("="), neq("!="), regexp("RegExp");
+        @Getter
+        private final String op;
+    }
 
-        LineChartSeriesWidgetBuilder showAxisX(boolean on);
+    enum BarChartType {
+        Horizontal,
+        Vertical
+    }
 
-        LineChartSeriesWidgetBuilder showAxisY(boolean on);
+    enum LegendPosition {
+        top,
+        right,
+        bottom,
+        left
+    }
 
-        LineChartSeriesWidgetBuilder axisLabelX(@Nullable String name);
+    enum LegendAlign {
+        start,
+        center,
+        end
+    }
 
-        LineChartSeriesWidgetBuilder axisLabelY(@Nullable String name);
+    interface LineChartBuilder extends
+            WidgetChartBaseBuilder<LineChartBuilder>,
+            HasLegend<LineChartBuilder>,
+            HasAxis<LineChartBuilder>,
+            HasHorizontalLine<LineChartBuilder>,
+            HasLineChartBehaviour<LineChartBuilder> {
+        LineChartBuilder addSeries(@Nullable String name, @NotNull Consumer<LineChartSeriesBuilder> builder);
+    }
+
+    interface LineChartSeriesBuilder extends
+            HasChartDataSource<LineChartSeriesBuilder> {
+    }
+
+    interface BarTimeChartBuilder extends
+            HasLegend<BarTimeChartBuilder>,
+            WidgetChartBaseBuilder<BarTimeChartBuilder>,
+            HasChartTimePeriod<BarTimeChartBuilder>,
+            HasAxis<BarTimeChartBuilder>,
+            HasHorizontalLine<BarTimeChartBuilder>,
+            HasMinMaxChartValue<BarTimeChartBuilder> {
+        BarTimeChartBuilder addSeries(@Nullable String name, @NotNull Consumer<BarTimeChartSeriesBuilder> builder);
+
+        // Default - ''
+        BarTimeChartBuilder setAxisLabel(String value);
+
+        // Default - BarChartType.Vertical
+        BarTimeChartBuilder setDisplayType(BarChartType value);
+
+        // Default -1x1x1x1
+        BarTimeChartBuilder setBarBorderWidth(String value);
+    }
+
+    enum HorizontalAlign {
+        left, center, right
+    }
+
+    interface BarTimeChartSeriesBuilder extends
+            HasChartDataSource<BarTimeChartSeriesBuilder> {
+    }
+
+    enum VerticalAlign {
+        top, middle, bottom
     }
 
     interface ColorWidgetBuilder extends
@@ -84,14 +141,18 @@ public interface EntityContextWidget {
             HasIconWithoutThreshold<ColorWidgetBuilder>,
             HasLayout<ColorWidgetBuilder> {
 
+        // Default - "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FFFFFF"
         ColorWidgetBuilder setColors(String... colors);
 
+        // Default - 28. range: 10..40
         ColorWidgetBuilder setCircleSize(int value);
 
         ColorWidgetBuilder setIcon(@Nullable String icon);
 
+        // Default - 14. range: 0..40
         ColorWidgetBuilder setCircleSpacing(int value);
 
+        // Require
         ColorWidgetBuilder setColorValueDataSource(@Nullable String value);
 
         ColorWidgetBuilder setColorSetValueDataSource(@Nullable String value);
@@ -100,16 +161,20 @@ public interface EntityContextWidget {
 
         ColorWidgetBuilder setBrightnessSetValueDataSource(@Nullable String value);
 
+        // Default - 0
         ColorWidgetBuilder setBrightnessMinValue(int value);
 
+        // Default - 255
         ColorWidgetBuilder setBrightnessMaxValue(int value);
 
         ColorWidgetBuilder setColorTemperatureValueDataSource(@Nullable String value);
 
         ColorWidgetBuilder setColorTemperatureSetValueDataSource(@Nullable String value);
 
+        // Default - 0
         ColorWidgetBuilder setColorTemperatureMinValue(int value);
 
+        // Default - 255
         ColorWidgetBuilder setColorTemperatureMaxValue(int value);
 
         ColorWidgetBuilder setOnOffValueDataSource(@Nullable String value);
@@ -117,15 +182,24 @@ public interface EntityContextWidget {
         ColorWidgetBuilder setOnOffSetValueDataSource(@Nullable String value);
     }
 
+    interface HasAlign<T> {
+        // default - left:center
+        T setAlign(HorizontalAlign horizontalAlign, VerticalAlign verticalAlign);
+    }
+
     interface SimpleColorWidgetBuilder extends
             WidgetBaseBuilder<SimpleColorWidgetBuilder>,
             HasSingleValueDataSource<SimpleColorWidgetBuilder>,
+            HasSetSingleValueDataSource<SimpleColorWidgetBuilder>,
             HasAlign<SimpleColorWidgetBuilder> {
 
+        // Default - "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FFFFFF"
         SimpleColorWidgetBuilder setColors(String... colors);
 
+        // Default - 28. range: 10..40
         SimpleColorWidgetBuilder setCircleSize(int value);
 
+        // Default - 14. range: 0..40
         SimpleColorWidgetBuilder setCircleSpacing(int value);
     }
 
@@ -133,43 +207,22 @@ public interface EntityContextWidget {
         // Default - (2x2). Max 8x8
         LayoutWidgetBuilder setLayoutDimension(int rows, int columns);
 
+        // Default as General setting: WidgetBorderColorMenuSetting
         LayoutWidgetBuilder setBorderColor(@Nullable String value);
 
+        // Default - false
         LayoutWidgetBuilder setShowWidgetBorders(boolean value);
     }
 
     interface SimpleValueWidgetBuilder extends
             WidgetBaseBuilder<SimpleValueWidgetBuilder>,
+            HasActionOnClick<SimpleValueWidgetBuilder>,
             HasIcon<SimpleValueWidgetBuilder>,
             HasPadding<SimpleValueWidgetBuilder>,
             HasSingleValueDataSource<SimpleValueWidgetBuilder>,
             HasAlign<SimpleValueWidgetBuilder>,
             HasValueConverter<SimpleValueWidgetBuilder>,
             HasValueTemplate<SimpleValueWidgetBuilder> {
-    }
-
-    interface HasAlign<T> {
-        // default - left:center
-        T setAlign(HorizontalAlign horizontalAlign, VerticalAlign verticalAlign);
-    }
-
-    interface DisplayWidgetBuilder extends
-            WidgetBaseBuilder<DisplayWidgetBuilder>,
-            HasName<DisplayWidgetBuilder>,
-            HasPadding<DisplayWidgetBuilder>,
-            HasLayout<DisplayWidgetBuilder>,
-            HasChartDataSource<DisplayWidgetBuilder>,
-            HasHorizontalLine<DisplayWidgetBuilder>,
-            HasSourceServerUpdates<DisplayWidgetBuilder>,
-            HasLineChartBehaviour<DisplayWidgetBuilder> {
-
-        DisplayWidgetBuilder setChartHeight(int value);
-
-        DisplayWidgetBuilder setBarBorderWidth(int top, int right, int bottom, int left);
-
-        DisplayWidgetBuilder setChartType(@NotNull ChartType value);
-
-        DisplayWidgetBuilder addSeries(@Nullable String name, @NotNull Consumer<DisplayWidgetSeriesBuilder> builder);
     }
 
     interface SliderWidgetBuilder extends
@@ -180,15 +233,6 @@ public interface EntityContextWidget {
             HasSourceServerUpdates<SliderWidgetBuilder> {
 
         SliderWidgetBuilder addSeries(@Nullable String name, @NotNull Consumer<SliderWidgetSeriesBuilder> builder);
-    }
-
-    interface SimpleToggleWidgetBuilder extends
-            WidgetBaseBuilder<SimpleToggleWidgetBuilder>,
-            HasToggle<SimpleToggleWidgetBuilder>,
-            HasAlign<SimpleToggleWidgetBuilder>,
-            HasPadding<SimpleToggleWidgetBuilder>,
-            HasSingleValueDataSource<SimpleToggleWidgetBuilder>,
-            HasSourceServerUpdates<SimpleToggleWidgetBuilder> {
     }
 
     interface ToggleWidgetBuilder extends
@@ -207,41 +251,31 @@ public interface EntityContextWidget {
         ToggleWidgetBuilder addSeries(@Nullable String name, @NotNull Consumer<ToggleWidgetSeriesBuilder> builder);
     }
 
-    interface SliderWidgetSeriesBuilder extends
-            HasIcon<SliderWidgetSeriesBuilder>,
-            HasValueTemplate<SliderWidgetSeriesBuilder>,
-            HasName<SliderWidgetSeriesBuilder>,
-            HasPadding<SliderWidgetSeriesBuilder>,
-            HasSingleValueDataSource<SliderWidgetSeriesBuilder> {
-        // Default - random
-        SliderWidgetSeriesBuilder setSliderColor(String value);
+    interface DisplayWidgetBuilder extends
+            WidgetChartBaseBuilder<DisplayWidgetBuilder>,
+            HasActionOnClick<DisplayWidgetBuilder>,
+            HasName<DisplayWidgetBuilder>,
+            HasPadding<DisplayWidgetBuilder>,
+            HasLayout<DisplayWidgetBuilder>,
+            HasChartDataSource<DisplayWidgetBuilder>,
+            HasHorizontalLine<DisplayWidgetBuilder>,
+            HasSourceServerUpdates<DisplayWidgetBuilder>,
+            HasLineChartBehaviour<DisplayWidgetBuilder> {
 
-        // Default - 0
-        SliderWidgetSeriesBuilder setMin(int value);
+        // Default - 30%
+        DisplayWidgetBuilder setChartHeight(int value);
 
-        // Default - 255
-        SliderWidgetSeriesBuilder setMax(int value);
+        // Default - 0x0x0x0
+        DisplayWidgetBuilder setBarBorderWidth(int top, int right, int bottom, int left);
 
-        // Default - 1. Min - 1
-        SliderWidgetSeriesBuilder setStep(int value);
+        // Default ChartType.line
+        DisplayWidgetBuilder setChartType(@NotNull ChartType value);
 
-        // Default - 'return value;'
-        SliderWidgetSeriesBuilder setTextConverter(String value);
-    }
+        DisplayWidgetBuilder setBackground(@Nullable String color,
+                                           @Nullable Consumer<ThresholdBuilder> colorBuilder,
+                                           @Nullable Consumer<AnimateBuilder> animationBuilder);
 
-    interface DisplayWidgetSeriesBuilder extends
-            HasIcon<DisplayWidgetSeriesBuilder>,
-            HasValueTemplate<DisplayWidgetSeriesBuilder>,
-            HasName<DisplayWidgetSeriesBuilder>,
-            HasValueConverter<DisplayWidgetSeriesBuilder>,
-            HasSingleValueAggregatedDataSource<DisplayWidgetSeriesBuilder> {
-    }
-
-    interface ToggleWidgetSeriesBuilder extends
-            HasIcon<ToggleWidgetSeriesBuilder>,
-            HasName<ToggleWidgetSeriesBuilder>,
-            HasToggle<ToggleWidgetSeriesBuilder>,
-            HasSingleValueDataSource<ToggleWidgetSeriesBuilder> {
+        DisplayWidgetBuilder addSeries(@Nullable String name, @NotNull Consumer<DisplayWidgetSeriesBuilder> builder);
     }
 
     interface HasToggle<T> {
@@ -264,6 +298,39 @@ public interface EntityContextWidget {
         T setPushToggleOnValue(String value);
     }
 
+    interface SimpleToggleWidgetBuilder extends
+            WidgetBaseBuilder<SimpleToggleWidgetBuilder>,
+            HasToggle<SimpleToggleWidgetBuilder>,
+            HasAlign<SimpleToggleWidgetBuilder>,
+            HasPadding<SimpleToggleWidgetBuilder>,
+            HasSingleValueDataSource<SimpleToggleWidgetBuilder>,
+            HasSetSingleValueDataSource<SimpleToggleWidgetBuilder>,
+            HasSourceServerUpdates<SimpleToggleWidgetBuilder> {
+    }
+
+    interface SliderWidgetSeriesBuilder extends
+            HasIcon<SliderWidgetSeriesBuilder>,
+            HasValueTemplate<SliderWidgetSeriesBuilder>,
+            HasName<SliderWidgetSeriesBuilder>,
+            HasPadding<SliderWidgetSeriesBuilder>,
+            HasSingleValueDataSource<SliderWidgetSeriesBuilder>,
+            HasSetSingleValueDataSource<SliderWidgetSeriesBuilder> {
+        // Default - random
+        SliderWidgetSeriesBuilder setSliderColor(String value);
+
+        // Default - 0
+        SliderWidgetSeriesBuilder setMin(int value);
+
+        // Default - 255
+        SliderWidgetSeriesBuilder setMax(int value);
+
+        // Default - 1. Min - 1
+        SliderWidgetSeriesBuilder setStep(int value);
+
+        // Default - 'return value;'
+        SliderWidgetSeriesBuilder setTextConverter(String value);
+    }
+
     interface HasValueConverter<T> {
 
         // Default - 'return value;'
@@ -272,6 +339,29 @@ public interface EntityContextWidget {
         // Default - 0. range: 0..60 seconds
         // Update value on UI with using converter
         T setValueConverterRefreshInterval(int value);
+    }
+
+    interface HasSingleValueAggregatedDataSource<T> extends HasSingleValueDataSource<T> {
+        T setValueAggregationType(AggregationType value);
+
+        T setValueAggregationPeriod(int value);
+    }
+
+    interface DisplayWidgetSeriesBuilder extends
+            HasIcon<DisplayWidgetSeriesBuilder>,
+            HasValueTemplate<DisplayWidgetSeriesBuilder>,
+            HasName<DisplayWidgetSeriesBuilder>,
+            HasValueConverter<DisplayWidgetSeriesBuilder>,
+            HasSingleValueAggregatedDataSource<DisplayWidgetSeriesBuilder> {
+        DisplayWidgetSeriesBuilder setStyle(String... styles);
+    }
+
+    interface ToggleWidgetSeriesBuilder extends
+            HasIcon<ToggleWidgetSeriesBuilder>,
+            HasName<ToggleWidgetSeriesBuilder>,
+            HasToggle<ToggleWidgetSeriesBuilder>,
+            HasSingleValueDataSource<ToggleWidgetSeriesBuilder>,
+            HasSetSingleValueDataSource<ToggleWidgetSeriesBuilder> {
     }
 
     interface HasValueTemplate<T> {
@@ -284,13 +374,13 @@ public interface EntityContextWidget {
         // Default - '-'
         T setNoValueText(@Nullable String value);
 
-        // Default - 1.0 Range: 0.1...2.0
+        // Default - 1.0 Range: 0.1..2.0
         T setValueFontSize(double value);
 
-        // Default - 1.0 Range: 0.1...2.0
+        // Default - 1.0 Range: 0.1..2.0
         T setValuePrefixFontSize(double value);
 
-        // Default - 1.0 Range: 0.1...2.0
+        // Default - 1.0 Range: 0.1..2.0
         T setValueSuffixFontSize(double value);
 
         // Default - middle
@@ -302,21 +392,49 @@ public interface EntityContextWidget {
         // Default - middle
         T setValueSuffixVerticalAlign(VerticalAlign value);
 
+        // Default - null
         T setValuePrefixColor(String value);
 
+        // Default - null
         T setValueSuffixColor(String value);
-    }
 
-    interface HasSingleValueAggregatedDataSource<T> extends HasSingleValueDataSource<T> {
-        T setValueAggregationType(AggregationType value);
-
-        T setValueAggregationPeriod(int value);
+        // Default - false
+        T setValueSourceClickHistory(boolean value);
     }
 
     interface HasSingleValueDataSource<T> {
         T setValueDataSource(@Nullable String value);
+    }
 
+    interface HasSetSingleValueDataSource<T> {
         T setSetValueDataSource(@Nullable String value);
+    }
+
+    interface HasChartDataSource<T> {
+
+        // Default - true
+        T setSmoothing(boolean value);
+
+        // Default - ''. require
+        T setChartDataSource(@Nullable String value);
+
+        // Default - AverageNoZero
+        T setChartAggregationType(AggregationType value);
+
+        // Default - return value;
+        T setFinalChartValueConverter(@Nullable String value);
+
+        // Default - random()
+        T setChartColor(@Nullable String value);
+
+        // Default 50. range: 25..100
+        T setChartColorOpacity(int value);
+
+        // Default - ''
+        T setChartLabel(@Nullable String value);
+
+        // Default - false
+        T setFillEmptyValues(boolean value);
     }
 
     interface HasName<T> {
@@ -327,60 +445,49 @@ public interface EntityContextWidget {
         T setNameColor(@Nullable String value);
     }
 
-    interface HasLayout<T> {
-        T setLayout(@Nullable String value);
-    }
-
-    interface HasChartDataSource<T> {
-        T setChartDataSource(@Nullable String value);
-
-        T setChartAggregationType(AggregationType value);
-
-        T setFinalChartValueConverter(@Nullable String value);
-
-        T setChartColor(@Nullable String value);
-
-        T setChartColorOpacity(int value);
-
-        T setChartLabel(@Nullable String value);
-    }
-
-    interface HasLineChartBehaviour<T> {
+    interface HasLineChartBehaviour<T> extends HasMinMaxChartValue<T>, HasChartTimePeriod<T> {
+        // Default - 2. range: 0..10
         T setLineBorderWidth(int value);
 
+        // Default - Fill.Origin
         T setLineFill(Fill value);
 
+        // Default - false
         T setStepped(Stepped value);
 
+        // Default - 4. range: 0..10
         T setTension(int value);
 
+        // Default - 0D. range: 0..4
         T setPointRadius(double value);
 
+        // Default - PointStyle.circle
         T setPointStyle(PointStyle value);
 
+        // Default - white
         T setPointBackgroundColor(@Nullable String value);
 
+        // Default - PRIMARY_COLOR
         T setPointBorderColor(@Nullable String value);
     }
 
-    interface WidgetBaseBuilder<T> {
-        T setName(@Nullable String name);
+    interface WidgetChartBaseBuilder<T> extends WidgetBaseBuilder<T> {
+        // Default - true
+        T setShowChartFullScreenButton(boolean value);
 
-        T setBackground(@Nullable String value);
-
-        T attachToTab(@NotNull String tabName);
-
-        T attachToLayout(@NotNull String layoutEntityID, int rowNum, int columnNum);
-
-        T setBlockSize(int width, int height);
+        // Default - 60sec. range: 10..600
+        T setFetchDataFromServerInterval(int value);
     }
 
-    interface HasSourceServerUpdates<T> {
-        // Default - true
-        T setListenSourceUpdates(@Nullable Boolean value);
-
+    interface HasLegend<T> {
         // Default - false
-        T setShowLastUpdateTimer(@Nullable Boolean value);
+        T setShowLegend(Boolean value);
+
+        // Default - LegendPosition.top
+        T setLegendPosition(LegendPosition value);
+
+        // Default - LegendAlign.center
+        T setLegendAlign(LegendAlign value);
     }
 
     interface HasHorizontalLine<T> {
@@ -466,23 +573,90 @@ public interface EntityContextWidget {
         Slide
     }
 
+    interface HasLayout<T> {
+        T setLayout(@Nullable String value);
+    }
+
+    interface HasSourceServerUpdates<T> {
+        // Default - true
+        T setListenSourceUpdates(@Nullable Boolean value);
+
+        // Default - false
+        T setShowLastUpdateTimer(@Nullable Boolean value);
+    }
+
+    interface WidgetBaseBuilder<T> {
+        // Default - 20. (15 for layout widget)
+        T setZIndex(int index);
+
+        T setName(@Nullable String name);
+
+        T setStyle(String... styles);
+
+        // Default - transparent
+        T setBackground(@Nullable String value);
+
+        T attachToTab(@NotNull String tabName);
+
+        T attachToLayout(@NotNull String layoutEntityID, int rowNum, int columnNum);
+
+        // Default - 1x1
+        T setBlockSize(int width, int height);
+    }
+
+    interface HasActionOnClick<T> {
+        T setValueToPushSource(@Nullable String value);
+
+        T setValueOnClick(@Nullable String value);
+
+        T setValueOnDoubleClick(@Nullable String value);
+
+        T setValueOnHoldClick(@Nullable String value);
+
+        T setValueOnHoldReleaseClick(@Nullable String value);
+
+        T setValueToPushConfirmMessage(@Nullable String value);
+    }
+
+    interface HasMinMaxChartValue<T> {
+        // Default - null
+        T setMin(Integer value);
+
+        // Default - null
+        T setMax(Integer value);
+    }
+
+    interface HasChartTimePeriod<T> {
+        // Default - 60
+        T setChartMinutesToShow(int value);
+
+        // Default - 60. range: 1..600
+        T setChartPointsPerHour(int value);
+    }
+
+    interface HasAxis<T> {
+        // Default - true
+        T setShowAxisX(Boolean value);
+
+        // Default - true
+        T setShowAxisY(Boolean value);
+
+        // Default - ''
+        T setAxisLabelX(String value);
+
+        // Default - ''
+        T setAxisLabelY(String value);
+
+        // Default - ''
+        T setAxisDateFormat(String value);
+    }
+
     interface ThresholdBuilder {
         //target i.e. icon/color,
         ThresholdBuilder setThreshold(String target, Object numValue, ValueCompare op);
-
-        @RequiredArgsConstructor
-        enum ValueCompare {
-            gt(">"), lt("<"), eq("="), neq("!="), regexp("RegExp");
-            @Getter
-            private final String op;
-        }
     }
 
-    enum HorizontalAlign {
-        left, center, right
-    }
-
-    enum VerticalAlign {
-        top, middle, bottom
+    interface AnimateBuilder {
+        AnimateBuilder setAnimate(AnimateColor animateColor, Object numValue, ValueCompare op);
     }
 }

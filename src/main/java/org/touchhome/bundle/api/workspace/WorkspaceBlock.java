@@ -9,14 +9,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.exception.ServerException;
 import org.touchhome.bundle.api.service.EntityService;
 import org.touchhome.bundle.api.state.RawType;
 import org.touchhome.bundle.api.state.State;
+import org.touchhome.bundle.api.util.Curl;
+import org.touchhome.bundle.api.util.SpringUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 import org.touchhome.bundle.api.workspace.scratch.MenuBlock;
-import org.touchhome.common.exception.ServerException;
-import org.touchhome.common.util.CommonUtils;
-import org.touchhome.common.util.Curl;
-import org.touchhome.common.util.SpringUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -206,7 +206,7 @@ public interface WorkspaceBlock {
                     try {
                         runnable.run();
                     } catch (Exception ex) {
-                        logError(CommonUtils.getErrorMessage(ex));
+                        logError(TouchHomeUtils.getErrorMessage(ex));
                     }
                 }
             }
@@ -224,7 +224,7 @@ public interface WorkspaceBlock {
                     try {
                         handler.run();
                     } catch (Exception ex) {
-                        logError(CommonUtils.getErrorMessage(ex));
+                        logError(TouchHomeUtils.getErrorMessage(ex));
                     }
                 }
             }

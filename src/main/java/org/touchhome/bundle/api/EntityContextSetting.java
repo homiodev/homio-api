@@ -1,5 +1,7 @@
 package org.touchhome.bundle.api;
 
+import com.pivovarit.function.ThrowingConsumer;
+import com.pivovarit.function.ThrowingRunnable;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +14,6 @@ import org.touchhome.bundle.api.setting.console.header.dynamic.DynamicConsoleHea
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 public interface EntityContextSetting {
 
@@ -107,32 +108,25 @@ public interface EntityContextSetting {
         return value == null ? defaultValue : value;
     }
 
-    /**
-     * Subscribe for setting changes. Key requires to able to unsubscribe
-     */
-    <T> void listenValueAsync(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                              @NotNull Consumer<T> listener);
-
-    /**
-     * Subscribe for setting changes. listener fires in separate thread
-     */
-    default <T> void listenValueAsync(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                                      @NotNull Runnable listener) {
-        listenValueAsync(settingClass, key, t -> listener.run());
-    }
-
     default <T> void listenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                                 @NotNull Runnable listener) {
+                                 @NotNull ThrowingRunnable<Exception> listener) {
         listenValue(settingClass, key, p -> listener.run());
     }
 
+    /**
+     * Usually listeners executes in separate thread but in some cases we need access to user who updating value and we need
+     * run listener inside http reques
+     */
+    <T> void listenValueInRequest(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
+                                  @NotNull ThrowingConsumer<T, Exception> listener);
+
     <T> void listenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                         @NotNull Consumer<T> listener);
+                         @NotNull ThrowingConsumer<T, Exception> listener);
 
     <T> void unListenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key);
 
     default <T> void listenValueAndGet(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                                       @NotNull Consumer<T> listener) {
+                                       @NotNull ThrowingConsumer<T, Exception> listener) throws Exception {
         listenValue(settingClass, key, listener);
         listener.accept(getValue(settingClass));
     }

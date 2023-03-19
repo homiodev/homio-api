@@ -11,7 +11,7 @@ import org.touchhome.bundle.api.model.FileContentType;
 import org.touchhome.bundle.api.model.FileModel;
 import org.touchhome.bundle.api.setting.console.header.ConsoleHeaderSettingPlugin;
 
-import static org.touchhome.common.util.CommonUtils.OBJECT_MAPPER;
+import static org.touchhome.bundle.api.util.TouchHomeUtils.OBJECT_MAPPER;
 
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 

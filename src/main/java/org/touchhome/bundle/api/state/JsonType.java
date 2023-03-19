@@ -8,7 +8,7 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
-import org.touchhome.common.util.CommonUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.function.BiConsumer;
 
@@ -21,7 +21,7 @@ public class JsonType implements State, Comparable<JsonType> {
 
     @SneakyThrows
     public JsonType(String value) {
-        this.jsonNode = CommonUtils.OBJECT_MAPPER.readValue(value, JsonNode.class);
+        this.jsonNode = TouchHomeUtils.OBJECT_MAPPER.readValue(value, JsonNode.class);
     }
 
     public JsonNode get(String... paths) {

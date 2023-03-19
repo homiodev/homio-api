@@ -2,9 +2,9 @@ package org.touchhome.bundle.api.setting;
 
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
+import org.touchhome.bundle.api.exception.NotFoundException;
 import org.touchhome.bundle.api.model.OptionModel;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
-import org.touchhome.common.exception.NotFoundException;
 
 import java.util.Collection;
 

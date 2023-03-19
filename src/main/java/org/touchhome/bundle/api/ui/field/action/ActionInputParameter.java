@@ -52,8 +52,16 @@ public class ActionInputParameter {
         }
     }
 
-    public static ActionInputParameter text(String name, String defaultValue) {
-        return new ActionInputParameter(name, UIActionInput.Type.text, null, defaultValue);
+    public static ActionInputParameter text(String name, String defaultValue, String... validators) {
+        return new ActionInputParameter(name, UIActionInput.Type.text, Set.of(validators), defaultValue);
+    }
+
+    public static ActionInputParameter email(String name, String defaultValue) {
+        return new ActionInputParameter(name, UIActionInput.Type.email, null, defaultValue);
+    }
+
+    public static ActionInputParameter password(String name, String defaultValue) {
+        return new ActionInputParameter(name, UIActionInput.Type.password, null, defaultValue);
     }
 
     public static ActionInputParameter bool(String name, boolean defaultValue) {
@@ -65,7 +73,7 @@ public class ActionInputParameter {
     }
 
     public static ActionInputParameter ip(String name, String defaultIpAddress) {
-        return new ActionInputParameter(name, UIActionInput.Type.text,
+        return new ActionInputParameter(name, UIActionInput.Type.ip,
                 null, defaultIpAddress);
     }
 

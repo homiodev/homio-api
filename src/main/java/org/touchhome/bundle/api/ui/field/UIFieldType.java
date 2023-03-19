@@ -23,9 +23,8 @@ public enum UIFieldType {
     // Button that fires server action
     Button(Object::toString),
     Toggle(Object::toString),
-    Info(Object::toString),
     Upload(Object::toString),
-    TextArea(Object::toString),
+    TextInput(Object::toString),
 
     // Slider with min/max/step parameters
     Slider(o -> {

@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.entity.BaseEntity;
-import org.touchhome.common.fs.TreeNode;
+import org.touchhome.bundle.api.fs.TreeNode;
 
 import java.util.*;
 import java.util.function.Consumer;

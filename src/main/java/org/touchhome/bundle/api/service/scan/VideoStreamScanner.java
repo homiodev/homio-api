@@ -1,7 +1,7 @@
 package org.touchhome.bundle.api.service.scan;
 
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.common.util.Lang;
+import org.touchhome.bundle.api.util.Lang;
 
 import java.util.ArrayList;
 import java.util.List;

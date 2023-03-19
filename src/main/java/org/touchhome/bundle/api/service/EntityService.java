@@ -6,8 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.HasStatusAndMsg;
+import org.touchhome.bundle.api.exception.NotFoundException;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
-import org.touchhome.common.exception.NotFoundException;
 
 import java.util.Map;
 import java.util.Optional;

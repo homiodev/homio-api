@@ -78,6 +78,16 @@
 
     <dependencies>
         <dependency>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.21</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
             <scope>provided</scope>
@@ -141,12 +151,6 @@
         </dependency>
         <dependency>
             <groupId>org.touchhome</groupId>
-            <artifactId>touchhome-common</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.touchhome</groupId>
             <artifactId>touchhome-hquery</artifactId>
             <version>1.0</version>
             <scope>provided</scope>
@@ -154,11 +158,6 @@
         <dependency>
             <groupId>com.fathzer</groupId>
             <artifactId>javaluator</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>tech.units</groupId>
-            <artifactId>indriya</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

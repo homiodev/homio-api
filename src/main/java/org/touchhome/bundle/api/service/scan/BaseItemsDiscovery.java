@@ -10,16 +10,17 @@ import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.ui.action.UIActionHandler;
+import org.touchhome.bundle.api.ui.field.ProgressBar;
+import org.touchhome.bundle.api.util.FlowMap;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
-import org.touchhome.common.model.ProgressBar;
-import org.touchhome.common.util.FlowMap;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import static org.touchhome.common.util.CommonUtils.getErrorMessage;
+import static org.touchhome.bundle.api.util.TouchHomeUtils.getErrorMessage;
+
 
 /**
  * Base class for scan devices, controllers, camera, etc...

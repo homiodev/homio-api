@@ -9,20 +9,25 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.console.ConsolePlugin;
 import org.touchhome.bundle.api.entity.BaseEntity;
+import org.touchhome.bundle.api.entity.HasStatusAndMsg;
+import org.touchhome.bundle.api.exception.ServerException;
 import org.touchhome.bundle.api.model.ActionResponseModel;
+import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
+import org.touchhome.bundle.api.ui.UI;
+import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.ui.dialog.DialogModel;
+import org.touchhome.bundle.api.ui.field.ProgressBar;
 import org.touchhome.bundle.api.ui.field.action.ActionInputParameter;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
+import org.touchhome.bundle.api.util.FlowMap;
+import org.touchhome.bundle.api.util.Lang;
 import org.touchhome.bundle.api.util.NotificationLevel;
-import org.touchhome.common.exception.ServerException;
-import org.touchhome.common.model.ProgressBar;
-import org.touchhome.common.util.CommonUtils;
-import org.touchhome.common.util.FlowMap;
-import org.touchhome.common.util.Lang;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -157,6 +162,11 @@ public interface EntityContextUI {
         dialogBuilderSupplier.accept(dialogModel);
         sendDialogRequest(dialogModel);
     }
+
+    void addNotificationBlock(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
+                              @Nullable Consumer<NotificationBlockBuilder> builder);
+
+    void removeNotification(@NotNull String entityID);
 
     /**
      * Add message to 'bell' header select box
@@ -389,7 +399,7 @@ public interface EntityContextUI {
         } else {
             text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {
-                text = CommonUtils.getErrorMessage(ex);
+                text = TouchHomeUtils.getErrorMessage(ex);
             }
             // try cast text to lang
             text = Lang.getServerMessage(text, messageParam);
@@ -430,5 +440,50 @@ public interface EntityContextUI {
         HeaderButtonBuilder clickAction(@NotNull Supplier<ActionResponseModel> clickAction);
 
         void build();
+    }
+
+    interface NotificationBlockBuilder {
+        NotificationBlockBuilder blockActionBuilder(Consumer<UIInputBuilder> builder);
+
+        NotificationBlockBuilder contextMenuActionBuilder(Consumer<UIInputBuilder> builder);
+
+        NotificationBlockBuilder setStatus(Status status);
+
+        NotificationBlockBuilder setUpdating(boolean value);
+
+        default NotificationBlockBuilder setStatus(Status status, String message) {
+            setStatus(status);
+            setStatusMessage(message);
+            return this;
+        }
+
+        // set status and info if statusMessage not null
+        default NotificationBlockBuilder setStatus(HasStatusAndMsg<?> statusEntity) {
+            setStatus(statusEntity.getStatus());
+            setStatusMessage(statusEntity.getStatusMessage());
+            return this;
+        }
+
+        default NotificationBlockBuilder setStatusMessage(String message) {
+            if (StringUtils.isNotEmpty(message)) {
+                addInfo(message, UI.Color.RED, "fas fa-exclamation", null);
+            }
+            return this;
+        }
+
+        NotificationBlockBuilder setVersion(@Nullable String version);
+
+        NotificationBlockBuilder setUpdatable(@NotNull BiFunction<ProgressBar, String, ActionResponseModel> updateHandler,
+                                              @NotNull List<String> versions);
+
+        NotificationBlockBuilder addInfo(@NotNull String info, @Nullable String color,
+                                         @Nullable String icon, @Nullable String iconColor);
+
+        NotificationBlockBuilder addButtonInfo(@NotNull String info, @Nullable String color,
+                                               @Nullable String icon, @Nullable String iconColor,
+                                               @NotNull String buttonIcon,
+                                               @Nullable String buttonText,
+                                               @Nullable String confirmMessage,
+                                               @NotNull UIActionHandler handler);
     }
 }

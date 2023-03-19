@@ -2,6 +2,7 @@ package org.touchhome.bundle.api.state;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 @Log4j2
+@Accessors(chain = true)
 public class DecimalType implements State, Comparable<DecimalType> {
 
     public static final DecimalType TRUE = new DecimalType(1);
@@ -19,6 +21,10 @@ public class DecimalType implements State, Comparable<DecimalType> {
 
     @Getter
     private final @NotNull BigDecimal value;
+
+    @Getter
+    @Setter
+    private String unit;
 
     @Getter
     @Setter

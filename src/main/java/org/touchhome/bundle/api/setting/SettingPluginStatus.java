@@ -11,9 +11,8 @@ import org.touchhome.bundle.api.model.Status;
 import org.touchhome.bundle.api.ui.field.UIFieldType;
 import org.touchhome.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.touchhome.bundle.api.util.NotificationLevel;
-import org.touchhome.common.util.CommonUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
@@ -34,12 +33,12 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     }
 
     static BundleStatusInfo error(Throwable th) {
-        return new BundleStatusInfo(Status.ERROR, CommonUtils.getErrorMessage(th));
+        return new BundleStatusInfo(Status.ERROR, TouchHomeUtils.getErrorMessage(th));
     }
 
     @Override
     default UIFieldType getSettingType() {
-        return UIFieldType.Info;
+        return UIFieldType.Text;
     }
 
     @Override
@@ -55,10 +54,6 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
         } catch (Exception ex) {
             return null;
         }
-    }
-
-    default List<BundleStatusInfo> getTransientStatuses(EntityContext entityContext) {
-        return null;
     }
 
     default void setActions(UIInputBuilder actionSupplier) {

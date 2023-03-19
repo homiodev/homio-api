@@ -97,13 +97,17 @@ public interface EntityContextVar {
 
     boolean setVariableIcon(@NotNull String variableId, @NotNull String icon, @Nullable String iconColor);
 
-    @NotNull String createVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
-                                   @NotNull VariableType variableType, @Nullable String description,
-                                   boolean readOnly, @Nullable String color, @Nullable String unit);
+    @NotNull String createVariable(@NotNull String groupId,
+                                   @Nullable String variableId,
+                                   @NotNull String variableName,
+                                   @NotNull VariableType variableType,
+                                   @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
-    @NotNull String createEnumVariable(@NotNull String groupId, @Nullable String variableId, @NotNull String variableName,
-                                       @Nullable String description, boolean readOnly, @Nullable String color,
-                                       @NotNull List<String> values);
+    @NotNull String createEnumVariable(@NotNull String groupId,
+                                       @Nullable String variableId,
+                                       @NotNull String variableName,
+                                       @NotNull List<String> values,
+                                       @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
     default boolean createGroup(@NotNull String groupId, @NotNull String groupName) {
         return createGroup(groupId, groupName, false, "fas fa-layer-group", "#18C0DB", null);
@@ -134,9 +138,10 @@ public interface EntityContextVar {
 
     /**
      * Build full data source path to variable
+     *
      * @param forSet - build data source for getting or setting value
      */
-    String buildDataSource(@NotNull String variableId, boolean forSet);
+    @NotNull String buildDataSource(@NotNull String variableId, boolean forSet);
 
     @Getter
     @RequiredArgsConstructor
@@ -163,5 +168,17 @@ public interface EntityContextVar {
 
         private final Predicate<Object> validate;
         private final Object defaultValue;
+    }
+
+    interface VariableMetaBuilder {
+        VariableMetaBuilder setReadOnly(boolean value);
+
+        VariableMetaBuilder setColor(String value);
+
+        VariableMetaBuilder setDescription(String value);
+
+        VariableMetaBuilder setUnit(String value);
+
+        VariableMetaBuilder setAttributes(List<String> attributes);
     }
 }

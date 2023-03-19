@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.inmemory;
+package org.touchhome.bundle.api.storage;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
@@ -25,7 +25,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -37,7 +36,7 @@ public final class InMemoryDB {
     public static final String ID = "_id";
     public static final String CREATED = "created";
     private static final String DATABASE = "db";
-    private static final Map<String, InMemoryDBData<?>> map = new ConcurrentHashMap<>();
+    private static final Map<String, InMemoryDBDataService<?>> map = new ConcurrentHashMap<>();
 
     private static final MongoServer server;
 
@@ -79,16 +78,16 @@ public final class InMemoryDB {
         });
     }
 
-    public static <T extends InMemoryDBEntity> InMemoryDBService<T> getOrCreateService(
+    public static <T extends DataStorageEntity> DataStorageService<T> getOrCreateService(
             @NotNull Class<T> pojoClass, @Nullable Long quota) {
         return InMemoryDB.getOrCreateService(pojoClass, pojoClass.getSimpleName(), quota);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends InMemoryDBEntity> InMemoryDBService<T> getOrCreateService(@NotNull Class<T> pojoClass,
-                                                                                       @NotNull String uniqueId,
-                                                                                       @Nullable Long quota) {
-        return (InMemoryDBService<T>) map.computeIfAbsent(uniqueId, aClass -> {
+    public static <T extends DataStorageEntity> DataStorageService<T> getOrCreateService(@NotNull Class<T> pojoClass,
+                                                                                         @NotNull String uniqueId,
+                                                                                         @Nullable Long quota) {
+        return (DataStorageService<T>) map.computeIfAbsent(uniqueId, aClass -> {
             String collectionName = pojoClass.getSimpleName() + uniqueId;
             // create timestamp index
             MongoCollection<T> collection = datastore.getCollection(collectionName, pojoClass);
@@ -96,7 +95,7 @@ public final class InMemoryDB {
             //          collection.createIndex(Indexes.ascending("topic"));
 
             // delta is 10% of quota but not more than 1000
-            InMemoryDBData<T> data = new InMemoryDBData<>(pojoClass, collectionName, collection);
+            InMemoryDBDataService<T> data = new InMemoryDBDataService<>(pojoClass, collectionName, collection);
             data.updateQuota(quota);
             return data;
         });
@@ -105,16 +104,58 @@ public final class InMemoryDB {
     /**
      * Remove service from map and clean all data
      */
-    public static <T extends InMemoryDBEntity> InMemoryDBService<T> removeService(String uniqueId) {
-        InMemoryDBService<T> service = (InMemoryDBService<T>) map.remove(uniqueId);
+    public static <T extends DataStorageEntity> DataStorageService<T> removeService(String uniqueId) {
+        DataStorageService<T> service = (DataStorageService<T>) map.remove(uniqueId);
         if (service != null) {
             service.deleteAll();
         }
         return service;
     }
 
+    public static Number toNumber(Object value) {
+        if (value == null) return 0;
+        if (Number.class.isAssignableFrom(value.getClass())) {
+            return ((Number) value);
+        }
+        String vStr = String.valueOf(value);
+        if ("false".equals(vStr)) return 0;
+        try {
+            return NumberFormat.getInstance().parse(vStr).floatValue();
+        } catch (Exception ignored) {
+        }
+        return vStr.isEmpty() ? 0 : 1;
+    }
+
+    /*public static void main(String[] args) throws InterruptedException {
+        long start0 = System.currentTimeMillis();
+        InMemoryDBService<Test> service = InMemoryDB.getOrCreateService(Test.class, 10000L);
+        for (int i = 0; i < 10000; i++) {
+            service.save(new Test("$SYS/data_" + i % 2, i));
+            Thread.sleep(1);
+        }
+
+        long start = System.currentTimeMillis();
+        service.getTimeSeries(1111110L, null, "topic", "$SYS/data_1");
+
+        System.out.println((System.currentTimeMillis() - start));
+        System.out.println((System.currentTimeMillis() - start0));
+    }
+
+    @Getter
+    @Setter
+    @ToString(callSuper = true)
+    @NoArgsConstructor
+    public static class Test extends InMemoryDBEntity {
+        private String topic;
+
+        public Test(String topic, Object value) {
+            super(value);
+            this.topic = topic;
+        }
+    }*/
+
     @RequiredArgsConstructor
-    private static class InMemoryDBData<T extends InMemoryDBEntity> implements InMemoryDBService<T> {
+    private static class InMemoryDBDataService<T extends DataStorageEntity> implements DataStorageService<T> {
 
         private final Class<T> pojoClass;
         private final String collectionName;
@@ -125,11 +166,33 @@ public final class InMemoryDB {
         private int delta;
 
         @Override
-        public T save(T entity) {
+        public List<SourceHistoryItem> getSourceHistoryItems(@Nullable String field, @Nullable String value, int from,
+                                                             int count) {
+            Bson filter = field == null || value == null ? new Document() : Filters.eq(field, value);
+            try (MongoCursor<T> cursor = queryWithSort(filter, SortBy.sortDesc(CREATED), count, from)) {
+                return StreamSupport.stream(Spliterators.spliteratorUnknownSize(cursor, 0), false)
+                        .map(t -> new SourceHistoryItem(t.getCreated(), t.getValue()))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        @Override
+        public void save(@NotNull List<T> entities) {
+            collection.insertMany(entities);
+            postInsertQuotaHandler();
+        }
+
+        @Override
+        public T save(@NotNull T entity) {
             collection.insertOne(entity);
             for (Consumer<T> listener : saveListeners.values()) {
                 listener.accept(entity);
             }
+            postInsertQuotaHandler();
+            return entity;
+        }
+
+        private void postInsertQuotaHandler() {
             if (quota != null) {
                 estimateUsed.incrementAndGet();
 
@@ -152,7 +215,6 @@ public final class InMemoryDB {
                     }
                 }
             }
-            return entity;
         }
 
         @Override
@@ -174,34 +236,17 @@ public final class InMemoryDB {
         }
 
         @Override
-        public List<T> findAllBy(@NotNull String field, @NotNull String value,
-                                 @Nullable SortBy sort, @Nullable Integer limit) {
-            return queryListWithSort(Filters.eq(field, value), sort, limit);
-        }
-
-        @Override
         public T findLatestBy(@NotNull String field, @NotNull String value) {
-            try (MongoCursor<T> cursor = queryWithSort(Filters.eq(field, value), SortBy.sortDesc(CREATED), 1)) {
+            try (MongoCursor<T> cursor = queryWithSort(Filters.eq(field, value), SortBy.sortDesc(CREATED), 1, null)) {
                 return cursor.tryNext();
             }
         }
 
         @Override
         public T getLatest() {
-            try (MongoCursor<T> cursor = queryWithSort(new Document(), SortBy.sortDesc(CREATED), 1)) {
+            try (MongoCursor<T> cursor = queryWithSort(new Document(), SortBy.sortDesc(CREATED), 1, null)) {
                 return cursor.tryNext();
             }
-        }
-
-        @Override
-        public List<T> findAll(@Nullable SortBy sort, Integer limit) {
-            return queryListWithSort(new Document(), sort, limit);
-        }
-
-        @Override
-        public List<T> findByPattern(@NotNull String field, @NotNull String pattern,
-                                     @Nullable SortBy sort, @Nullable Integer limit) {
-            return queryListWithSort(Filters.eq(field, Pattern.compile(pattern)), sort, limit);
         }
 
         @Override
@@ -244,26 +289,12 @@ public final class InMemoryDB {
             }
         }
 
-        private List<T> queryListWithSort(Bson filter, SortBy sort, Integer limit) {
-            try (MongoCursor<T> cursor = queryWithSort(filter, sort, limit)) {
+        @Override
+        public @NotNull List<T> queryListWithSort(Bson filter, SortBy sort, Integer limit) {
+            try (MongoCursor<T> cursor = queryWithSort(filter, sort, limit, null)) {
                 return StreamSupport.stream(Spliterators.spliteratorUnknownSize(cursor, 0), false)
                         .collect(Collectors.toList());
             }
-        }
-
-        private Number toNumber(Object value) {
-            if (value == null) return 0;
-            if (Number.class.isAssignableFrom(value.getClass())) {
-                return ((Number) value);
-            }
-            String vStr = String.valueOf(value);
-            if ("true".equals(vStr)) return 1;
-            if ("false".equals(vStr)) return 0;
-            try {
-                return NumberFormat.getInstance().parse(vStr).floatValue();
-            } catch (Exception ignored) {
-            }
-            return 0;
         }
 
         @Override
@@ -301,6 +332,7 @@ public final class InMemoryDB {
 
             switch (aggregationType) {
                 case Average:
+                case AverageNoZero:
                     pipeline.add(Aggregates.group("_id", Accumulators.avg(aggregateField, "$" + aggregateField)));
                     break;
                 case Sum:
@@ -332,7 +364,7 @@ public final class InMemoryDB {
         }
 
         @Override
-        public InMemoryDBData<T> addSaveListener(String discriminator, Consumer<T> listener) {
+        public InMemoryDBDataService<T> addSaveListener(String discriminator, Consumer<T> listener) {
             this.saveListeners.put(discriminator, listener);
             return this;
         }
@@ -368,12 +400,15 @@ public final class InMemoryDB {
             return changed;
         }
 
-        private MongoCursor<T> queryWithSort(Bson query, SortBy sort, Integer limit) {
+        private MongoCursor<T> queryWithSort(Bson query, SortBy sort, Integer limit, Integer skip) {
             FindIterable<T> ts = collection.find(query);
             if (sort != null) {
                 ts.sort(sort.isAsc() ? ascending(sort.getOrderField()) : descending(sort.getOrderField()));
                 if (limit != null) {
                     ts.limit(limit);
+                }
+                if (skip != null) {
+                    ts.skip(skip);
                 }
             }
             return ts.cursor();
@@ -384,32 +419,4 @@ public final class InMemoryDB {
             return document == null ? null : document.get(aggregateField);
         }
     }
-
-    /*public static void main(String[] args) throws InterruptedException {
-        long start0 = System.currentTimeMillis();
-        InMemoryDBService<Test> service = InMemoryDB.getOrCreateService(Test.class, 10000L);
-        for (int i = 0; i < 10000; i++) {
-            service.save(new Test("$SYS/data_" + i % 2, i));
-            Thread.sleep(1);
-        }
-
-        long start = System.currentTimeMillis();
-        service.getTimeSeries(1111110L, null, "topic", "$SYS/data_1");
-
-        System.out.println((System.currentTimeMillis() - start));
-        System.out.println((System.currentTimeMillis() - start0));
-    }
-
-    @Getter
-    @Setter
-    @ToString(callSuper = true)
-    @NoArgsConstructor
-    public static class Test extends InMemoryDBEntity {
-        private String topic;
-
-        public Test(String topic, Object value) {
-            super(value);
-            this.topic = topic;
-        }
-    }*/
 }

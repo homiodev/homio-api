@@ -4,17 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.Type;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.touchhome.bundle.api.converter.JSONConverter;
 import org.touchhome.bundle.api.converter.StringSetConverter;
 import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.util.Constants;
-import org.touchhome.common.util.SslUtil;
 
 import javax.persistence.*;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -35,16 +32,6 @@ public final class UserEntity extends BaseEntity<UserEntity> {
     @Getter
     @JsonIgnore
     private String password;
-
-    @Lob
-    @Getter
-    @Type(type = "org.hibernate.type.BinaryType")
-    @JsonIgnore
-    private byte[] keystore;
-
-    @Getter
-    @Setter
-    private Date keystoreDate;
 
     @Getter
     @Setter
@@ -82,13 +69,6 @@ public final class UserEntity extends BaseEntity<UserEntity> {
             }
         }
         this.password = password;
-        return this;
-    }
-
-    public UserEntity setKeystore(byte[] keystore) {
-        this.keystore = keystore;
-        SslUtil.validateKeyStore(keystore, password);
-        this.keystoreDate = new Date();
         return this;
     }
 

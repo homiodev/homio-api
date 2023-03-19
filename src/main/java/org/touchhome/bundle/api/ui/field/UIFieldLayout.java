@@ -1,6 +1,12 @@
 package org.touchhome.bundle.api.ui.field;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -8,12 +14,8 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
-import org.touchhome.common.util.CommonUtils;
+
+import static org.touchhome.bundle.api.util.TouchHomeUtils.OBJECT_MAPPER;
 
 /**
  * Widget layout builder
@@ -86,7 +88,7 @@ public @interface UIFieldLayout {
             for (RowBuilder rowBuilder : this.r) {
                 buildRow(rowBuilder);
             }
-            return CommonUtils.OBJECT_MAPPER.writeValueAsString(this);
+            return OBJECT_MAPPER.writeValueAsString(this);
         }
 
         private void buildRow(RowBuilder rowBuilder) {

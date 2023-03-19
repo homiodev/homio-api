@@ -29,6 +29,8 @@ public class DialogModel {
     private String icon;
     private String iconColor;
     private String dialogColor;
+    // if need keep dialog on ui on refresh and attach to special header button
+    private boolean keepOnUi = true;
 
     @SneakyThrows
     public DialogModel group(String name, ThrowingConsumer<DialogGroup, Exception> consumer) {
@@ -42,6 +44,11 @@ public class DialogModel {
         DialogGroup dialogGroup = new DialogGroup(name);
         groups.add(dialogGroup);
         dialogGroup.inputs(inputs);
+        return this;
+    }
+
+    public DialogModel disableKeepOnUi() {
+        this.keepOnUi = false;
         return this;
     }
 

@@ -5,9 +5,8 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
+import org.touchhome.bundle.api.exception.ServerException;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
-import org.touchhome.common.exception.ServerException;
-import org.touchhome.common.util.CommonUtils;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -39,7 +38,7 @@ public abstract class TextToSpeechEntityService {
      */
     @SneakyThrows
     public TextToSpeechEntityService(String folderName, @Nullable Integer maxQuota) {
-        this.cacheFolder = CommonUtils.createDirectoriesIfNotExists(TouchHomeUtils.getAudioPath().resolve(folderName));
+        this.cacheFolder = TouchHomeUtils.createDirectoriesIfNotExists(TouchHomeUtils.getAudioPath().resolve(folderName));
         this.maxQuota = maxQuota;
         cleanOldCache();
     }

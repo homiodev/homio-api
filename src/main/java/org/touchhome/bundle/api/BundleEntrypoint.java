@@ -2,9 +2,7 @@ package org.touchhome.bundle.api;
 
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
-import org.touchhome.bundle.api.setting.SettingPluginStatus;
-import org.touchhome.bundle.api.ui.builder.BellNotificationBuilder;
-import org.touchhome.common.util.CommonUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.net.URL;
 
@@ -60,22 +58,9 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
         return Integer.compare(this.order(), o.order());
     }
 
-    /**
-     * Notifications that visible in ui header
-     */
-    default void assembleBellNotifications(BellNotificationBuilder bellNotificationBuilder) {
-    }
-
-    /**
-     * Get main bundle status setting. Will be shown on header ui
-     */
-    default Class<? extends SettingPluginStatus> getBundleStatusSetting() {
-        return null;
-    }
-
     @SneakyThrows
     default URL getResource(String resource) {
-        return CommonUtils.getResource(getBundleId(), resource);
+        return TouchHomeUtils.getResource(getBundleId(), resource);
     }
 
     enum BundleImageColorIndex {

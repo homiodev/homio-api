@@ -7,10 +7,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.touchhome.bundle.api.entity.BaseEntity;
 import org.touchhome.bundle.api.entity.UserEntity;
+import org.touchhome.bundle.api.exception.NotFoundException;
 import org.touchhome.bundle.api.model.HasEntityIdentifier;
 import org.touchhome.bundle.api.repository.AbstractRepository;
 import org.touchhome.bundle.api.workspace.scratch.Scratch3ExtensionBlocks;
-import org.touchhome.common.exception.ServerException;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -46,6 +46,15 @@ public interface EntityContext {
         return getEntity(entityID, true);
     }
 
+    @NotNull
+    default <T extends BaseEntity> T getEntityRequire(@NotNull String entityID) {
+        T entity = getEntity(entityID, true);
+        if (entity == null) {
+            throw new NotFoundException("Unable to find entity: " + entityID);
+        }
+        return entity;
+    }
+
     @Nullable
     default <T extends BaseEntity> T getEntityOrDefault(@NotNull String entityID, @Nullable T defEntity) {
         T entity = getEntity(entityID, true);
@@ -63,10 +72,7 @@ public interface EntityContext {
 
     Optional<AbstractRepository> getRepository(@NotNull String entityID);
 
-    /**
-     * @throws ServerException - if repo not found
-     */
-    @NotNull AbstractRepository getRepository(@NotNull Class<? extends BaseEntity> entityClass) throws ServerException;
+    @NotNull AbstractRepository getRepository(@NotNull Class<? extends BaseEntity> entityClass) throws NotFoundException;
 
     @Nullable
     default <T extends BaseEntity> T getEntity(@NotNull T entity) {
@@ -112,12 +118,6 @@ public interface EntityContext {
 
     @Nullable <T extends BaseEntity> T getEntityByName(@NotNull String name, @NotNull Class<T> entityClass);
 
-    void setFeatureState(@NotNull String feature, boolean state);
-
-    boolean isFeatureEnabled(@NotNull String deviceFeature);
-
-    @NotNull Map<String, Boolean> getDeviceFeatures();
-
     @NotNull <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
 
     @NotNull <T> T getBean(@NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
@@ -139,6 +139,15 @@ public interface EntityContext {
     default boolean isAdminUserOrNone() {
         UserEntity user = getUser(false);
         return user == null || user.isAdmin();
+    }
+
+    @NotNull
+    default UserEntity getUserRequire() {
+        UserEntity user = getUser(false);
+        if (user == null) {
+            throw new NotFoundException("Unable to find authenticated user");
+        }
+        return user;
     }
 
     @Nullable

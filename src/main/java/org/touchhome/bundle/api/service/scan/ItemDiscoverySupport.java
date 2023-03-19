@@ -1,7 +1,7 @@
 package org.touchhome.bundle.api.service.scan;
 
 import org.touchhome.bundle.api.EntityContext;
-import org.touchhome.common.model.ProgressBar;
+import org.touchhome.bundle.api.ui.field.ProgressBar;
 
 public interface ItemDiscoverySupport {
     String getName();

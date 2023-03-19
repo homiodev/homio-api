@@ -1,4 +1,4 @@
-package org.touchhome.bundle.api.inmemory;
+package org.touchhome.bundle.api.storage;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;

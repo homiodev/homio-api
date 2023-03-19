@@ -8,10 +8,6 @@ public interface SettingPluginText extends SettingPlugin<String> {
         return String.class;
     }
 
-    default String getPattern() {
-        return null;
-    }
-
     @Override
     default UIFieldType getSettingType() {
         return UIFieldType.Text;

@@ -7,14 +7,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.JSON;
 import org.touchhome.bundle.api.util.SecureString;
-import org.touchhome.common.util.CommonUtils;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.touchhome.bundle.api.util.TouchHomeUtils.OBJECT_MAPPER;
 
 public interface HasJsonData {
 
@@ -36,7 +36,7 @@ public interface HasJsonData {
     @SneakyThrows
     default <T> @Nullable T getJsonData(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
-            return CommonUtils.OBJECT_MAPPER.readValue(getJsonData(key), classType);
+            return OBJECT_MAPPER.readValue(getJsonData(key), classType);
         }
         return null;
     }

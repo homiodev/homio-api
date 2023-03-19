@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.touchhome.common.util.CommonUtils;
+import org.touchhome.bundle.api.util.TouchHomeUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,8 +13,8 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 import static org.touchhome.bundle.api.util.TouchHomeUtils.FFMPEG_LOCATION;
+import static org.touchhome.bundle.api.util.TouchHomeUtils.addToListSafe;
 import static org.touchhome.bundle.api.video.VideoConstants.CHANNEL_FFMPEG_MOTION_ALARM;
-import static org.touchhome.common.util.CommonUtils.addToListSafe;
 
 /**
  * Responsible for handling multiple ffmpeg conversions which are used for many tasks
@@ -36,7 +36,7 @@ public class FFMPEG {
     private final List<String> commandArrayList = new ArrayList<>();
     private IpVideoFfmpegThread ipVideoFfmpegThread;
     private int keepAlive = 8;
-    private String entityID;
+    private final String entityID;
 
     public FFMPEG(@NotNull String entityID, @NotNull String description,
                   @NotNull FFMPEGHandler handler, @NotNull Logger log, @NotNull FFMPEGFormat format,
@@ -184,7 +184,7 @@ public class FFMPEG {
                 }
             } catch (IOException ex) {
                 log.warn("[{}]: An error occurred trying to process the messages from FFMPEG.", entityID);
-                handler.ffmpegError(CommonUtils.getErrorMessage(ex));
+                handler.ffmpegError(TouchHomeUtils.getErrorMessage(ex));
             }
         }
     }
