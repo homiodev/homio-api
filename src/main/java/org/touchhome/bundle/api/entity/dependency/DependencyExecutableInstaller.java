@@ -9,8 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.fs.archive.ArchiveUtil;
-import org.touchhome.bundle.api.hardware.other.MachineHardwareRepository;
-import org.touchhome.bundle.api.hquery.LinesReader;
 import org.touchhome.bundle.api.model.ActionResponseModel;
 import org.touchhome.bundle.api.setting.SettingPluginButton;
 import org.touchhome.bundle.api.setting.SettingPluginText;
@@ -18,6 +16,8 @@ import org.touchhome.bundle.api.ui.action.UIActionHandler;
 import org.touchhome.bundle.api.ui.field.ProgressBar;
 import org.touchhome.bundle.api.util.Curl;
 import org.touchhome.bundle.api.util.TouchHomeUtils;
+import org.touchhome.bundle.hquery.LinesReader;
+import org.touchhome.bundle.hquery.hardware.other.MachineHardwareRepository;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -119,13 +119,11 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
                 });
                 processConsumer.accept(process);
                 Thread inputThread =
-                        new Thread(new LinesReader(getName() + "inputReader", process.getInputStream(), null, message -> {
-                            log.info("[{}]: {}. {}", entityID, getName(), message);
-                        }));
+                        new Thread(new LinesReader(getName() + "inputReader", process.getInputStream(), null, message ->
+                                log.info("[{}]: {}. {}", entityID, getName(), message)));
                 Thread errorThread =
-                        new Thread(new LinesReader(getName() + "errorReader", process.getErrorStream(), null, message -> {
-                            log.error("[{}]: {}. {}", entityID, getName(), message);
-                        }));
+                        new Thread(new LinesReader(getName() + "errorReader", process.getErrorStream(), null, message ->
+                                log.error("[{}]: {}. {}", entityID, getName(), message)));
                 inputThread.start();
                 errorThread.start();
 

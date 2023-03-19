@@ -36,7 +36,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.touchhome.bundle.api.EntityContext;
 import org.touchhome.bundle.api.entity.RestartHandlerOnChange;
 import org.touchhome.bundle.api.fs.TreeNode;
-import org.touchhome.bundle.api.hardware.network.NetworkHardwareRepository;
+import org.touchhome.bundle.hquery.hardware.network.NetworkHardwareRepository;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.OutputKeys;

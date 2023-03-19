@@ -2,7 +2,7 @@ package org.touchhome.bundle.api.video.ffmpeg;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.data.util.Pair;
-import org.touchhome.bundle.api.hquery.api.*;
+import org.touchhome.bundle.hquery.api.*;
 
 import java.io.File;
 import java.lang.reflect.Field;
