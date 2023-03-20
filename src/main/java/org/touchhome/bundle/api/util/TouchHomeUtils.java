@@ -22,7 +22,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.apache.tika.Tika;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,7 +72,6 @@ public class TouchHomeUtils {
 
     public static final String APP_UUID;
     public static final int RUN_COUNT;
-    public static final Tika TIKA = new Tika();
     @Getter
     private static final Path logsPath = getOrCreatePath("logs");
     @Getter
@@ -82,9 +80,6 @@ public class TouchHomeUtils {
     private static final Path filesPath = getOrCreatePath("asm_files");
     @Getter
     private static final Path installPath = getOrCreatePath("installs");
-    @Getter
-    public static final String FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
-            TouchHomeUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
     @Getter
     private static final Path externalJarClassPath = getOrCreatePath("external_jars");
     @Getter
@@ -97,31 +92,36 @@ public class TouchHomeUtils {
     private static final Path imagePath = getOrCreatePath("media/image");
     @Getter
     private static final Path sshPath = getOrCreatePath("ssh");
+    @Getter
+    private static final Path tmpPath = getOrCreatePath("tmp");
+
     // map for store different statuses
     @Getter
     private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    @Getter
+    public static final String FFMPEG_LOCATION;
+
+    public static final ObjectMapper OBJECT_MAPPER;
+    public static final ObjectMapper YAML_OBJECT_MAPPER;
+    private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
+    private static final Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
 
     static {
+        FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
+                TouchHomeUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
+        OBJECT_MAPPER = new ObjectMapper()
+                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
+                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
         ConfFile confFile = readConfigurationFile();
         APP_UUID = confFile.getUuid();
         RUN_COUNT = confFile.getRunCount();
     }
-
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    public static final ObjectMapper YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
-            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
-    private static final Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
-    @Getter
-    private static final Path rootPath = SystemUtils.IS_OS_WINDOWS ? SystemUtils.getUserHome().toPath().resolve("touchhome") :
-            createDirectoriesIfNotExists(Paths.get("/opt/touchhome"));
-    @Getter
-    private static final Path tmpPath = createDirectoriesIfNotExists(rootPath.resolve("tmp"));
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -473,6 +473,11 @@ public class TouchHomeUtils {
             }
         }
         return relativePath;
+    }
+
+    public static Path getRootPath() {
+        return SystemUtils.IS_OS_WINDOWS ? SystemUtils.getUserHome().toPath().resolve("touchhome") :
+                createDirectoriesIfNotExists(Paths.get("/opt/touchhome"));
     }
 
     public static Path getOrCreatePath(String path) {
