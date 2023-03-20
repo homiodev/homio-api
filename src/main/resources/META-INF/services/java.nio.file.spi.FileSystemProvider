@@ -1,4 +1,4 @@
-org.touchhome.common.fs.tar.TarFileSystemProvider
-org.touchhome.common.fs.tar.gz.TarGzipFileSystemProvider
-org.touchhome.common.fs.tar.bz2.TarBzip2FileSystemProvider
-org.touchhome.common.fs.tar.xz.TarXzFileSystemProvider
+org.touchhome.bundle.api.fs.archive.tar.TarFileSystemProvider
+org.touchhome.bundle.api.fs.archive.tar.gz.TarGzipFileSystemProvider
+org.touchhome.bundle.api.fs.archive.tar.bz2.TarBzip2FileSystemProvider
+org.touchhome.bundle.api.fs.archive.tar.xz.TarXzFileSystemProvider
