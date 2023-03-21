@@ -1,10 +1,11 @@
 name: Maven release
 
 on:
-  push:
-    branches:
-      - 'release'
   workflow_dispatch:
+    inputs:
+      description:
+        description: 'Description'
+        required: true
 
 jobs:
   build:
