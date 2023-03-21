@@ -26,7 +26,7 @@ jobs:
           repositories: '[{ "id": "releases", "url": "${ARTIFACTORY_HOST}/libs-release" }, { "id": "snapshots", "url": "${ARTIFACTORY_HOST}/libs-snapshot" }]'
           servers: '[{ "id": "releases", "username": "${ARTIFACTORY_USERNAME}", "password": "${ARTIFACTORY_PASSWORD}" }, { "id": "snapshots", "username": "${ARTIFACTORY_USERNAME}", "password": "${ARTIFACTORY_PASSWORD}" }]'
       - name: Build with Maven
-        run: mvn -B package
+        run: mvn -B clean package
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
