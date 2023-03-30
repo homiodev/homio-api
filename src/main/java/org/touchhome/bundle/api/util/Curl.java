@@ -55,7 +55,7 @@ import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
 public final class Curl {
-    private static final RestTemplate restTemplate = new RestTemplate();
+    public static final RestTemplate restTemplate = new RestTemplate();
 
     public static <T> T get(@NotNull String url, @NotNull Class<T> responseType, Object... uriVariables) {
         return restTemplate.getForObject(url, responseType, uriVariables);
@@ -73,6 +73,10 @@ public final class Curl {
     @SneakyThrows
     public static void download(@NotNull String url, @NotNull Path targetPath) {
         FileUtils.copyURLToFile(new URL(url), targetPath.toFile(), 60000, 60000);
+    }
+
+    public static void downloadIfSizeNotMatch(@NotNull Path path, @NotNull String url) {
+
     }
 
     @SneakyThrows
@@ -202,6 +206,11 @@ public final class Curl {
                 return read;
             }
         }, targetPath.toFile());
+    }
+
+    @SneakyThrows
+    public static int getFileSize(@NotNull String url) {
+        return getFileSize(new URL(url));
     }
 
     public static int getFileSize(@NotNull URL url) {

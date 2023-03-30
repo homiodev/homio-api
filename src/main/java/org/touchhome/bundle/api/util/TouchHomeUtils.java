@@ -48,6 +48,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
@@ -203,6 +204,9 @@ public class TouchHomeUtils {
         if (cause instanceof NullPointerException) {
             log.error("Unexpected NPE: <{}>", ex.getMessage(), ex);
             return "Unexpected NullPointerException at line: " + ex.getStackTrace()[0].toString();
+        }
+        if (cause instanceof UnknownHostException) {
+            return "UnknownHost: " + cause.getMessage();
         }
 
         return StringUtils.defaultString(cause.getMessage(), cause.toString());

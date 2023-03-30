@@ -29,6 +29,6 @@ public @interface UIActionInput {
     Pattern pattern() default @Pattern(regexp = ".*");
 
     enum Type {
-        text, json, textarea, password, number, info, bool, ip, email, select
+        text, json, textarea, password, number, info, bool, ip, select
     }
 }

@@ -68,6 +68,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
         private String author;
         private String website;
         private String category;
+        private String jarUrl;
 
         private List<String> versions;
 

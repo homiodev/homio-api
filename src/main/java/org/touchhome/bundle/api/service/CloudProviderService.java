@@ -1,15 +1,23 @@
 package org.touchhome.bundle.api.service;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.touchhome.bundle.api.model.Status;
 
 public interface CloudProviderService {
-    String getName();
+    @NotNull String getName();
 
-    Status getStatus();
+    @Nullable Status getStatus();
 
-    String getStatusMessage();
+    @Nullable String getStatusMessage();
 
-    void start();
+    void start() throws Exception;
 
-    void stop();
+    void stop() throws Exception;
+
+    void updateNotificationBlock(@Nullable Exception ex);
+
+    default void updateNotificationBlock() {
+        updateNotificationBlock(null);
+    }
 }

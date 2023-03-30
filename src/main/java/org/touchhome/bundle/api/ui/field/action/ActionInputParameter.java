@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.touchhome.bundle.api.model.OptionModel;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +22,7 @@ import static org.touchhome.bundle.api.util.TouchHomeUtils.putOpt;
 @Accessors(chain = true)
 @RequiredArgsConstructor
 public class ActionInputParameter {
-    public static Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_]+");
+    public static Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_.]+");
 
     private final String name;
     private final UIActionInput.Type type;
@@ -57,11 +58,11 @@ public class ActionInputParameter {
     }
 
     public static ActionInputParameter email(String name, String defaultValue) {
-        return new ActionInputParameter(name, UIActionInput.Type.email, null, defaultValue);
+        return new ActionInputParameter(name, UIActionInput.Type.text, Collections.singleton("email"), defaultValue);
     }
 
     public static ActionInputParameter password(String name, String defaultValue) {
-        return new ActionInputParameter(name, UIActionInput.Type.password, null, defaultValue);
+        return new ActionInputParameter(name, UIActionInput.Type.password, Collections.singleton("password"), defaultValue);
     }
 
     public static ActionInputParameter bool(String name, boolean defaultValue) {
@@ -74,7 +75,7 @@ public class ActionInputParameter {
 
     public static ActionInputParameter ip(String name, String defaultIpAddress) {
         return new ActionInputParameter(name, UIActionInput.Type.ip,
-                null, defaultIpAddress);
+                Collections.singleton("ip"), defaultIpAddress);
     }
 
     public static ActionInputParameter textarea(String name, String value) {

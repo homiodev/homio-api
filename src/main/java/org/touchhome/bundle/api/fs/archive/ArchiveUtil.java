@@ -92,8 +92,8 @@ public final class ArchiveUtil {
         return paths;
     }
 
-    public static void unzip(@NotNull Path file, @NotNull Path destination, @NotNull UnzipFileIssueHandler handler) {
-        unzip(file, destination, null, true, null, handler);
+    public static List<Path> unzip(@NotNull Path file, @NotNull Path destination, @NotNull UnzipFileIssueHandler handler) {
+        return unzip(file, destination, null, true, null, handler);
     }
 
     public static boolean isArchive(@NotNull Path archive) {

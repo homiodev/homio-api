@@ -20,8 +20,6 @@ public final class UserEntity extends BaseEntity<UserEntity> {
 
     public static final String PREFIX = "u_";
 
-    public static final String ADMIN_USER = PREFIX + "user";
-
     public static final UserEntity ANONYMOUS_USER = new UserEntity()
             .setRoles(Collections.emptySet());
 
