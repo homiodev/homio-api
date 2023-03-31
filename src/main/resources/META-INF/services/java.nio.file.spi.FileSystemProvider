@@ -1,4 +1,4 @@
-org.touchhome.bundle.api.fs.archive.tar.TarFileSystemProvider
-org.touchhome.bundle.api.fs.archive.tar.gz.TarGzipFileSystemProvider
-org.touchhome.bundle.api.fs.archive.tar.bz2.TarBzip2FileSystemProvider
-org.touchhome.bundle.api.fs.archive.tar.xz.TarXzFileSystemProvider
+org.homio.bundle.api.fs.archive.tar.TarFileSystemProvider
+org.homio.bundle.api.fs.archive.tar.gz.TarGzipFileSystemProvider
+org.homio.bundle.api.fs.archive.tar.bz2.TarBzip2FileSystemProvider
+org.homio.bundle.api.fs.archive.tar.xz.TarXzFileSystemProvider
