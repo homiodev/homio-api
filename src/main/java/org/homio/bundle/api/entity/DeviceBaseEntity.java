@@ -44,7 +44,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     private JSON jsonData = new JSON();
 
     /**
-     * Define order in which entity will be shown on UI map
+     * @return Define order in which entity will be shown on UI map
      */
     public int getOrder() {
         return 100;

@@ -30,7 +30,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
     protected abstract String getBatchName();
 
     /**
-     * Max time in seconds for wait each DevicesScanner to be done.
+     * @return Max time in seconds for wait each DevicesScanner to be done.
      */
     protected int getMaxTimeToWaitInSeconds() {
         return 10 * 60;
@@ -88,10 +88,13 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
     }
 
     public interface DeviceScannerHandler {
+
         /**
          * Fires to start search for new items
          *
          * @param headerConfirmationButtonKey - special header button where confirm request to attach
+         * @param entityContext               -
+         * @param progressBar                 -
          * @return found items count
          */
         DeviceScannerResult handle(EntityContext entityContext, ProgressBar progressBar, String headerConfirmationButtonKey);

@@ -33,6 +33,9 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
     /**
      * In case of action require user input. Dialog popup shows
+     * @param entityContext -
+     * @param value -
+     * @return -
      */
     default List<ActionInputParameter> getInputParameters(EntityContext entityContext, String value) {
         return null;

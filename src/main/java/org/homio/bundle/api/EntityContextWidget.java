@@ -43,9 +43,7 @@ public interface EntityContextWidget {
             @NotNull String entityID,
             @NotNull Consumer<SimpleToggleWidgetBuilder> widgetBuilder);
 
-    /**
-     * // color widget has available fields: colors, icon, name, brightness, colorTemp, onOff
-     */
+    // color widget has available fields: colors, icon, name, brightness, colorTemp, onOff
     void createColorWidget(
             @NotNull String entityID,
             @NotNull Consumer<ColorWidgetBuilder> widgetBuilder);

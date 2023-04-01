@@ -110,9 +110,7 @@ public class TreeNode implements Comparable<TreeNode> {
         }
     }
 
-    /**
-     * Convert TreeNode tree to plan Path list
-     */
+    // Convert TreeNode tree to plan Path list
     public List<Path> toPath(Path basePath) {
         List<Path> paths = new ArrayList<>();
         this.toPath(basePath, paths);
@@ -292,7 +290,7 @@ public class TreeNode implements Comparable<TreeNode> {
     }
 
     /**
-     * Represent <Chip> block element on right side of tree. Must specify at least icon or text to be visible on UI.
+     * Represent [Chip] block element on right side of tree. Must specify at least icon or text to be visible on UI.
      */
     @Getter
     @Setter

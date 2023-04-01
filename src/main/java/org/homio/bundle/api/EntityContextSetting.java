@@ -45,6 +45,7 @@ public interface EntityContextSetting {
      * @param distinguishKey - unqiue key for stored value that associanted with entity
      * @param title          - uses to log updated value to console
      * @param value          - value to store. remove from map if null
+     * @param <T> -
      */
     static <T> void setMemValue(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title,
                                 @Nullable T value) {
@@ -75,32 +76,46 @@ public interface EntityContextSetting {
 
     /**
      * Get unmodifiable list of all available places. Configured via settings
+     * @return list of places
      */
     List<String> getPlaces();
 
     /**
      * Update setting components on ui
+     * @param settingPlugin - setting to reload
      */
     void reloadSettings(@NotNull Class<? extends SettingPluginOptions> settingPlugin);
 
     /**
      * Update setting components on ui. Uses for updating dynamic settings
+     * @param dynamicSettingPluginClass -
+     * @param dynamicSettings -
      */
     void reloadSettings(@NotNull Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass,
                         @NotNull List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
 
     /**
      * Get setting value by class name
+     * @param settingClass - setting
+     * @return setting value
+     * @param <T> -
      */
     <T> T getValue(@NotNull Class<? extends SettingPlugin<T>> settingClass);
 
     /**
      * Get unparsed setting value by class name
+     * @param settingClass - setting
+     * @return raw value
+     * @param <T> -
      */
     <T> String getRawValue(@NotNull Class<? extends SettingPlugin<T>> settingClass);
 
     /**
      * Get setting value by class name or default value if null
+     * @param settingClass - setting
+     * @param defaultValue - def value
+     * @param <T> -
+     * @return value
      */
     default <T> T getValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @Nullable T defaultValue) {
         T value = getValue(settingClass);
@@ -114,7 +129,11 @@ public interface EntityContextSetting {
 
     /**
      * Usually listeners executes in separate thread but in some cases we need access to user who updating value and we need
-     * run listener inside http reques
+     * run listener inside http request
+     * @param listener -
+     * @param key -
+     * @param settingClass -
+     * @param <T> -
      */
     <T> void listenValueInRequest(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
                                   @NotNull ThrowingConsumer<T, Exception> listener);
@@ -136,6 +155,9 @@ public interface EntityContextSetting {
 
     /**
      * Save setting value without firing events
+     * @param value -
+     * @param settingClass -
+     * @param <T> -
      *
      * @return value converted to string
      */

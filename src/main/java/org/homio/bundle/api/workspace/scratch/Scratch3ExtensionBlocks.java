@@ -77,9 +77,7 @@ public abstract class Scratch3ExtensionBlocks {
         this.scratch3Color = new Scratch3Color(color);
     }
 
-    /**
-     * Uses only in app
-     */
+    // Uses only in app
     public Scratch3ExtensionBlocks(String id, EntityContext entityContext) {
         this(null, entityContext, null, id);
     }

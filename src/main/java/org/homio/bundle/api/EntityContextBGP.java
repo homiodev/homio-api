@@ -31,11 +31,21 @@ public interface EntityContextBGP {
      * Create builder to run new thread/scheduler.
      *
      * @param name unique name of thread. cancel thread if already exists
+     * @param <T> -
+     * @return -
      */
     <T> ScheduleBuilder<T> builder(@NotNull String name);
 
     /**
      * Await processes to be done
+     *
+     * @param name          - process name
+     * @param maxTimeToWait - time to wait
+     * @param processes     - list of processes to wait finished
+     * @param logger        - logger
+     * @param finallyBlock  - block to execute when all processes finished
+     * @param <T> -
+     * @return this
      */
     default <T> ThreadContext<Map<String, T>> awaitProcesses(@NotNull String name, Duration maxTimeToWait,
                                                              @NotNull List<ThreadContext<T>> processes,
@@ -63,7 +73,11 @@ public interface EntityContextBGP {
     /**
      * Run file watchdog. Check file's lastModification updates every 10 seconds and call onUpdateCommand if file had been changed
      *
+     * @param file            - run file to check for changes
+     * @param key             - distinguish key
+     * @param onUpdateCommand - command to execute on update
      * @throws IllegalArgumentException if file not readable
+     * @return  -
      */
     ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
             throws IllegalArgumentException;
@@ -136,10 +150,12 @@ public interface EntityContextBGP {
     void cancelThread(@NotNull String name);
 
     /**
-     * Register 'external' threads in context. 'External' mean thread that wasnt created by bgp().builder(...) but eny
+     * Register 'external' threads in context. 'External' mean thread that wasn't created by bgp().builder(...) but eny
      * other new Thread(...) or even java.lang.Process
+     * @param id - distinguish id
+     * @param threadPullerConsumer - thread object consumer
      */
-    void registerThreadsPuller(@NotNull String entityID, @NotNull Consumer<ThreadPuller> threadPullerConsumer);
+    void registerThreadsPuller(@NotNull String id, @NotNull Consumer<ThreadPuller> threadPullerConsumer);
 
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
                                                        @Nullable Duration maxTerminateTimeout,
@@ -175,11 +191,15 @@ public interface EntityContextBGP {
 
         /**
          * Execute some code with ThreadContext before execution
+         * @param handler - consumer to execute
+         * @return ScheduleBuilder
          */
         ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
 
         /**
          * Set delay before first execution.
+         * @param duration - wait timeout
+         * @return ScheduleBuilder
          */
         ScheduleBuilder<T> delay(@NotNull Duration duration);
 
@@ -234,13 +254,17 @@ public interface EntityContextBGP {
 
         /**
          * Next schedule call as string
+         * @return next time to call
          */
         String getTimeToNextSchedule();
 
         /**
          * Await at most timeout to finish process
+         * @param timeout - duration to wait
+         * @return response returned by thread
+         * @throws Exception -
          */
-        T await(@NotNull Duration timeout) throws InterruptedException, ExecutionException, TimeoutException;
+        T await(@NotNull Duration timeout) throws Exception;
 
         void onError(@NotNull Consumer<Exception> errorListener);
 

@@ -20,12 +20,12 @@ public @interface UISidebarMenu {
     int order() default 1000;
 
     /**
-     * Available sorting fields. May contains 'name:icon:color' or 'name:icon' or 'name'
+     * @return Available sorting fields. May contains 'name:icon:color' or 'name:icon' or 'name'
      */
     String[] sort() default "";
 
     /**
-     * Path uses in ui as navigation link
+     * @return Path uses in ui as navigation link
      */
     String overridePath() default "";
 

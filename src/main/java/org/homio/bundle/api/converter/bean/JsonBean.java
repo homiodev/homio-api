@@ -12,9 +12,8 @@ import java.lang.annotation.Target;
  * Annotation uses for jackson serialization / deserialization for bean types.
  * Uses in conjunctions with JsonBeanConverter class i.e.:
  *
- * @JsonBean
- * @Convert(converter = JsonBeanConverter.class) -- uses for save/get with DB
- * @UIFieldBeanSelection -- uses for selection on ui
+ * Convert(converter = JsonBeanConverter.class) -- uses for save/get with DB
+ * UIFieldBeanSelection -- uses for selection on ui
  * private SomeBeanInterface provider;
  */
 @JacksonAnnotationsInside

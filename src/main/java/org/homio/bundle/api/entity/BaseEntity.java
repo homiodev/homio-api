@@ -111,14 +111,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     }
 
     /**
-     * Disable edit entity on UI
+     * @return Disable edit entity on UI
      */
     public boolean isDisableEdit() {
         return false;
     }
 
     /**
-     * Disable delete entity on UI
+     * @return Disable delete entity on UI
      */
     public boolean isDisableDelete() {
         return false;
@@ -176,6 +176,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     /**
      * Accumulate list of related entities which has to be refreshed in cache after entity updated
+     * @param set -
      */
     public void getAllRelatedEntities(Set<BaseEntity> set) {
     }

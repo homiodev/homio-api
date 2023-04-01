@@ -23,7 +23,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     Map<String, Object> entityToService = new ConcurrentHashMap<>();
 
     /**
-     * Get service or throw error if not found
+     * @return Get service or throw error if not found
      */
     @JsonIgnore
     default @NotNull S getService() throws NotFoundException {
@@ -77,6 +77,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     /**
      * Create service factory method
      *
+     * @param entityContext -
      * @return service or null if service has to be created during some external process
      */
     @Nullable S createService(@NotNull EntityContext entityContext);
@@ -95,6 +96,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
          * Fires to update entity inside in-memory service each time when entity fetched/updated
          * testService() method calls always after this to check service actual status
          *
+         * @param entity -
          * @return true - need call testService()
          */
         boolean entityUpdated(@NotNull E entity);
@@ -102,7 +104,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         @NotNull E getEntity();
 
         /**
-         * return watchdog if service supports watchdog capabilities
+         * @return watchdog if service supports watchdog capabilities
          */
         @Nullable default WatchdogService getWatchdog() {
             return null;
@@ -139,7 +141,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         void restartService();
 
         /**
-         * Check if need restart service before call restartService()..
+         * @return Check if need restart service before call restartService()..
          */
         boolean isRequireRestartService();
     }

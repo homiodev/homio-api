@@ -22,7 +22,7 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
         HasGetStatusValue {
 
     /**
-     * Uses for UI to determine class type description
+     * @return Uses for UI to determine class type description
      */
     @JsonIgnore
     @SelectDataSourceDescription
@@ -32,6 +32,7 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
      * Return line chart series.
      * <p>
      * Usually getLineChartSeries should return only one chart, but sometimes it may be more than one)
+     * @param request -
      *
      * @return LineChartDescription and list of points. point[0] - Date or long, point[1] - Float, point[2] - description.
      * point[2] - optional

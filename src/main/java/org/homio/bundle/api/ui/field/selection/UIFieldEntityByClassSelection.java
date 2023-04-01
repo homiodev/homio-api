@@ -13,7 +13,7 @@ import org.homio.bundle.api.model.HasEntityIdentifier;
 public @interface UIFieldEntityByClassSelection {
 
     /**
-     * Define base class/interface which should implement BaseEntity
+     * @return Define base class/interface which should implement BaseEntity
      */
     Class<? extends HasEntityIdentifier> value();
 }

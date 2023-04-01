@@ -15,14 +15,14 @@ public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     void setStatusValue(SetStatusValueRequest request);
 
     /**
-     * Some entites that implement HasSetStatusValue may be 'readOnly', thus this entities must be skipped
+     * @return Some entites that implement HasSetStatusValue may be 'readOnly', thus this entities must be skipped
      */
     default boolean isAbleToSetValue() {
         return true;
     }
 
     /**
-     * Uses for UI to determine class type description
+     * @return Uses for UI to determine class type description
      */
     @JsonIgnore
     @SelectDataSourceDescription

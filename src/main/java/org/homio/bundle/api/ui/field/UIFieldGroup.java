@@ -12,17 +12,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldGroup {
     /**
-     * Group name
+     * @return Group name
      */
     String value();
 
     /**
-     * Specify custom group order, otherwise ordering by group name
+     * @return  Specify custom group order, otherwise ordering by group name
      */
     int order() default 0;
 
     /**
-     * Define border color
+     * @return  Define border color
      */
     String borderColor() default "";
 }

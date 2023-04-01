@@ -12,7 +12,7 @@ public @interface UIFieldCodeEditor {
     MonacoLanguage editorType() default MonacoLanguage.PlainText;
 
     /**
-     * Link to another field that holds current editor type
+     * @return  Link to another field that holds current editor type
      */
     String editorTypeRef() default "";
 

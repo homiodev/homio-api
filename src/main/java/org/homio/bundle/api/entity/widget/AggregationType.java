@@ -25,6 +25,8 @@ public enum AggregationType {
 
     /**
      * Stream must be already sorted for First, Last
+     * @param stream -
+     * @return -
      */
     public float evaluate(@NotNull Stream<Float> stream) {
         switch (this) {

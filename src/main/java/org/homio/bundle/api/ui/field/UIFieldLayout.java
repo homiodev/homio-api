@@ -63,7 +63,9 @@ public @interface UIFieldLayout {
         }
 
         /**
-         * Specify column width Restrictions: sum(columnWidthInPercent) must be 100. columnWidthInPercent[i] must be >= 10%
+         * Specify column width Restrictions: sum(columnWidthInPercent) must be 100. columnWidthInPercent[i] must be greater than 10%
+         * @param columnWidthInPercent -
+         * @return -
          */
         public static LayoutBuilder builder(float... columnWidthInPercent) {
             return new LayoutBuilder(columnWidthInPercent);

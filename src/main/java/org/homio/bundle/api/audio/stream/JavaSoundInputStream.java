@@ -17,6 +17,7 @@ public class JavaSoundInputStream extends AudioStream {
      * Constructs a JavaSoundInputStream with the passed input
      *
      * @param input The mic which data is pulled from
+     * @param format -
      */
     public JavaSoundInputStream(TargetDataLine input, AudioFormat format) {
         this.format = format;

@@ -10,24 +10,22 @@ import org.homio.bundle.api.ui.action.DynamicOptionLoader;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSelection {
     /**
-     * Target class for selection(for enums). see: ItemController.loadSelectOptions
+     * @return Target class for selection(for enums). see: ItemController.loadSelectOptions
      */
     Class<? extends DynamicOptionLoader> value();
 
     /**
-     * In case of same DynamicOptionLoader uses for few different fields, this parameter may distinguish business handling
-     *
-     * @return
+     * @return In case of same DynamicOptionLoader uses for few different fields, this parameter may distinguish business handling
      */
     String[] staticParameters() default {};
 
     /**
-     * Set ui as textInout with select button if 'allowInputRawText' is true, and pure select box if false
+     * @return Set ui as textInout with select button if 'allowInputRawText' is true, and pure select box if false
      */
     boolean allowInputRawText() default false;
 
     /**
-     * List of dependency fields that should be passed to DynamicOptionLoader from UI
+     * @return List of dependency fields that should be passed to DynamicOptionLoader from UI
      */
     String[] dependencyFields() default {};
 

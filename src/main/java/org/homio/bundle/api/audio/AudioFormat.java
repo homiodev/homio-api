@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 public class AudioFormat {
 
     /**
-     * {@link AudioCodec} encoded data without any container header or footer,
+     * link AudioCodec encoded data without any container header or footer,
      * e.g. MP3 is a non-container format
      */
     public static final String CONTAINER_NONE = "NONE";
@@ -340,6 +340,8 @@ public class AudioFormat {
      * <p>
      * This AudioFormat is compatible with the passed AudioFormat if both have
      * the same value for all non-null members of this instance.
+     * @param audioFormat -
+     * @return -
      */
     public boolean isCompatible(@Nullable AudioFormat audioFormat) {
         if (audioFormat == null) {

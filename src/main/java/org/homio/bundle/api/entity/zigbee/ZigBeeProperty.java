@@ -10,12 +10,13 @@ import org.homio.bundle.api.state.State;
  */
 public interface ZigBeeProperty {
     /**
-     * This property name
+     * @return This property name
      */
     String getKey();
 
     /**
-     * Property human representation name
+     * @return Property human representation name
+     * @param shortFormat -
      */
     String getName(boolean shortFormat);
 
@@ -30,32 +31,32 @@ public interface ZigBeeProperty {
     String getVariableID();
 
     /**
-     * Must specify as ieeeAddress_key
+     * @return Must specify as ieeeAddress_key
      */
     String getEntityID();
 
     /**
-     * Device's ieeeAddress
+     * @return Device's ieeeAddress
      */
     String getIeeeAddress();
 
     /**
-     * Last readed value
+     * @return Last read value
      */
     State getLastValue();
 
     /**
-     * Return duration since last event
+     * @return duration since last event
      */
     Duration getTimeSinceLastEvent();
 
     /**
-     * Is able to write value
+     * @return is able to write value
      */
     boolean isWritable();
 
     /**
-     * Is able to read value
+     * @return is able to read value
      */
     boolean isReadable();
 
@@ -77,6 +78,7 @@ public interface ZigBeeProperty {
 
     /**
      * Implement by property that has ability to write value.
+     * @param state -
      */
     default void writeValue(State state) {
         if (isWritable()) {

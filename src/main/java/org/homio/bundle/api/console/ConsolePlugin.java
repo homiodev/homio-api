@@ -32,21 +32,21 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     RenderType getRenderType();
 
     /**
-     * Uses for grouping few bundle pages with same parent
+     * @return Uses for grouping few bundle pages with same parent
      */
     default String getParentTab() {
         return null;
     }
 
     /**
-     * Uses when need header buttons for whole plugin
+     * @return Uses when need header buttons for whole plugin
      */
     default Map<String, Class<? extends ConsoleHeaderSettingPlugin<?>>> getHeaderActions() {
         return null;
     }
 
     /**
-     * Draw console titles in such order
+     * @return Draw console titles in such order
      */
     default int order() {
         return 0;

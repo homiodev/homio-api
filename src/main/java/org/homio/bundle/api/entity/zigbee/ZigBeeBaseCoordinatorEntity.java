@@ -73,15 +73,15 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     }
 
     /**
-     * Return all available properties
+     * @return all available properties
      * Key - device's ieeeAddress
-     * Value - Map<propertyName, property
+     * Value - Map[propertyName, property]
      */
     @JsonIgnore
     @NotNull Map<String, Map<String, ? extends ZigBeeProperty>> getCoordinatorTree();
 
     /**
-     * Return all zigbee devices registered in this coordinator
+     * @return all zigbee devices registered in this coordinator
      */
     @JsonIgnore
     @NotNull Collection<ZigBeeDeviceBaseEntity> getZigBeeDevices();

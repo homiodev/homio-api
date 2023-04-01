@@ -16,12 +16,12 @@ public @interface UIFieldNumber {
     int max() default Integer.MAX_VALUE;
 
     /**
-     * fetch min value from minRef field instead of min if specified
+     * @return fetch min value from minRef field instead of min if specified
      */
     String minRef() default "";
 
     /**
-     * fetch max value from maxRef field instead of ax if specified
+     * @return  fetch max value from maxRef field instead of ax if specified
      */
     String maxRef() default "";
 }

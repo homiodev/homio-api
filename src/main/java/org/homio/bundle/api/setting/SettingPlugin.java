@@ -15,6 +15,7 @@ public interface SettingPlugin<T> {
 
     /**
      * If want to show setting direct on top header panel instead of settings
+     * @return Base entity which setting available to
      */
     default Class<? extends BaseEntity> availableForEntity() {
         return null;
@@ -37,7 +38,7 @@ public interface SettingPlugin<T> {
 
     default String getDefaultValue() {
         switch (getSettingType()) {
-            case UIFieldType.Integer:
+            case Integer:
             case Slider:
             case Float:
                 return "0";
@@ -128,6 +129,7 @@ public interface SettingPlugin<T> {
 
     /**
      * Values of settings with transient state doesn't save to db
+     * @return is setting is transient
      */
     default boolean transientState() {
         if (this.getSettingType() == UIFieldType.Button) {
@@ -142,7 +144,7 @@ public interface SettingPlugin<T> {
     int order();
 
     /**
-     * Advances settings opens in additional panel on ui
+     * @return Advances settings opens in additional panel on ui
      */
     default boolean isAdvanced() {
         return false;
@@ -150,6 +152,8 @@ public interface SettingPlugin<T> {
 
     /**
      * Covnerter from target type to string
+     * @param value -
+     * @return -
      */
     default String writeValue(T value) {
         if (value == null) {

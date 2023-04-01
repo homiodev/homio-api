@@ -12,13 +12,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorPicker {
     /**
-     * Allow user to use threshold functionality for showing different icon depend on 'value'
+     * @return  Allow user to use threshold functionality for showing different icon depend on 'value'
      */
     boolean allowThreshold() default false;
 
     /**
      * Add user ability to specify 'animation' condition to UI.
      * Color animation is animation blink from black to specified color with 1-2sec timeout
+     * @return -
      */
     boolean animateColorCondition() default false;
 }

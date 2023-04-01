@@ -21,14 +21,15 @@ public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     List<SourceHistoryItem> getSourceHistoryItems(GetStatusValueRequest request, int from, int count);
 
     /**
-     * Uses for UI to determine class type description
+     * @return uses for UI to determine class type description
      */
     @JsonIgnore
     @SelectDataSourceDescription
     String getGetStatusDescription();
 
     /**
-     * Get current value with unit or whatever to show on ui in popup. May contains HTML
+     * @param entityContext -
+     * @return Get current value with unit or whatever to show on ui in popup. May contains HTML
      */
     default String getStatusValueRepresentation(EntityContext entityContext) {
         return null;

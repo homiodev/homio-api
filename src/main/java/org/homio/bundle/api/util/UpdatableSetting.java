@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * Annotate field in bean to allow field value update it's depend on setting value
  * example:
  *
- * @UpdatableSetting(FFMPEGInstallPathSetting.class) private UpdatableValue<Path> ffmpegLocation;
+ * UpdatableSetting(FFMPEGInstallPathSetting.class) private UpdatableValue[Path] ffmpegLocation;
  */
 @JacksonAnnotationsInside
 @Target(value = {ElementType.FIELD})

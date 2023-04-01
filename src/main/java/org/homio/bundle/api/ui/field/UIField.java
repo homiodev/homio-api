@@ -10,22 +10,22 @@ import java.lang.annotation.Target;
 public @interface UIField {
 
     /**
-     * Show field in context menu
+     * @return Show field in context menu
      */
     boolean showInContextMenu() default false;
 
     /**
-     * Hide field from edit mode
+     * @return Hide field from edit mode
      */
     boolean hideInEdit() default false;
 
     /**
-     * Hide field in view mode
+     * @return  Hide field in view mode
      */
     boolean hideInView() default false;
 
     /**
-     * Disable editing but show in view/edit mode
+     * @return Disable editing but show in view/edit mode
      */
     boolean disableEdit() default false;
 
@@ -44,7 +44,7 @@ public @interface UIField {
     boolean copyButton() default false;
 
     /**
-     * Show revert button to set initial value
+     * @return Show revert button to set initial value
      */
     boolean isRevert() default false;
 

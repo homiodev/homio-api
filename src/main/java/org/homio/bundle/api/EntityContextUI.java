@@ -71,6 +71,7 @@ public interface EntityContextUI {
     /**
      * Register console plugin name. In case if console plugin available only if some
      * entity is created or not enabled by some case we may show disabled console name on UI
+     * @param name -
      */
     void registerConsolePluginName(@NotNull String name);
 
@@ -82,11 +83,14 @@ public interface EntityContextUI {
 
     /**
      * Fire open console window to UI
+     * @param consolePlugin -
+     * @param <T> -
      */
     <T extends ConsolePlugin<?>> void openConsole(@NotNull T consolePlugin);
 
     /**
      * Request to reload window to UI
+     * @param reason -
      */
     void reloadWindow(@NotNull String reason);
 
@@ -102,6 +106,9 @@ public interface EntityContextUI {
 
     /**
      * Update specific field
+     * @param baseEntity -
+     * @param updateField -
+     * @param value -
      */
     void updateItem(@NotNull BaseEntity<?> baseEntity, @NotNull String updateField, @Nullable Object value);
 
@@ -119,6 +126,8 @@ public interface EntityContextUI {
 
     /**
      * Fire update to ui that entity was changed.
+     * @param entity -
+     * @param <T> -
      */
     <T extends BaseEntity> void sendEntityUpdated(T entity);
 
@@ -134,9 +143,13 @@ public interface EntityContextUI {
     }
 
     /**
-     * Send confirmation message to ui with back handler
-     *
+     * * Send confirmation message to ui with back handler
      * @param headerButtonAttachTo - if set - attach confirm message to header button
+     * @param key -
+     * @param title -
+     * @param confirmHandler -
+     * @param messages -
+     * @param maxTimeoutInSec -
      */
     default void sendConfirmation(@NotNull String key, @NotNull String title,
                                   @NotNull Consumer<DialogResponseType> confirmHandler, @NotNull Collection<String> messages,
@@ -152,6 +165,7 @@ public interface EntityContextUI {
 
     /**
      * Send request dialog to ui
+     * @param dialogModel -
      */
     void sendDialogRequest(@NotNull DialogModel dialogModel);
 
@@ -169,12 +183,20 @@ public interface EntityContextUI {
 
     /**
      * Add message to 'bell' header select box
+     * @param entityID -
+     * @param name -
+     * @param value -
+     * @param notificationLevel -
+     * @param actionBuilder -
      */
     void addBellNotification(@NotNull String entityID, @NotNull String name, @NotNull String value,
                              @NotNull NotificationLevel notificationLevel, @Nullable Consumer<UIInputBuilder> actionBuilder);
 
     /**
      * Add message to 'bell' header select box
+     * @param entityID -
+     * @param name -
+     * @param description -
      */
     default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
         addBellInfoNotification(entityID, name, description, null);
@@ -187,6 +209,9 @@ public interface EntityContextUI {
 
     /**
      * Add message to 'bell' header select box
+     * @param entityID -
+     * @param name -
+     * @param description -
      */
     default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
         addBellWarningNotification(entityID, name, description, null);
@@ -197,9 +222,6 @@ public interface EntityContextUI {
         addBellNotification(entityID, name, description, NotificationLevel.warning, actionBuilder);
     }
 
-    /**
-     * Add message to 'bell' header select box
-     */
     default void addBellErrorNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
         addBellErrorNotification(entityID, name, description, null);
     }
@@ -211,6 +233,7 @@ public interface EntityContextUI {
 
     /**
      * Remove message from 'bell' header select box
+     * @param entityID -
      */
     void removeBellNotification(@NotNull String entityID);
 
@@ -220,14 +243,13 @@ public interface EntityContextUI {
     // raw
     void sendNotification(@NotNull String destination, @NotNull ObjectNode param);
 
-    /**
-     * Add button to ui header
-     */
+    // Add button to ui header
     HeaderButtonBuilder headerButtonBuilder(@NotNull String entityID);
 
     /**
      * Remove button from ui header.
      * Header button will be removed only if has no attached elements
+     * @param entityID -
      */
     default void removeHeaderButton(@NotNull String entityID) {
         removeHeaderButton(entityID, null, false);
@@ -244,6 +266,7 @@ public interface EntityContextUI {
 
     /**
      * Show error toastr message to ui
+     * @param message -
      */
     default void sendErrorMessage(@NotNull String message) {
         sendErrorMessage(null, message, null, null);
@@ -251,6 +274,7 @@ public interface EntityContextUI {
 
     /**
      * Show error toastr message to ui
+     * @param ex -
      */
     default void sendErrorMessage(@NotNull Exception ex) {
         sendErrorMessage(null, null, null, ex);
@@ -258,6 +282,8 @@ public interface EntityContextUI {
 
     /**
      * Show error toastr message to ui
+     * @param ex -
+     * @param message -
      */
     default void sendErrorMessage(@NotNull String message, @NotNull Exception ex) {
         sendErrorMessage(null, message, null, ex);
@@ -265,120 +291,74 @@ public interface EntityContextUI {
 
     /**
      * Show error toastr message to ui
+     * @param message -
+     * @param title -
      */
     default void sendErrorMessage(@NotNull String title, @NotNull String message) {
         sendErrorMessage(title, message, null, null);
     }
 
-    /**
-     * Show error toastr message to ui
-     */
     default void sendErrorMessage(@NotNull String title, @NotNull String message, @NotNull Exception ex) {
         sendErrorMessage(title, message, null, ex);
     }
 
-    /**
-     * Show error toastr message to ui
-     */
     default void sendErrorMessage(@NotNull String message, @NotNull FlowMap messageParam, @NotNull Exception ex) {
         sendErrorMessage(null, message, messageParam, ex);
     }
 
-    /**
-     * Show error toastr message to ui
-     */
     default void sendErrorMessage(@NotNull String message, @NotNull FlowMap messageParam) {
         sendErrorMessage(null, message, messageParam, null);
     }
 
-    /**
-     * Show error toastr message to ui
-     */
     default void sendErrorMessage(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam,
                                   @Nullable Exception ex) {
         sendMessage(title, message, NotificationLevel.error, messageParam, ex);
     }
 
-    /**
-     * Show info toastr message to ui
-     */
     default void sendInfoMessage(@NotNull String message) {
         sendInfoMessage(null, message, null);
     }
 
-    /**
-     * Show info toastr message to ui
-     */
     default void sendInfoMessage(@NotNull String title, @NotNull String message) {
         sendInfoMessage(title, message, null);
     }
 
-    /**
-     * Show info toastr message to ui
-     */
     default void sendInfoMessage(@NotNull String message, @NotNull FlowMap messageParam) {
         sendInfoMessage(null, message, messageParam);
     }
 
-    /**
-     * Show info toastr message to ui
-     */
     default void sendInfoMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
         sendMessage(title, message, NotificationLevel.info, messageParam, null);
     }
 
-    /**
-     * Show success(green) toastr message to ui
-     */
     default void sendSuccessMessage(@NotNull String message) {
         sendSuccessMessage(null, message, null);
     }
 
-    /**
-     * Show success(green) toastr message to ui
-     */
     default void sendSuccessMessage(@NotNull String title, @NotNull String message) {
         sendSuccessMessage(title, message, null);
     }
 
-    /**
-     * Show success(green) toastr message to ui
-     */
     default void sendSuccessMessage(@NotNull String message, @NotNull FlowMap messageParam) {
         sendSuccessMessage(null, message, messageParam);
     }
 
-    /**
-     * Show success(green) toastr message to ui
-     */
     default void sendSuccessMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
         sendMessage(title, message, NotificationLevel.success, messageParam, null);
     }
 
-    /**
-     * Show warning(yellow) toastr message to ui
-     */
     default void sendWarningMessage(@NotNull String message) {
         sendWarningMessage(null, message, null);
     }
 
-    /**
-     * Show warning(yellow) toastr message to ui
-     */
     default void sendWarningMessage(@NotNull String title, @NotNull String message) {
         sendWarningMessage(title, message, null);
     }
 
-    /**
-     * Show warning(yellow) toastr message to ui
-     */
     default void sendWarningMessage(@NotNull String message, @NotNull FlowMap messageParam) {
         sendWarningMessage(null, message, messageParam);
     }
 
-    /**
-     * Show warning(yellow) toastr message to ui
-     */
     default void sendWarningMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
         sendMessage(title, message, NotificationLevel.warning, messageParam, null);
     }
@@ -422,13 +402,17 @@ public interface EntityContextUI {
         HeaderButtonBuilder icon(@NotNull String icon, @Nullable String color, boolean rotate);
 
         /**
+         * Set border
          * @param width - default 1
          * @param color - default unset
+         * @return thid
          */
         HeaderButtonBuilder border(int width, @Nullable String color);
 
         /**
          * Button available duration
+         * @param duration time for duration
+         * @return this
          */
         HeaderButtonBuilder duration(int duration);
 

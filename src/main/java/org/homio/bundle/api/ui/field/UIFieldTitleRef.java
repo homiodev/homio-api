@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface UIFieldTitleRef {
 
     /**
-     * Link to field reference that hols title
+     * @return Link to field reference that hols title
      */
     String value();
 }

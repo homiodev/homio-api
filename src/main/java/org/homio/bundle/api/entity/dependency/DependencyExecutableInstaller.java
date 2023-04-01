@@ -28,9 +28,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
 
     protected Boolean requireInstall;
 
-    /**
-     * Just a utility methodUISidebarButton
-     */
+    // Just a utility methodUISidebarButton
     @SneakyThrows
     public static Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
                                           @NotNull ProgressBar progressBar, @NotNull Logger log) {
@@ -48,8 +46,8 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
     public abstract String getName();
 
     /**
-     * If set - scan DependencyExecutableInstaller and listen when button fires on ui
-     * and handle installation
+     * If set - scan DependencyExecutableInstaller and listen when button fires on ui and handle installation
+     * @return setting class
      */
     public abstract @Nullable Class<? extends SettingPluginButton> getInstallButton();
 

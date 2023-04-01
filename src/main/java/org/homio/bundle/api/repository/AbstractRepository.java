@@ -47,6 +47,8 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
     /**
      * Warning!!!
      * Must be called only from EntityManager. That's why it's not transactional
+     * @param entity - object to save
+     * @return saved entity
      */
     public T save(T entity) {
         return em.merge(entity);

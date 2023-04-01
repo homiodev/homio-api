@@ -83,6 +83,7 @@ public class GitHubProject {
 
     /**
      * @param repoURL - absolute or relative url
+     * @return -
      */
     @SneakyThrows
     public static GitHubProject of(@NotNull String repoURL) {
@@ -110,7 +111,11 @@ public class GitHubProject {
     }
 
     /**
-     * Download file from github
+     * Download file from GitHub.
+     * @param path - relative path
+     * @param type - converter type
+     * @param <T> -
+     * @return -
      */
     @SneakyThrows
     public <T> @Nullable T getFile(@NotNull String path, @NotNull Class<T> type) {
@@ -128,6 +133,8 @@ public class GitHubProject {
 
     /**
      * Read pom.xml
+     * @param path relative path to pom.xml file
+     * @return -
      */
     @SneakyThrows
     public Model getPomModel(@NotNull String path) {
@@ -136,7 +143,8 @@ public class GitHubProject {
     }
 
     /**
-     * Get project last released verion
+     * Get project last released version
+     * @return last release version
      */
     public @Nullable String getLastReleaseVersion() {
         return Optional.ofNullable(getLastRelease()).map(b -> b.path("tag_name").asText()).orElse(null);
@@ -172,9 +180,7 @@ public class GitHubProject {
                 targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    /**
-     * Helper method to execute some process i.e. download from github, backup, etc...
-     */
+    // Helper method to execute some process i.e. download from github, backup, etc...
     public @NotNull ActionResponseModel updating(
             @NotNull String name,
             @NotNull Path projectPath,

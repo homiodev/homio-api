@@ -14,7 +14,7 @@ import org.homio.bundle.api.entity.BaseEntity;
 public @interface UIFieldLinkToEntity {
 
     /**
-     * Target class or base class with @UISidebarMenu annotation
+     * @return Target class or base class with @UISidebarMenu annotation
      */
     Class<? extends BaseEntity> value();
 }

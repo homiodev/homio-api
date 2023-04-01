@@ -37,6 +37,7 @@ public interface EntityContext {
 
     /**
      * Register custom Scratch3Extension
+     * @param scratch3ExtensionBlocks - dynamic block to register
      */
     void registerScratch3Extension(@NotNull Scratch3ExtensionBlocks scratch3ExtensionBlocks);
 
@@ -62,6 +63,10 @@ public interface EntityContext {
 
     /**
      * Get entity by entityID.
+     * @param entityID - entity unique id to fetch
+     * @param useCache - allow to use cache or direct db
+     * @param <T> -
+     * @return base entity
      */
     @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID, boolean useCache);
 

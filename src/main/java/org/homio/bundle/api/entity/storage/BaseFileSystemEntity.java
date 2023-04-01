@@ -26,13 +26,13 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     /**
-     * Short FS alias
+     * @return Short FS alias
      */
     @JsonIgnore
     String getFileSystemAlias();
 
     /**
-     * Does show fs in file manager console tab
+     * @return Does show fs in file manager console tab
      */
     @JsonIgnore
     boolean isShowInFileManager();

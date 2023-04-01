@@ -114,9 +114,7 @@ public final class InMemoryDB {
         });
     }
 
-    /**
-     * Remove service from map and clean all data
-     */
+    // Remove service from map and clean all data
     public static <T extends DataStorageEntity> DataStorageService<T> removeService(String uniqueId) {
         DataStorageService<T> service = (DataStorageService<T>) map.remove(uniqueId);
         if (service != null) {

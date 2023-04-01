@@ -72,11 +72,17 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     /**
      * Add read-only duration that incremets on UI
+     * @param color -
+     * @param value -
      */
     void addDuration(long value, @Nullable String color);
 
     /**
      * Add read-write color picker
+     * @param name -
+     * @param color -
+     * @param action -
+     * @return -
      */
     UIColorPickerItemBuilder addColorPicker(@NotNull String name, String color, UIActionHandler action);
 
@@ -139,9 +145,6 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
                                               String[] supportedFormats, UIActionHandler action, int order);
 
-    /**
-     * text or icon must be not null!
-     */
     default DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable String icon,
                                                                           @Nullable String iconColor) {
         return addStickyDialogButton(name, icon, iconColor, getNextOrder());
@@ -150,9 +153,7 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable String icon,
                                                                   @Nullable String iconColor, int order);
 
-    /**
-     * text or icon must be not null!
-     */
+    // text or icon must be not null!
     default DialogEntity<UIDialogLayoutBuilder> addOpenDialogActionButton(@NotNull String name, @Nullable String icon,
                                                                           @Nullable String iconColor, @Nullable Integer width) {
         return addOpenDialogActionButton(name, icon, iconColor, width, getNextOrder());

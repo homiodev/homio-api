@@ -21,6 +21,9 @@ public interface EntityContextVar {
 
     /**
      * Every writable variable has to have link listener which handle to write operation from UI, etc...
+     *
+     * @param variableId -
+     * @param listener   -
      */
     void setLinkListener(@NotNull String variableId, @NotNull Consumer<Object> listener);
 
@@ -45,6 +48,8 @@ public interface EntityContextVar {
      * Push new value in queue.
      *
      * @param convertedValue - supplier calls before store value to queue and before fire events
+     * @param value          -
+     * @param variableId     -
      */
     void set(@NotNull String variableId, @Nullable Object value, Consumer<Object> convertedValue) throws IllegalArgumentException;
 
@@ -75,16 +80,23 @@ public interface EntityContextVar {
 
     /**
      * Get variable title - name or defaultTitle
+     * @param variableId-
+     * @param defaultTitle-
+     * @return -
      */
     String getTitle(@NotNull String variableId, @Nullable String defaultTitle);
 
     /**
      * Return count of messages
+     * @param variableId -
+     * @return count
      */
     long count(@NotNull String variableId);
 
     /**
      * Does variable exists in system
+     * @param variableId -
+     * @return -
      */
     boolean exists(@NotNull String variableId);
 
@@ -113,11 +125,16 @@ public interface EntityContextVar {
     }
 
     /**
-     * @param locked - locked group and related variables unable to remove from UI
+     * @param groupId     -
+     * @param groupName   -
+     * @param icon        -
+     * @param iconColor   -
+     * @param description -
+     * @param locked      - locked group and related variables unable to remove from UI
      * @return false if group already exists
      */
     boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
-                        @NotNull String iconColor, @Nullable String description);
+        @NotNull String iconColor, @Nullable String description);
 
     default boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
                                 @NotNull String iconColor) {
@@ -126,12 +143,22 @@ public interface EntityContextVar {
 
     /**
      * Create group and attach it to parent group
+     * @param parentGroupId -
+     * @param groupId -
+     * @param groupName -
+     * @param locked -
+     * @param icon -
+     * @param iconColor -
+     * @param description -
+     * @return if group was create ot already exists
      */
     boolean createGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, boolean locked,
                         @NotNull String icon, @NotNull String iconColor, @Nullable String description);
 
     /**
      * Remove group and all associated variables
+     * @param groupId -
+     * @return if group was removed
      */
     boolean removeGroup(@NotNull String groupId);
 
@@ -139,6 +166,8 @@ public interface EntityContextVar {
      * Build full data source path to variable
      *
      * @param forSet - build data source for getting or setting value
+     * @param variableId - id
+     * @return result
      */
     @NotNull String buildDataSource(@NotNull String variableId, boolean forSet);
 

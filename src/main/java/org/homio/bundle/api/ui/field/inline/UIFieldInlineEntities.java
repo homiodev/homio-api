@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate Set<BaseEntity> to show list if entities in table with ability to CRUD in edit mode
+ * Annotate Set[BaseEntity] to show list if entities in table with ability to CRUD in edit mode
  * This is like show all tabs but as table in General Tab
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 public @interface UIFieldInlineEntities {
 
     /**
-     * Background color
+     * @return Background color
      */
     String bg();
 

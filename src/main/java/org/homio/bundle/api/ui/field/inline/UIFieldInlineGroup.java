@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldInlineGroup {
     /**
-     * Condition when apply field
+     * @return Condition when apply field
      */
     String value();
 

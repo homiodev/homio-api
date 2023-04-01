@@ -6,29 +6,29 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate Set<BaseEntity> to edit list in 'table' mode
+ * Annotate Set[BaseEntity] to edit list in 'table' mode
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldInlineEditEntities {
 
     /**
-     * Background color
+     * @return Background color
      */
     String bg();
 
     /**
-     * Specify text on create new entity button
+     * @return Specify text on create new entity button
      */
     String addRowLabel() default "ADD_ENTITY";
 
     /**
-     * Specify condition to allow to create new entity
+     * @return Specify condition to allow to create new entity
      */
     String addRowCondition() default "return true";
 
     /**
-     * Specify condition to allow remove entity
+     * @return Specify condition to allow remove entity
      */
     String removeRowCondition() default "return true";
 

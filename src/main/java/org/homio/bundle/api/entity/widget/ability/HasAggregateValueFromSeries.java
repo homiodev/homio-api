@@ -12,17 +12,17 @@ public interface HasAggregateValueFromSeries extends HasEntityIdentifier, HasUpd
     /**
      * Aggregate value or take first/last values.
      *
-     * @param request
-     * @param aggregationType
+     * @param request -
+     * @param aggregationType -
      * @param exactNumber     - if aggregate exact number values or take any value (i.e.: for display widget)
-     * @return
+     * @return -
      */
     @Nullable Object getAggregateValueFromSeries(@NotNull PeriodRequest request,
                                                  @NotNull AggregationType aggregationType,
                                                  boolean exactNumber);
 
     /**
-     * Uses for UI to determine class type description
+     * @return Uses for UI to determine class type description
      */
     @JsonIgnore
     @SelectDataSourceDescription

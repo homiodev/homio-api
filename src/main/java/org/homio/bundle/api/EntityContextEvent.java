@@ -10,11 +10,17 @@ public interface EntityContextEvent {
 
     /**
      * Remove general listeners and last saved value
+     *
+     * @param key            - unique id
+     * @param additionalKeys - additionalKeys
      */
     void removeEvents(String key, String... additionalKeys);
 
     /**
      * Listen for general event with key. Replace listener if key already exists
+     * @param key - unique key
+     * @param  listener - listener
+     * @return this
      */
     default EntityContextEvent addEventListener(String key, Consumer<Object> listener) {
         return addEventListener(key, "", listener);
@@ -22,11 +28,18 @@ public interface EntityContextEvent {
 
     /**
      * Listen for general event with key. Replace listener if key already exists
+     * @param key - unique key
+     * @param discriminator - discriminator
+     * @param listener - listener
+     * @return EntityContextEvent
      */
     EntityContextEvent addEventListener(String key, String discriminator, Consumer<Object> listener);
 
     /**
      * Listen for event with key. Fires listener immediately if value was saved before
+     * @param key - unique key
+     * @param listener - listener
+     * @return EntityContextEvent
      */
     default EntityContextEvent addEventBehaviourListener(String key, Consumer<Object> listener) {
         return addEventBehaviourListener(key, "", listener);
@@ -34,6 +47,10 @@ public interface EntityContextEvent {
 
     /**
      * Listen for event with key. Fires listener immediately if value was saved before
+     * @param key - unique key
+     * @param discriminator - discriminator
+     * @param listener - listener
+     * @return EntityContextEvent
      */
     EntityContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<Object> listener);
 
@@ -41,11 +58,16 @@ public interface EntityContextEvent {
      * Fire event with key and value.
      *
      * @param value - must implement equal() method in case if compareValues is true
+     * @param key - unique key
+     * @return EntityContextEvent
      */
     EntityContextEvent fireEvent(@NotNull String key, @Nullable Object value);
 
     /**
      * Fire event with key and value only if previous saved value is null or value != previousValue
+     * @param key - unique key
+     * @param value - value to fire
+     * @return EntityContextEvent
      */
     EntityContextEvent fireEventIfNotSame(@NotNull String key, @Nullable Object value);
 
@@ -55,11 +77,14 @@ public interface EntityContextEvent {
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
             (String entityID, String key, EntityUpdateListener<T> listener);
 
-    /**
+    /**t
      * Listen any changes fot BaseEntity of concrete type.
      *
      * @param entityClass type to listen
      * @param listener    handler invoke when entity update
+     * @param key - unique key
+     * @param <T> -
+     * @return this
      */
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
     (Class<T> entityClass, String key, Consumer<T> listener);
@@ -69,6 +94,9 @@ public interface EntityContextEvent {
      *
      * @param entityClass type to listen
      * @param listener    handler invoke when entity update. OldValue/NewValue
+     * @param key - key
+     * @param <T> -
+     * @return this
      */
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
     (Class<T> entityClass, String key, EntityUpdateListener<T> listener);
@@ -88,11 +116,15 @@ public interface EntityContextEvent {
 
     /**
      * Run only once when internet became available
+     * @param name - name
+     * @param command - command
      */
     void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
 
     /**
      * Listen for any port changes with key. Replace listener if key already exists
+     * @param key - key
+     * @param listener - listener
      */
     default void addPortChangeStatusListener(String key, Consumer<Object> listener) {
         addEventListener("any-port-changed", key, listener);

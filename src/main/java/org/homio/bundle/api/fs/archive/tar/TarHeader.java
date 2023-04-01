@@ -2,53 +2,6 @@ package org.homio.bundle.api.fs.archive.tar;
 
 import java.io.File;
 
-/**
- * Header
- *
- * <pre>
- * Offset  Size     Field
- * 0       100      File name
- * 100     8        File mode
- * 108     8        Owner's numeric user ID
- * 116     8        Group's numeric user ID
- * 124     12       File size in bytes
- * 136     12       Last modification time in numeric Unix time format
- * 148     8        Checksum for header block
- * 156     1        Link indicator (file type)
- * 157     100      Name of linked file
- * </pre>
- * <p>
- * <p>
- * File Types
- *
- * <pre>
- * Value        Meaning
- * '0'          Normal file
- * (ASCII NUL)  Normal file (now obsolete)
- * '1'          Hard link
- * '2'          Symbolic link
- * '3'          Character special
- * '4'          Block special
- * '5'          Directory
- * '6'          FIFO
- * '7'          Contigous
- * </pre>
- * <p>
- * <p>
- * <p>
- * Ustar header
- *
- * <pre>
- * Offset  Size    Field
- * 257     6       UStar indicator "ustar"
- * 263     2       UStar version "00"
- * 265     32      Owner user name
- * 297     32      Owner group name
- * 329     8       Device major number
- * 337     8       Device minor number
- * 345     155     Filename prefix
- * </pre>
- */
 public class TarHeader {
 
     /*

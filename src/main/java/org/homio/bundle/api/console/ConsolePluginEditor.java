@@ -40,7 +40,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
     FileContentType getContentType();
 
     /**
-     * Uses for uploading files. If null - no upload button visible
+     * @return Uses for uploading files. If null - no upload button visible
      */
     String accept();
 

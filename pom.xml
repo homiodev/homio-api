@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <packaging>jar</packaging>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.2</version>
     <url>https://github.com/homiodev/homio-bundle-api</url>
     <name>Homio bundle API</name>
 
@@ -272,4 +272,8 @@
             <artifactId>util.concurrent.blockingMap</artifactId>
         </dependency>
     </dependencies>
+
+  <scm>
+    <tag>v1.2.2</tag>
+  </scm>
 </project>
