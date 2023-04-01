@@ -2,7 +2,7 @@ package org.homio.bundle.api.setting;
 
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.ui.field.UIFieldType;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONObject;
 
 public interface SettingPluginTextInput extends SettingPlugin<String> {
@@ -23,7 +23,7 @@ public interface SettingPluginTextInput extends SettingPlugin<String> {
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
-        TouchHomeUtils.putOpt(parameters, "pattern", getPattern());
+        CommonUtils.putOpt(parameters, "pattern", getPattern());
         return parameters;
     }
 }

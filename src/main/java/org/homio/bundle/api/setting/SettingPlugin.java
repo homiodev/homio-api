@@ -7,7 +7,7 @@ import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.entity.BaseEntity;
 import org.homio.bundle.api.model.KeyValueEnum;
 import org.homio.bundle.api.ui.field.UIFieldType;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONObject;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -58,7 +58,7 @@ public interface SettingPlugin<T> {
     // min/max/step (Slider)
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = new JSONObject();
-        TouchHomeUtils.putOpt(parameters, "maxWidth", getMaxWidth());
+        CommonUtils.putOpt(parameters, "maxWidth", getMaxWidth());
         return parameters;
     }
 
@@ -117,7 +117,7 @@ public interface SettingPlugin<T> {
             return (T) Enum.valueOf((Class) getType(), value);
         }
         if (SerialPort.class.equals(getType())) {
-            return (T) TouchHomeUtils.getSerialPort(value);
+            return (T) CommonUtils.getSerialPort(value);
         }
         return (T) value;
     }

@@ -17,7 +17,7 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.homio.bundle.api.exception.ServerException;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -37,7 +37,7 @@ public abstract class TextToSpeechEntityService {
      */
     @SneakyThrows
     public TextToSpeechEntityService(String folderName, @Nullable Integer maxQuota) {
-        this.cacheFolder = TouchHomeUtils.createDirectoriesIfNotExists(TouchHomeUtils.getAudioPath().resolve(folderName));
+        this.cacheFolder = CommonUtils.createDirectoriesIfNotExists(CommonUtils.getAudioPath().resolve(folderName));
         this.maxQuota = maxQuota;
         cleanOldCache();
     }
@@ -127,8 +127,8 @@ public abstract class TextToSpeechEntityService {
 
     private Path saveAudioAndTextToFile(String text, Path cacheFile, byte[] audio) {
         log.debug("Caching audio file {}", cacheFile.getFileName());
-        TouchHomeUtils.writeToFile(getCharacters(), text, true);
-        return TouchHomeUtils.writeToFile(cacheFile, audio, false);
+        CommonUtils.writeToFile(getCharacters(), text, true);
+        return CommonUtils.writeToFile(cacheFile, audio, false);
     }
 
     public String getUniqueFilenameForText(String text) {

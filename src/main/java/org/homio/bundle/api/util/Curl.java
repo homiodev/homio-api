@@ -85,6 +85,11 @@ public final class Curl {
 
     /**
      * Download file to byte array. Throw error if downloading exceeded maxSize
+     * @param maxSize -
+     * @param password -
+     * @param path -
+     * @param user -
+     * @return response
      */
     @SneakyThrows
     public static RawResponse download(@NotNull String path, Integer maxSize, String user, String password) {

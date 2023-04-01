@@ -12,22 +12,22 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSelectionParent {
     /**
-     * Parent's name
+     * @return Parent's name
      */
     String value();
 
     /**
-     * Description. shows on ui at bottom-right place
+     * @return Description. shows on ui at bottom-right place
      */
     String description() default "";
 
     /**
-     * Specify parent's icon
+     * @return Specify parent's icon
      */
     String icon() default "";
 
     /**
-     * Specify parent's icon color
+     * @return Specify parent's icon color
      */
     String iconColor() default "";
 
@@ -40,26 +40,26 @@ public @interface UIFieldSelectionParent {
         String getParentId();
 
         /**
-         * Parent's name
+         * @return Parent's name
          */
         String getParentName();
 
         /**
-         * Description. shows on ui at bottom-right place
+         * @return Description. shows on ui at bottom-right place
          */
         default String getParentDescription() {
             return "";
         }
 
         /**
-         * Specify parent's icon
+         * @return Specify parent's icon
          */
         default String getParentIcon() {
             return "";
         }
 
         /**
-         * Specify parent's icon color
+         * @return Specify parent's icon color
          */
         default String getParentIconColor() {
             return "";

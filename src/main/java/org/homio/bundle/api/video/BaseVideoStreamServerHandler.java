@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.log4j.Log4j2;
 import org.homio.bundle.api.state.OnOffType;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.video.ffmpeg.FFMPEG;
 
 /**
@@ -47,7 +47,7 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
     public BaseVideoStreamServerHandler(S videoService) {
         this.videoService = videoService;
         this.entityID = videoService.getEntityID();
-        this.whiteList = "(127.0.0.1)(" + TouchHomeUtils.MACHINE_IP_ADDRESS + ")";
+        this.whiteList = "(127.0.0.1)(" + CommonUtils.MACHINE_IP_ADDRESS + ")";
     }
 
     @Override

@@ -51,7 +51,7 @@ import org.homio.bundle.api.state.State;
 import org.homio.bundle.api.state.StringType;
 import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.bundle.api.util.FlowMap;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.video.ffmpeg.FFMPEG;
 import org.homio.bundle.api.video.ffmpeg.FFMPEGFormat;
 import org.homio.bundle.api.video.ffmpeg.FfmpegInputDeviceHardwareRepository;
@@ -129,11 +129,11 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
 
         entity.setSourceStatus(Status.UNKNOWN, null);
 
-        Path ffmpegOutputPath = TouchHomeUtils.getMediaPath().resolve(getEntity().getFolderName()).resolve(entityID);
-        ffmpegImageOutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("images"));
-        ffmpegGifOutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("gif"));
-        ffmpegMP4OutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("mp4"));
-        ffmpegHLSOutputPath = TouchHomeUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("hls"));
+        Path ffmpegOutputPath = CommonUtils.getMediaPath().resolve(getEntity().getFolderName()).resolve(entityID);
+        ffmpegImageOutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("images"));
+        ffmpegGifOutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("gif"));
+        ffmpegMP4OutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("mp4"));
+        ffmpegHLSOutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("hls"));
         try {
             FileUtils.cleanDirectory(ffmpegHLSOutputPath.toFile());
         } catch (IOException e) {
@@ -165,16 +165,16 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
             }
         } else {
             try {
-                boolean requireRestart = !isHandlerInitialized() || TouchHomeUtils.isRequireRestartHandler(oldEntity, entity);
+                boolean requireRestart = !isHandlerInitialized() || CommonUtils.isRequireRestartHandler(oldEntity, entity);
                 if (requireRestart) {
                     dispose();
                     testVideoOnline();
                     initialize();
                 }
             } catch (BadCredentialsException ex) {
-                this.disposeAndSetStatus(Status.REQUIRE_AUTH, TouchHomeUtils.getErrorMessage(ex));
+                this.disposeAndSetStatus(Status.REQUIRE_AUTH, CommonUtils.getErrorMessage(ex));
             } catch (Exception ex) {
-                this.disposeAndSetStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
+                this.disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
             }
         }
         this.oldEntity = entity;
@@ -218,7 +218,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
             entity.setSourceStatus(Status.ONLINE, null);
             afterInitialize();
         } catch (Exception ex) {
-            disposeAndSetStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
+            disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
         }
     }
 
@@ -312,9 +312,9 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
     }
 
     public void deleteDirectories() {
-        TouchHomeUtils.deleteDirectory(ffmpegGifOutputPath);
-        TouchHomeUtils.deleteDirectory(ffmpegMP4OutputPath);
-        TouchHomeUtils.deleteDirectory(ffmpegImageOutputPath);
+        CommonUtils.deleteDirectory(ffmpegGifOutputPath);
+        CommonUtils.deleteDirectory(ffmpegMP4OutputPath);
+        CommonUtils.deleteDirectory(ffmpegImageOutputPath);
     }
 
     public void addVideoChangeState(String key, Consumer<Status> handler) {
@@ -609,7 +609,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
         try {
             Files.createFile(Paths.get(output));
             entityContext.getBean(FfmpegInputDeviceHardwareRepository.class).fireFfmpeg(
-                TouchHomeUtils.FFMPEG_LOCATION,
+                CommonUtils.FFMPEG_LOCATION,
                 inputArguments + " " + getFFMPEGInputOptions(profile),
                 snapshotSource,
                 outOptions + " " + output,

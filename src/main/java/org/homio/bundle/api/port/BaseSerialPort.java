@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Logger;
 import org.homio.bundle.api.EntityContext;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.springframework.boot.web.server.PortInUseException;
 
 @RequiredArgsConstructor
@@ -128,7 +128,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
             } catch (IOException e) {
                 log.warn("[{}]: Processing DATA_AVAILABLE event: received IOException in serial port event", entityID, e);
             } catch (Exception ex) {
-                log.warn("[{}]: Port read exception: {}", entityID, TouchHomeUtils.getErrorMessage(ex));
+                log.warn("[{}]: Port read exception: {}", entityID, CommonUtils.getErrorMessage(ex));
                 if (this.portUnavailableListener != null) {
                     this.portUnavailableListener.run();
                 }

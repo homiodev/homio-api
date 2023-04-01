@@ -15,7 +15,7 @@ import org.homio.bundle.api.model.HasEntityIdentifier;
 import org.homio.bundle.api.ui.action.UIActionHandler;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.homio.bundle.api.util.FlowMap;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONObject;
 
 
@@ -50,7 +50,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
                 scanner -> {
                     log.info("Start scan in thread <{}>", scanner.name);
                     AtomicInteger status =
-                            TouchHomeUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
+                            CommonUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
                     if (status.compareAndSet(0, 1)) {
                         return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
                                 progressBar -> {
@@ -66,7 +66,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
                                     status.set(0);
                                     if (ex != null) {
                                         entityContext.ui()
-                                                     .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", TouchHomeUtils.getErrorMessage(ex)), ex);
+                                                     .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", CommonUtils.getErrorMessage(ex)), ex);
                                     }
                                 });
                     } else {

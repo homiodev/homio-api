@@ -2,7 +2,7 @@ package org.homio.bundle.api;
 
 import java.net.URL;
 import lombok.SneakyThrows;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 
 public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
@@ -60,7 +60,7 @@ public interface BundleEntrypoint extends Comparable<BundleEntrypoint> {
 
     @SneakyThrows
     default URL getResource(String resource) {
-        return TouchHomeUtils.getResource(getBundleId(), resource);
+        return CommonUtils.getResource(getBundleId(), resource);
     }
 
     enum BundleImageColorIndex {

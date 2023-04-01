@@ -22,7 +22,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.Hibernate;
 import org.homio.bundle.api.entity.BaseEntity;
 import org.homio.bundle.api.ui.field.UIField;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 @Log4j2
@@ -36,7 +36,7 @@ public class AbstractRepository<T extends BaseEntity> implements PureRepository<
 
     public AbstractRepository(Class<T> clazz) {
         this.clazz = clazz;
-        this.prefix = Modifier.isAbstract(clazz.getModifiers()) ? null : TouchHomeUtils.newInstance(clazz).getEntityPrefix();
+        this.prefix = Modifier.isAbstract(clazz.getModifiers()) ? null : CommonUtils.newInstance(clazz).getEntityPrefix();
     }
 
     @Transactional(readOnly = true)

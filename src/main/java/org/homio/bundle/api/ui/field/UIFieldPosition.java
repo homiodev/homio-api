@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
 public @interface UIFieldPosition {
 
     /**
-     * Disable to select position at 2x2
+     * @return Disable to select position at 2x2
      */
     boolean disableCenter() default true;
 }

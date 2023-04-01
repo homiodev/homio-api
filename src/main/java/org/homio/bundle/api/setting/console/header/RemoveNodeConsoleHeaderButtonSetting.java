@@ -9,7 +9,7 @@ import org.homio.bundle.api.setting.SettingPlugin;
 import org.homio.bundle.api.setting.console.header.RemoveNodeConsoleHeaderButtonSetting.NodeRemoveRequest;
 import org.homio.bundle.api.ui.UI;
 import org.homio.bundle.api.ui.field.UIFieldType;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONObject;
 
 /**
@@ -51,21 +51,21 @@ public class RemoveNodeConsoleHeaderButtonSetting implements
     @Override
     public JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = new JSONObject();
-        TouchHomeUtils.putOpt(parameters, "confirm", getConfirmMsg());
-        TouchHomeUtils.putOpt(parameters, "title", null);
+        CommonUtils.putOpt(parameters, "confirm", getConfirmMsg());
+        CommonUtils.putOpt(parameters, "title", null);
         return parameters;
     }
 
     @Override
     @SneakyThrows
     public NodeRemoveRequest parseValue(EntityContext entityContext, String value) {
-        return StringUtils.isEmpty(value) ? null : TouchHomeUtils.OBJECT_MAPPER.readValue(value, NodeRemoveRequest.class);
+        return StringUtils.isEmpty(value) ? null : CommonUtils.OBJECT_MAPPER.readValue(value, NodeRemoveRequest.class);
     }
 
     @Override
     @SneakyThrows
     public String writeValue(NodeRemoveRequest value) {
-        return value == null ? "" : TouchHomeUtils.OBJECT_MAPPER.writeValueAsString(value);
+        return value == null ? "" : CommonUtils.OBJECT_MAPPER.writeValueAsString(value);
     }
 
     @Getter

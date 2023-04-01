@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
 
@@ -20,7 +20,7 @@ public class JsonType implements State, Comparable<JsonType> {
 
     @SneakyThrows
     public JsonType(String value) {
-        this.jsonNode = TouchHomeUtils.OBJECT_MAPPER.readValue(value, JsonNode.class);
+        this.jsonNode = CommonUtils.OBJECT_MAPPER.readValue(value, JsonNode.class);
     }
 
     public JsonNode get(String... paths) {

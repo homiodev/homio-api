@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.ui.field.UIFieldType;
 import org.homio.bundle.api.ui.field.action.ActionInputParameter;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -48,8 +48,8 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
-        TouchHomeUtils.putOpt(parameters, "confirm", getConfirmMsg());
-        TouchHomeUtils.putOpt(parameters, "title", getConfirmTitle());
+        CommonUtils.putOpt(parameters, "confirm", getConfirmMsg());
+        CommonUtils.putOpt(parameters, "title", getConfirmTitle());
         List<ActionInputParameter> actionInputParameters = getInputParameters(entityContext, value);
         if (actionInputParameters != null && !actionInputParameters.isEmpty()) {
             JSONArray inputs = new JSONArray();

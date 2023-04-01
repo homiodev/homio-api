@@ -9,9 +9,6 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
 
     boolean isAsButton();
 
-    /**
-     * icon or text should be not null
-     */
     UISelectBoxItemBuilder setAsButton(@Nullable String icon, @Nullable String iconColor, @Nullable String text);
 
     UISelectBoxItemBuilder addOption(OptionModel option);

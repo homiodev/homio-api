@@ -17,7 +17,7 @@ public @interface UIFieldTreeNodeSelection {
     boolean allowInputRawText() default true;
 
     /**
-     * If set - uses only local file system, otherwise uses all possible file systems
+     * @return If set - uses only local file system, otherwise uses all possible file systems
      */
     String rootPath() default "";
 
@@ -34,7 +34,7 @@ public @interface UIFieldTreeNodeSelection {
     String iconColor() default "";
 
     /**
-     * Specify file systems ids. All available if not specified
+     * @return Specify file systems ids. All available if not specified
      */
     String[] fileSystemIds() default {UIFieldTreeNodeSelection.LOCAL_FS};
 }

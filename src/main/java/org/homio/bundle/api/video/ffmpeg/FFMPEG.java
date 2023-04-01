@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.video.VideoConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +55,7 @@ public class FFMPEG {
         this.ipVideoFfmpegThread = new IpVideoFfmpegThread();
         inputArguments = inputArguments.trim();
         List<String> builder = new ArrayList<>();
-        TouchHomeUtils.addToListSafe(builder, inputArguments.trim());
+        CommonUtils.addToListSafe(builder, inputArguments.trim());
         if (!input.startsWith("-i")) {
             builder.add("-i");
         }
@@ -72,7 +72,7 @@ public class FFMPEG {
 
         Collections.addAll(commandArrayList, String.join(" ", builder).split("\\s+"));
         // ffmpegLocation may have a space in its folder
-        commandArrayList.add(0, TouchHomeUtils.FFMPEG_LOCATION);
+        commandArrayList.add(0, CommonUtils.FFMPEG_LOCATION);
         log.warn("\n\n[{}]: Generated ffmpeg command for: {}.\n{}\n\n", entityID, format, String.join(" ", commandArrayList));
     }
 
@@ -185,7 +185,7 @@ public class FFMPEG {
                 }
             } catch (IOException ex) {
                 log.warn("[{}]: An error occurred trying to process the messages from FFMPEG.", entityID);
-                handler.ffmpegError(TouchHomeUtils.getErrorMessage(ex));
+                handler.ffmpegError(CommonUtils.getErrorMessage(ex));
             }
         }
     }

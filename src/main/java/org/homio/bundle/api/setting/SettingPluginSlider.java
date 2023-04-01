@@ -2,7 +2,7 @@ package org.homio.bundle.api.setting;
 
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.ui.field.UIFieldType;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONObject;
 
 public interface SettingPluginSlider extends SettingPluginInteger {
@@ -23,8 +23,8 @@ public interface SettingPluginSlider extends SettingPluginInteger {
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPluginInteger.super.getParameters(entityContext, value);
-        TouchHomeUtils.putOpt(parameters, "step", getStep());
-        TouchHomeUtils.putOpt(parameters, "header", getHeader());
+        CommonUtils.putOpt(parameters, "step", getStep());
+        CommonUtils.putOpt(parameters, "header", getHeader());
         return parameters;
     }
 }

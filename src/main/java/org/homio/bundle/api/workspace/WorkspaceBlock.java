@@ -30,7 +30,7 @@ import org.homio.bundle.api.state.RawType;
 import org.homio.bundle.api.state.State;
 import org.homio.bundle.api.util.Curl;
 import org.homio.bundle.api.util.SpringUtils;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.workspace.scratch.MenuBlock;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -212,7 +212,7 @@ public interface WorkspaceBlock {
                     try {
                         runnable.run();
                     } catch (Exception ex) {
-                        logError(TouchHomeUtils.getErrorMessage(ex));
+                        logError(CommonUtils.getErrorMessage(ex));
                     }
                 }
             }
@@ -230,7 +230,7 @@ public interface WorkspaceBlock {
                     try {
                         handler.run();
                     } catch (Exception ex) {
-                        logError(TouchHomeUtils.getErrorMessage(ex));
+                        logError(CommonUtils.getErrorMessage(ex));
                     }
                 }
             }

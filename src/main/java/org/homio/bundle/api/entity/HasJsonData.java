@@ -10,7 +10,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.bundle.api.model.JSON;
 import org.homio.bundle.api.util.SecureString;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +35,7 @@ public interface HasJsonData {
     @SneakyThrows
     default <T> @Nullable T getJsonData(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
-            return TouchHomeUtils.OBJECT_MAPPER.readValue(getJsonData(key), classType);
+            return CommonUtils.OBJECT_MAPPER.readValue(getJsonData(key), classType);
         }
         return null;
     }

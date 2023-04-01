@@ -9,7 +9,7 @@ import org.homio.bundle.api.model.ActionResponseModel;
 import org.homio.bundle.api.model.FileContentType;
 import org.homio.bundle.api.model.FileModel;
 import org.homio.bundle.api.setting.console.header.ConsoleHeaderSettingPlugin;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONObject;
 
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
@@ -22,7 +22,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
     ActionResponseModel save(FileModel content);
 
     default void sendValueToConsoleEditor(EntityContext entityContext) {
-        entityContext.ui().sendNotification("-editor-" + getEntityID(), TouchHomeUtils.OBJECT_MAPPER.valueToTree(getValue()));
+        entityContext.ui().sendNotification("-editor-" + getEntityID(), CommonUtils.OBJECT_MAPPER.valueToTree(getValue()));
     }
 
     default MonacoGlyphAction getGlyphAction() {

@@ -30,7 +30,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.io.IOUtils;
 import org.homio.bundle.api.ui.field.ProgressBar;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -125,7 +125,7 @@ public class ApacheCompress {
                         case replace: // already in OpenOptions
                             break;
                         case replaceNotMatch:
-                            Path tmpPath = TouchHomeUtils.getTmpPath().resolve(entry.getName());
+                            Path tmpPath = CommonUtils.getTmpPath().resolve(entry.getName());
                             Files.copy(stream, tmpPath, StandardCopyOption.REPLACE_EXISTING);
                             if (IOUtils.contentEquals(Files.newInputStream(tmpPath), Files.newInputStream(entryPath))) {
                                 Files.delete(tmpPath);

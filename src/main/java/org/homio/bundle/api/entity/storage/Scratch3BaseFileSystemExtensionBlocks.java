@@ -17,7 +17,7 @@ import org.homio.bundle.api.fs.FileSystemProvider;
 import org.homio.bundle.api.fs.TreeNode;
 import org.homio.bundle.api.state.DecimalType;
 import org.homio.bundle.api.state.RawType;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.workspace.WorkspaceBlock;
 import org.homio.bundle.api.workspace.scratch.ArgumentType;
 import org.homio.bundle.api.workspace.scratch.MenuBlock;
@@ -160,7 +160,7 @@ public abstract class Scratch3BaseFileSystemExtensionBlocks<T extends BundleEntr
                 getDrive(workspaceBlock).getFileSystem(entityContext).delete(Collections.singleton(fileId));
             } catch (Exception ex) {
                 workspaceBlock.logErrorAndThrow("Unable to delete file: <{}>. Msg: ",
-                        fileId, TouchHomeUtils.getErrorMessage(ex));
+                        fileId, CommonUtils.getErrorMessage(ex));
             }
         } else {
             workspaceBlock.logErrorAndThrow("Delete file block requires file name");

@@ -6,7 +6,7 @@ import org.homio.bundle.api.model.HasEntityIdentifier;
 import org.homio.bundle.api.model.Status;
 import org.homio.bundle.api.ui.field.UIField;
 import org.homio.bundle.api.ui.field.color.UIFieldColorStatusMatch;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +32,7 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
     }
 
     default T setStatusError(@NotNull Exception ex) {
-        return setStatus(Status.ERROR, TouchHomeUtils.getErrorMessage(ex));
+        return setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
     }
 
     default T setStatusError(@NotNull String message) {

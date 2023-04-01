@@ -46,7 +46,7 @@ public class SecureString implements CharSequence {
     }
 
     /**
-     * Convert array back to String but not using toString(). See toString() docs
+     * @return Convert array back to String but not using toString(). See toString() docs
      * below.
      */
     public String asString() {

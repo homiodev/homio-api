@@ -50,7 +50,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.bundle.api.fs.TreeNode;
 import org.homio.bundle.api.ui.field.ProgressBar;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -396,7 +396,7 @@ public final class ArchiveUtil {
 
         @SneakyThrows
         private void modifyArchive(Path archive, ThrowingBiConsumer<Path, List<Path>, Exception> consumer) {
-            Path tmpPath = TouchHomeUtils.getTmpPath().resolve("tmp_archive_" + System.currentTimeMillis());
+            Path tmpPath = CommonUtils.getTmpPath().resolve("tmp_archive_" + System.currentTimeMillis());
             Files.createDirectories(tmpPath);
             try {
                 List<Path> list = unzip(archive, tmpPath, null, null, UnzipFileIssueHandler.replace, 0);
@@ -412,20 +412,20 @@ public final class ArchiveUtil {
         public void addEntries(@NotNull Path archive, @NotNull Collection<TreeNode> files) {
             if (hasBuildInFileSystem) {
                 try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
-                    TouchHomeUtils.addFiles(Paths.get(""), files, (path, treeNode) ->
+                    CommonUtils.addFiles(Paths.get(""), files, (path, treeNode) ->
                             archiveFS.getPath(path.toString() + treeNode.getName()));
                 }
                 return;
             } else if (this == sevenZ) {
                 SevenZOutputFile sevenZOutput = new SevenZOutputFile(archive.toFile());
-                TouchHomeUtils.addFiles(Paths.get(""), files, (path, treeNode) -> path.resolve(treeNode.getName()),
+                CommonUtils.addFiles(Paths.get(""), files, (path, treeNode) -> path.resolve(treeNode.getName()),
                         (treeNode, path) -> writeSeven7ArchiveEntry(false, treeNode, sevenZOutput),
                         (treeNode, path) -> writeSeven7ArchiveEntry(true, treeNode, sevenZOutput));
                 sevenZOutput.close();
                 return;
             }
             modifyArchive(archive,
-                    (tmpPath, list) -> TouchHomeUtils.addFiles(tmpPath, files,
+                    (tmpPath, list) -> CommonUtils.addFiles(tmpPath, files,
                             (path, treeNode) -> path.resolve(treeNode.getName())));
         }
 
@@ -441,7 +441,7 @@ public final class ArchiveUtil {
             if (hasBuildInFileSystem) {
                 try (FileSystem zipFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
                     for (String entryName : entryNames) {
-                        removedItems.addAll(TouchHomeUtils.removeFileOrDirectory(zipFS.getPath(entryName)));
+                        removedItems.addAll(CommonUtils.removeFileOrDirectory(zipFS.getPath(entryName)));
                     }
                 }
                 return removedItems;
@@ -451,7 +451,7 @@ public final class ArchiveUtil {
                 for (Path item : list) {
                     String pathName = path.relativize(item).toString().replaceAll("\\\\", "/");
                     if (entryNamesToRemove.contains(pathName)) {
-                        removedItems.addAll(TouchHomeUtils.removeFileOrDirectory(item));
+                        removedItems.addAll(CommonUtils.removeFileOrDirectory(item));
                     }
                 }
             });

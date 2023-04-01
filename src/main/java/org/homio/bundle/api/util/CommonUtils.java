@@ -94,7 +94,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
 
 @Log4j2
-public class TouchHomeUtils {
+public class CommonUtils {
 
     public static final String APP_UUID;
     public static final int RUN_COUNT;
@@ -136,7 +136,7 @@ public class TouchHomeUtils {
 
     static {
         FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
-                TouchHomeUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
+                CommonUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
         OBJECT_MAPPER = new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
@@ -244,7 +244,7 @@ public class TouchHomeUtils {
 
     @SneakyThrows
     public static <T> List<T> readJSON(String resource, Class<T> targetClass) {
-        Enumeration<URL> resources = TouchHomeUtils.class.getClassLoader().getResources(resource);
+        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(resource);
         List<T> list = new ArrayList<>();
         while (resources.hasMoreElements()) {
             list.add(OBJECT_MAPPER.readValue(resources.nextElement(), targetClass));
@@ -282,7 +282,7 @@ public class TouchHomeUtils {
 
     public static List<String> readFile(String fileName) {
         try {
-            return IOUtils.readLines(TouchHomeUtils.class.getClassLoader().getResourceAsStream(fileName),
+            return IOUtils.readLines(CommonUtils.class.getClassLoader().getResourceAsStream(fileName),
                     Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
@@ -305,7 +305,7 @@ public class TouchHomeUtils {
 
     @SneakyThrows
     private static List<Map<String, String>> readProperties(String path) {
-        Enumeration<URL> resources = TouchHomeUtils.class.getClassLoader().getResources(path);
+        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(path);
         List<Map<String, String>> properties = new ArrayList<>();
         while (resources.hasMoreElements()) {
             try (InputStream input = resources.nextElement().openStream()) {
@@ -367,7 +367,7 @@ public class TouchHomeUtils {
             return bundleClassLoaders.get(bundle).getResource(resource);
         }
         URL resourceURL = null;
-        ArrayList<URL> urls = Collections.list(TouchHomeUtils.class.getClassLoader().getResources(resource));
+        ArrayList<URL> urls = Collections.list(CommonUtils.class.getClassLoader().getResources(resource));
         if (urls.size() == 1) {
             resourceURL = urls.get(0);
         } else if (urls.size() > 1 && bundle != null) {
@@ -380,7 +380,7 @@ public class TouchHomeUtils {
     public static <T> T readAndMergeJSON(String resource, T targetObject) {
         ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
         ArrayList<ClassLoader> classLoaders = new ArrayList<>(bundleClassLoaders.values());
-        classLoaders.add(TouchHomeUtils.class.getClassLoader());
+        classLoaders.add(CommonUtils.class.getClassLoader());
 
         for (ClassLoader classLoader : classLoaders) {
             for (URL url : Collections.list(classLoader.getResources(resource))) {
@@ -548,9 +548,7 @@ public class TouchHomeUtils {
         return true;
     }
 
-    /**
-     * Simple utility for scan for ip range
-     */
+    // Simple utility for scan for ip range
     public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
                                      ThrowingFunction<String, Boolean, Exception> testDevice,
                                      Consumer<String> createDeviceHandler) {

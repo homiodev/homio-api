@@ -3,7 +3,7 @@ package org.homio.bundle.api.setting;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.homio.bundle.api.EntityContext;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 
 public interface SettingPluginJarInstallButton extends SettingPluginButton {
 
@@ -19,6 +19,6 @@ public interface SettingPluginJarInstallButton extends SettingPluginButton {
     String getServerJarPath();
 
     default Path getLocalPath() {
-        return TouchHomeUtils.getExternalJarClassPath().resolve(getFolder()).resolve(getJarFileName());
+        return CommonUtils.getExternalJarClassPath().resolve(getFolder()).resolve(getJarFileName());
     }
 }

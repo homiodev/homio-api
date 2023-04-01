@@ -1,6 +1,6 @@
 package org.homio.bundle.api.ui.field.action;
 
-import static org.homio.bundle.api.util.TouchHomeUtils.putOpt;
+import static org.homio.bundle.api.util.CommonUtils.putOpt;
 
 import java.util.Collections;
 import java.util.HashSet;

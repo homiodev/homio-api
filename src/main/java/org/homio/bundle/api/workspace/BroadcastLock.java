@@ -9,6 +9,7 @@ public interface BroadcastLock {
     /**
      * Await for events from lock.
      *
+     * @param workspaceBlock -
      * @return true if successfully returned, false in case of exception/interruption
      */
     default boolean await(WorkspaceBlock workspaceBlock) {

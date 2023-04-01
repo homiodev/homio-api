@@ -1,7 +1,7 @@
 package org.homio.bundle.api.model;
 
 import lombok.Getter;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 
 
 @Getter
@@ -14,7 +14,7 @@ public class ErrorHolderModel {
     public ErrorHolderModel(String title, String message, Exception ex) {
         this.title = title;
         this.message = message;
-        this.cause = TouchHomeUtils.getErrorMessage(ex);
+        this.cause = CommonUtils.getErrorMessage(ex);
         this.errorType = ex.getClass().getSimpleName();
     }
 }

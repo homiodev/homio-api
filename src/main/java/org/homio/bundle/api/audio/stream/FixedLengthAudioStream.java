@@ -17,6 +17,7 @@ public abstract class FixedLengthAudioStream extends AudioStream {
      * instance.
      *
      * @return a new input stream that can be consumed by the caller
+     * @throws Exception -
      */
     public abstract InputStream getClonedStream() throws Exception;
 }

@@ -5,14 +5,14 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 
 public interface State {
 
     static State of(Object value) {
         if (value == null || value instanceof State) return (State) value;
         if (value instanceof Map) {
-            return new JsonType(TouchHomeUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
+            return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
         }
         if (Number.class.isAssignableFrom(value.getClass())) {
             if (value instanceof Double) {
@@ -77,6 +77,6 @@ public interface State {
     @SneakyThrows
     default State optional(String value) {
         return StringUtils.isEmpty(value) ? this :
-                TouchHomeUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+                CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
     }
 }

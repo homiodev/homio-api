@@ -11,9 +11,9 @@ import java.lang.annotation.Target;
 @Repeatable(UIFieldColorsMatch.class)
 public @interface UIFieldColorMatch {
     /**
-     * Apply 'color' field if string is mathes to 'value'
+     * @return Apply 'color' field if string is mathes to 'value'
      */
-       String value();
+    String value();
 
     String color();
 }

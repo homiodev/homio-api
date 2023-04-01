@@ -1,6 +1,6 @@
 package org.homio.bundle.api.ui.field;
 
-import static org.homio.bundle.api.util.TouchHomeUtils.OBJECT_MAPPER;
+import static org.homio.bundle.api.util.CommonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.annotation.ElementType;

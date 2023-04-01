@@ -15,7 +15,7 @@ import org.homio.bundle.api.ui.field.UIFieldSlider;
 import org.homio.bundle.api.ui.field.selection.UIFieldDevicePortSelection;
 import org.homio.bundle.api.ui.field.selection.UIFieldSelectNoValue;
 import org.homio.bundle.api.ui.field.selection.UIFieldSelectValueOnEmpty;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +43,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     }
 
     default T setPort(String value) {
-        SerialPort serialPort = TouchHomeUtils.getSerialPort(value);
+        SerialPort serialPort = CommonUtils.getSerialPort(value);
         if (serialPort != null) {
             setSerialPort(serialPort);
         }

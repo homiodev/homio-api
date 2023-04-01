@@ -33,7 +33,7 @@ import org.homio.bundle.api.ui.field.action.UIContextMenuAction;
 import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.bundle.api.ui.field.image.UIFieldImage;
 import org.homio.bundle.api.util.SecureString;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -296,31 +296,31 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
 
     @JsonIgnore
     public String getHlsStreamUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
                 "/ipvideo.m3u8";
     }
 
     @JsonIgnore
     public String getSnapshotsMjpegUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
                 "/snapshots.mjpeg";
     }
 
     @JsonIgnore
     public String getAutofpsMjpegUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
                 "/autofps.mjpeg";
     }
 
     @JsonIgnore
     public String getImageUrl() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
                 "/ipvideo.jpg";
     }
 
     @JsonIgnore
     public String getIpVideoMjpeg() {
-        return "http://" + TouchHomeUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
                 "/ipvideo.mjpeg";
     }
 

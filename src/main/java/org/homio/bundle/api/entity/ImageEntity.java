@@ -13,7 +13,7 @@ import javax.persistence.Lob;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 
 @Entity
 @Getter
@@ -66,7 +66,7 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     @SneakyThrows
     public Path toPath() {
         if (fileSystem != null) {
-            return TouchHomeUtils.getOrCreateNewFileSystem(fileSystem).getPath(path);
+            return CommonUtils.getOrCreateNewFileSystem(fileSystem).getPath(path);
         }
         return Paths.get(path);
     }

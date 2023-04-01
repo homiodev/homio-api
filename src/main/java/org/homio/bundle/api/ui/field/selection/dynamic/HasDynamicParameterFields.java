@@ -42,6 +42,7 @@ public interface HasDynamicParameterFields extends HasJsonData {
      *
      * @param sourceClassType - in case if same entity has few datarsources for same widget. i.e. 1 for action and 2 for fetch
      *                        status
+     * @return DynamicRequestType
      */
     @JsonIgnore
     default DynamicRequestType getDynamicRequestType(Class<?> sourceClassType) {

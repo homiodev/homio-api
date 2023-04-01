@@ -13,7 +13,7 @@ import org.homio.bundle.api.model.Status;
 import org.homio.bundle.api.ui.field.UIFieldType;
 import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.bundle.api.util.NotificationLevel;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +32,7 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     }
 
     static BundleStatusInfo error(Throwable th) {
-        return new BundleStatusInfo(Status.ERROR, TouchHomeUtils.getErrorMessage(th));
+        return new BundleStatusInfo(Status.ERROR, CommonUtils.getErrorMessage(th));
     }
 
     @Override

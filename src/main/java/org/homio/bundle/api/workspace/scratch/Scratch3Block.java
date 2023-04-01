@@ -49,7 +49,8 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     /**
-     * Add argument with type string and default empty value
+     * @param argumentName -
+     * @return Add argument with type string and default empty value
      */
     public ArgumentTypeDescription addArgument(String argumentName) {
         return addArgument(argumentName, "");

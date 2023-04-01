@@ -2,7 +2,7 @@ package org.homio.bundle.api.setting;
 
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.ui.field.UIFieldType;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.json.JSONObject;
 
 public interface SettingPluginInteger extends SettingPlugin<Integer> {
@@ -35,8 +35,8 @@ public interface SettingPluginInteger extends SettingPlugin<Integer> {
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
-        TouchHomeUtils.putOpt(parameters, "min", getMin());
-        TouchHomeUtils.putOpt(parameters, "max", getMax());
+        CommonUtils.putOpt(parameters, "min", getMin());
+        CommonUtils.putOpt(parameters, "max", getMax());
         return parameters;
     }
 }

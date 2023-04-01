@@ -29,7 +29,7 @@ import org.homio.bundle.api.model.ActionResponseModel;
 import org.homio.bundle.api.model.CachedValue;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.homio.bundle.api.util.Curl;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpEntity;
@@ -121,7 +121,7 @@ public class GitHubProject {
     public <T> @Nullable T getFile(@NotNull String path, @NotNull Class<T> type) {
         URL url = new URL(format("https://raw.githubusercontent.com/%s/%s/master/%s", project, repo, path));
         if (path.endsWith(".yaml")) {
-            return TouchHomeUtils.YAML_OBJECT_MAPPER.readValue(url, type);
+            return CommonUtils.YAML_OBJECT_MAPPER.readValue(url, type);
         }
         return Curl.restTemplate.getForObject(url.toURI(), type);
     }
@@ -171,12 +171,12 @@ public class GitHubProject {
 
     @SneakyThrows
     public void downloadSource(String name, String version, Path targetPath) {
-        Path tmpPath = TouchHomeUtils.getTmpPath().resolve(name + ".tar.gz");
+        Path tmpPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
         Curl.download(api + "/tarball/" + version, tmpPath);
-        ArchiveUtil.unzip(tmpPath, TouchHomeUtils.getTmpPath(), null, false, null,
+        ArchiveUtil.unzip(tmpPath, CommonUtils.getTmpPath(), null, false, null,
                 ArchiveUtil.UnzipFileIssueHandler.replace);
         Files.delete(tmpPath);
-        Files.move(TouchHomeUtils.getTmpPath().resolve(name + "-" + version),
+        Files.move(CommonUtils.getTmpPath().resolve(name + "-" + version),
                 targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
@@ -211,14 +211,14 @@ public class GitHubProject {
         @SneakyThrows
         public @NotNull ProjectUpdate backup(@NotNull Path backupFileOrFolder) {
             FileUtils.copyDirectory(projectPath.resolve(backupFileOrFolder).toFile(),
-                    TouchHomeUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile());
+                    CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile());
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate restore(@NotNull Path backupFileOrFolder) {
             FileUtils.deleteDirectory(projectPath.resolve(backupFileOrFolder).toFile());
-            FileUtils.moveDirectory(TouchHomeUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile(),
+            FileUtils.moveDirectory(CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile(),
                     projectPath.resolve(backupFileOrFolder).toFile());
             return this;
         }
@@ -231,12 +231,12 @@ public class GitHubProject {
 
         @SneakyThrows
         public @NotNull ProjectUpdate downloadSource(@NotNull String version) {
-            Path targetPath = TouchHomeUtils.getTmpPath().resolve(name + ".tar.gz");
+            Path targetPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
             Curl.downloadWithProgress(api + "/tarball/" + version, targetPath, progressBar);
-            ArchiveUtil.unzip(targetPath, TouchHomeUtils.getTmpPath(), null, false, progressBar,
+            ArchiveUtil.unzip(targetPath, CommonUtils.getTmpPath(), null, false, progressBar,
                     ArchiveUtil.UnzipFileIssueHandler.replace);
             Files.delete(targetPath);
-            Files.move(TouchHomeUtils.getTmpPath().resolve(name + "-" + version),
+            Files.move(CommonUtils.getTmpPath().resolve(name + "-" + version),
                     projectPath, StandardCopyOption.REPLACE_EXISTING);
             return this;
         }

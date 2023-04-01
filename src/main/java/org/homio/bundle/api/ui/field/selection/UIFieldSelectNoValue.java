@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface UIFieldSelectNoValue {
 
     /**
-     * Text to show when no options available
+     * @return Text to show when no options available
      */
     String value();
 }

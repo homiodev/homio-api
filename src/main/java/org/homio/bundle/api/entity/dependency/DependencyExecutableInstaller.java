@@ -16,7 +16,7 @@ import org.homio.bundle.api.setting.SettingPluginText;
 import org.homio.bundle.api.ui.action.UIActionHandler;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.homio.bundle.api.util.Curl;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.hquery.LinesReader;
 import org.homio.bundle.hquery.hardware.other.MachineHardwareRepository;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +33,7 @@ public abstract class DependencyExecutableInstaller implements UIActionHandler {
     public static Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
                                           @NotNull ProgressBar progressBar, @NotNull Logger log) {
         log.info("Downloading <{}> from url <{}>", targetFileName, url);
-        Path targetFolder = TouchHomeUtils.getInstallPath();
+        Path targetFolder = CommonUtils.getInstallPath();
         Path archiveFile = targetFolder.resolve(targetFileName);
         Curl.downloadWithProgress(url, archiveFile, progressBar);
         progressBar.progress(90, "Unzip files...");

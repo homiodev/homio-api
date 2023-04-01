@@ -10,7 +10,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.bundle.api.util.Curl.RawResponse;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.springframework.util.MimeTypeUtils;
 
 @Accessors(chain = true)
@@ -78,7 +78,7 @@ public class RawType implements State {
             if (fileName == null) {
                 fileName = String.valueOf(Arrays.hashCode(bytes));
             }
-            relatedFile = TouchHomeUtils.writeToFile(TouchHomeUtils.getTmpPath().resolve(fileName), bytes, false);
+            relatedFile = CommonUtils.writeToFile(CommonUtils.getTmpPath().resolve(fileName), bytes, false);
         }
         return relatedFile;
     }

@@ -27,7 +27,7 @@ import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.bundle.api.util.FlowMap;
 import org.homio.bundle.api.util.Lang;
 import org.homio.bundle.api.util.NotificationLevel;
-import org.homio.bundle.api.util.TouchHomeUtils;
+import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -378,7 +378,7 @@ public interface EntityContextUI {
         } else {
             text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {
-                text = TouchHomeUtils.getErrorMessage(ex);
+                text = CommonUtils.getErrorMessage(ex);
             }
             // try cast text to lang
             text = Lang.getServerMessage(text, messageParam);
