@@ -11,8 +11,10 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +40,10 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.homio.bundle.api.exception.ServerException;
+import org.homio.bundle.api.fs.archive.ArchiveUtil;
+import org.homio.bundle.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,14 +59,45 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
 public final class Curl {
+
     public static final RestTemplate restTemplate = new RestTemplate();
+
+    /**
+     * Download archive file from url, extract, delete archive
+     *
+     * @param url            - url of archived source
+     * @param targetFileName - target file name
+     * @param progressBar    - progress bar to print progress
+     * @param log            - log info
+     * @return unarchived downloaded folder
+     */
+    @SneakyThrows
+    public static @Nullable Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
+        @NotNull ProgressBar progressBar, @NotNull Logger log) {
+        log.info("Downloading <{}> from url <{}>", targetFileName, url);
+        Path targetFolder = CommonUtils.getInstallPath();
+        Path archiveFile = targetFolder.resolve(targetFileName);
+        if (!Files.exists(archiveFile)) {
+            Curl.downloadWithProgress(url, archiveFile, progressBar);
+        }
+        progressBar.progress(90, "Unzip files...");
+        log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
+        List<Path> files = ArchiveUtil.unzip(archiveFile, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
+        Files.deleteIfExists(archiveFile);
+        Path extractPath = files.isEmpty() ? null : files.iterator().next();
+        String desiredFolder = FilenameUtils.removeExtension(targetFileName);
+        if (extractPath != null && !extractPath.getFileName().toString().equals(desiredFolder)) {
+            return Files.move(extractPath, extractPath.resolveSibling(desiredFolder));
+        }
+        return extractPath;
+    }
 
     public static <T> T get(@NotNull String url, @NotNull Class<T> responseType, Object... uriVariables) {
         return restTemplate.getForObject(url, responseType, uriVariables);
     }
 
     public static <T> T post(@NotNull String url, @Nullable Object request, @NotNull Class<T> responseType,
-                             Object... uriVariables) {
+        Object... uriVariables) {
         return restTemplate.postForObject(url, request, responseType, uriVariables);
     }
 

@@ -1,148 +1,72 @@
 package org.homio.bundle.api.entity.dependency;
 
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.function.Consumer;
-import lombok.SneakyThrows;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.Logger;
 import org.homio.bundle.api.EntityContext;
-import org.homio.bundle.api.fs.archive.ArchiveUtil;
-import org.homio.bundle.api.model.ActionResponseModel;
-import org.homio.bundle.api.setting.SettingPluginButton;
-import org.homio.bundle.api.setting.SettingPluginText;
-import org.homio.bundle.api.ui.action.UIActionHandler;
 import org.homio.bundle.api.ui.field.ProgressBar;
-import org.homio.bundle.api.util.Curl;
 import org.homio.bundle.api.util.CommonUtils;
-import org.homio.bundle.hquery.LinesReader;
-import org.homio.bundle.hquery.hardware.other.MachineHardwareRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 
 @Log4j2
-public abstract class DependencyExecutableInstaller implements UIActionHandler {
+@RequiredArgsConstructor
+public abstract class DependencyExecutableInstaller {
 
-    protected Boolean requireInstall;
-
-    // Just a utility methodUISidebarButton
-    @SneakyThrows
-    public static Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
-                                          @NotNull ProgressBar progressBar, @NotNull Logger log) {
-        log.info("Downloading <{}> from url <{}>", targetFileName, url);
-        Path targetFolder = CommonUtils.getInstallPath();
-        Path archiveFile = targetFolder.resolve(targetFileName);
-        Curl.downloadWithProgress(url, archiveFile, progressBar);
-        progressBar.progress(90, "Unzip files...");
-        log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
-        ArchiveUtil.unzip(archiveFile, targetFolder, null, true, progressBar, ArchiveUtil.UnzipFileIssueHandler.replace);
-        Files.deleteIfExists(archiveFile);
-        return targetFolder;
-    }
+    protected final EntityContext entityContext;
+    private String installedVersion;
 
     public abstract String getName();
 
     /**
-     * If set - scan DependencyExecutableInstaller and listen when button fires on ui and handle installation
-     * @return setting class
+     * @return installed version or null
      */
-    public abstract @Nullable Class<? extends SettingPluginButton> getInstallButton();
+    protected abstract @Nullable String getInstalledVersion();
 
-    protected abstract @Nullable Path installDependencyInternal(@NotNull EntityContext entityContext,
-                                                                @NotNull ProgressBar progressBar) throws Exception;
+    public @Nullable String getExecutablePath(@NotNull String execName) {
+        if (getVersion() == null) {
+            return null;
+        }
+        if (IS_OS_LINUX) {
+            return execName;
+        }
+        if (Files.exists(CommonUtils.getInstallPath().resolve(getName()))) {
+            return CommonUtils.getInstallPath().resolve(getName()).resolve(execName).toString();
+        }
+        // in case if installed externally
+        return execName;
+    }
 
-    protected void afterDependencyInstalled(@NotNull EntityContext entityContext, @Nullable Path path) {
+    protected abstract @Nullable Path installDependencyInternal(@NotNull ProgressBar progressBar, String version) throws Exception;
+
+    public final @Nullable String getVersion() {
+        if (installedVersion == null) {
+            try {
+                installedVersion = trimToNull(getInstalledVersion());
+            } catch (Exception ex) {
+                log.warn("Unable to fetch {} installed version", getName());
+            }
+        }
+        return installedVersion;
+    }
+
+    protected void afterDependencyInstalled(@Nullable Path path) {
 
     }
 
-    public void installDependency(@NotNull EntityContext entityContext, @NotNull ProgressBar progressBar) throws Exception {
-        requireInstall = null;
-        Path path = installDependencyInternal(entityContext, progressBar);
-        if (path != null) {
-            entityContext.setting().setValue(getDependencyPluginSettingClass(), path.toString());
-        }
+    public void installDependency(@NotNull ProgressBar progressBar, @Nullable String version) throws Exception {
+        installedVersion = null;
+        Path path = installDependencyInternal(progressBar, version);
         // check dependency installed
-        if (isRequireInstallDependencies(entityContext, false)) {
+        if (getVersion() == null) {
             throw new RuntimeException("Something went wrong after install dependency. Executable file still required");
         }
         progressBar.progress(99, "Installing finished");
-        afterDependencyInstalled(entityContext, path);
+        afterDependencyInstalled(path);
         entityContext.event().fireEvent(getName() + "-dependency-installed", true);
-    }
-
-    public synchronized boolean isRequireInstallDependencies(@NotNull EntityContext entityContext, boolean useCacheIfPossible) {
-        if (requireInstall == null || !useCacheIfPossible) {
-            requireInstall = true;
-            MachineHardwareRepository repository = entityContext.getBean(MachineHardwareRepository.class);
-            if (repository.isSoftwareInstalled(getName())) {
-                requireInstall = false;
-            } else {
-                requireInstall = checkDependencyInstalled(entityContext, repository);
-            }
-        }
-        return requireInstall;
-    }
-
-    public boolean checkDependencyInstalled(@NotNull EntityContext entityContext, @NotNull MachineHardwareRepository repository) {
-        Path targetPath = Paths.get(entityContext.setting().getValue(getDependencyPluginSettingClass()));
-        if (Files.isRegularFile(targetPath)) {
-            return checkWinDependencyInstalled(repository, targetPath);
-        }
-        return true;
-    }
-
-    public boolean checkWinDependencyInstalled(@NotNull MachineHardwareRepository repository, @NotNull Path targetPath) {
-        return !repository.execute(targetPath + " -version").startsWith(getName() + " version");
-    }
-
-    public abstract @NotNull Class<? extends SettingPluginText> getDependencyPluginSettingClass();
-
-    public void runService(EntityContext entityContext, Consumer<Process> processConsumer, String entityID) {
-        MachineHardwareRepository machineHardwareRepository = entityContext.getBean(MachineHardwareRepository.class);
-        if (SystemUtils.IS_OS_LINUX) {
-            machineHardwareRepository.startSystemCtl(getName());
-        } else {
-            Path targetPath = Paths.get(entityContext.setting().getValue(getDependencyPluginSettingClass()));
-            Path logFile = targetPath.getParent().resolve("execution-log.log");
-            entityContext.bgp().builder(getName() + "-service").linkLogFile(logFile).hideOnUIAfterCancel(false).execute(() -> {
-                Process process = Runtime.getRuntime().exec(targetPath.toString());
-                entityContext.bgp().executeOnExit(() -> {
-                    if (process != null) {
-                        process.destroyForcibly();
-                    }
-                });
-                processConsumer.accept(process);
-                Thread inputThread =
-                        new Thread(new LinesReader(getName() + "inputReader", process.getInputStream(), null, message ->
-                                log.info("[{}]: {}. {}", entityID, getName(), message)));
-                Thread errorThread =
-                        new Thread(new LinesReader(getName() + "errorReader", process.getErrorStream(), null, message ->
-                                log.error("[{}]: {}. {}", entityID, getName(), message)));
-                inputThread.start();
-                errorThread.start();
-
-                process.waitFor();
-                inputThread.interrupt();
-                errorThread.interrupt();
-            });
-        }
-    }
-
-    @Override
-    public boolean isEnabled(@NotNull EntityContext entityContext) {
-        return isRequireInstallDependencies(entityContext, true);
-    }
-
-    @Override
-    public ActionResponseModel handleAction(@NotNull EntityContext entityContext, @NotNull JSONObject ignore) {
-        if (isRequireInstallDependencies(entityContext, false)) {
-            entityContext.bgp().runWithProgress("install-deps-" + getClass().getSimpleName(), false,
-                    progressBar -> installDependency(entityContext, progressBar), null,
-                    () -> new RuntimeException("INSTALL_DEPENDENCY_IN_PROGRESS"));
-        }
-        return null;
     }
 }

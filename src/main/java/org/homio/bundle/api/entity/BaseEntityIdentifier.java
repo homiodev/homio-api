@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.model.HasEntityIdentifier;
+import org.jetbrains.annotations.NotNull;
 
 public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializable {
 
@@ -41,5 +42,5 @@ public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializab
     }
 
     @JsonIgnore
-    String getEntityPrefix();
+    @NotNull String getEntityPrefix();
 }

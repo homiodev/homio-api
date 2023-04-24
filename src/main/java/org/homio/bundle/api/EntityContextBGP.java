@@ -12,13 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 import org.homio.bundle.api.model.HasEntityIdentifier;
+import org.homio.bundle.api.setting.SettingPlugin;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -71,13 +70,29 @@ public interface EntityContextBGP {
     }
 
     /**
+     * Start service forever
+     *
+     * @param entityContext   -
+     * @param processConsumer -
+     * @param name            - service name to start
+     * @param settingClass    - setting class that store absolute path to service executable file. May be null for linux or in case if path equal to
+     *                        getInstallPath() + '/' + name
+     * @param <T>             setting class type
+     */
+    <T> void runService(
+        @NotNull EntityContext entityContext,
+        @NotNull Consumer<Process> processConsumer,
+        @NotNull String name,
+        @NotNull Class<? extends SettingPlugin<T>> settingClass);
+
+    /**
      * Run file watchdog. Check file's lastModification updates every 10 seconds and call onUpdateCommand if file had been changed
      *
      * @param file            - run file to check for changes
      * @param key             - distinguish key
      * @param onUpdateCommand - command to execute on update
+     * @return -
      * @throws IllegalArgumentException if file not readable
-     * @return  -
      */
     ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
             throws IllegalArgumentException;

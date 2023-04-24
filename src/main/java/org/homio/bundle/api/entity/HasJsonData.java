@@ -1,5 +1,7 @@
 package org.homio.bundle.api.entity;
 
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.Optional;
@@ -8,9 +10,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.model.JSON;
-import org.homio.bundle.api.util.SecureString;
 import org.homio.bundle.api.util.CommonUtils;
+import org.homio.bundle.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +24,9 @@ public interface HasJsonData {
     JSON getJsonData();
 
     default <P> void setJsonData(@NotNull String key, @Nullable P value) {
+        if (value == null) {
+            getJsonData().remove(key);
+        }
         getJsonData().put(key, value);
     }
 
@@ -91,6 +97,17 @@ public interface HasJsonData {
 
     default @NotNull String getJsonData(@NotNull String key) {
         return getJsonData().optString(key);
+    }
+
+    default String getJsonDataEntity(String key, EntityContext entityContext) {
+        String value = getJsonData(key);
+        if (isNotEmpty(value)) {
+            BaseEntity entity = entityContext.getEntity(value);
+            if (entity != null) {
+                return entity.getEntityID() + "~~~" + entity.getTitle();
+            }
+        }
+        return value;
     }
 
     default @NotNull SecureString getJsonSecure(@NotNull String key) {

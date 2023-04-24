@@ -12,7 +12,7 @@ import org.json.JSONObject;
 public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
     default String getConfirmMsg() {
-        return "ACTION_CONFIRM_MESSAGE";
+        return "action_confirm_message";
     }
 
     default String getConfirmTitle() {

@@ -54,4 +54,14 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
         this.ieeeAddress = ieeeAddress;
         return (T) this;
     }
+
+    @Override
+    public boolean isDisableEdit() {
+        return getJsonData("dis_edit", false);
+    }
+
+    @Override
+    public boolean isDisableDelete() {
+        return getJsonData("dis_del", false);
+    }
 }

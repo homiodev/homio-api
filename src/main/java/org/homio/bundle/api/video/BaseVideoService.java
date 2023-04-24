@@ -312,9 +312,9 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
     }
 
     public void deleteDirectories() {
-        CommonUtils.deleteDirectory(ffmpegGifOutputPath);
-        CommonUtils.deleteDirectory(ffmpegMP4OutputPath);
-        CommonUtils.deleteDirectory(ffmpegImageOutputPath);
+        CommonUtils.deletePath(ffmpegGifOutputPath);
+        CommonUtils.deletePath(ffmpegMP4OutputPath);
+        CommonUtils.deletePath(ffmpegImageOutputPath);
     }
 
     public void addVideoChangeState(String key, Consumer<Status> handler) {

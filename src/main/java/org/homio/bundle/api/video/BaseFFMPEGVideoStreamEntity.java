@@ -99,7 +99,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return this;
     }
 
-    @UIContextMenuAction(value = "VIDEO.RECORD_MP4", icon = "fas fa-file-video", inputs = {
+    @UIContextMenuAction(value = "RECORD_MP4", icon = "fas fa-file-video", inputs = {
             @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
             @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "10", min = 5, max = 100)
     })
@@ -112,7 +112,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return ActionResponseModel.showSuccess("SUCCESS");
     }
 
-    @UIContextMenuAction(value = "VIDEO.RECORD_GIF", icon = "fas fa-magic", inputs = {
+    @UIContextMenuAction(value = "RECORD_GIF", icon = "fas fa-magic", inputs = {
             @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
             @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "3", min = 1, max = 10)
     })

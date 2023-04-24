@@ -2,13 +2,15 @@ package org.homio.bundle.api.service;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.homio.bundle.api.entity.SshEntity;
 
 public interface SshProviderService {
-    SshSession openSshSession();
 
-    void closeSshSession(String token);
+    SshSession openSshSession(SshEntity sshEntity);
 
-    SessionStatusModel getSshStatus(String token);
+    void closeSshSession(String token, SshEntity sshEntity);
+
+    SessionStatusModel getSshStatus(String token, SshEntity sshEntity);
 
     @Getter
     @Setter

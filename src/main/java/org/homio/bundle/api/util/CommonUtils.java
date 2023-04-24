@@ -390,10 +390,16 @@ public class CommonUtils {
         return targetObject;
     }
 
-    public static boolean deleteDirectory(Path path) {
+    public static boolean deletePath(Path path) {
         try {
-            FileUtils.deleteDirectory(path.toFile());
-            return true;
+            if (Files.exists(path)) {
+                if (Files.isDirectory(path)) {
+                    FileUtils.deleteDirectory(path.toFile());
+                } else {
+                    Files.delete(path);
+                }
+                return true;
+            }
         } catch (IOException ex) {
             log.error("Unable to delete directory: <{}>", path, ex);
         }

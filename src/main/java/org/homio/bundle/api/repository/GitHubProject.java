@@ -25,11 +25,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.homio.bundle.api.fs.archive.ArchiveUtil;
+import org.homio.bundle.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.bundle.api.model.ActionResponseModel;
 import org.homio.bundle.api.model.CachedValue;
 import org.homio.bundle.api.ui.field.ProgressBar;
-import org.homio.bundle.api.util.Curl;
 import org.homio.bundle.api.util.CommonUtils;
+import org.homio.bundle.api.util.Curl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpEntity;
@@ -187,7 +188,7 @@ public class GitHubProject {
             @NotNull ProgressBar progressBar,
             @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler) {
         if (this.updating) {
-            return ActionResponseModel.showError("UPDATE_IN_PROGRESS");
+            return ActionResponseModel.showError("ERROR.UPDATE_IN_PROGRESS");
         }
         this.updating = true;
         ProjectUpdate projectUpdate = new ProjectUpdate(name, projectPath, progressBar);
@@ -225,19 +226,25 @@ public class GitHubProject {
 
         @SneakyThrows
         public @NotNull ProjectUpdate deleteProject() {
-            FileUtils.deleteDirectory(projectPath.toFile());
+            CommonUtils.deletePath(projectPath);
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate downloadSource(@NotNull String version) {
             Path targetPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
-            Curl.downloadWithProgress(api + "/tarball/" + version, targetPath, progressBar);
-            ArchiveUtil.unzip(targetPath, CommonUtils.getTmpPath(), null, false, progressBar,
-                    ArchiveUtil.UnzipFileIssueHandler.replace);
+            Curl.downloadWithProgress(api + "tarball/" + version, targetPath, progressBar);
+            List<Path> files = ArchiveUtil.unzip(targetPath, CommonUtils.getTmpPath(), null, false, progressBar,
+                UnzipFileIssueHandler.replace);
             Files.delete(targetPath);
-            Files.move(CommonUtils.getTmpPath().resolve(name + "-" + version),
-                    projectPath, StandardCopyOption.REPLACE_EXISTING);
+            if (!files.isEmpty()) {
+                Path unzipFolder = CommonUtils.getTmpPath().relativize(files.iterator().next());
+                while (unzipFolder.getParent() != null) {
+                    unzipFolder = unzipFolder.getParent();
+                }
+                CommonUtils.deletePath(projectPath);
+                Files.move(CommonUtils.getTmpPath().resolve(unzipFolder), projectPath);
+            }
             return this;
         }
     }

@@ -27,7 +27,7 @@ public interface EntityContext {
 
     @NotNull EntityContextEvent event();
 
-    @NotNull EntityContextUDP udp();
+    @NotNull EntityContextInstall install();
 
     @NotNull EntityContextBGP bgp();
 

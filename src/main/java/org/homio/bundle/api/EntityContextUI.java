@@ -24,10 +24,10 @@ import org.homio.bundle.api.ui.dialog.DialogModel;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.homio.bundle.api.ui.field.action.ActionInputParameter;
 import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.util.FlowMap;
 import org.homio.bundle.api.util.Lang;
 import org.homio.bundle.api.util.NotificationLevel;
-import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -454,19 +454,33 @@ public interface EntityContextUI {
             return this;
         }
 
+        /**
+         * Set notification block version
+         *
+         * @param version - version string
+         * @return builder
+         */
         NotificationBlockBuilder setVersion(@Nullable String version);
 
+        /**
+         * Add updatable button to ui notification block.
+         *
+         * @param updateHandler - handler to execute when user press update button. Execution executes inside thread with passing progressBar object and
+         *                      selected 'version'
+         * @param versions      - list of versions to be able to select from UI select box
+         * @return builder
+         */
         NotificationBlockBuilder setUpdatable(@NotNull BiFunction<ProgressBar, String, ActionResponseModel> updateHandler,
-                                              @NotNull List<String> versions);
+            @NotNull List<String> versions);
 
         NotificationBlockBuilder addInfo(@NotNull String info, @Nullable String color,
-                                         @Nullable String icon, @Nullable String iconColor);
+            @Nullable String icon, @Nullable String iconColor);
 
         NotificationBlockBuilder addButtonInfo(@NotNull String info, @Nullable String color,
-                                               @Nullable String icon, @Nullable String iconColor,
-                                               @NotNull String buttonIcon,
-                                               @Nullable String buttonText,
-                                               @Nullable String confirmMessage,
-                                               @NotNull UIActionHandler handler);
+            @Nullable String icon, @Nullable String iconColor,
+            @NotNull String buttonIcon,
+            @Nullable String buttonText,
+            @Nullable String confirmMessage,
+            @NotNull UIActionHandler handler);
     }
 }
