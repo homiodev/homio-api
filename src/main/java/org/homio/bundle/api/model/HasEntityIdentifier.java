@@ -1,16 +1,19 @@
 package org.homio.bundle.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface HasEntityIdentifier {
-    String getEntityID();
 
-    default String getTitle() {
+    @NotNull String getEntityID();
+
+    default @Nullable String getTitle() {
         return getEntityID();
     }
 
     @JsonIgnore
-    default String getIdentifier() {
+    default @Nullable String getIdentifier() {
         return getEntityID();
     }
 }

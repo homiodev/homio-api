@@ -25,6 +25,9 @@ public @interface UIActionInput {
     // for numbers or for text length
     int max() default Integer.MAX_VALUE;
 
+    // for select box. i.e. {"1", "2..12;Value %s", "14:Fourteen"}
+    String[] values() default "";
+
     // pattern for text
     Pattern pattern() default @Pattern(regexp = ".*");
 

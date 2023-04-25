@@ -17,6 +17,7 @@ import org.homio.bundle.api.converter.JSONConverter;
 import org.homio.bundle.api.model.JSON;
 import org.homio.bundle.api.ui.field.UIField;
 import org.homio.bundle.api.ui.field.UIFieldIgnore;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Setter
@@ -62,26 +63,26 @@ public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends Dev
     private int position;
 
     @Override
-    public String getEntityPrefix() {
+    public @NotNull String getEntityPrefix() {
         return PREFIX;
     }
 
     @Override
-    public void getAllRelatedEntities(Set<BaseEntity> set) {
+    public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
         set.add(owner);
     }
 
     @Override
     @JsonIgnore
     @UIFieldIgnore
-    public Date getCreationTime() {
+    public @NotNull Date getCreationTime() {
         return super.getCreationTime();
     }
 
     @Override
     @JsonIgnore
     @UIFieldIgnore
-    public Date getUpdateTime() {
+    public @NotNull Date getUpdateTime() {
         return super.getUpdateTime();
     }
 }

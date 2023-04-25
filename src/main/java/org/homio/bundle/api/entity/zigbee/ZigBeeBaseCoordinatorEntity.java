@@ -23,7 +23,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
         extends HasJsonData, HasEntityLog, HasEntityIdentifier, HasStatusAndMsg<T>, EntityService<S, T> {
 
     @UIField(order = 1, inlineEdit = true)
-    @UIFieldGroup(value = "General", order = 1)
+    @UIFieldGroup(value = "GENERAL", order = 1)
     default boolean isStart() {
         return getJsonData("start", false);
     }
@@ -37,7 +37,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     @UIFieldDevicePortSelection
     @UIFieldSelectValueOnEmpty(label = "selection.selectPort", icon = "fas fa-door-open")
     @UIFieldSelectNoValue("error.noPortsAvailable")
-    @UIFieldGroup(value = "Port", order = 5, borderColor = "#29A397")
+    @UIFieldGroup(value = "PORT", order = 5, borderColor = "#29A397")
     default String getPort() {
         return getJsonData("port", "");
     }
@@ -63,7 +63,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
 
     @UIField(order = 1)
     @UIFieldSlider(min = 60, max = 254)
-    @UIFieldGroup(value = "Discovery", order = 15, borderColor = "#663453")
+    @UIFieldGroup(value = "DISCOVERY", order = 15, borderColor = "#663453")
     default int getDiscoveryDuration() {
         return getJsonData("dd", 254);
     }

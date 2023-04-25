@@ -1,4 +1,4 @@
-package org.homio.bundle.api.model;
+package org.homio.bundle.api.cache;
 
 import java.time.Duration;
 import java.util.function.Function;

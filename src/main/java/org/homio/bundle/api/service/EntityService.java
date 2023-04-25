@@ -10,6 +10,7 @@ import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.entity.HasStatusAndMsg;
 import org.homio.bundle.api.exception.NotFoundException;
 import org.homio.bundle.api.model.HasEntityIdentifier;
+import org.homio.bundle.api.model.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,10 +18,13 @@ import org.jetbrains.annotations.Nullable;
  * Configure service for entities. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
  */
 public interface EntityService<S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
-        extends HasStatusAndMsg<T> {
+    extends HasStatusAndMsg<T> {
+
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
     Map<String, Object> entityToService = new ConcurrentHashMap<>();
+
+    EntityContext getEntityContext();
 
     /**
      * @return Get service or throw error if not found
@@ -64,10 +68,26 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         }
     }
 
+    default boolean requireTestServiceInBackground() {
+        return false;
+    }
+
     default void testService() {
+        if (requireTestServiceInBackground()) {
+            getEntityContext().bgp().builder("service-test-" + getEntityID()).execute(this::testServiceInternal);
+        } else {
+            testServiceInternal();
+        }
+    }
+
+    private void testServiceInternal() {
         try {
+            Status backupStatus = getStatus();
+            setStatus(Status.TESTING);
             if (getService().testService()) {
                 setStatusOnline();
+            } else {
+                setStatus(backupStatus);
             }
         } catch (Exception ex) {
             setStatusError(ex);

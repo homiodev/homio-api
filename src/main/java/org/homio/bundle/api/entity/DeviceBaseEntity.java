@@ -39,7 +39,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
 
     @Getter
     @Setter
-    @Column(length = 65535)
+    @Column(length = 100_000)
     @Convert(converter = JSONConverter.class)
     private JSON jsonData = new JSON();
 

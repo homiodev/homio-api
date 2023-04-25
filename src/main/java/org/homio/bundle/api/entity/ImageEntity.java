@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.homio.bundle.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Getter
@@ -76,7 +77,7 @@ public final class ImageEntity extends BaseEntity<ImageEntity> {
     }
 
     @Override
-    public String getEntityPrefix() {
+    public @NotNull String getEntityPrefix() {
         return "img_";
     }
 

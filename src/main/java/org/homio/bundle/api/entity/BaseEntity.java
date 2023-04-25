@@ -17,10 +17,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
 import org.homio.bundle.api.BundleEntrypoint;
 import org.homio.bundle.api.EntityContext;
+import org.homio.bundle.api.model.OptionModel;
 import org.homio.bundle.api.ui.field.UIField;
 import org.homio.bundle.api.ui.field.UIFieldType;
 import org.homio.bundle.api.util.ApplicationContextHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONPropertyIgnore;
 
 @Log4j2
@@ -36,7 +38,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     private Integer version;
 
     @NaturalId
-    @Getter
     @Column(name = "entityID", unique = true, nullable = false)
     private String entityID;
 
@@ -46,14 +47,21 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     @Column(nullable = false)
     @UIField(order = 20, hideInEdit = true, type = UIFieldType.StaticDate)
-    @Getter
     private Date creationTime;
 
+    @Column(nullable = false)
     @UIField(order = 30, hideInEdit = true, type = UIFieldType.StaticDate)
-    @Getter
     private Date updateTime;
 
-    public static BaseEntity fakeEntity(String entityID) {
+    /**
+     * Configure OptionModel for show it in select box
+     *
+     * @param optionModel model to configure
+     */
+    public void configureOptionModel(@NotNull OptionModel optionModel) {
+    }
+
+    public static BaseEntity fakeEntity(@NotNull String entityID) {
         return new BaseEntity() {
             @Override
             public String getDefaultName() {
@@ -61,7 +69,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
             }
 
             @Override
-            public String getEntityPrefix() {
+            public @NotNull String getEntityPrefix() {
                 return "";
             }
         }.setEntityID(entityID);
@@ -80,6 +88,18 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     public T setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
         return (T) this;
+    }
+
+    public @NotNull String getEntityID() {
+        return entityID;
+    }
+
+    public @NotNull Date getCreationTime() {
+        return creationTime;
+    }
+
+    public @NotNull Date getUpdateTime() {
+        return updateTime;
     }
 
     @Override
@@ -160,7 +180,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     }
 
-    public void beforeDelete(EntityContext entityContext) {
+    public void beforeDelete(@NotNull EntityContext entityContext) {
 
     }
 
@@ -178,12 +198,12 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
      * Accumulate list of related entities which has to be refreshed in cache after entity updated
      * @param set -
      */
-    public void getAllRelatedEntities(Set<BaseEntity> set) {
+    public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
     }
 
     @Override
     public String getIdentifier() {
-        return getEntityID() == null ? String.valueOf(getId()) : getEntityID();
+        return entityID == null ? String.valueOf(getId()) : getEntityID();
     }
 
     public void copy() {
@@ -197,11 +217,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
 
     @JsonIgnore
     @JSONPropertyIgnore
-    public EntityContext getEntityContext() {
+    public @NotNull EntityContext getEntityContext() {
         return ApplicationContextHolder.getBean(EntityContext.class);
     }
 
-    public String getBundle() {
+    public @Nullable String getBundle() {
         return BundleEntrypoint.getBundleName(getClass());
     }
 

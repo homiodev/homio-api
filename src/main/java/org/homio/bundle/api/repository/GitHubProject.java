@@ -24,10 +24,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.homio.bundle.api.cache.CachedValue;
 import org.homio.bundle.api.fs.archive.ArchiveUtil;
 import org.homio.bundle.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.bundle.api.model.ActionResponseModel;
-import org.homio.bundle.api.model.CachedValue;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.util.Curl;
@@ -188,7 +188,7 @@ public class GitHubProject {
             @NotNull ProgressBar progressBar,
             @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler) {
         if (this.updating) {
-            return ActionResponseModel.showError("ERROR.UPDATE_IN_PROGRESS");
+            return ActionResponseModel.showError("W.ERROR.UPDATE_IN_PROGRESS");
         }
         this.updating = true;
         ProjectUpdate projectUpdate = new ProjectUpdate(name, projectPath, progressBar);

@@ -26,6 +26,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.bundle.api.entity.BaseEntity;
+import org.homio.bundle.api.entity.HasStatusAndMsg;
 import org.homio.bundle.api.fs.TreeNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +61,21 @@ public class OptionModel implements Comparable<OptionModel> {
     private String color;
     @Getter
     private List<OptionModel> children;
+
+    public OptionModel setDisabled(boolean disabled) {
+        json.put("disabled", disabled);
+        return this;
+    }
+
+    public OptionModel setStatus(HasStatusAndMsg statusEntity) {
+        if (statusEntity.getStatus().isOnline()) {
+            icon = "fas fa-circle-check";
+        } else {
+            icon = "fas fa-circle-xmark";
+            setDisabled(true);
+        }
+        return this;
+    }
 
     private OptionModel(@NotNull Object key, @Nullable Object title) {
         if (key == null) {
@@ -188,8 +204,14 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> entityList(@NotNull Collection<? extends BaseEntity> list) {
-        return list.stream().map(e -> OptionModel.of(e.getEntityID(), StringUtils.defaultIfEmpty(e.getName(), e.getTitle())))
-                .collect(Collectors.toList());
+        return list.stream().map(entity -> {
+                       OptionModel model = OptionModel.of(
+                           entity.getEntityID(),
+                           entity.getTitle());
+                       entity.configureOptionModel(model);
+                       return model;
+                   })
+                   .collect(Collectors.toList());
     }
 
     public static List<OptionModel> simpleNamelist(@NotNull Collection list) {

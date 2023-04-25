@@ -7,37 +7,38 @@ import java.io.Serializable;
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.model.HasEntityIdentifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface BaseEntityIdentifier<T> extends HasEntityIdentifier, Serializable {
 
     @JsonIgnore
     String getDefaultName();
 
-    default String getTitle() {
+    default @NotNull String getTitle() {
         return defaultIfBlank(getName(), defaultIfBlank(getDefaultName(), getEntityID()));
     }
 
-    default String getType() {
+    default @NotNull String getType() {
         return this.getClass().getSimpleName();
     }
 
-    String getName();
+    @Nullable String getName();
 
-    default void afterDelete(EntityContext entityContext) {
+    default void afterDelete(@NotNull EntityContext entityContext) {
 
     }
 
-    default void afterUpdate(EntityContext entityContext, boolean persis) {
+    default void afterUpdate(@NotNull EntityContext entityContext, boolean persis) {
 
     }
 
     // fires after fetch from db/cache
-    default void afterFetch(EntityContext entityContext) {
+    default void afterFetch(@NotNull EntityContext entityContext) {
 
     }
 
     @JsonIgnore
-    default String refreshName() {
+    default @Nullable String refreshName() {
         return getDefaultName();
     }
 

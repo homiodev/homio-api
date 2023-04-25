@@ -35,8 +35,11 @@ public interface EntityContext {
 
     @NotNull EntityContextVar var();
 
+    @NotNull EntityContextHardware hardware();
+
     /**
      * Register custom Scratch3Extension
+     *
      * @param scratch3ExtensionBlocks - dynamic block to register
      */
     void registerScratch3Extension(@NotNull Scratch3ExtensionBlocks scratch3ExtensionBlocks);
@@ -141,13 +144,13 @@ public interface EntityContext {
     @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@NotNull Class<T> clazz);
 
     default boolean isAdminUserOrNone() {
-        UserEntity user = getUser(false);
+        UserEntity user = getUser();
         return user == null || user.isAdmin();
     }
 
     @NotNull
     default UserEntity getUserRequire() {
-        UserEntity user = getUser(false);
+        UserEntity user = getUser();
         if (user == null) {
             throw new NotFoundException("Unable to find authenticated user");
         }
@@ -155,14 +158,10 @@ public interface EntityContext {
     }
 
     @Nullable
-    default UserEntity getUser(boolean anonymousIfNotFound) {
+    default UserEntity getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            UserEntity entity = getEntity((String) authentication.getCredentials());
-            if (entity == null && anonymousIfNotFound) {
-                entity = UserEntity.ANONYMOUS_USER;
-            }
-            return entity;
+            return getEntity((String) authentication.getCredentials());
         }
         return null;
     }

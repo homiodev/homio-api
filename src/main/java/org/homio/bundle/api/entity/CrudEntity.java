@@ -13,6 +13,7 @@ import org.homio.bundle.api.model.HasEntityIdentifier;
 import org.homio.bundle.api.ui.field.UIField;
 import org.homio.bundle.api.ui.field.UIFieldType;
 import org.homio.bundle.api.util.ApplicationContextHolder;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @MappedSuperclass
@@ -52,7 +53,7 @@ public class CrudEntity<T> implements HasEntityIdentifier {
     }
 
     @Override
-    public String getEntityID() {
+    public @NotNull String getEntityID() {
         return String.valueOf(id);
     }
 }

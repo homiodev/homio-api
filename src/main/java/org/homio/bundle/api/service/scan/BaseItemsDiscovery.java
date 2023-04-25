@@ -14,8 +14,9 @@ import org.homio.bundle.api.model.ActionResponseModel;
 import org.homio.bundle.api.model.HasEntityIdentifier;
 import org.homio.bundle.api.ui.action.UIActionHandler;
 import org.homio.bundle.api.ui.field.ProgressBar;
-import org.homio.bundle.api.util.FlowMap;
 import org.homio.bundle.api.util.CommonUtils;
+import org.homio.bundle.api.util.FlowMap;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 
@@ -124,7 +125,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         }
 
         @Override
-        public String getEntityID() {
+        public @NotNull String getEntityID() {
             return name;
         }
     }

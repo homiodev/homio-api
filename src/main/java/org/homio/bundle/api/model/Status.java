@@ -17,6 +17,7 @@ public enum Status {
     DONE("#399396"),
     NOT_READY("#99A040"),
     CLOSING("#992F5D"),
+    TESTING("#A3A18E"),
     RESTARTING("#99A040");
 
     @Getter

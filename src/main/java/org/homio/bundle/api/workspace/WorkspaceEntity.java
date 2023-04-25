@@ -39,7 +39,7 @@ public final class WorkspaceEntity extends BaseEntity<WorkspaceEntity> {
     }
 
     @Override
-    public String getEntityPrefix() {
+    public @NotNull String getEntityPrefix() {
         return PREFIX;
     }
 }

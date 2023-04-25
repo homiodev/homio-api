@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,6 +23,24 @@ public interface HasJsonData {
     @JsonIgnore
     @NotNull
     JSON getJsonData();
+
+    default long getJsonDataHashCode(String key, String... extraKeys) {
+        long code = key.hashCode();
+        for (String extraKey : extraKeys) {
+            Object value = getJsonData().opt(extraKey);
+            code += (value == null ? 0 : value.hashCode());
+        }
+        return code;
+    }
+
+    default boolean deepEqual(HasJsonData other, String... keys) {
+        for (String key : keys) {
+            if (!Objects.equals(getJsonData().opt(key), other.getJsonData().opt(key))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     default <P> void setJsonData(@NotNull String key, @Nullable P value) {
         if (value == null) {

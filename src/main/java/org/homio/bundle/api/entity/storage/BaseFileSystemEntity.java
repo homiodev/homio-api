@@ -16,6 +16,7 @@ import org.homio.bundle.api.ui.field.UIFieldType;
 import org.homio.bundle.api.ui.field.action.HasDynamicContextMenuActions;
 import org.homio.bundle.api.ui.field.action.UIContextMenuAction;
 import org.homio.bundle.api.util.Lang;
+import org.jetbrains.annotations.NotNull;
 
 public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
         extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData {
@@ -77,7 +78,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     @Override
-    default void afterDelete(EntityContext entityContext) {
+    default void afterDelete(@NotNull EntityContext entityContext) {
         FileSystemProvider provider = fileSystemMap.remove(getEntityID());
         if (provider != null) {
             provider.dispose();
@@ -85,7 +86,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     @Override
-    default void afterUpdate(EntityContext entityContext, boolean persist) {
+    default void afterUpdate(@NotNull EntityContext entityContext, boolean persist) {
         this.getFileSystem(entityContext).setEntity(this);
     }
 }
