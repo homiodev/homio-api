@@ -207,7 +207,7 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     protected <T extends KeyValueEnum> MenuBlock.StaticMenuBlock<T> menuStaticKV(String name, Class<T> enumClass,
-                                                                                 T defaultValue) {
+        T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnumKVE(enumClass).setDefaultValue(defaultValue));
     }
 
@@ -215,15 +215,12 @@ public abstract class Scratch3ExtensionBlocks {
         return addMenu(new MenuBlock.StaticMenuBlock(name, items, String.class).setDefaultValue(defaultValue));
     }
 
-    protected MenuBlock.ServerMenuBlock menuServerFiles(@NotNull MenuBlock.ServerMenuBlock fileSystemDependency,
-                                                        @Nullable String regexp) {
-        return menuServer("FILE", defaultString(regexp, ".*"), "File")
-                .setDependency(fileSystemDependency).setUIDelimiter("/");
+    protected MenuBlock.ServerMenuBlock menuServerFiles(@Nullable String regexp) {
+        return menuServer("FILE", defaultString(regexp, ".*"), "File").setUIDelimiter("/");
     }
 
-    protected MenuBlock.ServerMenuBlock menuServerFolders(@NotNull MenuBlock.ServerMenuBlock fileSystemDependency,
-                                                          @Nullable String regexp) {
-        return menuServer("FOLDER", defaultString(regexp, ".*"), "Folder").setDependency(fileSystemDependency);
+    protected MenuBlock.ServerMenuBlock menuServerFolders(@Nullable String regexp) {
+        return menuServer("FOLDER", defaultString(regexp, ".*"), "Folder").setUIDelimiter("/");
     }
 
     private <T extends Scratch3Block> T addBlock(T scratch3Block, Consumer<T> configureHandler) {

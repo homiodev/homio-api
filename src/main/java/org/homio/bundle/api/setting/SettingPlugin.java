@@ -5,9 +5,12 @@ import com.fazecast.jSerialComm.SerialPort;
 import java.nio.file.Paths;
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.entity.BaseEntity;
+import org.homio.bundle.api.entity.UserEntity;
 import org.homio.bundle.api.model.KeyValueEnum;
 import org.homio.bundle.api.ui.field.UIFieldType;
 import org.homio.bundle.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -173,13 +176,26 @@ public interface SettingPlugin<T> {
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
                 throw new IllegalArgumentException(
-                        "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+                    "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
             }
             if (parameters.has("max") && parseValue > parameters.getInt("max")) {
                 throw new IllegalArgumentException(
-                        "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+                    "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
             }
         }
         return (T) parseValue;
+    }
+
+    /**
+     * Assert that user has access to change setting
+     *
+     * @param entityContext - entity context
+     * @param user          - logged in user
+     * @throws IllegalAccessException - access denied
+     */
+    default void assertUserAccess(@NotNull EntityContext entityContext, @Nullable UserEntity user) throws IllegalAccessException {
+        if (user == null || !user.isAdmin()) {
+            throw new IllegalAccessException();
+        }
     }
 }

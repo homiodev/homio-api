@@ -12,6 +12,10 @@ public interface HasEntityIdentifier {
         return getEntityID();
     }
 
+    default @NotNull String getType() {
+        return this.getClass().getSimpleName();
+    }
+
     @JsonIgnore
     default @Nullable String getIdentifier() {
         return getEntityID();

@@ -1,17 +1,16 @@
-package org.homio.bundle.api.entity;
+package org.homio.bundle.api.fs;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
+import org.homio.bundle.api.entity.DeviceBaseEntity;
 import org.homio.bundle.api.entity.storage.BaseFileSystemEntity;
-import org.homio.bundle.api.fs.TreeNode;
-import org.homio.bundle.api.fs.archive.ArchiveUtil;
 import org.homio.bundle.api.model.OptionModel;
 
 @Getter
@@ -27,7 +26,8 @@ public class TreeConfiguration {
     private boolean hasCreateFile;
     private boolean hasCreateFolder;
     private List<String> editableExtensions;
-    private List<OptionModel> zipExtensions;
+    private Set<String> zipOpenExtensions;
+    private List<TreeNodeChip> chips;
 
     @Setter
     private Set<TreeNode> children;
@@ -52,10 +52,8 @@ public class TreeConfiguration {
         this.hasUpload = true;
         this.hasCreateFile = true;
         this.hasCreateFolder = true;
+        this.zipOpenExtensions = fs.getSupportArchiveFormats();
 
-        this.zipExtensions =
-            Stream.of(ArchiveUtil.ArchiveFormat.values()).map(f -> OptionModel.of(f.getName()))
-                  .collect(Collectors.toList());
         this.editableExtensions =
             Arrays.asList("txt", "java", "cpp", "sh", "css", "scss", "js", "json", "xml", "html", "php", "py", "ts",
                 "ino", "conf", "service", "md", "png", "jpg", "jpeg");
@@ -64,5 +62,12 @@ public class TreeConfiguration {
     public void setIcon(String icon, String color) {
         this.icon = icon;
         this.color = color;
+    }
+
+    public void addChip(TreeNodeChip treeNodeChip) {
+        if (chips == null) {
+            chips = new ArrayList<>();
+        }
+        chips.add(treeNodeChip);
     }
 }

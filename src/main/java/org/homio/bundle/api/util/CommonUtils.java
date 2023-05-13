@@ -136,13 +136,14 @@ public class CommonUtils {
 
     static {
         FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
-                CommonUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
+            CommonUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
         OBJECT_MAPPER = new ObjectMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
-                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         ConfFile confFile = readConfigurationFile();
         APP_UUID = confFile.getUuid();

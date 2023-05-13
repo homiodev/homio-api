@@ -61,12 +61,10 @@ public class OptionModel implements Comparable<OptionModel> {
     private String color;
     @Getter
     private List<OptionModel> children;
-
-    public OptionModel setDisabled(boolean disabled) {
-        json.put("disabled", disabled);
-        return this;
-    }
-
+    @Getter
+    @Setter
+    private boolean disabled;
+    
     public OptionModel setStatus(HasStatusAndMsg statusEntity) {
         if (statusEntity.getStatus().isOnline()) {
             icon = "fas fa-circle-check";

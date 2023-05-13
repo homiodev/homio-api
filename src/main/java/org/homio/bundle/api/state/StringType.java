@@ -39,6 +39,11 @@ public class StringType implements State {
     }
 
     @Override
+    public Object rawValue() {
+        return value;
+    }
+
+    @Override
     public String stringValue() {
         return value;
     }

@@ -27,14 +27,14 @@ public interface EntityContextHardware {
 
     boolean isSoftwareInstalled(@NotNull String soft);
 
-    void installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
+    EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
-    void installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+    EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
         BiConsumer<Double, String> progressBar);
 
-    void enableSystemCtl(@NotNull String soft);
+    EntityContextHardware enableSystemCtl(@NotNull String soft);
 
-    void startSystemCtl(@NotNull String soft);
+    EntityContextHardware startSystemCtl(@NotNull String soft);
 
     void stopSystemCtl(@NotNull String soft);
 
@@ -43,4 +43,22 @@ public interface EntityContextHardware {
     int getServiceStatus(@NotNull String serviceName);
 
     void reboot();
+
+    /**
+     * Enable and start soft
+     *
+     * @param soft - system service
+     * @return this
+     */
+    default EntityContextHardware enableAndStartSystemCtl(@NotNull String soft) {
+        enableSystemCtl(soft);
+        startSystemCtl(soft);
+        return this;
+
+    }
+
+    default EntityContextHardware update() {
+        execute("$PM update");
+        return this;
+    }
 }

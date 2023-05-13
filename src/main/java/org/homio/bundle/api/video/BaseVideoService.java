@@ -1,5 +1,6 @@
 package org.homio.bundle.api.video;
 
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
 import static org.homio.bundle.api.video.VideoConstants.CHANNEL_AUDIO_ALARM;
 import static org.homio.bundle.api.video.VideoConstants.CHANNEL_AUDIO_THRESHOLD;
 import static org.homio.bundle.api.video.VideoConstants.CHANNEL_FFMPEG_MOTION_ALARM;
@@ -172,9 +173,9 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
                     initialize();
                 }
             } catch (BadCredentialsException ex) {
-                this.disposeAndSetStatus(Status.REQUIRE_AUTH, CommonUtils.getErrorMessage(ex));
+                this.disposeAndSetStatus(Status.REQUIRE_AUTH, getErrorMessage(ex));
             } catch (Exception ex) {
-                this.disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+                this.disposeAndSetStatus(Status.ERROR, getErrorMessage(ex));
             }
         }
         this.oldEntity = entity;
@@ -218,7 +219,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
             entity.setSourceStatus(Status.ONLINE, null);
             afterInitialize();
         } catch (Exception ex) {
-            disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+            disposeAndSetStatus(Status.ERROR, getErrorMessage(ex));
         }
     }
 

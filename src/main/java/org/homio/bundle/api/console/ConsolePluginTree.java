@@ -1,7 +1,7 @@
 package org.homio.bundle.api.console;
 
 import java.util.List;
-import org.homio.bundle.api.entity.TreeConfiguration;
+import org.homio.bundle.api.fs.TreeConfiguration;
 
 public interface ConsolePluginTree extends ConsolePlugin<List<TreeConfiguration>> {
 

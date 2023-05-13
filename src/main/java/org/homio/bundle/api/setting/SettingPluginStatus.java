@@ -2,6 +2,7 @@ package org.homio.bundle.api.setting;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
 
 import java.util.function.Consumer;
 import lombok.Getter;
@@ -32,7 +33,7 @@ public interface SettingPluginStatus extends SettingPlugin<SettingPluginStatus.B
     }
 
     static BundleStatusInfo error(Throwable th) {
-        return new BundleStatusInfo(Status.ERROR, CommonUtils.getErrorMessage(th));
+        return new BundleStatusInfo(Status.ERROR, getErrorMessage(th));
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.homio.bundle.api.workspace.scratch;
 
+import static org.homio.bundle.api.util.CommonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,10 +9,15 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.homio.bundle.api.entity.EntityFieldMetadata;
 import org.homio.bundle.api.state.State;
+import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
@@ -30,8 +37,10 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     private Scratch3Color scratch3Color;
 
-    protected Scratch3Block(int order, String opcode, BlockType blockType, Object text, Scratch3BlockHandler handler,
-                            Scratch3BlockEvaluateHandler evaluateHandler) {
+    protected Scratch3Block(int order, @NotNull String opcode, @NotNull BlockType blockType,
+        @NotNull Object text,
+        @Nullable Scratch3BlockHandler handler,
+        @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
         this.opcode = opcode;
         this.blockType = blockType;
@@ -40,11 +49,11 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         this.evaluateHandler = evaluateHandler;
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull ArgumentType type) {
         return addArgument(argumentName, type, "");
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, boolean defaultValue) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, boolean defaultValue) {
         return addArgument(argumentName, ArgumentType.checkbox, Boolean.toString(defaultValue));
     }
 
@@ -52,33 +61,55 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
      * @param argumentName -
      * @return Add argument with type string and default empty value
      */
-    public ArgumentTypeDescription addArgument(String argumentName) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName) {
         return addArgument(argumentName, "");
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, String defaultValue) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull String defaultValue) {
         return addArgument(argumentName, ArgumentType.string, defaultValue);
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, Integer defaultValue) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull Integer defaultValue) {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, Float defaultValue) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull Float defaultValue) {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, Double defaultValue) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull Double defaultValue) {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, ArgumentType type, String defaultValue) {
+    @SneakyThrows
+    public @NotNull <T extends EntityFieldMetadata> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass) {
+        return addSetting(settingClass, null);
+    }
+
+    @SneakyThrows
+    public @NotNull <T extends EntityFieldMetadata> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass, @Nullable T entity) {
+        if (entity == null) {
+            entity = CommonUtils.newInstance(settingClass);
+        }
+
+        EntityFieldMetadata entityFieldMetadata = CommonUtils.newInstance(settingClass);
+        if (entityFieldMetadata == null) {
+            throw new IllegalArgumentException("Setting class has to have empty constructor");
+        }
+        if (StringUtils.isEmpty(entityFieldMetadata.getTitle())) {
+            throw new IllegalArgumentException("Setting class has to have non null title method");
+        }
+
+        return addArgument("SETTING", ArgumentType.setting, OBJECT_MAPPER.writeValueAsString(entity));
+    }
+
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull ArgumentType type, @NotNull String defaultValue) {
         ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(type, defaultValue, null);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;
     }
 
-    public ArgumentTypeDescription addArgument(String argumentName, MenuBlock menu) {
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull MenuBlock menu) {
         ArgumentTypeDescription argumentTypeDescription = new ArgumentTypeDescription(ArgumentType.string, menu);
         this.arguments.put(argumentName, argumentTypeDescription);
         return argumentTypeDescription;
@@ -89,7 +120,7 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return Integer.compare(order, o.order);
     }
 
-    public Pair<String, MenuBlock> findMenuBlock(Predicate<String> predicate) {
+    public @Nullable Pair<String, MenuBlock> findMenuBlock(@NotNull Predicate<String> predicate) {
         for (String argument : arguments.keySet()) {
             if (predicate.test(argument)) {
                 return Pair.of(argument, arguments.get(argument).getMenuBlock());
@@ -102,7 +133,7 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         this.spaceCount++;
     }
 
-    public void overrideColor(String color) {
+    public void overrideColor(@Nullable String color) {
         if (color != null) {
             this.scratch3Color = new Scratch3Color(color);
         }
@@ -123,25 +154,28 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     @FunctionalInterface
     public interface Scratch3BlockHandler {
-        void handle(WorkspaceBlock workspaceBlock) throws Exception;
+
+        void handle(@NotNull WorkspaceBlock workspaceBlock) throws Exception;
     }
 
     @FunctionalInterface
     public interface Scratch3BlockEvaluateHandler {
-        State handle(WorkspaceBlock workspaceBlock) throws Exception;
+
+        State handle(@NotNull WorkspaceBlock workspaceBlock) throws Exception;
     }
 
     @Getter
     @RequiredArgsConstructor
     public static class ArgumentTypeDescription {
-        private final ArgumentType type;
-        private final String defaultValue;
-        private final String menu;
+
+        private final @NotNull ArgumentType type;
+        private final @Nullable String defaultValue;
+        private final @Nullable String menu;
 
         @JsonIgnore
         private final MenuBlock menuBlock;
 
-        ArgumentTypeDescription(ArgumentType type, String defaultValue, MenuBlock menuBlock) {
+        ArgumentTypeDescription(@NotNull ArgumentType type, @Nullable String defaultValue, @Nullable MenuBlock menuBlock) {
             this.type = type;
             this.defaultValue = defaultValue;
             if (menuBlock != null) {
@@ -153,14 +187,14 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
             }
         }
 
-        ArgumentTypeDescription(ArgumentType type, MenuBlock menuBlock) {
+        ArgumentTypeDescription(@NotNull ArgumentType type, @NotNull MenuBlock menuBlock) {
             this.type = type;
             this.menu = menuBlock.getName();
             this.menuBlock = menuBlock;
             this.defaultValue = null;
         }
 
-        public String getDefaultValue() {
+        public @Nullable String getDefaultValue() {
             if (defaultValue != null) {
                 return defaultValue;
             }

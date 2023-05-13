@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import lombok.SneakyThrows;
 import org.homio.bundle.api.entity.BaseEntity;
 import org.homio.bundle.api.entity.UserEntity;
 import org.homio.bundle.api.exception.NotFoundException;
@@ -16,8 +17,10 @@ import org.homio.bundle.api.workspace.scratch.Scratch3ExtensionBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 
 public interface EntityContext {
 
@@ -143,9 +146,16 @@ public interface EntityContext {
 
     @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@NotNull Class<T> clazz);
 
-    default boolean isAdminUserOrNone() {
+    default boolean isAdmin() {
         UserEntity user = getUser();
-        return user == null || user.isAdmin();
+        return user != null && user.isAdmin();
+    }
+
+    @SneakyThrows
+    default void assertAdminAccess() {
+        if (!isAdmin()) {
+            throw new IllegalAccessException();
+        }
     }
 
     @NotNull
@@ -157,14 +167,29 @@ public interface EntityContext {
         return user;
     }
 
+    default void assertAccess(@NotNull String resource) {
+        UserEntity user = getUserRequire();
+        if (!user.isAllowResource(resource)) {
+            throw new AccessDeniedException("Access denied");
+        }
+    }
+
+    default boolean accessEnabled(@NotNull String resource) {
+        UserEntity user = getUserRequire();
+        return user.isAllowResource(resource);
+    }
+
     @Nullable
     default UserEntity getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            return getEntity((String) authentication.getCredentials());
+            User user = (User) authentication.getPrincipal();
+            return getEntity(user.getUsername());
         }
         return null;
     }
+
+    void registerResource(String resource);
 
     @NotNull Collection<AbstractRepository> getRepositories();
 

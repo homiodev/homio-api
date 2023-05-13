@@ -3,13 +3,13 @@ package org.homio.bundle.api.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
@@ -44,7 +44,7 @@ public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends Dev
             }
             return ((O) ((HibernateProxy) owner).getHibernateLazyInitializer().getImplementation());
         } else {
-            return (O) owner;
+            return owner;
         }
     }
 

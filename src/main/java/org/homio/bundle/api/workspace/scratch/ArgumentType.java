@@ -32,5 +32,7 @@ public enum ArgumentType {
 
     icon,
 
-    broadcast
+    broadcast,
+
+    setting
 }

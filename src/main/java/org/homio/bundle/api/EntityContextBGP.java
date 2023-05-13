@@ -204,6 +204,12 @@ public interface EntityContextBGP {
 
         ScheduleBuilder<T> interval(@NotNull Duration duration);
 
+        ScheduleBuilder<T> throwOnError(boolean value);
+
+        ScheduleBuilder<T> onError(@NotNull Consumer<Exception> errorListener);
+
+        ScheduleBuilder<T> metadata(@NotNull String key, @NotNull Object value);
+
         /**
          * Execute some code with ThreadContext before execution
          * @param handler - consumer to execute
@@ -213,10 +219,18 @@ public interface EntityContextBGP {
 
         /**
          * Set delay before first execution.
+         *
          * @param duration - wait timeout
          * @return ScheduleBuilder
          */
         ScheduleBuilder<T> delay(@NotNull Duration duration);
+
+        /**
+         * Specify that need path requested authenticated user to background process thread
+         *
+         * @return this
+         */
+        ScheduleBuilder<T> auth();
 
         // default false
         ScheduleBuilder<T> hideOnUI(boolean value);
@@ -229,6 +243,16 @@ public interface EntityContextBGP {
 
         // link log file to be able to read on UI
         ScheduleBuilder<T> linkLogFile(Path logFile);
+
+        /**
+         * Add value listener when run/schedule finished.
+         *
+         * @param name          - unique name of listener
+         * @param valueListener - listener: First 2 parameters is value from run/schedule and previous value.
+         *                      Return boolean where is remove listener or not after execute
+         * @return true if listeners successfully added
+         */
+        ScheduleBuilder<T> valueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
     }
 
     interface ThreadPuller {
@@ -251,8 +275,6 @@ public interface EntityContextBGP {
         @Nullable Object getMetadata(String key);
 
         void setMetadata(@NotNull String key, @NotNull Object value);
-
-        void setCancelOnError(boolean cancelOnError);
 
         @Nullable String getDescription();
 
@@ -281,16 +303,8 @@ public interface EntityContextBGP {
          */
         T await(@NotNull Duration timeout) throws Exception;
 
-        void onError(@NotNull Consumer<Exception> errorListener);
-
-        /**
-         * Add value listener when run/schedule finished.
-         *
-         * @param name          - unique name of listener
-         * @param valueListener - listener: First 2 parameters is value from run/schedule and previous value.
-         *                      Return boolean where is remove listener or not after execute
-         * @return true if listeners successfully added
-         */
         boolean addValueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
+
+        boolean removeValueListener(@NotNull String name);
     }
 }

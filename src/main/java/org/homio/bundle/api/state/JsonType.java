@@ -70,6 +70,11 @@ public class JsonType implements State, Comparable<JsonType> {
     }
 
     @Override
+    public Object rawValue() {
+        return jsonNode;
+    }
+
+    @Override
     public String stringValue() {
         return jsonNode.toString();
     }

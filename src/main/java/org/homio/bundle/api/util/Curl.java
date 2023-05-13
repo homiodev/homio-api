@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -47,6 +48,7 @@ import org.homio.bundle.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
@@ -60,7 +62,14 @@ import org.springframework.web.client.RestTemplate;
 @SuppressWarnings("unused")
 public final class Curl {
 
-    public static final RestTemplate restTemplate = new RestTemplate();
+    public static final RestTemplate restTemplate;
+
+    static {
+        restTemplate = new RestTemplateBuilder()
+            .setConnectTimeout(Duration.ofSeconds(10))
+            .setReadTimeout(Duration.ofSeconds(60))
+            .build();
+    }
 
     /**
      * Download archive file from url, extract, delete archive
@@ -225,7 +234,7 @@ public final class Curl {
         InputStream input = connection.getInputStream();
         FileUtils.copyInputStreamToFile(new FilterInputStream(input) {
             int readBytes = 0;
-            final Consumer<Integer> progressHandler = new Consumer<Integer>() {
+            final Consumer<Integer> progressHandler = new Consumer<>() {
                 int nextStep = 1;
 
                 @Override
@@ -234,13 +243,13 @@ public final class Curl {
                     if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
                         nextStep++;
                         progressBar.progress((readBytes / fileSize * 100) * 0.9, // max 90%
-                                "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
+                            "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
                     }
                 }
             };
 
             @Override
-            public int read(byte[] b, int off, int len) throws IOException {
+            public int read(byte @NotNull [] b, int off, int len) throws IOException {
                 int read = super.read(b, off, len);
                 progressHandler.accept(read);
                 return read;
@@ -278,8 +287,8 @@ public final class Curl {
                 new HttpMessageConverterExtractor<>(returnType, restTemplate.getMessageConverters());
         return responseExtractor.extractData(new ClientHttpResponse() {
             @Override
-            public HttpStatus getStatusCode() {
-                return null;
+            public @NotNull HttpStatus getStatusCode() {
+                return HttpStatus.OK;
             }
 
             @Override
@@ -288,7 +297,7 @@ public final class Curl {
             }
 
             @Override
-            public String getStatusText() {
+            public @NotNull String getStatusText() {
                 return response.getStatusLine().getReasonPhrase();
             }
 
@@ -299,12 +308,12 @@ public final class Curl {
             }
 
             @Override
-            public InputStream getBody() throws IOException {
+            public @NotNull InputStream getBody() throws IOException {
                 return response.getEntity().getContent();
             }
 
             @Override
-            public HttpHeaders getHeaders() {
+            public @NotNull HttpHeaders getHeaders() {
                 MultiValueMap<String, String> headers = new LinkedMultiValueMap<>(response.getAllHeaders().length);
                 for (Header header : response.getAllHeaders()) {
                     headers.put(header.getName(), Collections.singletonList(header.getValue()));

@@ -1,5 +1,7 @@
 package org.homio.bundle.api.service.scan;
 
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,7 +69,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
                                     status.set(0);
                                     if (ex != null) {
                                         entityContext.ui()
-                                                     .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", CommonUtils.getErrorMessage(ex)), ex);
+                                                     .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", getErrorMessage(ex)), ex);
                                     }
                                 });
                     } else {

@@ -1,6 +1,7 @@
 package org.homio.bundle.api.workspace;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
 
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.pivovarit.function.ThrowingConsumer;
@@ -30,7 +31,6 @@ import org.homio.bundle.api.state.RawType;
 import org.homio.bundle.api.state.State;
 import org.homio.bundle.api.util.Curl;
 import org.homio.bundle.api.util.SpringUtils;
-import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.workspace.scratch.MenuBlock;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -157,10 +157,13 @@ public interface WorkspaceBlock {
 
     boolean hasField(String fieldName);
 
+    <T> T getSetting(Class<T> settingClass);
+
     void setValue(String key, State value);
 
-    default void setValue(State value) {
+    default State setValue(State value) {
         setValue("value", value);
+        return value;
     }
 
     void handle();
@@ -212,7 +215,7 @@ public interface WorkspaceBlock {
                     try {
                         runnable.run();
                     } catch (Exception ex) {
-                        logError(CommonUtils.getErrorMessage(ex));
+                        logError(getErrorMessage(ex));
                     }
                 }
             }
@@ -230,7 +233,7 @@ public interface WorkspaceBlock {
                     try {
                         handler.run();
                     } catch (Exception ex) {
-                        logError(CommonUtils.getErrorMessage(ex));
+                        logError(getErrorMessage(ex));
                     }
                 }
             }
@@ -290,7 +293,7 @@ public interface WorkspaceBlock {
 
     default String getInputStringRequired(String key, String errorMessage) {
         String value = getInputString(key, null);
-        if (value == null) {
+        if (value == null || value.isEmpty()) {
             logErrorAndThrow(errorMessage);
         }
         return value;

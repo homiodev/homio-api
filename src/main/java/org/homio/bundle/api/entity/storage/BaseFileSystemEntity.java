@@ -1,15 +1,17 @@
 package org.homio.bundle.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.entity.BaseEntity;
 import org.homio.bundle.api.entity.BaseEntityIdentifier;
 import org.homio.bundle.api.entity.HasJsonData;
 import org.homio.bundle.api.entity.HasStatusAndMsg;
-import org.homio.bundle.api.entity.TreeConfiguration;
 import org.homio.bundle.api.fs.FileSystemProvider;
+import org.homio.bundle.api.fs.TreeConfiguration;
 import org.homio.bundle.api.model.ActionResponseModel;
 import org.homio.bundle.api.ui.field.UIField;
 import org.homio.bundle.api.ui.field.UIFieldType;
@@ -19,12 +21,15 @@ import org.homio.bundle.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 
 public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
-        extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData {
+    extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData {
+
     Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
 
     default TreeConfiguration buildFileSystemConfiguration(EntityContext entityContext) {
         return new TreeConfiguration(this);
     }
+
+    @NotNull String getFileSystemRoot();
 
     /**
      * @return Short FS alias
@@ -61,8 +66,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     @JsonIgnore
     long getConnectionHashCode();
 
-    @UIField(order = 1, required = true, hideInEdit = true, hideOnEmpty = true, fullWidth = true, bg = "#334842",
-             type = UIFieldType.HTML)
+    @UIField(order = 1, hideInEdit = true, hideOnEmpty = true, fullWidth = true, bg = "#334842", type = UIFieldType.HTML)
     default String getDescription() {
         String prefix = getEntityPrefix();
         return requireConfigure() ? Lang.getServerMessage(prefix.substring(0, prefix.length() - 1) + ".description") : null;
@@ -88,5 +92,16 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     @Override
     default void afterUpdate(@NotNull EntityContext entityContext, boolean persist) {
         this.getFileSystem(entityContext).setEntity(this);
+    }
+
+    boolean isShowHiddenFiles();
+
+    /**
+     * List of archive formats that able to expand
+     *
+     * @return - list of archive extensions
+     */
+    default Set<String> getSupportArchiveFormats() {
+        return Collections.emptySet();
     }
 }

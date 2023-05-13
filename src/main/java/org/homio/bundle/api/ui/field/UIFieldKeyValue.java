@@ -16,21 +16,28 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIKeyValueField {
+public @interface UIFieldKeyValue {
+
     int maxSize() default Integer.MAX_VALUE;
 
-    UIFieldType keyType();
+    Option[] options() default {};
+
+    UIFieldType keyType() default UIFieldType.String;
 
     // show keys on UI
-    boolean showKey();
+    boolean showKey() default true;
 
-    String defaultKey();
+    String defaultKey() default "";
+
+    String keyPlaceholder() default "";
 
     String keyFormat() default "{0}";
 
-    UIFieldType valueType();
+    UIFieldType valueType() default UIFieldType.String;
 
-    String defaultValue();
+    String defaultValue() default "";
+
+    String valuePlaceholder() default "";
 
     String valueFormat() default "{0}";
 
@@ -38,5 +45,15 @@ public @interface UIKeyValueField {
 
     enum KeyValueType {
         array, object
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Option {
+
+        String key();
+
+        String icon() default "";
+
+        String[] values();
     }
 }

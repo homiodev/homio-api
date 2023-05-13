@@ -49,6 +49,11 @@ public class OnOffType implements State {
     }
 
     @Override
+    public Object rawValue() {
+        return boolValue();
+    }
+
+    @Override
     public RawType toRawType() {
         return null;
     }

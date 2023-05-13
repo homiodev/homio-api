@@ -11,15 +11,31 @@ import org.json.JSONObject;
 
 public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
-    default String getConfirmMsg() {
-        return "action_confirm_message";
-    }
+    /**
+     * Confirm message when click on button. null if not requires
+     *
+     * @return message
+     */
+    String getConfirmMsg();
 
     default String getConfirmTitle() {
         return null;
     }
 
     String getIcon();
+
+    default String getText() {
+        return null;
+    }
+
+    /**
+     * Does show button as 'primary'
+     *
+     * @return primary or not
+     */
+    default boolean isPrimary() {
+        return false;
+    }
 
     @Override
     default Class<JSONObject> getType() {

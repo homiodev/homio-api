@@ -24,6 +24,10 @@ public enum UIFieldType {
     Toggle(Object::toString),
     Upload(Object::toString),
     TextInput(Object::toString),
+    /**
+     * return type must be enum. Handle as buttons instead of select box
+     */
+    EnumButtons(Object::toString),
 
     // Slider with min/max/step parameters
     Slider(o -> {
@@ -68,7 +72,7 @@ public enum UIFieldType {
     }),
     // String type
     ColorPicker(Object::toString),
-    Chips(Object::toString), // https://material.angular.io/components/chips/examples
+    Chips(Object::toString),
 
     // special type (default for detect field type by java type)
     AutoDetect(Object::toString);

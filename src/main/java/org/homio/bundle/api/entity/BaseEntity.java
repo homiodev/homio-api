@@ -3,14 +3,14 @@ package org.homio.bundle.api.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.EntityManager;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Version;
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +19,7 @@ import org.homio.bundle.api.BundleEntrypoint;
 import org.homio.bundle.api.EntityContext;
 import org.homio.bundle.api.model.OptionModel;
 import org.homio.bundle.api.ui.field.UIField;
+import org.homio.bundle.api.ui.field.UIFieldGroup;
 import org.homio.bundle.api.ui.field.UIFieldType;
 import org.homio.bundle.api.util.ApplicationContextHolder;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +28,9 @@ import org.json.JSONPropertyIgnore;
 
 @Log4j2
 @MappedSuperclass
-public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIdentifier<T>, Comparable<BaseEntity> {
+public abstract class BaseEntity<T extends BaseEntity> implements
+    BaseEntityIdentifier<T>,
+    Comparable<BaseEntity> {
 
     @Id
     @GeneratedValue
@@ -41,16 +44,19 @@ public abstract class BaseEntity<T extends BaseEntity> implements BaseEntityIden
     @Column(name = "entityID", unique = true, nullable = false)
     private String entityID;
 
-    @UIField(order = 10, inlineEdit = true)
     @Getter
+    @UIField(order = 10, inlineEdit = true)
+    @UIFieldGroup(value = "GENERAL", order = 10)
     private String name;
 
     @Column(nullable = false)
     @UIField(order = 20, hideInEdit = true, type = UIFieldType.StaticDate)
+    @UIFieldGroup("GENERAL")
     private Date creationTime;
 
     @Column(nullable = false)
     @UIField(order = 30, hideInEdit = true, type = UIFieldType.StaticDate)
+    @UIFieldGroup("GENERAL")
     private Date updateTime;
 
     /**

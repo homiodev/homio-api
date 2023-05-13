@@ -107,6 +107,11 @@ public class DecimalType implements State, Comparable<DecimalType> {
     }
 
     @Override
+    public Object rawValue() {
+        return value;
+    }
+
+    @Override
     public boolean boolValue() {
         throw new IllegalStateException("Unable to fetch boolean value from DecimalType");
     }

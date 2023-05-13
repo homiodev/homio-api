@@ -94,6 +94,11 @@ public class RawType implements State {
     }
 
     @Override
+    public Object rawValue() {
+        return bytes;
+    }
+
+    @Override
     public boolean boolValue() {
         throw new RuntimeException("Not implemented");
     }

@@ -65,15 +65,20 @@ public class TreeNode implements Comparable<TreeNode> {
         this.attributes.contentType = contentType;
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
+
     // TreeNode not related to saved data yet
     @SneakyThrows
     public static TreeNode of(@NotNull MultipartFile file) {
         String name = StringUtils.defaultIfEmpty(file.getOriginalFilename(), file.getName());
         return new TreeNode(false, false, name, name, file.getSize(), null, null, file.getContentType()).setInputStream(
-                file.getInputStream());
+            file.getInputStream());
     }
 
-    public static TreeNode of(@NotNull String name, @NotNull byte[] content) {
+    public static TreeNode of(@NotNull String name, byte[] content) {
         return new TreeNode(false, false, name, name, (long) content.length, null, null, null).setInputStream(
                 new ByteArrayInputStream(content));
     }
@@ -255,17 +260,17 @@ public class TreeNode implements Comparable<TreeNode> {
         private String icon;
         private String color;
         private List<Text> texts; // text array next to name!
-        private List<Chip> chips;
+        private List<TreeNodeChip> chips;
         private boolean removed; // for server -> client updates marking that node has to be removed
 
-        public void addChip(Chip chip) {
+        public void addChip(TreeNodeChip treeNodeChip) {
             if (chips == null) {
                 chips = new ArrayList<>();
             }
-            chips.add(chip);
+            chips.add(treeNodeChip);
         }
 
-        public void setChips(Chip... chips) {
+        public void setChips(TreeNodeChip... chips) {
             if (this.chips == null) {
                 this.chips = new ArrayList<>();
             }
@@ -287,28 +292,6 @@ public class TreeNode implements Comparable<TreeNode> {
         public void addText(String text, String color) {
             this.texts.add(new Text(text, color));
         }
-    }
-
-    /**
-     * Represent [Chip] block element on right side of tree. Must specify at least icon or text to be visible on UI.
-     */
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    @RequiredArgsConstructor
-    public static class Chip {
-
-        @Nullable
-        private final String icon;
-        @Nullable
-        private final String text;
-        @Nullable
-        private String bgColor;
-        @Nullable
-        private String iconColor;
-
-        private boolean clickable; // if Chip not only info but communicate with server
-        private JSONObject metadata; // require if clickable and need handle Chip on server side
     }
 
     @Getter

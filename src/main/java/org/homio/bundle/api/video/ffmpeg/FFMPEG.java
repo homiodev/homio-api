@@ -1,5 +1,7 @@
 package org.homio.bundle.api.video.ffmpeg;
 
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -185,7 +187,7 @@ public class FFMPEG {
                 }
             } catch (IOException ex) {
                 log.warn("[{}]: An error occurred trying to process the messages from FFMPEG.", entityID);
-                handler.ffmpegError(CommonUtils.getErrorMessage(ex));
+                handler.ffmpegError(getErrorMessage(ex));
             }
         }
     }

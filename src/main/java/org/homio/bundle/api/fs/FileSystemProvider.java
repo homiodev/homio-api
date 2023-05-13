@@ -26,7 +26,7 @@ public interface FileSystemProvider {
 
     // to unarchive we need download full file to avoid problem with memory
     default Path getArchiveAsLocalPath(@NotNull String id) {
-        throw new RuntimeException("Not suppoted by FileSYstem");
+        throw new RuntimeException("Not supported by FileSystem");
     }
 
     Set<TreeNode> toTreeNodes(@NotNull Set<String> ids);
@@ -63,6 +63,9 @@ public interface FileSystemProvider {
             return treeNode.getChildren();
         }
         return getChildren(treeNode.getId());
+    }
+
+    default void clearCache() {
     }
 
     enum UploadOption {

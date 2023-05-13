@@ -38,6 +38,11 @@ public class ObjectType implements State {
     }
 
     @Override
+    public Object rawValue() {
+        return value;
+    }
+
+    @Override
     public String stringValue() {
         return value == null ? "" : value.toString();
     }

@@ -19,6 +19,11 @@ public class ButtonType implements State {
     }
 
     @Override
+    public Object rawValue() {
+        return stringValue();
+    }
+
+    @Override
     public boolean boolValue() {
         throw new IllegalStateException("Unable to fetch boolean value from button");
     }

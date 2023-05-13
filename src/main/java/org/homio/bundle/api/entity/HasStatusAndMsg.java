@@ -1,12 +1,14 @@
 package org.homio.bundle.api.entity;
 
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.homio.bundle.api.EntityContextSetting;
 import org.homio.bundle.api.model.HasEntityIdentifier;
 import org.homio.bundle.api.model.Status;
 import org.homio.bundle.api.ui.field.UIField;
+import org.homio.bundle.api.ui.field.UIFieldGroup;
 import org.homio.bundle.api.ui.field.color.UIFieldColorStatusMatch;
-import org.homio.bundle.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,14 +17,16 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
 
     String DISTINGUISH_KEY = "status";
 
-    @UIField(order = 10, hideInEdit = true, hideOnEmpty = true)
+    @UIField(order = 1, hideInEdit = true, hideOnEmpty = true)
+    @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     @UIFieldColorStatusMatch
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     default Status getStatus() {
         return EntityContextSetting.getStatus(((T) this), DISTINGUISH_KEY, Status.UNKNOWN);
     }
 
-    @UIField(order = 11, hideInEdit = true, hideOnEmpty = true)
+    @UIField(order = 2, hideInEdit = true, hideOnEmpty = true)
+    @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     default String getStatusMessage() {
         return EntityContextSetting.getMessage(((T) this), DISTINGUISH_KEY);
     }
@@ -32,7 +36,7 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
     }
 
     default T setStatusError(@NotNull Exception ex) {
-        return setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+        return setStatus(Status.ERROR, getErrorMessage(ex));
     }
 
     default T setStatusError(@NotNull String message) {

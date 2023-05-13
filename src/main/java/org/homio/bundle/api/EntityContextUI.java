@@ -1,5 +1,7 @@
 package org.homio.bundle.api;
 
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
@@ -24,7 +26,6 @@ import org.homio.bundle.api.ui.dialog.DialogModel;
 import org.homio.bundle.api.ui.field.ProgressBar;
 import org.homio.bundle.api.ui.field.action.ActionInputParameter;
 import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
-import org.homio.bundle.api.util.CommonUtils;
 import org.homio.bundle.api.util.FlowMap;
 import org.homio.bundle.api.util.Lang;
 import org.homio.bundle.api.util.NotificationLevel;
@@ -69,11 +70,13 @@ public interface EntityContextUI {
     }
 
     /**
-     * Register console plugin name. In case if console plugin available only if some
-     * entity is created or not enabled by some case we may show disabled console name on UI
-     * @param name -
+     * Register console plugin name. In case if console plugin available only if some entity is created or not enabled by some case we may show disabled console
+     * name on UI
+     *
+     * @param name     - plugin name
+     * @param resource - resource name requires if need restrict access for users with roles
      */
-    void registerConsolePluginName(@NotNull String name);
+    void registerConsolePluginName(@NotNull String name, @Nullable String resource);
 
     <T extends ConsolePlugin> void registerConsolePlugin(@NotNull String name, @NotNull T plugin);
 
@@ -170,72 +173,57 @@ public interface EntityContextUI {
     void sendDialogRequest(@NotNull DialogModel dialogModel);
 
     default void sendDialogRequest(@NotNull String key, @NotNull String title, DialogRequestHandler actionHandler,
-                                   Consumer<DialogModel> dialogBuilderSupplier) {
+        Consumer<DialogModel> dialogBuilderSupplier) {
         DialogModel dialogModel = new DialogModel(key, title, actionHandler);
         dialogBuilderSupplier.accept(dialogModel);
         sendDialogRequest(dialogModel);
     }
 
-    void addNotificationBlock(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
-                              @Nullable Consumer<NotificationBlockBuilder> builder);
-
-    void removeNotification(@NotNull String entityID);
-
     /**
-     * Add message to 'bell' header select box
-     * @param entityID -
-     * @param name -
-     * @param value -
-     * @param notificationLevel -
-     * @param actionBuilder -
+     * Remove notification block if it has no rows anymore
+     *
+     * @param entityID - block id
      */
-    void addBellNotification(@NotNull String entityID, @NotNull String name, @NotNull String value,
-                             @NotNull NotificationLevel notificationLevel, @Nullable Consumer<UIInputBuilder> actionBuilder);
+    void removeEmptyNotificationBlock(@NotNull String entityID);
 
-    /**
-     * Add message to 'bell' header select box
-     * @param entityID -
-     * @param name -
-     * @param description -
-     */
-    default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellInfoNotification(entityID, name, description, null);
-    }
-
-    default void addBellInfoNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
-                                         @Nullable Consumer<UIInputBuilder> actionBuilder) {
-        addBellNotification(entityID, name, description, NotificationLevel.info, actionBuilder);
+    default void addNotificationBlock(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
+        @Nullable Consumer<NotificationBlockBuilder> builder) {
+        addNotificationBlock(null, entityID, name, icon, color, builder);
     }
 
     /**
-     * Add message to 'bell' header select box
-     * @param entityID -
-     * @param name -
-     * @param description -
+     * Add notification block
+     *
+     * @param email    - specify user for which notification block will be visible
+     * @param entityID - block id
+     * @param name     - name
+     * @param icon     - icon
+     * @param color    - border color
+     * @param builder  - block builder
      */
-    default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellWarningNotification(entityID, name, description, null);
+    void addNotificationBlock(@Nullable String email, @NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
+        @Nullable Consumer<NotificationBlockBuilder> builder);
+
+    default void addOrUpdateNotificationBlock(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
+        @NotNull Consumer<NotificationBlockBuilder> builder) {
+        if (isHasNotificationBlock(entityID)) {
+            updateNotificationBlock(entityID, builder);
+        } else {
+            addNotificationBlock(entityID, name, icon, color, builder);
+        }
     }
 
-    default void addBellWarningNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
-                                            @Nullable Consumer<UIInputBuilder> actionBuilder) {
-        addBellNotification(entityID, name, description, NotificationLevel.warning, actionBuilder);
+    default void addNotificationBlockOptional(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color) {
+        if (!isHasNotificationBlock(entityID)) {
+            addNotificationBlock(entityID, name, icon, color, null);
+        }
     }
 
-    default void addBellErrorNotification(@NotNull String entityID, @NotNull String name, @NotNull String description) {
-        addBellErrorNotification(entityID, name, description, null);
-    }
+    void updateNotificationBlock(@NotNull String entityID, @NotNull Consumer<NotificationBlockBuilder> builder);
 
-    default void addBellErrorNotification(@NotNull String entityID, @NotNull String name, @NotNull String description,
-                                          @Nullable Consumer<UIInputBuilder> actionBuilder) {
-        addBellNotification(entityID, name, description, NotificationLevel.error, actionBuilder);
-    }
+    boolean isHasNotificationBlock(@NotNull String entityID);
 
-    /**
-     * Remove message from 'bell' header select box
-     * @param entityID -
-     */
-    void removeBellNotification(@NotNull String entityID);
+    void removeNotificationBlock(@NotNull String entityID);
 
     // raw
     void sendNotification(@NotNull String destination, @NotNull String param);
@@ -378,7 +366,7 @@ public interface EntityContextUI {
         } else {
             text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {
-                text = CommonUtils.getErrorMessage(ex);
+                text = getErrorMessage(ex);
             }
             // try cast text to lang
             text = Lang.getServerMessage(text, messageParam);
@@ -411,11 +399,18 @@ public interface EntityContextUI {
 
         /**
          * Button available duration
+         *
          * @param duration time for duration
          * @return this
          */
         HeaderButtonBuilder duration(int duration);
 
+        /**
+         * Specify HeaderButton only available for specific page
+         *
+         * @param page - page id
+         * @return - this
+         */
         HeaderButtonBuilder availableForPage(@NotNull Class<? extends BaseEntity> page);
 
         HeaderButtonBuilder clickAction(@NotNull Class<? extends SettingPluginButton> clickAction);
@@ -475,6 +470,14 @@ public interface EntityContextUI {
 
         NotificationBlockBuilder addInfo(@NotNull String info, @Nullable String color,
             @Nullable String icon, @Nullable String iconColor);
+
+        /**
+         * Remove info row
+         *
+         * @param info - unique info name
+         * @return this
+         */
+        NotificationBlockBuilder removeInfo(@NotNull String info);
 
         NotificationBlockBuilder addButtonInfo(@NotNull String info, @Nullable String color,
             @Nullable String icon, @Nullable String iconColor,

@@ -1,5 +1,7 @@
 package org.homio.bundle.api.model;
 
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.Set;
@@ -52,6 +54,10 @@ public class ActionResponseModel {
         return new ActionResponseModel(fileModels, ResponseAction.files);
     }
 
+    public static ActionResponseModel showInfoAlreadyDone() {
+        return new ActionResponseModel("W.INFO.ALREADY_DONE", ResponseAction.info);
+    }
+
     public static ActionResponseModel showInfo(String value) {
         return new ActionResponseModel(value, ResponseAction.info);
     }
@@ -65,7 +71,7 @@ public class ActionResponseModel {
     }
 
     public static ActionResponseModel showError(Exception ex) {
-        return new ActionResponseModel(CommonUtils.getErrorMessage(ex), ResponseAction.error);
+        return new ActionResponseModel(getErrorMessage(ex), ResponseAction.error);
     }
 
     public static ActionResponseModel success() {

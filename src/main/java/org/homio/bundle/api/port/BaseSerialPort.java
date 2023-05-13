@@ -1,6 +1,7 @@
 package org.homio.bundle.api.port;
 
 import static com.fazecast.jSerialComm.SerialPort.TIMEOUT_NONBLOCKING;
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
@@ -128,7 +129,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
             } catch (IOException e) {
                 log.warn("[{}]: Processing DATA_AVAILABLE event: received IOException in serial port event", entityID, e);
             } catch (Exception ex) {
-                log.warn("[{}]: Port read exception: {}", entityID, CommonUtils.getErrorMessage(ex));
+                log.warn("[{}]: Port read exception: {}", entityID, getErrorMessage(ex));
                 if (this.portUnavailableListener != null) {
                     this.portUnavailableListener.run();
                 }

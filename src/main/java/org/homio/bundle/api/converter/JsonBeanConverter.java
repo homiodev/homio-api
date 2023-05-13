@@ -1,8 +1,8 @@
 package org.homio.bundle.api.converter;
 
 import java.util.Map;
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.homio.bundle.api.EntityContext;

@@ -1,5 +1,7 @@
 package org.homio.bundle.api.model;
 
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
+
 import lombok.Getter;
 import org.homio.bundle.api.util.CommonUtils;
 
@@ -14,7 +16,7 @@ public class ErrorHolderModel {
     public ErrorHolderModel(String title, String message, Exception ex) {
         this.title = title;
         this.message = message;
-        this.cause = CommonUtils.getErrorMessage(ex);
+        this.cause = getErrorMessage(ex);
         this.errorType = ex.getClass().getSimpleName();
     }
 }

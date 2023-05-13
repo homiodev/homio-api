@@ -1,6 +1,7 @@
 package org.homio.bundle.api.repository;
 
 import static java.lang.String.format;
+import static org.homio.bundle.api.util.CommonUtils.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.pivovarit.function.ThrowingFunction;
@@ -77,7 +78,7 @@ public class GitHubProject {
 
                     return releases;
                 } catch (Exception ex) {
-                    log.error("Unable to fetch releases from GitHub api: {}/releases", gitHubProject.api, ex);
+                    log.error("Unable to fetch releases from GitHub api: {}/releases. Error: {}", gitHubProject.api, getErrorMessage(ex));
                 }
                 return releases;
             });

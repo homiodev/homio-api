@@ -1,8 +1,8 @@
 package org.homio.bundle.api.workspace;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
