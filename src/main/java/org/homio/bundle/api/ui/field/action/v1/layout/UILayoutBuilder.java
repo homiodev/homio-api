@@ -72,6 +72,7 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     /**
      * Add read-only duration that incremets on UI
+     *
      * @param color -
      * @param value -
      */

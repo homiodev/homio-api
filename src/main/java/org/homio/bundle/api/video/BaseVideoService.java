@@ -51,8 +51,8 @@ import org.homio.bundle.api.state.RawType;
 import org.homio.bundle.api.state.State;
 import org.homio.bundle.api.state.StringType;
 import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
-import org.homio.bundle.api.util.FlowMap;
 import org.homio.bundle.api.util.CommonUtils;
+import org.homio.bundle.api.util.FlowMap;
 import org.homio.bundle.api.video.ffmpeg.FFMPEG;
 import org.homio.bundle.api.video.ffmpeg.FFMPEGFormat;
 import org.homio.bundle.api.video.ffmpeg.FfmpegInputDeviceHardwareRepository;
@@ -230,12 +230,11 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
             log.warn("[{}]: Set video <{}> to status <{}>. Msg: <{}>", entityID, entity, status, reason);
 
             this.stateListeners.values().forEach(h -> h.accept(status));
-            if (status == Status.ERROR) {
-                entityContext.ui().sendErrorMessage("DISPOSE_VIDEO",
-                        FlowMap.of("TITLE", entity.getTitle(), "REASON", reason));
-            }
-
             dispose();
+        }
+        if (status == Status.ERROR || status == Status.REQUIRE_AUTH) {
+            entityContext.ui().sendErrorMessage("DISPOSE_VIDEO",
+                FlowMap.of("TITLE", entity.getTitle(), "REASON", reason));
         }
         entity.setSourceStatus(status, reason);
         if (entity.isStart()) {

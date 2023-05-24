@@ -184,7 +184,8 @@ public interface EntityContext {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             User user = (User) authentication.getPrincipal();
-            return getEntity(user.getUsername());
+            String userEntityID = user.getUsername().split("~~~")[0];
+            return getEntity(userEntityID);
         }
         return null;
     }

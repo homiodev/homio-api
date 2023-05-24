@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -40,10 +41,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+@SuppressWarnings("unused")
 @Log4j2
 @Getter
 @RequiredArgsConstructor
 public class GitHubProject {
+
     private static final SimpleDateFormat PUBLISHED_AT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     private final @NotNull String repo;
@@ -54,34 +57,34 @@ public class GitHubProject {
     private boolean updating;
     // releases sorted by published_at
     private final CachedValue<List<JsonNode>, GitHubProject> releasesCache =
-            new CachedValue<>(Duration.ofHours(24), gitHubProject -> {
-                List<JsonNode> releases = new ArrayList<>();
-                try {
-                    ResponseEntity<JsonNode> responseEntity = Curl.restTemplate.exchange(gitHubProject.api + "releases",
-                            HttpMethod.GET, new HttpEntity<JsonNode>(httpHeaders), JsonNode.class);
-                    if (responseEntity.getStatusCode() != HttpStatus.OK) {
-                        throw new IllegalStateException(responseEntity.toString());
-                    }
-                    for (JsonNode node : Objects.requireNonNull(responseEntity.getBody())) {
-                        if (!node.get("prerelease").asBoolean(true)) {
-                            releases.add(node);
-                        }
-                    }
-                    releases.sort((o1, o2) -> {
-                        try {
-                            return Long.compare(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()).getTime(),
-                                    PUBLISHED_AT_DATE_FORMAT.parse(o2.get("published_at").asText()).getTime());
-                        } catch (ParseException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-
-                    return releases;
-                } catch (Exception ex) {
-                    log.error("Unable to fetch releases from GitHub api: {}/releases. Error: {}", gitHubProject.api, getErrorMessage(ex));
+        new CachedValue<>(Duration.ofHours(24), gitHubProject -> {
+            List<JsonNode> releases = new ArrayList<>();
+            try {
+                ResponseEntity<JsonNode> responseEntity = Curl.restTemplate.exchange(gitHubProject.api + "releases",
+                    HttpMethod.GET, new HttpEntity<JsonNode>(httpHeaders), JsonNode.class);
+                if (responseEntity.getStatusCode() != HttpStatus.OK) {
+                    throw new IllegalStateException(responseEntity.toString());
                 }
+                for (JsonNode node : Objects.requireNonNull(responseEntity.getBody())) {
+                    if (!node.get("prerelease").asBoolean(true)) {
+                        releases.add(node);
+                    }
+                }
+                releases.sort((o1, o2) -> {
+                    try {
+                        return Long.compare(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()).getTime(),
+                            PUBLISHED_AT_DATE_FORMAT.parse(o2.get("published_at").asText()).getTime());
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
                 return releases;
-            });
+            } catch (Exception ex) {
+                log.error("Unable to fetch releases from GitHub api: {}/releases. Error: {}", gitHubProject.api, getErrorMessage(ex));
+            }
+            return releases;
+        });
 
     /**
      * @param repoURL - absolute or relative url
@@ -122,7 +125,7 @@ public class GitHubProject {
     @SneakyThrows
     public <T> @Nullable T getFile(@NotNull String path, @NotNull Class<T> type) {
         URL url = new URL(format("https://raw.githubusercontent.com/%s/%s/master/%s", project, repo, path));
-        if (path.endsWith(".yaml")) {
+        if (path.endsWith(".yaml") || path.endsWith(".yml")) {
             return CommonUtils.YAML_OBJECT_MAPPER.readValue(url, type);
         }
         return Curl.restTemplate.getForObject(url.toURI(), type);
@@ -146,24 +149,30 @@ public class GitHubProject {
 
     /**
      * Get project last released version
+     *
      * @return last release version
      */
     public @Nullable String getLastReleaseVersion() {
         return Optional.ofNullable(getLastRelease()).map(b -> b.path("tag_name").asText()).orElse(null);
     }
 
-    public @NotNull List<String> getReleasesSince(String version) {
-        List<String> list = new ArrayList<>();
-        boolean foundVersion = false;
-        for (JsonNode release : releasesCache.getValue(this)) {
-            if (!foundVersion && release.get("tag_name").asText().equals(version)) {
-                foundVersion = true;
+    public @NotNull List<String> getReleasesSince(String version, boolean includeCurrent) {
+        List<String> versions = releasesCache.getValue(this)
+                                             .stream()
+                                             .map(r -> r.get("tag_name").asText())
+                                             .collect(Collectors.toList());
+        return getReleasesSince(version, versions, includeCurrent);
+    }
+
+    public static @NotNull List<String> getReleasesSince(String version, List<String> versions, boolean includeCurrent) {
+        int versionIndex = versions.indexOf(version);
+        if (versionIndex >= 0) {
+            if (includeCurrent) {
+                return versions.subList(versionIndex, versions.size());
             }
-            if (foundVersion) {
-                list.add(release.get("tag_name").asText());
-            }
+            return versions.subList(versionIndex + 1, versions.size());
         }
-        return list;
+        return versions;
     }
 
     public @Nullable JsonNode getLastRelease() {
@@ -176,18 +185,18 @@ public class GitHubProject {
         Path tmpPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
         Curl.download(api + "/tarball/" + version, tmpPath);
         ArchiveUtil.unzip(tmpPath, CommonUtils.getTmpPath(), null, false, null,
-                ArchiveUtil.UnzipFileIssueHandler.replace);
+            ArchiveUtil.UnzipFileIssueHandler.replace);
         Files.delete(tmpPath);
         Files.move(CommonUtils.getTmpPath().resolve(name + "-" + version),
-                targetPath, StandardCopyOption.REPLACE_EXISTING);
+            targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     // Helper method to execute some process i.e. download from github, backup, etc...
     public @NotNull ActionResponseModel updating(
-            @NotNull String name,
-            @NotNull Path projectPath,
-            @NotNull ProgressBar progressBar,
-            @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler) {
+        @NotNull String name,
+        @NotNull Path projectPath,
+        @NotNull ProgressBar progressBar,
+        @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler) {
         if (this.updating) {
             return ActionResponseModel.showError("W.ERROR.UPDATE_IN_PROGRESS");
         }
@@ -206,35 +215,41 @@ public class GitHubProject {
     @Getter
     @RequiredArgsConstructor
     public class ProjectUpdate {
+
         private final @NotNull String name;
         private final @NotNull Path projectPath;
         private final @NotNull ProgressBar progressBar;
 
         @SneakyThrows
         public @NotNull ProjectUpdate backup(@NotNull Path backupFileOrFolder) {
+            log.info("Backup files{}", backupFileOrFolder);
             FileUtils.copyDirectory(projectPath.resolve(backupFileOrFolder).toFile(),
-                    CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile());
+                CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile());
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate restore(@NotNull Path backupFileOrFolder) {
+            log.info("Restore files {}", backupFileOrFolder);
             FileUtils.deleteDirectory(projectPath.resolve(backupFileOrFolder).toFile());
             FileUtils.moveDirectory(CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile(),
-                    projectPath.resolve(backupFileOrFolder).toFile());
+                projectPath.resolve(backupFileOrFolder).toFile());
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate deleteProject() {
+            log.info("Delete project {}", projectPath);
             CommonUtils.deletePath(projectPath);
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate downloadSource(@NotNull String version) {
+            log.info("Download {}/{} sources of V{}", repo, project, version);
             Path targetPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
             Curl.downloadWithProgress(api + "tarball/" + version, targetPath, progressBar);
+            log.info("Unzip {} sources to {}", targetPath, CommonUtils.getTmpPath());
             List<Path> files = ArchiveUtil.unzip(targetPath, CommonUtils.getTmpPath(), null, false, progressBar,
                 UnzipFileIssueHandler.replace);
             Files.delete(targetPath);

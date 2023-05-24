@@ -93,6 +93,7 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
 
+@SuppressWarnings("unused")
 @Log4j2
 public class CommonUtils {
 
@@ -109,7 +110,7 @@ public class CommonUtils {
     @Getter
     private static final Path externalJarClassPath = getOrCreatePath("external_jars");
     @Getter
-    private static final Path bundlePath = getOrCreatePath("bundles");
+    private static final Path bundlePath = getOrCreatePath("addons");
     @Getter
     private static final Path mediaPath = getOrCreatePath("media");
     @Getter
@@ -190,7 +191,7 @@ public class CommonUtils {
             }
             return;
         }
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
 
             @Override
             @SneakyThrows
@@ -284,7 +285,7 @@ public class CommonUtils {
     public static List<String> readFile(String fileName) {
         try {
             return IOUtils.readLines(CommonUtils.class.getClassLoader().getResourceAsStream(fileName),
-                    Charset.defaultCharset());
+                Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
 
@@ -408,17 +409,17 @@ public class CommonUtils {
     }
 
     public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-                                BiFunction<Path, TreeNode, Path> pathResolver) {
+        BiFunction<Path, TreeNode, Path> pathResolver) {
         addFiles(tmpPath, files, pathResolver,
-                (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
-                (treeNode, path) -> Files.createDirectories(path));
+            (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
+            (treeNode, path) -> Files.createDirectories(path));
     }
 
     @SneakyThrows
     public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-                                BiFunction<Path, TreeNode, Path> pathResolver,
-                                ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
-                                ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
+        BiFunction<Path, TreeNode, Path> pathResolver,
+        ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
+        ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
         if (files != null) {
             for (TreeNode treeNode : files) {
                 Path filePath = pathResolver.apply(tmpPath, treeNode);
@@ -427,7 +428,7 @@ public class CommonUtils {
                 } else {
                     folderWriteResolver.accept(treeNode, filePath);
                     addFiles(filePath, treeNode.getChildren(true), pathResolver, fileWriteResolver,
-                            folderWriteResolver);
+                        folderWriteResolver);
                 }
             }
         }
@@ -443,9 +444,9 @@ public class CommonUtils {
     public static ResponseEntity<InputStreamResource> inputStreamToResource(InputStream stream, MediaType contentType) {
         try {
             return ResponseEntity.ok()
-                    .contentLength(stream.available())
-                    .contentType(contentType)
-                    .body(new InputStreamResource(stream));
+                                 .contentLength(stream.available())
+                                 .contentType(contentType)
+                                 .body(new InputStreamResource(stream));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -538,8 +539,8 @@ public class CommonUtils {
 
     public static SerialPort getSerialPort(String value) {
         return StringUtils.isEmpty(value) ? null :
-                Stream.of(SerialPort.getCommPorts())
-                        .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
+            Stream.of(SerialPort.getCommPorts())
+                  .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
     }
 
     public static boolean isValidJson(String json) {
@@ -557,8 +558,8 @@ public class CommonUtils {
 
     // Simple utility for scan for ip range
     public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
-                                     ThrowingFunction<String, Boolean, Exception> testDevice,
-                                     Consumer<String> createDeviceHandler) {
+        ThrowingFunction<String, Boolean, Exception> testDevice,
+        Consumer<String> createDeviceHandler) {
         Consumer<String> deviceHandler = (ip) -> {
             try {
                 if (testDevice.apply("127.0.0.1")) {
@@ -578,7 +579,7 @@ public class CommonUtils {
         String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
         deviceHandler.accept("127.0.0.1");
         networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log, Collections.singleton(devicePort), 500,
-                (url, port) -> deviceHandler.accept(url));
+            (url, port) -> deviceHandler.accept(url));
     }
 
  /*   @SneakyThrows
@@ -617,6 +618,7 @@ public class CommonUtils {
     @Setter
     @Accessors(chain = true)
     private static class ConfFile {
+
         private String uuid;
         @JsonProperty("run_count")
         private int runCount;

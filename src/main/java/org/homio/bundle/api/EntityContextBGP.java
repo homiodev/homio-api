@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 import org.homio.bundle.api.model.HasEntityIdentifier;
 import org.homio.bundle.api.setting.SettingPlugin;
@@ -95,70 +94,9 @@ public interface EntityContextBGP {
      * @throws IllegalArgumentException if file not readable
      */
     ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
-            throws IllegalArgumentException;
+        throws IllegalArgumentException;
 
-    default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable,
-                                                @NotNull ThrowingConsumer<ProgressBar, Exception> command) {
-        return runWithProgress(key, cancellable, command, null, null);
-    }
-
-    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable,
-                                                       @NotNull ThrowingFunction<ProgressBar, R, Exception> command) {
-        return runWithProgressAndGet(key, cancellable, command, null, null);
-    }
-
-    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable,
-                                                       @NotNull ThrowingFunction<ProgressBar, R, Exception> command,
-                                                       @NotNull Consumer<Exception> finallyBlock) {
-        return runWithProgressAndGet(key, cancellable, command, finallyBlock, null);
-    }
-
-    default ThreadContext<Void> runWithProgress(@NotNull String key,
-                                                boolean cancellable,
-                                                @NotNull ThrowingConsumer<ProgressBar, Exception> command,
-                                                @NotNull Consumer<Exception> finallyBlock) {
-        return runWithProgress(key, cancellable, command, finallyBlock, null);
-    }
-
-    default ThreadContext<Void> runWithProgress(@NotNull String key, boolean cancellable,
-                                                @NotNull ThrowingConsumer<ProgressBar, Exception> command,
-                                                @Nullable Consumer<Exception> finallyBlock,
-                                                @Nullable Supplier<RuntimeException> throwIfExists) {
-        return runWithProgressAndGet(key, cancellable, progressBar -> {
-            command.accept(progressBar);
-            return null;
-        }, finallyBlock, throwIfExists);
-    }
-
-    default <R> ThreadContext<R> runWithProgressAndGet(@NotNull String key, boolean cancellable,
-                                                       @NotNull ThrowingFunction<ProgressBar, R, Exception> command,
-                                                       @Nullable Consumer<Exception> finallyBlock,
-                                                       @Nullable Supplier<RuntimeException> throwIfExists) {
-        if (throwIfExists != null && isThreadExists(key, true)) {
-            RuntimeException exception = throwIfExists.get();
-            if (exception != null) {
-                throw exception;
-            }
-        }
-        ScheduleBuilder<R> builder = builder(key);
-        return builder.execute(arg -> {
-            ProgressBar progressBar =
-                    (progress, message) -> getEntityContext().ui().progress(key, progress, message, cancellable);
-            progressBar.progress(0, key);
-            Exception exception = null;
-            try {
-                return command.apply(progressBar);
-            } catch (Exception ex) {
-                exception = ex;
-                throw ex;
-            } finally {
-                progressBar.done();
-                if (finallyBlock != null) {
-                    finallyBlock.accept(exception);
-                }
-            }
-        });
-    }
+    ProgressBuilder runWithProgress(@NotNull String key);
 
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);
 
@@ -173,21 +111,55 @@ public interface EntityContextBGP {
     void registerThreadsPuller(@NotNull String id, @NotNull Consumer<ThreadPuller> threadPullerConsumer);
 
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
-                                                       @Nullable Duration maxTerminateTimeout,
-                                                       @NotNull Collection<P> taskItems,
-                                                       @NotNull Function<P, Callable<T>> callableProducer,
-                                                       @NotNull Consumer<Integer> progressConsumer,
-                                                       @NotNull Consumer<List<T>> finallyProcessBlockHandler);
+        @Nullable Duration maxTerminateTimeout,
+        @NotNull Collection<P> taskItems,
+        @NotNull Function<P, Callable<T>> callableProducer,
+        @NotNull Consumer<Integer> progressConsumer,
+        @NotNull Consumer<List<T>> finallyProcessBlockHandler);
 
     @NotNull <T> List<T> runInBatchAndGet(@NotNull String batchName,
-                                          @Nullable Duration maxTerminateTimeout,
-                                          int threadsCount,
-                                          @NotNull Map<String, Callable<T>> runnableTasks,
-                                          @NotNull Consumer<Integer> progressConsumer);
+        @Nullable Duration maxTerminateTimeout,
+        int threadsCount,
+        @NotNull Map<String, Callable<T>> runnableTasks,
+        @NotNull Consumer<Integer> progressConsumer);
 
     void executeOnExit(Runnable runnable);
 
+    interface ProgressBuilder {
+
+        // default - false
+        ProgressBuilder setCancellable(boolean cancellable);
+
+        // default - true
+        ProgressBuilder setLogToConsole(boolean log);
+
+        /**
+         * Throw error if process already exists
+         *
+         * @param ex - error to throw if process already exists
+         * @return this
+         */
+        ProgressBuilder setErrorIfExists(@Nullable Exception ex);
+
+        ProgressBuilder onFinally(@Nullable Consumer<Exception> finallyBlock);
+
+        default ProgressBuilder onFinally(@Nullable Runnable finallyBlock) {
+            return onFinally(ignore -> {
+                if (finallyBlock != null) {
+                    finallyBlock.run();
+                }
+            });
+        }
+
+        ProgressBuilder onError(@Nullable Runnable errorBlock);
+
+        ThreadContext<Void> execute(@NotNull ThrowingConsumer<ProgressBar, Exception> command);
+
+        <R> ThreadContext<R> execute(@NotNull ThrowingFunction<ProgressBar, R, Exception> command);
+    }
+
     interface ScheduleBuilder<T> {
+
         default ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command) {
             return execute(command, true);
         }

@@ -1,4 +1,5 @@
 {
+  "DISPOSE_VIDEO": "Video device '{{TITLE}}' stopped. Reason: {{REASON}}",
   "SCAN": {
     "RESULT": "Found {{NEW}} new items\nFound {{OLD}} existed items",
     "ERROR": "Error while scan: {{MSG}}"

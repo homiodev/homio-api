@@ -182,48 +182,33 @@ public interface EntityContextUI {
     /**
      * Remove notification block if it has no rows anymore
      *
-     * @param entityID - block id
+     * @param key - block id
      */
-    void removeEmptyNotificationBlock(@NotNull String entityID);
+    void removeEmptyNotificationBlock(@NotNull String key);
 
-    default void addNotificationBlock(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
-        @Nullable Consumer<NotificationBlockBuilder> builder) {
-        addNotificationBlock(null, entityID, name, icon, color, builder);
-    }
-
-    /**
-     * Add notification block
-     *
-     * @param email    - specify user for which notification block will be visible
-     * @param entityID - block id
-     * @param name     - name
-     * @param icon     - icon
-     * @param color    - border color
-     * @param builder  - block builder
-     */
-    void addNotificationBlock(@Nullable String email, @NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
+    void addNotificationBlock(@NotNull String key, @NotNull String name, @Nullable String icon, @Nullable String color,
         @Nullable Consumer<NotificationBlockBuilder> builder);
 
-    default void addOrUpdateNotificationBlock(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color,
+    default void addOrUpdateNotificationBlock(@NotNull String key, @NotNull String name, @Nullable String icon, @Nullable String color,
         @NotNull Consumer<NotificationBlockBuilder> builder) {
-        if (isHasNotificationBlock(entityID)) {
-            updateNotificationBlock(entityID, builder);
+        if (isHasNotificationBlock(key)) {
+            updateNotificationBlock(key, builder);
         } else {
-            addNotificationBlock(entityID, name, icon, color, builder);
+            addNotificationBlock(key, name, icon, color, builder);
         }
     }
 
-    default void addNotificationBlockOptional(@NotNull String entityID, @NotNull String name, @Nullable String icon, @Nullable String color) {
-        if (!isHasNotificationBlock(entityID)) {
-            addNotificationBlock(entityID, name, icon, color, null);
+    default void addNotificationBlockOptional(@NotNull String key, @NotNull String name, @Nullable String icon, @Nullable String color) {
+        if (!isHasNotificationBlock(key)) {
+            addNotificationBlock(key, name, icon, color, null);
         }
     }
 
-    void updateNotificationBlock(@NotNull String entityID, @NotNull Consumer<NotificationBlockBuilder> builder);
+    void updateNotificationBlock(@NotNull String key, @NotNull Consumer<NotificationBlockBuilder> builder);
 
-    boolean isHasNotificationBlock(@NotNull String entityID);
+    boolean isHasNotificationBlock(@NotNull String key);
 
-    void removeNotificationBlock(@NotNull String entityID);
+    void removeNotificationBlock(@NotNull String key);
 
     // raw
     void sendNotification(@NotNull String destination, @NotNull String param);
@@ -232,25 +217,25 @@ public interface EntityContextUI {
     void sendNotification(@NotNull String destination, @NotNull ObjectNode param);
 
     // Add button to ui header
-    HeaderButtonBuilder headerButtonBuilder(@NotNull String entityID);
+    HeaderButtonBuilder headerButtonBuilder(@NotNull String key);
 
     /**
-     * Remove button from ui header.
-     * Header button will be removed only if has no attached elements
-     * @param entityID -
+     * Remove button from ui header. Header button will be removed only if has no attached elements
+     *
+     * @param key -
      */
-    default void removeHeaderButton(@NotNull String entityID) {
-        removeHeaderButton(entityID, null, false);
+    default void removeHeaderButton(@NotNull String key) {
+        removeHeaderButton(key, null, false);
     }
 
     /**
      * Remove header button on ui
      *
-     * @param entityID    - id
+     * @param key         - id
      * @param icon        - changed icon if btn has attached elements
      * @param forceRemove - force remove even if header button has attached elements
      */
-    void removeHeaderButton(@NotNull String entityID, @Nullable String icon, boolean forceRemove);
+    void removeHeaderButton(@NotNull String key, @Nullable String icon, boolean forceRemove);
 
     /**
      * Show error toastr message to ui
@@ -421,12 +406,34 @@ public interface EntityContextUI {
     }
 
     interface NotificationBlockBuilder {
+
+        /**
+         * Move to entity if click on header block title
+         *
+         * @param entity - entity to link to
+         * @return this
+         */
+        NotificationBlockBuilder linkToEntity(@NotNull BaseEntity entity);
+
+        NotificationBlockBuilder visibleForUser(@NotNull String email);
+
         NotificationBlockBuilder blockActionBuilder(Consumer<UIInputBuilder> builder);
 
         NotificationBlockBuilder contextMenuActionBuilder(Consumer<UIInputBuilder> builder);
 
         NotificationBlockBuilder setStatus(Status status);
 
+        /**
+         * Run handler on every user fetch url
+         */
+        NotificationBlockBuilder fireOnFetch(Runnable handler);
+
+        /**
+         * Set 'Update' button if firmware already installing or not
+         *
+         * @param value - true if need disable 'update' button
+         * @return this
+         */
         NotificationBlockBuilder setUpdating(boolean value);
 
         default NotificationBlockBuilder setStatus(Status status, String message) {
@@ -444,7 +451,7 @@ public interface EntityContextUI {
 
         default NotificationBlockBuilder setStatusMessage(String message) {
             if (StringUtils.isNotEmpty(message)) {
-                addInfo(message, UI.Color.RED, "fas fa-exclamation", null);
+                addInfo("status", message, UI.Color.RED, "fas fa-exclamation", null);
             }
             return this;
         }
@@ -468,19 +475,34 @@ public interface EntityContextUI {
         NotificationBlockBuilder setUpdatable(@NotNull BiFunction<ProgressBar, String, ActionResponseModel> updateHandler,
             @NotNull List<String> versions);
 
-        NotificationBlockBuilder addInfo(@NotNull String info, @Nullable String color,
-            @Nullable String icon, @Nullable String iconColor);
+        // add Info line with unique key to avoid duplication if 'info' changes
+        default NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info, @Nullable String color,
+            @Nullable String icon, @Nullable String iconColor) {
+            return addInfo(key, info, color, icon, iconColor, null, null);
+        }
+
+        NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info, @Nullable String color,
+            @Nullable String icon, @Nullable String iconColor, @Nullable String status, @Nullable String statusColor);
+
+        default NotificationBlockBuilder addInfo(@NotNull String info, @Nullable String color,
+            @Nullable String icon, @Nullable String iconColor) {
+            return addInfo(String.valueOf(info.hashCode()), info, color, icon, iconColor);
+        }
 
         /**
          * Remove info row
          *
-         * @param info - unique info name
+         * @param key - info key
          * @return this
          */
-        NotificationBlockBuilder removeInfo(@NotNull String info);
+        boolean removeInfo(@NotNull String key);
 
-        NotificationBlockBuilder addButtonInfo(@NotNull String info, @Nullable String color,
-            @Nullable String icon, @Nullable String iconColor,
+        NotificationBlockBuilder addButtonInfo(
+            @NotNull String key,
+            @NotNull String info,
+            @Nullable String color,
+            @Nullable String icon,
+            @Nullable String iconColor,
             @NotNull String buttonIcon,
             @Nullable String buttonText,
             @Nullable String confirmMessage,

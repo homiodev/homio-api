@@ -50,27 +50,27 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         String headerButtonKey = "SCAN." + getBatchName();
 
         entityContext.bgp().runInBatch(getBatchName(), Duration.ofSeconds(getMaxTimeToWaitInSeconds()), scanners,
-                scanner -> {
-                    log.info("Start scan in thread <{}>", scanner.name);
-                    AtomicInteger status =
-                            CommonUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
-                    if (status.compareAndSet(0, 1)) {
-                        return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
-                                progressBar -> {
-                                    try {
-                                        return scanner.handler.handle(entityContext, progressBar, headerButtonKey);
-                                    } catch (Exception ex) {
-                                        log.error("Error while execute task: " + scanner.name, ex);
-                                        return new DeviceScannerResult();
-                                    }
-                                },
-                                ex -> {
-                                    log.info("Done scan for <{}>", scanner.name);
-                                    status.set(0);
-                                    if (ex != null) {
-                                        entityContext.ui()
-                                                     .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", getErrorMessage(ex)), ex);
-                                    }
+            scanner -> {
+                log.info("Start scan in thread <{}>", scanner.name);
+                AtomicInteger status =
+                    CommonUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
+                if (status.compareAndSet(0, 1)) {
+                    return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
+                        progressBar -> {
+                            try {
+                                return scanner.handler.handle(entityContext, progressBar, headerButtonKey);
+                            } catch (Exception ex) {
+                                log.error("Error while execute task: " + scanner.name, ex);
+                                return new DeviceScannerResult();
+                            }
+                        },
+                        ex -> {
+                            log.info("Done scan for <{}>", scanner.name);
+                            status.set(0);
+                            if (ex != null) {
+                                entityContext.ui()
+                                             .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", getErrorMessage(ex)), ex);
+                            }
                                 });
                     } else {
                         log.warn("Scan for <{}> already in progress", scanner.name);

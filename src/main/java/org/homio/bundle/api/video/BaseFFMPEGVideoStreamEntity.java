@@ -32,8 +32,8 @@ import org.homio.bundle.api.ui.field.action.UIActionInput;
 import org.homio.bundle.api.ui.field.action.UIContextMenuAction;
 import org.homio.bundle.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.bundle.api.ui.field.image.UIFieldImage;
-import org.homio.bundle.api.util.SecureString;
 import org.homio.bundle.api.util.CommonUtils;
+import org.homio.bundle.api.util.SecureString;
 import org.homio.bundle.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -86,7 +86,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         if (!isStart()) {
             throw new ServerException("Video <" + getTitle() + "> not started");
         }
-        optService().ifPresent(s -> s.startSnapshot());
+        optService().ifPresent(BaseVideoService::startSnapshot);
     }
 
     @UIField(order = 15, inlineEdit = true)
