@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.SystemUtils;
-import org.homio.bundle.hquery.api.ErrorsHandler;
-import org.homio.bundle.hquery.api.HQueryMaxWaitTimeout;
-import org.homio.bundle.hquery.api.HQueryParam;
-import org.homio.bundle.hquery.api.HardwareQuery;
-import org.homio.bundle.hquery.api.HardwareRepository;
-import org.homio.bundle.hquery.api.RawParse;
+import org.homio.hquery.api.ErrorsHandler;
+import org.homio.hquery.api.HQueryMaxWaitTimeout;
+import org.homio.hquery.api.HQueryParam;
+import org.homio.hquery.api.HardwareQuery;
+import org.homio.hquery.api.HardwareRepository;
+import org.homio.hquery.api.RawParse;
 import org.springframework.data.util.Pair;
 
 @HardwareRepository

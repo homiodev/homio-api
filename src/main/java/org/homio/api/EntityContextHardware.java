@@ -2,7 +2,7 @@ package org.homio.api;
 
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
-import org.homio.bundle.hquery.api.HQueryMaxWaitTimeout;
+import org.homio.hquery.api.HQueryMaxWaitTimeout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

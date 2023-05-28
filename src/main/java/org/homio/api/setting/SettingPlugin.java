@@ -41,7 +41,7 @@ public interface SettingPlugin<T> {
 
     default String getDefaultValue() {
         switch (getSettingType()) {
-            case UIFieldType.Integer:
+            case Integer:
             case Slider:
             case Float:
                 return "0";

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation on org.homio.bundle.api.model.Status field for showing color depend on value
+ * Annotation on org.homio.api.model.Status field for showing color depend on value
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

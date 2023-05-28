@@ -80,7 +80,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.entity.RestartHandlerOnChange;
-import org.homio.bundle.hquery.hardware.network.NetworkHardwareRepository;
+import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -110,7 +110,7 @@ public class CommonUtils {
     @Getter
     private static final Path externalJarClassPath = getOrCreatePath("external_jars");
     @Getter
-    private static final Path bundlePath = getOrCreatePath("addons");
+    private static final Path addonPath = getOrCreatePath("addons");
     @Getter
     private static final Path mediaPath = getOrCreatePath("media");
     @Getter
@@ -133,7 +133,6 @@ public class CommonUtils {
     public static final ObjectMapper OBJECT_MAPPER;
     public static final ObjectMapper YAML_OBJECT_MAPPER;
     private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
-    private static final Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
 
     static {
         FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
@@ -155,10 +154,6 @@ public class CommonUtils {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
     }
 
-    public static void addClassLoader(String bundleName, ClassLoader classLoader) {
-        bundleClassLoaders.put(bundleName, classLoader);
-    }
-
     public static String getExtension(String fileName) {
         String extension = FilenameUtils.getExtension(fileName);
         if (specialExtensions.contains(extension)) {
@@ -167,10 +162,6 @@ public class CommonUtils {
             }
         }
         return extension;
-    }
-
-    public static void removeClassLoader(String bundleName) {
-        bundleClassLoaders.remove(bundleName);
     }
 
     public static Set<Path> removeFileOrDirectory(Path path) {
@@ -365,9 +356,9 @@ public class CommonUtils {
 
     @SneakyThrows
     public static URL getResource(String bundle, String resource) {
-        if (bundle != null && bundleClassLoaders.containsKey(bundle)) {
+        /*if (bundle != null && bundleClassLoaders.containsKey(bundle)) {
             return bundleClassLoaders.get(bundle).getResource(resource);
-        }
+        }*/
         URL resourceURL = null;
         ArrayList<URL> urls = Collections.list(CommonUtils.class.getClassLoader().getResources(resource));
         if (urls.size() == 1) {
@@ -381,7 +372,7 @@ public class CommonUtils {
     @SneakyThrows
     public static <T> T readAndMergeJSON(String resource, T targetObject) {
         ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-        ArrayList<ClassLoader> classLoaders = new ArrayList<>(bundleClassLoaders.values());
+        ArrayList<ClassLoader> classLoaders = new ArrayList<>(/*TODO: bundleClassLoaders.values()*/);
         classLoaders.add(CommonUtils.class.getClassLoader());
 
         for (ClassLoader classLoader : classLoaders) {

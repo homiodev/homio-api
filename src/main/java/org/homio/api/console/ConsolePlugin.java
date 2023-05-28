@@ -32,7 +32,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     RenderType getRenderType();
 
     /**
-     * @return Uses for grouping few bundle pages with same parent
+     * @return Uses for grouping few addon pages with same parent
      */
     default String getParentTab() {
         return null;

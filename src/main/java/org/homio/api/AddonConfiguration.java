@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Defines entry root for loading bundle spring context
+ * Defines entry root for loading addon spring context
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

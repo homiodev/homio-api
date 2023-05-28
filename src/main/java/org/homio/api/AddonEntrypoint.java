@@ -39,7 +39,7 @@ public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
     }
 
     // a-z or at most one '-' and nothing else
-    default String getAddonId() {
+    default String getAddonID() {
         return AddonEntrypoint.getAddonName(getClass());
     }
 
@@ -56,7 +56,7 @@ public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
 
     @SneakyThrows
     default URL getResource(String resource) {
-        return CommonUtils.getResource(getAddonId(), resource);
+        return CommonUtils.getResource(getAddonID(), resource);
     }
 
     enum AddonImageColorIndex {

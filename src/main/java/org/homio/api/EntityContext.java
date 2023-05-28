@@ -12,7 +12,6 @@ import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.repository.AbstractRepository;
 import org.homio.api.workspace.scratch.Scratch3ExtensionBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,14 +75,6 @@ public interface EntityContext {
      */
     @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID, boolean useCache);
 
-    default Optional<AbstractRepository> getRepository(@NotNull BaseEntity baseEntity) {
-        return getRepository(baseEntity.getEntityID());
-    }
-
-    Optional<AbstractRepository> getRepository(@NotNull String entityID);
-
-    @NotNull AbstractRepository getRepository(@NotNull Class<? extends BaseEntity> entityClass) throws NotFoundException;
-
     @Nullable
     default <T extends BaseEntity> T getEntity(@NotNull T entity) {
         return getEntity(entity.getEntityID());
@@ -123,8 +114,6 @@ public interface EntityContext {
     }
 
     @Nullable BaseEntity<? extends BaseEntity> delete(@NotNull String entityId);
-
-    @Nullable AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(@NotNull String repositoryPrefix);
 
     @Nullable <T extends BaseEntity> T getEntityByName(@NotNull String name, @NotNull Class<T> entityClass);
 
@@ -191,8 +180,6 @@ public interface EntityContext {
     }
 
     void registerResource(String resource);
-
-    @NotNull Collection<AbstractRepository> getRepositories();
 
     @NotNull <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
