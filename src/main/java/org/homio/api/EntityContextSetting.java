@@ -149,7 +149,7 @@ public interface EntityContextSetting {
         listener.accept(getValue(settingClass));
     }
 
-    <T> void setValueRaw(@NotNull Class<? extends SettingPlugin<T>> bundleSettingPluginClazz, @NotNull String value);
+    <T> void setValueRaw(@NotNull Class<? extends SettingPlugin<T>> settingPluginClazz, @NotNull String value);
 
     <T> void setValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull T value);
 

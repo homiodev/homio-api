@@ -227,8 +227,8 @@ public abstract class BaseEntity<T extends BaseEntity> implements
         return ApplicationContextHolder.getBean(EntityContext.class);
     }
 
-    public @Nullable String getBundle() {
-        return AddonEntrypoint.getAddonName(getClass());
+    public @Nullable String getAddonID() {
+        return AddonEntrypoint.getAddonID(getClass());
     }
 
     @Override

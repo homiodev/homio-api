@@ -231,8 +231,8 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static String getResourceAsString(String bundle, String resource) {
-        return IOUtils.toString(getResource(bundle, resource), Charset.defaultCharset());
+    public static String getResourceAsString(String addonId, String resource) {
+        return IOUtils.toString(getResource(addonId, resource), Charset.defaultCharset());
     }
 
     @SneakyThrows
@@ -355,16 +355,16 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static URL getResource(String bundle, String resource) {
-        /*if (bundle != null && bundleClassLoaders.containsKey(bundle)) {
-            return bundleClassLoaders.get(bundle).getResource(resource);
+    public static URL getResource(String addonID, String resource) {
+        /*if (addonID != null && ClassLoaders.containsKey(addonID)) {
+            return asdasdlassLoaders.get(addonID).getResource(resource);
         }*/
         URL resourceURL = null;
         ArrayList<URL> urls = Collections.list(CommonUtils.class.getClassLoader().getResources(resource));
         if (urls.size() == 1) {
             resourceURL = urls.get(0);
-        } else if (urls.size() > 1 && bundle != null) {
-            resourceURL = urls.stream().filter(url -> url.getFile().contains(bundle)).findAny().orElse(null);
+        } else if (urls.size() > 1 && addonID != null) {
+            resourceURL = urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
         }
         return resourceURL;
     }
@@ -372,7 +372,7 @@ public class CommonUtils {
     @SneakyThrows
     public static <T> T readAndMergeJSON(String resource, T targetObject) {
         ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-        ArrayList<ClassLoader> classLoaders = new ArrayList<>(/*TODO: bundleClassLoaders.values()*/);
+        ArrayList<ClassLoader> classLoaders = new ArrayList<>(/*TODO: buasdndleClassLoaders.values()*/);
         classLoaders.add(CommonUtils.class.getClassLoader());
 
         for (ClassLoader classLoader : classLoaders) {

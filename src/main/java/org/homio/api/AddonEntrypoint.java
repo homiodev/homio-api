@@ -9,7 +9,7 @@ public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
 
     String ADDON_PREFIX = "org.homio.addon.";
 
-    static String getAddonName(Class clazz) {
+    static String getAddonID(Class clazz) {
         String name = clazz.getName();
         if (name.startsWith(ADDON_PREFIX)) {
             return name.substring(ADDON_PREFIX.length(), name.indexOf('.', ADDON_PREFIX.length()));
@@ -40,7 +40,7 @@ public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
 
     // a-z or at most one '-' and nothing else
     default String getAddonID() {
-        return AddonEntrypoint.getAddonName(getClass());
+        return AddonEntrypoint.getAddonID(getClass());
     }
 
     int order();

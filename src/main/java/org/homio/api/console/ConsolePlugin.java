@@ -20,7 +20,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     default String getEntityID() {
-        return AddonEntrypoint.getAddonName(getClass());
+        return AddonEntrypoint.getAddonID(getClass());
     }
 
     T getValue();
