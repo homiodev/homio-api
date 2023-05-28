@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.SneakyThrows;
@@ -133,7 +132,7 @@ public interface EntityContext {
 
     @NotNull <T> Map<String, T> getBeansOfTypeWithBeanName(@NotNull Class<T> clazz);
 
-    @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@NotNull Class<T> clazz);
+    @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByAddons(@NotNull Class<T> clazz);
 
     default boolean isAdmin() {
         UserEntity user = getUser();
