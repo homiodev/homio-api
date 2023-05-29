@@ -5,16 +5,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
 import org.homio.api.EntityContext;
+import org.homio.api.entity.RestartHandlerOnChange;
+import org.homio.api.exception.NotFoundException;
+import org.homio.api.exception.ServerException;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Status;
+import org.homio.api.service.EntityService;
 import org.homio.api.state.State;
 import org.homio.api.ui.field.MonacoLanguage;
 import org.homio.api.ui.field.UIField;
@@ -30,14 +33,9 @@ import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.image.UIFieldImage;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.util.SecureString;
-import org.homio.api.entity.RestartHandlerOnChange;
-import org.homio.api.exception.NotFoundException;
-import org.homio.api.exception.ServerException;
-import org.homio.api.service.EntityService;
 import org.homio.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-import org.springframework.data.util.Pair;
 
 @Log4j2
 public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStreamEntity, S extends BaseVideoService<T>>
@@ -325,12 +323,8 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     }
 
     @Override
-    public Collection<Pair<String, String>> getVideoSources() {
-        return Arrays.asList(
-                Pair.of("autofps.mjpeg", "autofps.mjpeg"),
-                Pair.of("snapshots.mjpeg", "snapshots.mjpeg"),
-                Pair.of("ipvideo.mjpeg", "ipvideo.mjpeg"),
-                Pair.of("HLS", "HLS"));
+    public Set<String> getVideoSources() {
+        return Set.of("autofps.mjpeg", "snapshots.mjpeg", "ipvideo.mjpeg", "HLS");
     }
 
     @Override

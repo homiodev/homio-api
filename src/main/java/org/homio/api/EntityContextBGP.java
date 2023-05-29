@@ -5,6 +5,8 @@ import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import com.pivovarit.function.ThrowingRunnable;
 import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchEvent.Kind;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Date;
@@ -96,6 +98,24 @@ public interface EntityContextBGP {
     ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
         throws IllegalArgumentException;
 
+    /**
+     * Run directory watchdog for specific events.
+     *
+     * @param dir             - dir to watch
+     * @param onUpdateCommand - handler
+     * @param eventsToListen  - default is: StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY
+     * @return - thread context
+     * @throws IllegalArgumentException if directory not exists or dir already under watching
+     */
+    ThreadContext<Void> runDirectoryWatchdog(@NotNull Path dir, @NotNull ThrowingConsumer<WatchEvent<Path>, Exception> onUpdateCommand,
+        Kind<?>... eventsToListen);
+
+    /**
+     * Create builder that consume progress bar. Every progress bar update reflects on UI.
+     *
+     * @param key - unique bgp builder key
+     * @return - progress builder
+     */
     ProgressBuilder runWithProgress(@NotNull String key);
 
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);

@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.homio.hquery.api.ErrorsHandler;
 import org.homio.hquery.api.HQueryMaxWaitTimeout;
 import org.homio.hquery.api.HQueryParam;
 import org.homio.hquery.api.HardwareQuery;
 import org.homio.hquery.api.HardwareRepository;
 import org.homio.hquery.api.RawParse;
-import org.springframework.data.util.Pair;
 
 @HardwareRepository
 public interface FfmpegInputDeviceHardwareRepository {
@@ -46,11 +46,11 @@ public interface FfmpegInputDeviceHardwareRepository {
     Pair<List<String>, List<String>> getWindowsInputDevices(@HQueryParam("ffmpeg") String ffmpeg);
 
     default Set<String> getVideoDevices(String ffmpegPath) {
-        return getStrings("video", () -> getWindowsInputDevices(ffmpegPath).getFirst());
+        return getStrings("video", () -> getWindowsInputDevices(ffmpegPath).getKey());
     }
 
     default Set<String> getAudioDevices(String ffmpegPath) {
-        return getStrings("audio", () -> getWindowsInputDevices(ffmpegPath).getSecond());
+        return getStrings("audio", () -> getWindowsInputDevices(ffmpegPath).getValue());
     }
 
     default Set<String> getStrings(String prefix, Supplier<List<String>> windowDeviceFetcher) {
@@ -78,7 +78,7 @@ public interface FfmpegInputDeviceHardwareRepository {
         public Pair<List<String>, List<String>> handle(List<String> inputs, Field field) {
             boolean startDevices = false;
             Pair<List<String>, List<String>> result = Pair.of(new ArrayList<>(2), new ArrayList<>(2));
-            List<String> devices = result.getFirst();
+            List<String> devices = result.getKey();
             for (String line : inputs) {
                 if (line.startsWith(STARTER) && line.contains(VIDEO_MARKER)) {
                     startDevices = true;
@@ -92,7 +92,7 @@ public interface FfmpegInputDeviceHardwareRepository {
                         continue;
                     }
                     if (line.startsWith(STARTER) && line.contains(AUDIO_MARKER)) {
-                        devices = result.getSecond();
+                        devices = result.getValue();
                     }
                 }
             }

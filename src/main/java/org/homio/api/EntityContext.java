@@ -10,7 +10,6 @@ import lombok.SneakyThrows;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.exception.NotFoundException;
-import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.workspace.scratch.Scratch3ExtensionBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -79,11 +78,9 @@ public interface EntityContext {
         return getEntity(entity.getEntityID());
     }
 
-    <T extends HasEntityIdentifier> void createDelayed(@NotNull T entity);
+    <T extends BaseEntity> void createDelayed(@NotNull T entity);
 
-    <T extends HasEntityIdentifier> void updateDelayed(@NotNull T entity, @NotNull Consumer<T> fieldUpdateConsumer);
-
-    @NotNull <T extends HasEntityIdentifier> void save(@NotNull T entity);
+    <T extends BaseEntity> void updateDelayed(@NotNull T entity, @NotNull Consumer<T> fieldUpdateConsumer);
 
     @NotNull
     default <T extends BaseEntity> T save(@NotNull T entity) {
