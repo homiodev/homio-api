@@ -378,7 +378,7 @@ public final class ArchiveUtil {
         public void renameEntry(Path archive, String entryName, String newName) {
             if (hasBuildInFileSystem) {
                 // may rename only files, not folders
-                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
+                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
                     Path fsPath = archiveFS.getPath(entryName);
                     if (Files.isRegularFile(fsPath)) { // only regular path may be removed inside fs
                         Files.move(fsPath, fsPath.resolveSibling(newName), StandardCopyOption.REPLACE_EXISTING);
@@ -411,9 +411,9 @@ public final class ArchiveUtil {
         @SneakyThrows
         public void addEntries(@NotNull Path archive, @NotNull Collection<TreeNode> files) {
             if (hasBuildInFileSystem) {
-                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
+                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
                     CommonUtils.addFiles(Paths.get(""), files, (path, treeNode) ->
-                            archiveFS.getPath(path.toString() + treeNode.getName()));
+                        archiveFS.getPath(path.toString() + treeNode.getName()));
                 }
                 return;
             } else if (this == sevenZ) {
@@ -439,7 +439,7 @@ public final class ArchiveUtil {
             entryNames = fixPath(entryNames);
             Set<Path> removedItems = new HashSet<>();
             if (hasBuildInFileSystem) {
-                try (FileSystem zipFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
+                try (FileSystem zipFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
                     for (String entryName : entryNames) {
                         removedItems.addAll(CommonUtils.removeFileOrDirectory(zipFS.getPath(entryName)));
                     }

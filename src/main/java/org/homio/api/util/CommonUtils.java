@@ -78,8 +78,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.homio.api.EntityContext;
-import org.homio.api.fs.TreeNode;
 import org.homio.api.entity.RestartHandlerOnChange;
+import org.homio.api.fs.TreeNode;
 import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -237,7 +237,7 @@ public class CommonUtils {
 
     @SneakyThrows
     public static <T> List<T> readJSON(String resource, Class<T> targetClass) {
-        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(resource);
+        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(resource);
         List<T> list = new ArrayList<>();
         while (resources.hasMoreElements()) {
             list.add(OBJECT_MAPPER.readValue(resources.nextElement(), targetClass));
@@ -275,7 +275,7 @@ public class CommonUtils {
 
     public static List<String> readFile(String fileName) {
         try {
-            return IOUtils.readLines(CommonUtils.class.getClassLoader().getResourceAsStream(fileName),
+            return IOUtils.readLines(ClassLoader.getSystemClassLoader().getResourceAsStream(fileName),
                 Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
@@ -298,7 +298,7 @@ public class CommonUtils {
 
     @SneakyThrows
     private static List<Map<String, String>> readProperties(String path) {
-        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(path);
+        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
         List<Map<String, String>> properties = new ArrayList<>();
         while (resources.hasMoreElements()) {
             try (InputStream input = resources.nextElement().openStream()) {
@@ -356,11 +356,8 @@ public class CommonUtils {
 
     @SneakyThrows
     public static URL getResource(String addonID, String resource) {
-        /*if (addonID != null && ClassLoaders.containsKey(addonID)) {
-            return asdasdlassLoaders.get(addonID).getResource(resource);
-        }*/
         URL resourceURL = null;
-        ArrayList<URL> urls = Collections.list(CommonUtils.class.getClassLoader().getResources(resource));
+        ArrayList<URL> urls = Collections.list(ClassLoader.getSystemClassLoader().getResources(resource));
         if (urls.size() == 1) {
             resourceURL = urls.get(0);
         } else if (urls.size() > 1 && addonID != null) {
@@ -372,13 +369,8 @@ public class CommonUtils {
     @SneakyThrows
     public static <T> T readAndMergeJSON(String resource, T targetObject) {
         ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-        ArrayList<ClassLoader> classLoaders = new ArrayList<>(/*TODO: buasdndleClassLoaders.values()*/);
-        classLoaders.add(CommonUtils.class.getClassLoader());
-
-        for (ClassLoader classLoader : classLoaders) {
-            for (URL url : Collections.list(classLoader.getResources(resource))) {
-                updater.readValue(url);
-            }
+        for (URL url : Collections.list(ClassLoader.getSystemClassLoader().getResources(resource))) {
+            updater.readValue(url);
         }
         return targetObject;
     }
