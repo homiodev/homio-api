@@ -14,7 +14,7 @@ public interface VideoStreamScanner extends ItemDiscoverySupport {
         messages.add(Lang.getServerMessage("VIDEO_STREAM.NEW_DEVICE_QUESTION"));
         messageConsumer.accept(messages);
         entityContext.ui().sendConfirmation("Confirm-Video-" + key,
-                Lang.getServerMessage("NEW_DEVICE.TITLE", "NAME", name),
+                Lang.getServerMessage("NEW_DEVICE.TITLE", name),
                 saveHandler, messages, headerConfirmButtonKey);
     }
 }

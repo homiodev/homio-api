@@ -547,11 +547,11 @@ public class CommonUtils {
             try {
                 if (testDevice.apply("127.0.0.1")) {
                     List<String> messages = new ArrayList<>();
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", "NAME", deviceName));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName + "(" + ip + ":" + devicePort + ")"));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.URL", "URL", ip + ":" + devicePort));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", deviceName));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
                     entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
-                        Lang.getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName), () ->
+                        Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
                             createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
                 }
             } catch (Exception ignore) {
