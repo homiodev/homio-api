@@ -43,15 +43,13 @@ public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
         return AddonEntrypoint.getAddonID(getClass());
     }
 
-    int order();
-
     default AddonImageColorIndex getAddonImageColorIndex() {
         return AddonImageColorIndex.ZERO;
     }
 
     @Override
     default int compareTo(@NotNull AddonEntrypoint o) {
-        return Integer.compare(this.order(), o.order());
+        return this.getAddonID().compareTo(o.getAddonID());
     }
 
     @SneakyThrows

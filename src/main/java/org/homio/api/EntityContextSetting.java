@@ -165,6 +165,24 @@ public interface EntityContextSetting {
 
     <T> void setValueSilenceRaw(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String value);
 
+    @Nullable
+    default String getEnv(@NotNull String key) {
+        return getEnv(key, String.class, null);
+    }
+
+    @NotNull
+    default String getEnv(@NotNull String key, @Nullable String defaultValue) {
+        return getEnv(key, String.class, defaultValue);
+    }
+
+    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue);
+
+    @NotNull String getApplicationVersion();
+
+    default int getApplicationMajorVersion() {
+        return Integer.parseInt(getApplicationVersion().split("\\.")[0]);
+    }
+
     interface MemSetterHandler {
         void setValue(@NotNull HasEntityIdentifier entity, @NotNull String key, @NotNull String title, @Nullable Object value);
 

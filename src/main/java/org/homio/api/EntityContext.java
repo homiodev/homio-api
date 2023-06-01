@@ -180,16 +180,4 @@ public interface EntityContext {
     @NotNull <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
     @NotNull <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);
-
-    @Nullable
-    default String getEnv(@NotNull String key) {
-        return getEnv(key, String.class, null);
-    }
-
-    @NotNull
-    default String getEnv(@NotNull String key, @Nullable String defaultValue) {
-        return getEnv(key, String.class, defaultValue);
-    }
-
-    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue);
 }

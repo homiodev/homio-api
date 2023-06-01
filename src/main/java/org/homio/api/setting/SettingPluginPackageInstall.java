@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -68,6 +69,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
         private final String description;
         private String icon;
         private String readme;
+        private boolean readmeLazyLoading;
         private String author;
         private String website;
         private String category;
@@ -88,8 +90,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
         private Boolean removing;
     }
 
-    @Getter
-    @Setter
+    @Data
     class PackageRequest {
         private String name;
         private String url;
