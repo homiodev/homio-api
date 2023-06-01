@@ -32,6 +32,10 @@ public enum Lang {
     return objectNode.at("/" + name.replaceAll("\\.", "/")).textValue();
   }
 
+  public static String getServerMessage(@Nullable String message, @Nullable String value) {
+    return getServerMessage(message, "VALUE", value);
+  }
+
   public static String getServerMessage(@Nullable String message, @Nullable FlowMap messageParam) {
     return getServerMessage(message, messageParam == null ? null : messageParam.getParams());
   }

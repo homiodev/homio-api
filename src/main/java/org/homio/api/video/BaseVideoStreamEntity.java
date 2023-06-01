@@ -5,8 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import java.util.Collection;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.tuple.Pair;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextSetting;
 import org.homio.api.model.ActionResponseModel;
@@ -21,7 +23,6 @@ import org.homio.api.ui.field.color.UIFieldColorStatusMatch;
 import org.homio.api.entity.DeviceBaseEntity;
 import org.homio.api.exception.ProhibitedExecution;
 import org.json.JSONObject;
-import org.springframework.data.util.Pair;
 
 @Setter
 @Getter
@@ -70,7 +71,7 @@ public abstract class BaseVideoStreamEntity<T extends BaseVideoStreamEntity> ext
 
     public abstract UIInputBuilder assembleActions();
 
-    public abstract Collection<Pair<String, String>> getVideoSources();
+    public abstract Set<String> getVideoSources();
 
     public abstract String getStreamUrl(String key);
 

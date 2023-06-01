@@ -13,6 +13,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.homio.api.console.ConsolePlugin;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasStatusAndMsg;
@@ -36,14 +38,16 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public interface EntityContextUI {
 
+    public static Logger log = LogManager.getLogger("asd");
+
     EntityContext getEntityContext();
 
     UIInputBuilder inputBuilder();
 
     @SneakyThrows
     default <T> T runWithProgressAndGet(@NotNull String progressKey, boolean cancellable,
-                                        @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
-                                        @Nullable Consumer<Exception> finallyBlock) {
+        @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
+        @Nullable Consumer<Exception> finallyBlock) {
         ProgressBar progressBar = (progress, message) -> progress(progressKey, progress, message, cancellable);
         Exception exception = null;
         try {
@@ -55,7 +59,11 @@ public interface EntityContextUI {
         } finally {
             progressBar.done();
             if (finallyBlock != null) {
-                finallyBlock.accept(exception);
+                try {
+                    finallyBlock.accept(exception);
+                } catch (Exception ex) {
+                    log.error("Error has been occurred in thread finally block", ex);
+                }
             }
         }
     }

@@ -54,8 +54,8 @@ public abstract class Scratch3ExtensionBlocks {
     @SneakyThrows
     public Scratch3ExtensionBlocks(String color, EntityContext entityContext, AddonEntrypoint addonEntryPoint,
                                    String idSuffix) {
-        this.id = addonEntryPoint == null ? idSuffix : addonEntryPoint.getBundleId() + (idSuffix == null ? "" : "-" + idSuffix);
-        this.parent = addonEntryPoint == null ? null : addonEntryPoint.getBundleId();
+        this.id = addonEntryPoint == null ? idSuffix : addonEntryPoint.getAddonID() + (idSuffix == null ? "" : "-" + idSuffix);
+        this.parent = addonEntryPoint == null ? null : addonEntryPoint.getAddonID();
         this.entityContext = entityContext;
         if (color != null) {
             URL resource = getImage(addonEntryPoint);

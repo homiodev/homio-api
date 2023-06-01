@@ -78,9 +78,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.homio.api.EntityContext;
-import org.homio.api.fs.TreeNode;
 import org.homio.api.entity.RestartHandlerOnChange;
-import org.homio.bundle.hquery.hardware.network.NetworkHardwareRepository;
+import org.homio.api.fs.TreeNode;
+import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -110,7 +110,7 @@ public class CommonUtils {
     @Getter
     private static final Path externalJarClassPath = getOrCreatePath("external_jars");
     @Getter
-    private static final Path bundlePath = getOrCreatePath("addons");
+    private static final Path addonPath = getOrCreatePath("addons");
     @Getter
     private static final Path mediaPath = getOrCreatePath("media");
     @Getter
@@ -133,7 +133,6 @@ public class CommonUtils {
     public static final ObjectMapper OBJECT_MAPPER;
     public static final ObjectMapper YAML_OBJECT_MAPPER;
     private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
-    private static final Map<String, ClassLoader> bundleClassLoaders = new HashMap<>();
 
     static {
         FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
@@ -155,10 +154,6 @@ public class CommonUtils {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
     }
 
-    public static void addClassLoader(String bundleName, ClassLoader classLoader) {
-        bundleClassLoaders.put(bundleName, classLoader);
-    }
-
     public static String getExtension(String fileName) {
         String extension = FilenameUtils.getExtension(fileName);
         if (specialExtensions.contains(extension)) {
@@ -167,10 +162,6 @@ public class CommonUtils {
             }
         }
         return extension;
-    }
-
-    public static void removeClassLoader(String bundleName) {
-        bundleClassLoaders.remove(bundleName);
     }
 
     public static Set<Path> removeFileOrDirectory(Path path) {
@@ -240,13 +231,13 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static String getResourceAsString(String bundle, String resource) {
-        return IOUtils.toString(getResource(bundle, resource), Charset.defaultCharset());
+    public static String getResourceAsString(String addonId, String resource) {
+        return IOUtils.toString(getResource(addonId, resource), Charset.defaultCharset());
     }
 
     @SneakyThrows
     public static <T> List<T> readJSON(String resource, Class<T> targetClass) {
-        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(resource);
+        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(resource);
         List<T> list = new ArrayList<>();
         while (resources.hasMoreElements()) {
             list.add(OBJECT_MAPPER.readValue(resources.nextElement(), targetClass));
@@ -284,7 +275,7 @@ public class CommonUtils {
 
     public static List<String> readFile(String fileName) {
         try {
-            return IOUtils.readLines(CommonUtils.class.getClassLoader().getResourceAsStream(fileName),
+            return IOUtils.readLines(ClassLoader.getSystemClassLoader().getResourceAsStream(fileName),
                 Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
@@ -307,7 +298,7 @@ public class CommonUtils {
 
     @SneakyThrows
     private static List<Map<String, String>> readProperties(String path) {
-        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(path);
+        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
         List<Map<String, String>> properties = new ArrayList<>();
         while (resources.hasMoreElements()) {
             try (InputStream input = resources.nextElement().openStream()) {
@@ -364,16 +355,13 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static URL getResource(String bundle, String resource) {
-        if (bundle != null && bundleClassLoaders.containsKey(bundle)) {
-            return bundleClassLoaders.get(bundle).getResource(resource);
-        }
+    public static URL getResource(String addonID, String resource) {
         URL resourceURL = null;
-        ArrayList<URL> urls = Collections.list(CommonUtils.class.getClassLoader().getResources(resource));
+        ArrayList<URL> urls = Collections.list(ClassLoader.getSystemClassLoader().getResources(resource));
         if (urls.size() == 1) {
             resourceURL = urls.get(0);
-        } else if (urls.size() > 1 && bundle != null) {
-            resourceURL = urls.stream().filter(url -> url.getFile().contains(bundle)).findAny().orElse(null);
+        } else if (urls.size() > 1 && addonID != null) {
+            resourceURL = urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
         }
         return resourceURL;
     }
@@ -381,13 +369,8 @@ public class CommonUtils {
     @SneakyThrows
     public static <T> T readAndMergeJSON(String resource, T targetObject) {
         ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-        ArrayList<ClassLoader> classLoaders = new ArrayList<>(bundleClassLoaders.values());
-        classLoaders.add(CommonUtils.class.getClassLoader());
-
-        for (ClassLoader classLoader : classLoaders) {
-            for (URL url : Collections.list(classLoader.getResources(resource))) {
-                updater.readValue(url);
-            }
+        for (URL url : Collections.list(ClassLoader.getSystemClassLoader().getResources(resource))) {
+            updater.readValue(url);
         }
         return targetObject;
     }
@@ -564,11 +547,11 @@ public class CommonUtils {
             try {
                 if (testDevice.apply("127.0.0.1")) {
                     List<String> messages = new ArrayList<>();
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", "NAME", deviceName));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName + "(" + ip + ":" + devicePort + ")"));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.URL", "URL", ip + ":" + devicePort));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", deviceName));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
                     entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
-                        Lang.getServerMessage("NEW_DEVICE.TITLE", "NAME", deviceName), () ->
+                        Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
                             createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
                 }
             } catch (Exception ignore) {

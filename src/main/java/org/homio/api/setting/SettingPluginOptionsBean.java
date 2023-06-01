@@ -27,6 +27,6 @@ public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
     default T parseValue(EntityContext entityContext, String value) {
         return entityContext.getBeansOfType(getType()).stream().filter(p -> p.getClass().getSimpleName().equals(value)).findAny()
                 .orElseThrow(() -> new NotFoundException(
-                        "Unable to find bundle: " + value + " of type: " + getType().getSimpleName()));
+                        "Unable to find addon: " + value + " of type: " + getType().getSimpleName()));
     }
 }

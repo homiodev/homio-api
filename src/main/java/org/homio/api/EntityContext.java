@@ -4,15 +4,12 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.SneakyThrows;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.exception.NotFoundException;
-import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.repository.AbstractRepository;
 import org.homio.api.workspace.scratch.Scratch3ExtensionBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,24 +73,14 @@ public interface EntityContext {
      */
     @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID, boolean useCache);
 
-    default Optional<AbstractRepository> getRepository(@NotNull BaseEntity baseEntity) {
-        return getRepository(baseEntity.getEntityID());
-    }
-
-    Optional<AbstractRepository> getRepository(@NotNull String entityID);
-
-    @NotNull AbstractRepository getRepository(@NotNull Class<? extends BaseEntity> entityClass) throws NotFoundException;
-
     @Nullable
     default <T extends BaseEntity> T getEntity(@NotNull T entity) {
         return getEntity(entity.getEntityID());
     }
 
-    <T extends HasEntityIdentifier> void createDelayed(@NotNull T entity);
+    <T extends BaseEntity> void createDelayed(@NotNull T entity);
 
-    <T extends HasEntityIdentifier> void updateDelayed(@NotNull T entity, @NotNull Consumer<T> fieldUpdateConsumer);
-
-    @NotNull <T extends HasEntityIdentifier> void save(@NotNull T entity);
+    <T extends BaseEntity> void updateDelayed(@NotNull T entity, @NotNull Consumer<T> fieldUpdateConsumer);
 
     @NotNull
     default <T extends BaseEntity> T save(@NotNull T entity) {
@@ -124,8 +111,6 @@ public interface EntityContext {
 
     @Nullable BaseEntity<? extends BaseEntity> delete(@NotNull String entityId);
 
-    @Nullable AbstractRepository<? extends BaseEntity> getRepositoryByPrefix(@NotNull String repositoryPrefix);
-
     @Nullable <T extends BaseEntity> T getEntityByName(@NotNull String name, @NotNull Class<T> entityClass);
 
     @NotNull <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
@@ -144,7 +129,7 @@ public interface EntityContext {
 
     @NotNull <T> Map<String, T> getBeansOfTypeWithBeanName(@NotNull Class<T> clazz);
 
-    @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByBundles(@NotNull Class<T> clazz);
+    @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByAddons(@NotNull Class<T> clazz);
 
     default boolean isAdmin() {
         UserEntity user = getUser();
@@ -192,21 +177,7 @@ public interface EntityContext {
 
     void registerResource(String resource);
 
-    @NotNull Collection<AbstractRepository> getRepositories();
-
     @NotNull <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
     @NotNull <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);
-
-    @Nullable
-    default String getEnv(@NotNull String key) {
-        return getEnv(key, String.class, null);
-    }
-
-    @NotNull
-    default String getEnv(@NotNull String key, @Nullable String defaultValue) {
-        return getEnv(key, String.class, defaultValue);
-    }
-
-    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue);
 }
