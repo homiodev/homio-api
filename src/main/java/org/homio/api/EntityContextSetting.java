@@ -182,7 +182,7 @@ public interface EntityContextSetting {
     default int getApplicationMajorVersion() {
         return Integer.parseInt(getApplicationVersion().split("\\.")[0]);
     }
-
+    
     interface MemSetterHandler {
         void setValue(@NotNull HasEntityIdentifier entity, @NotNull String key, @NotNull String title, @Nullable Object value);
 

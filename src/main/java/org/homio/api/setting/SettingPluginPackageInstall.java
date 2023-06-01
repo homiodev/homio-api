@@ -91,6 +91,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     }
 
     @Data
+    @Accessors(chain = true)
     class PackageRequest {
         private String name;
         private String url;

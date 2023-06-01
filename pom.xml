@@ -15,6 +15,10 @@
 
     <artifactId>homio-api</artifactId>
 
+    <properties>
+        <homio-hquery.version>1.0.3</homio-hquery.version>
+    </properties>
+
     <build>
         <resources>
             <resource>
@@ -93,7 +97,7 @@
         <dependency>
             <groupId>org.homio</groupId>
             <artifactId>homio-hquery</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
+            <version>${homio-hquery.version}</version>
         </dependency>
         <dependency>
             <artifactId>maverick-synergy-client</artifactId>
