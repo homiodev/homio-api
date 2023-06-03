@@ -34,9 +34,11 @@ import org.homio.api.ui.field.image.UIFieldImage;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.util.SecureString;
 import org.homio.api.workspace.WorkspaceBlock;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+@SuppressWarnings("unused")
 @Log4j2
 public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStreamEntity, S extends BaseVideoService<T>>
     extends BaseVideoStreamEntity<T> implements EntityService<S, T> {
@@ -68,7 +70,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     }
 
     @Override
-    public S getService() throws NotFoundException {
+    public @NotNull S getService() throws NotFoundException {
         return EntityService.super.getService();
     }
 
@@ -76,7 +78,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
 
     @UIField(order = 500, hideInEdit = true, type = UIFieldType.Duration)
     public long getLastAnswerFromVideo() {
-        return optService().map(s -> s.getLastAnswerFromVideo()).orElse(0L);
+        return optService().map(BaseVideoService::getLastAnswerFromVideo).orElse(0L);
     }
 
     @UIContextMenuAction(value = "RECORD_MP4", icon = "fas fa-file-video", inputs = {
@@ -124,12 +126,12 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     @UIField(order = 200, hideInEdit = true)
     @UIFieldCodeEditor(editorType = MonacoLanguage.Json, autoFormat = true)
     public Map<String, State> getAttributes() {
-        return optService().map(s -> s.getAttributes()).orElse(null);
+        return optService().map(BaseVideoService::getAttributes).orElse(null);
     }
 
     @Override
     public UIInputBuilder assembleActions() {
-        return optService().map(s -> s.assembleActions()).orElse(null);
+        return optService().map(BaseVideoService::assembleActions).orElse(null);
     }
 
     @UIField(order = 16, inlineEdit = true)
@@ -159,7 +161,7 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
     @UIActionButton(name = "refresh", icon = "fas fa-sync",
                     actionHandler = BaseVideoStreamEntity.UpdateSnapshotActionHandler.class)
     public byte[] getLastSnapshot() {
-        return optService().map(s -> s.getLatestSnapshot()).orElse(null);
+        return optService().map(BaseVideoService::getLatestSnapshot).orElse(null);
     }
 
     // not all entity has user name
@@ -329,18 +331,18 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
 
     @Override
     public String getStreamUrl(String source) {
-        switch (source) {
-            case "autofps.mjpeg":
-                return getAutofpsMjpegUrl();
-            case "snapshots.mjpeg":
-                return getSnapshotsMjpegUrl();
-            case "HLS":
-                return getHlsStreamUrl();
-            case "ipvideo.mjpeg":
-                return getIpVideoMjpeg();
-            case "image.jpg":
-                return getImageUrl();
-        }
-        return null;
+        return switch (source) {
+            case "autofps.mjpeg" -> getAutofpsMjpegUrl();
+            case "snapshots.mjpeg" -> getSnapshotsMjpegUrl();
+            case "HLS" -> getHlsStreamUrl();
+            case "ipvideo.mjpeg" -> getIpVideoMjpeg();
+            case "image.jpg" -> getImageUrl();
+            default -> null;
+        };
+    }
+
+    @Override
+    public void testService() {
+        // ignore because all camera create services.
     }
 }

@@ -4,18 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.FileContentType;
 import org.homio.api.model.FileModel;
-import org.homio.api.util.CommonUtils;
 import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
+import org.homio.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 
     @Override
-    default RenderType getRenderType() {
+    default @NotNull RenderType getRenderType() {
         return RenderType.editor;
     }
 
@@ -53,11 +55,23 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
         return null;
     }
 
+    @Override
+    default ActionResponseModel executeAction(String entityID, JSONObject metadata, JSONObject params) {
+        if (metadata.has("glyph")) {
+            return this.glyphClicked(metadata.getString("glyph"));
+        }
+        if (StringUtils.isNotEmpty(entityID) && metadata.has("content")) {
+            return save(new FileModel(entityID, metadata.getString("content"), null, false));
+        }
+        return null;
+    }
+
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     class MonacoGlyphAction {
+
         private String icon;
         private String color;
         private String pattern;

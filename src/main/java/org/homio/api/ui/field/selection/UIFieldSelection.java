@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.action.DynamicOptionLoader;
+import org.jetbrains.annotations.NotNull;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -13,7 +14,7 @@ public @interface UIFieldSelection {
     /**
      * @return Target class for selection(for enums). see: ItemController.loadSelectOptions
      */
-    Class<? extends DynamicOptionLoader> value();
+    @NotNull Class<? extends DynamicOptionLoader> value();
 
     /**
      * @return In case of same DynamicOptionLoader uses for few different fields, this parameter may distinguish business handling
@@ -32,13 +33,13 @@ public @interface UIFieldSelection {
 
     boolean lazyLoading() default false;
 
-    String parentChildJoiner() default "/";
+    @NotNull String parentChildJoiner() default "/";
 
     /**
      * Interface to configure selection for IU
      */
     interface SelectionConfiguration {
 
-        Icon selectionIcon();
+        @NotNull Icon selectionIcon();
     }
 }

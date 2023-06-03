@@ -129,7 +129,7 @@ public interface EntityContextEvent {
     EntityContextEvent removeEntityRemoveListener(String entityID, String key);
 
     /**
-     * Run only once when internet became available
+     * Run only once when internet became available. command executes in separate thread
      * @param name - name
      * @param command - command
      */

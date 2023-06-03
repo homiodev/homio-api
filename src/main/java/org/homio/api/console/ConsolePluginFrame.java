@@ -2,12 +2,13 @@ package org.homio.api.console;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public interface ConsolePluginFrame extends ConsolePlugin<ConsolePluginFrame.FrameConfiguration> {
 
     @Override
-    default RenderType getRenderType() {
+    default @NotNull RenderType getRenderType() {
         return RenderType.frame;
     }
 

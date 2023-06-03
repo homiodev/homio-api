@@ -23,12 +23,14 @@ import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPluginButton;
+import org.homio.api.ui.UI.Color;
 import org.homio.api.ui.action.UIActionHandler;
 import org.homio.api.ui.dialog.DialogModel;
 import org.homio.api.ui.field.ProgressBar;
 import org.homio.api.ui.field.action.ActionInputParameter;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.action.v1.layout.UIFlexLayoutBuilder;
+import org.homio.api.ui.field.action.v1.layout.UILayoutBuilder;
 import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
 import org.homio.api.util.NotificationLevel;
@@ -38,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public interface EntityContextUI {
 
-    public static Logger log = LogManager.getLogger("asd");
+    Logger log = LogManager.getLogger("asd");
 
     EntityContext getEntityContext();
 
@@ -83,7 +85,7 @@ public interface EntityContextUI {
      * name on UI
      *
      * @param name     - plugin name
-     * @param resource - resource name requires if need restrict access for users with roles
+     * @param resource - resource name requires if you need restrict access for users with roles
      */
     void registerConsolePluginName(@NotNull String name, @Nullable String resource);
 
@@ -213,6 +215,10 @@ public interface EntityContextUI {
         }
     }
 
+    default void updateNotificationBlock(@NotNull String key, @NotNull BaseEntity entity) {
+        updateNotificationBlock(key, builder -> builder.addEntityInfo(entity));
+    }
+
     void updateNotificationBlock(@NotNull String key, @NotNull Consumer<NotificationBlockBuilder> builder);
 
     boolean isHasNotificationBlock(@NotNull String key);
@@ -229,7 +235,7 @@ public interface EntityContextUI {
     HeaderButtonBuilder headerButtonBuilder(@NotNull String key);
 
     /**
-     * Remove button from ui header. Header button will be removed only if has no attached elements
+     * Remove button from ui header. Header button will be removed only if it has no attached elements
      *
      * @param key -
      */
@@ -382,14 +388,14 @@ public interface EntityContextUI {
 
         @NotNull HeaderButtonBuilder title(@NotNull String title);
 
-        @NotNull HeaderButtonBuilder icon(@NotNull String icon, @Nullable String color, boolean rotate);
+        @NotNull HeaderButtonBuilder icon(@NotNull Icon icon);
 
         /**
          * Set border
          *
          * @param width - default 1
          * @param color - default unset
-         * @return thid
+         * @return this
          */
         @NotNull HeaderButtonBuilder border(int width, @Nullable String color);
 
@@ -434,6 +440,14 @@ public interface EntityContextUI {
 
         @NotNull NotificationBlockBuilder contextMenuActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
 
+        @NotNull NotificationBlockBuilder setNameColor(@Nullable String color);
+
+        /**
+         * Specify whole notification block status and uses for getting border color
+         *
+         * @param status - block status
+         * @return this
+         */
         @NotNull NotificationBlockBuilder setStatus(@Nullable Status status);
 
         /**
@@ -449,25 +463,14 @@ public interface EntityContextUI {
          */
         @NotNull NotificationBlockBuilder setUpdating(boolean value);
 
-        default @NotNull NotificationBlockBuilder setStatus(@Nullable Status status, @Nullable String message) {
-            setStatus(status);
-            setStatusMessage(message);
-            return this;
-        }
-
-        // set status and info if statusMessage not null
-        default @NotNull NotificationBlockBuilder setStatus(@NotNull HasStatusAndMsg<?> statusEntity) {
-            setStatus(statusEntity.getStatus());
-            setStatusMessage(statusEntity.getStatusMessage());
-            return this;
-        }
-
-        default @NotNull NotificationBlockBuilder setStatusMessage(@Nullable String message) {
-            if (StringUtils.isNotEmpty(message)) {
-                addInfo("status", message, new Icon("fas fa-exclamation"), null);
-            }
-            return this;
-        }
+        /**
+         * Specify custom border color. Default takes color from Status if present. If border and status not specified than fetch all rows from block and check
+         * if it has status info. If all rows has ONLINE, ...
+         *
+         * @param color - color in hex format
+         * @return this
+         */
+        @NotNull NotificationBlockBuilder setBorderColor(@Nullable String color);
 
         /**
          * Set notification block version
@@ -488,23 +491,18 @@ public interface EntityContextUI {
         @NotNull NotificationBlockBuilder setUpdatable(@NotNull BiFunction<ProgressBar, String, ActionResponseModel> updateHandler,
             @NotNull List<String> versions);
 
-        // add Info line with unique key to avoid duplication if 'info' changes
-        default @NotNull NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info,
-            @Nullable Icon icon) {
-            return addInfo(key, info, null, icon, null, null);
+        default @NotNull NotificationInfoLineBuilder addInfo(@NotNull String info, @Nullable Icon icon) {
+            return addInfo(String.valueOf(info.hashCode()), icon, info);
         }
 
-        default @NotNull NotificationBlockBuilder addInfo(@NotNull String info, @Nullable Icon icon) {
-            return addInfo(String.valueOf(info.hashCode()), info, null, icon, null, null);
+        default @NotNull NotificationBlockBuilder addErrorStatusInfo(@Nullable String message) {
+            if (StringUtils.isNotEmpty(message)) {
+                addInfo("status", new Icon("fas fa-exclamation"), message).setTextColor(Color.RED);
+            }
+            return this;
         }
 
-        @NotNull NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info, @Nullable String color,
-            @Nullable Icon icon, @Nullable String status, @Nullable String statusColor);
-
-        default @NotNull NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info,
-            @Nullable Icon icon, @NotNull Status status) {
-            return addInfo(key, info, null, icon, status.name(), status.getColor());
-        }
+        @NotNull NotificationInfoLineBuilder addInfo(@NotNull String key, @Nullable Icon icon, @NotNull String info);
 
         @NotNull NotificationBlockBuilder addEntityInfo(@NotNull BaseEntity entity);
 
@@ -515,15 +513,43 @@ public interface EntityContextUI {
          * @return this
          */
         boolean removeInfo(@NotNull String key);
+    }
 
-        NotificationBlockBuilder addButtonInfo(
-            @NotNull String key,
-            @NotNull String info,
-            @Nullable String color,
-            @Nullable Icon icon,
-            @NotNull String buttonIcon,
-            @Nullable String buttonText,
-            @Nullable String confirmMessage,
-            @NotNull UIActionHandler handler);
+    interface NotificationInfoLineBuilder {
+
+        @NotNull NotificationInfoLineBuilder setTextColor(@Nullable String color);
+
+        @NotNull NotificationInfoLineBuilder setRightText(@NotNull String text, @Nullable Icon icon, @Nullable String color);
+
+        /**
+         * Specify info status. Calculates on UI when discover border color. Also fetch message if status message is not null and hover it on UI
+         *
+         * @param entity - entity
+         * @return this
+         */
+        @NotNull NotificationInfoLineBuilder setStatus(@NotNull HasStatusAndMsg entity);
+
+        @NotNull
+        default NotificationInfoLineBuilder setRightText(@NotNull String text) {
+            return setRightText(text, null, null);
+        }
+
+        @NotNull
+        default NotificationInfoLineBuilder setRightText(Status status) {
+            setRightText(status.name(), null, status.getColor());
+            return this;
+        }
+
+        @NotNull NotificationInfoLineBuilder setRightButton(@Nullable Icon buttonIcon, @Nullable String buttonText,
+            @Nullable String confirmMessage, @Nullable UIActionHandler handler);
+
+        @NotNull NotificationInfoLineBuilder setRightSettingsButton(@NotNull Icon buttonIcon, @NotNull Consumer<UILayoutBuilder> assembler);
+
+        @NotNull
+        default NotificationInfoLineBuilder setRightSettingsButton(@NotNull Consumer<UILayoutBuilder> assembler) {
+            return setRightSettingsButton(new Icon("fas fa-ellipsis-vertical"), assembler);
+        }
+
+        @NotNull NotificationInfoLineBuilder setAsLink(@NotNull BaseEntity entity);
     }
 }

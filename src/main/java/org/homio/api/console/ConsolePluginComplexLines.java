@@ -8,11 +8,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
 
 public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<String>> {
 
     @Override
-    default RenderType getRenderType() {
+    default @NotNull RenderType getRenderType() {
         return RenderType.string;
     }
 

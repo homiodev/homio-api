@@ -33,6 +33,7 @@ import org.homio.api.video.ffmpeg.FFMPEG;
 /**
  * responsible for handling streams
  */
+@SuppressWarnings("unused")
 @Log4j2
 public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> extends ChannelInboundHandlerAdapter {
 
@@ -221,8 +222,7 @@ public abstract class BaseVideoStreamServerHandler<S extends BaseVideoService> e
         if (ctx == null) {
             return;
         }
-        if (evt instanceof IdleStateEvent) {
-            IdleStateEvent e = (IdleStateEvent) evt;
+        if (evt instanceof IdleStateEvent e) {
             if (e.state() == IdleState.WRITER_IDLE) {
                 log.debug("[{}]: Stream server is going to close an idle channel.", entityID);
                 ctx.close();

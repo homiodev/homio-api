@@ -5,10 +5,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * This is not a string but a CharSequence that can be cleared of its memory.
- * Important for handling passwords. Represents text that should be kept
- * confidential, such as by deleting it from computer memory when no longer
- * needed or garbaged collected.
+ * This is not a string but a CharSequence that can be cleared of its memory. Important for handling passwords. Represents text that should be kept
+ * confidential, such as by deleting it from computer memory when no longer needed or garbage collected.
  */
 public class SecureString implements CharSequence {
 
@@ -73,17 +71,6 @@ public class SecureString implements CharSequence {
     @Override
     public String toString() {
         return this.length() == 0 ? "" : "Secure:XXXXX";
-    }
-
-    /**
-     * Called by garbage collector.
-     * <p>
-     * {@inheritDoc}
-     */
-    @Override
-    public void finalize() throws Throwable {
-        clear();
-        super.finalize();
     }
 
     /**

@@ -2,11 +2,12 @@ package org.homio.api.console;
 
 import java.util.List;
 import org.homio.api.fs.TreeConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 public interface ConsolePluginTree extends ConsolePlugin<List<TreeConfiguration>> {
 
     @Override
-    default RenderType getRenderType() {
+    default @NotNull RenderType getRenderType() {
         return RenderType.tree;
     }
 }

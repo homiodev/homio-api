@@ -289,12 +289,20 @@ public interface EntityContextBGP {
 
         /**
          * Await at most timeout to finish process
+         *
          * @param timeout - duration to wait
          * @return response returned by thread
          * @throws Exception -
          */
         T await(@NotNull Duration timeout) throws Exception;
 
+        /**
+         * Add listener to fire when process finishes and value returned from process
+         *
+         * @param name          - unique listener name
+         * @param valueListener - listener handler. Remove listener from next calls if value handler return true
+         * @return if listener was added successfully or false if listener with same name already exists
+         */
         boolean addValueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
 
         boolean removeValueListener(@NotNull String name);

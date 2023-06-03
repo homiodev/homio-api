@@ -73,7 +73,11 @@ public class ActionResponseModel {
     }
 
     public static ActionResponseModel success() {
-        return new ActionResponseModel("ACTION.SUCCESS", ResponseAction.success);
+        return new ActionResponseModel("ACTION.RESPONSE.SUCCESS", ResponseAction.success);
+    }
+
+    public static ActionResponseModel fired() {
+        return new ActionResponseModel("ACTION.RESPONSE.FIRED", ResponseAction.info);
     }
 
     public static ActionResponseModel showSuccess(String value) {

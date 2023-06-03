@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.homio.api.EntityContext;
 import org.homio.api.ui.UI;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +24,7 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
     private final List<ConsolePluginComplexLines.ComplexString> values = new ArrayList<>();
 
     @Override
-    public String getEntityID() {
+    public @NotNull String getEntityID() {
         return "icl";
     }
 

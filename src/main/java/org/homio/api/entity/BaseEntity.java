@@ -226,5 +226,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     /**
      * Specify entity font awesome icon for UI purposes
      */
-    public abstract @NotNull Icon getIcon();
+    public @Nullable Icon getEntityIcon() {
+        return null;
+    }
 }

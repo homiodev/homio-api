@@ -62,6 +62,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.util.MimeTypeUtils;
 
+@SuppressWarnings("unused")
 @Log4j2
 public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
         implements EntityService.ServiceInstance, VideoActionsContext<T>,
@@ -127,7 +128,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
         this.entityContext = entityContext;
         this.serverPort = getEntity().getServerPort();
 
-        entity.setSourceStatus(Status.UNKNOWN, null);
+        entity.setStatus(Status.UNKNOWN, null);
 
         Path ffmpegOutputPath = CommonUtils.getMediaPath().resolve(getEntity().getFolderName()).resolve(entityID);
         ffmpegImageOutputPath = CommonUtils.createDirectoriesIfNotExists(ffmpegOutputPath.resolve("images"));
@@ -142,7 +143,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
 
         bootstrapServerPortMap.remove(entityID);
         if (bootstrapServerPortMap.containsValue(serverPort)) {
-            entity.setSourceStatus(Status.ERROR, "Server port already in use");
+            entity.setStatusError("Server port already in use");
             return;
         }
         bootstrapServerPortMap.put(entityID, serverPort);
@@ -160,7 +161,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
         this.entity = entity;
         if (!this.entity.isStart()) {
             // check maybe status already offline/error
-            if (this.entity.getSourceStatus().isOnline() || isHandlerInitialized) {
+            if (this.entity.getStatus().isOnline() || isHandlerInitialized) {
                 this.disposeAndSetStatus(Status.OFFLINE, "Camera not started");
             }
         } else {
@@ -215,7 +216,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
 
             videoConnectionJob = entityContext.bgp().builder("poll-video-connection-" + entityID)
                     .interval(Duration.ofSeconds(60)).execute(this::pollingVideoConnection);
-            entity.setSourceStatus(Status.ONLINE, null);
+            entity.setStatusOnline();
             afterInitialize();
         } catch (Exception ex) {
             disposeAndSetStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
@@ -235,7 +236,7 @@ public abstract class BaseVideoService<T extends BaseFFMPEGVideoStreamEntity>
             entityContext.ui().sendErrorMessage("DISPOSE_VIDEO",
                 FlowMap.of("TITLE", entity.getTitle(), "REASON", reason));
         }
-        entity.setSourceStatus(status, reason);
+        entity.setStatus(status, reason);
         if (entity.isStart()) {
             entityContext.save(entity.setStart(false), false);
         }
