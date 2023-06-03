@@ -13,6 +13,7 @@ import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.fs.FileSystemProvider;
 import org.homio.api.fs.TreeConfiguration;
 import org.homio.api.model.ActionResponseModel;
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
@@ -25,7 +26,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
 
     Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
 
-    default TreeConfiguration buildFileSystemConfiguration(EntityContext entityContext) {
+    default @NotNull TreeConfiguration buildFileSystemConfiguration(@NotNull EntityContext entityContext) {
         return new TreeConfiguration(this);
     }
 
@@ -35,7 +36,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
      * @return Short FS alias
      */
     @JsonIgnore
-    String getFileSystemAlias();
+    @NotNull String getFileSystemAlias();
 
     /**
      * @return Does show fs in file manager console tab
@@ -44,15 +45,12 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     boolean isShowInFileManager();
 
     @JsonIgnore
-    String getFileSystemIcon();
-
-    @JsonIgnore
-    String getFileSystemIconColor();
+    @NotNull Icon getFileSystemIcon();
 
     @JsonIgnore
     boolean requireConfigure();
 
-    default FS getFileSystem(EntityContext entityContext) {
+    default @NotNull FS getFileSystem(@NotNull EntityContext entityContext) {
         String key = getEntityID();
         if (!fileSystemMap.containsKey(key)) {
             FS fileSystemProvider = buildFileSystem(entityContext);
@@ -61,7 +59,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
         return (FS) fileSystemMap.get(key);
     }
 
-    FS buildFileSystem(EntityContext entityContext);
+    @NotNull FS buildFileSystem(@NotNull EntityContext entityContext);
 
     @JsonIgnore
     long getConnectionHashCode();
@@ -101,7 +99,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
      *
      * @return - list of archive extensions
      */
-    default Set<String> getSupportArchiveFormats() {
+    default @NotNull Set<String> getSupportArchiveFormats() {
         return Collections.emptySet();
     }
 }

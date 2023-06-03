@@ -1,20 +1,13 @@
 package org.homio.api.setting;
 
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.UIFieldType;
 
 public interface SettingPluginToggle extends SettingPlugin<Boolean> {
 
-    String getIcon();
+    Icon getIcon();
 
-    String getToggleIcon();
-
-    default String getIconColor() {
-        return "";
-    }
-
-    default String getToggleIconColor() {
-        return "";
-    }
+    Icon getToggleIcon();
 
     @Override
     default Class<Boolean> getType() {

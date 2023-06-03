@@ -7,19 +7,9 @@
     <url>https://github.com/homiodev/homio-api</url>
     <name>Homio API</name>
 
-    <parent>
-        <groupId>org.homio</groupId>
-        <artifactId>homio-dependency</artifactId>
-        <version>2.4.6</version>
-    </parent>
-
     <artifactId>homio-api</artifactId>
 
-    <properties>
-        <homio-hquery.version>1.0.3</homio-hquery.version>
-    </properties>
-
-    <build>
+  <build>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -46,16 +36,9 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <release>11</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
-                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <tagNameFormat>@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
             <plugin>
@@ -83,25 +66,25 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
+                      <goals>
+                        <goal>jar</goal>
+                      </goals>
+                      <id>attach-sources</id>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.homio</groupId>
-            <artifactId>homio-hquery</artifactId>
-            <version>${homio-hquery.version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>maverick-synergy-client</artifactId>
-            <groupId>com.sshtools</groupId>
+  <dependencies>
+    <dependency>
+      <artifactId>homio-hquery</artifactId>
+      <groupId>org.homio</groupId>
+      <version>${homio-hquery.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>maverick-synergy-client</artifactId>
+      <groupId>com.sshtools</groupId>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -267,6 +250,16 @@
             <artifactId>commons-collections4</artifactId>
         </dependency>
     </dependencies>
+
+  <parent>
+    <artifactId>homio-dependency</artifactId>
+    <groupId>org.homio</groupId>
+    <version>2.5.0</version>
+  </parent>
+
+  <properties>
+    <homio-hquery.version>1.1.0</homio-hquery.version>
+  </properties>
 
   <scm>
     <tag>v1.2.2</tag>

@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.entity.widget.AggregationType;
+import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -528,6 +529,14 @@ public interface EntityContextWidget {
 
         default T setIconColor(@Nullable String color) {
             return setIconColor(color, null);
+        }
+
+        default T setIcon(@Nullable Icon icon) {
+            if (icon != null) {
+                setIcon(icon.getIcon());
+                setIconColor(icon.getColor());
+            }
+            return (T) this;
         }
     }
 

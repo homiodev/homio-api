@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
+import org.homio.api.model.Icon;
 import org.homio.api.model.KeyValueEnum;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.util.CommonUtils;
@@ -31,12 +32,8 @@ public interface SettingPlugin<T> {
         return null;
     }
 
-    default String getIcon() {
-        return "";
-    }
-
-    default String getIconColor() {
-        return "";
+    default Icon getIcon() {
+        return new Icon();
     }
 
     default String getDefaultValue() {

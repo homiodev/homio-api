@@ -1,9 +1,11 @@
 package org.homio.api.ui.field.action.v1.layout.dialog;
 
 import java.util.function.Consumer;
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.v1.UIEntityBuilder;
 import org.homio.api.ui.field.action.v1.layout.UIFlexLayoutBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface UIDialogLayoutBuilder extends UIEntityBuilder {
 
@@ -24,17 +26,14 @@ public interface UIDialogLayoutBuilder extends UIEntityBuilder {
 
     UIDialogLayoutBuilder appendStyle(@NotNull String style, @NotNull String value);
 
-    UIDialogLayoutBuilder setTitle(String title, String icon, String iconColor);
+    UIDialogLayoutBuilder setTitle(@NotNull String title, @Nullable Icon icon);
 
-    default UIDialogLayoutBuilder setTitle(String title) {
-        return setTitle(title, null, null);
-    }
-
-    default UIDialogLayoutBuilder setTitle(String title, String icon) {
-        return setTitle(title, icon, null);
+    default UIDialogLayoutBuilder setTitle(@NotNull String title) {
+        return setTitle(title, null);
     }
 
     interface DialogEntity<T> {
+
         UIDialogLayoutBuilder up();
 
         UIDialogLayoutBuilder edit(Consumer<T> editHandler);

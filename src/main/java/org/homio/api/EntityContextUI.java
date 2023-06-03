@@ -20,9 +20,9 @@ import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.exception.ServerException;
 import org.homio.api.model.ActionResponseModel;
+import org.homio.api.model.Icon;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPluginButton;
-import org.homio.api.ui.UI;
 import org.homio.api.ui.action.UIActionHandler;
 import org.homio.api.ui.dialog.DialogModel;
 import org.homio.api.ui.field.ProgressBar;
@@ -195,21 +195,21 @@ public interface EntityContextUI {
      */
     void removeEmptyNotificationBlock(@NotNull String key);
 
-    void addNotificationBlock(@NotNull String key, @NotNull String name, @Nullable String icon, @Nullable String color,
+    void addNotificationBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
         @Nullable Consumer<NotificationBlockBuilder> builder);
 
-    default void addOrUpdateNotificationBlock(@NotNull String key, @NotNull String name, @Nullable String icon, @Nullable String color,
+    default void addOrUpdateNotificationBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
         @NotNull Consumer<NotificationBlockBuilder> builder) {
         if (isHasNotificationBlock(key)) {
             updateNotificationBlock(key, builder);
         } else {
-            addNotificationBlock(key, name, icon, color, builder);
+            addNotificationBlock(key, name, icon, builder);
         }
     }
 
-    default void addNotificationBlockOptional(@NotNull String key, @NotNull String name, @Nullable String icon, @Nullable String color) {
+    default void addNotificationBlockOptional(@NotNull String key, @NotNull String name, @Nullable Icon icon) {
         if (!isHasNotificationBlock(key)) {
-            addNotificationBlock(key, name, icon, color, null);
+            addNotificationBlock(key, name, icon, null);
         }
     }
 
@@ -356,7 +356,7 @@ public interface EntityContextUI {
         title = title == null ? null : Lang.getServerMessage(title, messageParam);
         String text;
         if (ex instanceof ServerException) {
-            text = ((ServerException) ex).toString(messageParam);
+            text = ex.getMessage();
         } else {
             text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
             if (text == null) {
@@ -379,17 +379,19 @@ public interface EntityContextUI {
     }
 
     interface HeaderButtonBuilder {
-        HeaderButtonBuilder title(@NotNull String title);
 
-        HeaderButtonBuilder icon(@NotNull String icon, @Nullable String color, boolean rotate);
+        @NotNull HeaderButtonBuilder title(@NotNull String title);
+
+        @NotNull HeaderButtonBuilder icon(@NotNull String icon, @Nullable String color, boolean rotate);
 
         /**
          * Set border
+         *
          * @param width - default 1
          * @param color - default unset
          * @return thid
          */
-        HeaderButtonBuilder border(int width, @Nullable String color);
+        @NotNull HeaderButtonBuilder border(int width, @Nullable String color);
 
         /**
          * Button available duration
@@ -397,7 +399,7 @@ public interface EntityContextUI {
          * @param duration time for duration
          * @return this
          */
-        HeaderButtonBuilder duration(int duration);
+        @NotNull HeaderButtonBuilder duration(int duration);
 
         /**
          * Specify HeaderButton only available for specific page
@@ -405,11 +407,11 @@ public interface EntityContextUI {
          * @param page - page id
          * @return - this
          */
-        HeaderButtonBuilder availableForPage(@NotNull Class<? extends BaseEntity> page);
+        @NotNull HeaderButtonBuilder availableForPage(@NotNull Class<? extends BaseEntity> page);
 
-        HeaderButtonBuilder clickAction(@NotNull Class<? extends SettingPluginButton> clickAction);
+        @NotNull HeaderButtonBuilder clickAction(@NotNull Class<? extends SettingPluginButton> clickAction);
 
-        HeaderButtonBuilder clickAction(@NotNull Supplier<ActionResponseModel> clickAction);
+        @NotNull HeaderButtonBuilder clickAction(@NotNull Supplier<ActionResponseModel> clickAction);
 
         void build();
     }
@@ -422,22 +424,22 @@ public interface EntityContextUI {
          * @param entity - entity to link to
          * @return this
          */
-        NotificationBlockBuilder linkToEntity(@NotNull BaseEntity entity);
+        @NotNull NotificationBlockBuilder linkToEntity(@NotNull BaseEntity entity);
 
-        NotificationBlockBuilder visibleForUser(@NotNull String email);
+        @NotNull NotificationBlockBuilder visibleForUser(@NotNull String email);
 
-        NotificationBlockBuilder blockActionBuilder(Consumer<UIInputBuilder> builder);
+        @NotNull NotificationBlockBuilder blockActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
 
-        NotificationBlockBuilder addFlexAction(String name, Consumer<UIFlexLayoutBuilder> builder);
+        @NotNull NotificationBlockBuilder addFlexAction(@NotNull String key, @NotNull Consumer<UIFlexLayoutBuilder> builder);
 
-        NotificationBlockBuilder contextMenuActionBuilder(Consumer<UIInputBuilder> builder);
+        @NotNull NotificationBlockBuilder contextMenuActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
 
-        NotificationBlockBuilder setStatus(Status status);
+        @NotNull NotificationBlockBuilder setStatus(@Nullable Status status);
 
         /**
          * Run handler on every user fetch url
          */
-        NotificationBlockBuilder fireOnFetch(Runnable handler);
+        @NotNull NotificationBlockBuilder fireOnFetch(@NotNull Runnable handler);
 
         /**
          * Set 'Update' button if firmware already installing or not
@@ -445,24 +447,24 @@ public interface EntityContextUI {
          * @param value - true if need disable 'update' button
          * @return this
          */
-        NotificationBlockBuilder setUpdating(boolean value);
+        @NotNull NotificationBlockBuilder setUpdating(boolean value);
 
-        default NotificationBlockBuilder setStatus(Status status, String message) {
+        default @NotNull NotificationBlockBuilder setStatus(@Nullable Status status, @Nullable String message) {
             setStatus(status);
             setStatusMessage(message);
             return this;
         }
 
         // set status and info if statusMessage not null
-        default NotificationBlockBuilder setStatus(HasStatusAndMsg<?> statusEntity) {
+        default @NotNull NotificationBlockBuilder setStatus(@NotNull HasStatusAndMsg<?> statusEntity) {
             setStatus(statusEntity.getStatus());
             setStatusMessage(statusEntity.getStatusMessage());
             return this;
         }
 
-        default NotificationBlockBuilder setStatusMessage(String message) {
+        default @NotNull NotificationBlockBuilder setStatusMessage(@Nullable String message) {
             if (StringUtils.isNotEmpty(message)) {
-                addInfo("status", message, UI.Color.RED, "fas fa-exclamation", null);
+                addInfo("status", message, new Icon("fas fa-exclamation"), null);
             }
             return this;
         }
@@ -473,7 +475,7 @@ public interface EntityContextUI {
          * @param version - version string
          * @return builder
          */
-        NotificationBlockBuilder setVersion(@Nullable String version);
+        @NotNull NotificationBlockBuilder setVersion(@Nullable String version);
 
         /**
          * Add updatable button to ui notification block.
@@ -483,22 +485,28 @@ public interface EntityContextUI {
          * @param versions      - list of versions to be able to select from UI select box
          * @return builder
          */
-        NotificationBlockBuilder setUpdatable(@NotNull BiFunction<ProgressBar, String, ActionResponseModel> updateHandler,
+        @NotNull NotificationBlockBuilder setUpdatable(@NotNull BiFunction<ProgressBar, String, ActionResponseModel> updateHandler,
             @NotNull List<String> versions);
 
         // add Info line with unique key to avoid duplication if 'info' changes
-        default NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info, @Nullable String color,
-            @Nullable String icon, @Nullable String iconColor) {
-            return addInfo(key, info, color, icon, iconColor, null, null);
+        default @NotNull NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info,
+            @Nullable Icon icon) {
+            return addInfo(key, info, null, icon, null, null);
         }
 
-        NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info, @Nullable String color,
-            @Nullable String icon, @Nullable String iconColor, @Nullable String status, @Nullable String statusColor);
-
-        default NotificationBlockBuilder addInfo(@NotNull String info, @Nullable String color,
-            @Nullable String icon, @Nullable String iconColor) {
-            return addInfo(String.valueOf(info.hashCode()), info, color, icon, iconColor);
+        default @NotNull NotificationBlockBuilder addInfo(@NotNull String info, @Nullable Icon icon) {
+            return addInfo(String.valueOf(info.hashCode()), info, null, icon, null, null);
         }
+
+        @NotNull NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info, @Nullable String color,
+            @Nullable Icon icon, @Nullable String status, @Nullable String statusColor);
+
+        default @NotNull NotificationBlockBuilder addInfo(@NotNull String key, @NotNull String info,
+            @Nullable Icon icon, @NotNull Status status) {
+            return addInfo(key, info, null, icon, status.name(), status.getColor());
+        }
+
+        @NotNull NotificationBlockBuilder addEntityInfo(@NotNull BaseEntity entity);
 
         /**
          * Remove info row
@@ -512,8 +520,7 @@ public interface EntityContextUI {
             @NotNull String key,
             @NotNull String info,
             @Nullable String color,
-            @Nullable String icon,
-            @Nullable String iconColor,
+            @Nullable Icon icon,
             @NotNull String buttonIcon,
             @Nullable String buttonText,
             @Nullable String confirmMessage,

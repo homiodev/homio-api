@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.EntityContext;
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.ProgressBar;
 import org.homio.api.ui.field.UIFieldType;
 import org.json.JSONObject;
@@ -20,8 +21,8 @@ import org.json.JSONObject;
 public interface SettingPluginPackageInstall extends SettingPluginButton {
 
     @Override
-    default String getIcon() {
-        return "fas fa-book";
+    default Icon getIcon() {
+        return new Icon("fas fa-book");
     }
 
     @Override

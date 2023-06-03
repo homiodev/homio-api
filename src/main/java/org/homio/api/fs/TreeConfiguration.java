@@ -10,14 +10,14 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.entity.DeviceBaseEntity;
 import org.homio.api.entity.storage.BaseFileSystemEntity;
+import org.homio.api.model.Icon;
 
 @Getter
 @Accessors(chain = true)
 public class TreeConfiguration {
     private final String id;
     private final String name;
-    private String icon;
-    private String color;
+    private Icon icon;
     private boolean hasDelete;
     private boolean hasRename;
     private boolean hasUpload;
@@ -44,7 +44,6 @@ public class TreeConfiguration {
         DeviceBaseEntity entity = (DeviceBaseEntity) fs;
         this.name = StringUtils.left(entity.getTitle(), 20);
         this.icon = fs.getFileSystemIcon();
-        this.color = fs.getFileSystemIconColor();
         this.hasDelete = true;
         this.hasRename = true;
         this.hasUpload = true;
@@ -57,9 +56,8 @@ public class TreeConfiguration {
                 "ino", "conf", "service", "md", "png", "jpg", "jpeg");
     }
 
-    public void setIcon(String icon, String color) {
+    public void setIcon(Icon icon) {
         this.icon = icon;
-        this.color = color;
     }
 
     public void addChip(TreeNodeChip treeNodeChip) {

@@ -143,7 +143,7 @@ public interface EntityContextBGP {
         @NotNull Map<String, Callable<T>> runnableTasks,
         @NotNull Consumer<Integer> progressConsumer);
 
-    void executeOnExit(Runnable runnable);
+    void executeOnExit(ThrowingRunnable<Exception> runnable);
 
     interface ProgressBuilder {
 

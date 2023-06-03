@@ -1,41 +1,32 @@
 package org.homio.api.exception;
 
-import lombok.Getter;
 import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 public class ServerException extends RuntimeException {
-    @Getter
-    private FlowMap messageParam;
 
-    public ServerException(String message) {
-        super(message);
+    public ServerException(@NotNull String message) {
+        super(Lang.getServerMessage(message));
     }
 
-    public ServerException(Exception ex) {
+    public ServerException(@NotNull Exception ex) {
         super(ex);
     }
 
-    public ServerException(String message, Exception ex) {
-        super(message, ex);
+    public ServerException(@NotNull String message, @NotNull Exception ex) {
+        super(Lang.getServerMessage(message), ex);
     }
 
-    public ServerException(String message, FlowMap messageParam) {
-        super(message);
-        this.messageParam = messageParam;
+    public ServerException(@NotNull String message, @NotNull FlowMap messageParam) {
+        super(Lang.getServerMessage(message, messageParam));
     }
 
-    public ServerException(String message, String param0, String value0) {
+    public ServerException(@NotNull String message, @NotNull String param0, @NotNull Object value0) {
         this(message, FlowMap.of(param0, value0));
     }
 
-    @Override
-    public String toString() {
-        return toString(null);
-    }
-
-    public String toString(@Nullable FlowMap messageParam) {
-        return Lang.getServerMessage(getMessage(), this.messageParam == null ? messageParam : this.messageParam);
+    public ServerException(@NotNull String message, @NotNull Object value0) {
+        this(Lang.getServerMessage(message, String.valueOf(value0)));
     }
 }

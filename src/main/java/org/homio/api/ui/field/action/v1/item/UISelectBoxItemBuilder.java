@@ -1,41 +1,43 @@
 package org.homio.api.ui.field.action.v1.item;
 
 import java.util.Collection;
+import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxItemBuilder, String> {
 
     boolean isAsButton();
 
-    UIButtonItemBuilder setAsButton(@Nullable String icon, @Nullable String iconColor, @Nullable String text);
+    @NotNull UIButtonItemBuilder setAsButton(@Nullable Icon icon, @Nullable String text);
 
     // default - true
-    UISelectBoxItemBuilder setHighlightSelected(boolean value);
+    @NotNull UISelectBoxItemBuilder setHighlightSelected(boolean value);
 
-    UISelectBoxItemBuilder addOption(OptionModel option);
+    @NotNull UISelectBoxItemBuilder addOption(@NotNull OptionModel option);
 
-    default UISelectBoxItemBuilder addOptions(Collection<OptionModel> options) {
+    default @NotNull UISelectBoxItemBuilder addOptions(@NotNull Collection<OptionModel> options) {
         for (OptionModel option : options) {
             addOption(option);
         }
         return this;
     }
 
-    default UISelectBoxItemBuilder setSelected(String selected) {
+    default @NotNull UISelectBoxItemBuilder setSelected(@NotNull String selected) {
         setValue(selected);
         return this;
     }
 
     // uses if want replace dimmer with select box from min:
-    UISelectBoxItemBuilder setSelectReplacer(int min, int max, String selectReplacer);
+    @NotNull UISelectBoxItemBuilder setSelectReplacer(int min, int max, @Nullable String selectReplacer);
 
-    String getSelectReplacer();
+    @Nullable String getSelectReplacer();
 
-    Collection<OptionModel> getOptions();
+    @NotNull Collection<OptionModel> getOptions();
 
-    UISelectBoxItemBuilder setOptions(Collection<OptionModel> options);
+    @NotNull UISelectBoxItemBuilder setOptions(@NotNull Collection<OptionModel> options);
 
-    UISelectBoxItemBuilder setPlaceholder(String placeholder);
+    @NotNull UISelectBoxItemBuilder setPlaceholder(@Nullable String placeholder);
 }

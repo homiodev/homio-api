@@ -1,8 +1,6 @@
 package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
-import java.util.Set;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
@@ -11,12 +9,15 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Version;
+import java.util.Date;
+import java.util.Set;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NaturalId;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
+import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
@@ -65,20 +66,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
      * @param optionModel model to configure
      */
     public void configureOptionModel(@NotNull OptionModel optionModel) {
-    }
-
-    public static BaseEntity fakeEntity(@NotNull String entityID) {
-        return new BaseEntity() {
-            @Override
-            public String getDefaultName() {
-                return null;
-            }
-
-            @Override
-            public @NotNull String getEntityPrefix() {
-                return "";
-            }
-        }.setEntityID(entityID);
     }
 
     public T setId(Integer id) {
@@ -235,4 +222,9 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public int compareTo(@NotNull BaseEntity o) {
         return this.getTitle().compareTo(o.getTitle());
     }
+
+    /**
+     * Specify entity font awesome icon for UI purposes
+     */
+    public abstract @NotNull Icon getIcon();
 }

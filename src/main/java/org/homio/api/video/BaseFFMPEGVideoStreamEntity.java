@@ -39,7 +39,7 @@ import org.json.JSONObject;
 
 @Log4j2
 public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStreamEntity, S extends BaseVideoService<T>>
-        extends BaseVideoStreamEntity<T> implements EntityService<S, T> {
+    extends BaseVideoStreamEntity<T> implements EntityService<S, T> {
 
     /**
      * Ignore set status because for stream we always create service. Actual status is 'StreamService'
@@ -79,12 +79,17 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return optService().map(s -> s.getLastAnswerFromVideo()).orElse(0L);
     }
 
-    @Override
-    protected void fireUpdateSnapshot(EntityContext entityContext, JSONObject params) {
-        if (!isStart()) {
-            throw new ServerException("Video <" + getTitle() + "> not started");
-        }
-        optService().ifPresent(BaseVideoService::startSnapshot);
+    @UIContextMenuAction(value = "RECORD_MP4", icon = "fas fa-file-video", inputs = {
+        @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
+        @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "10", min = 5, max = 100)
+    })
+    public ActionResponseModel recordMP4(JSONObject params) {
+        S service = getService();
+        Path filePath = buildFilePathForRecord(service.getFfmpegMP4OutputPath(), params.getString("fileName"), ".mp4");
+        int secondsToRecord = params.getInt("secondsToRecord");
+        log.debug("[{}]: Recording {}.mp4 for {} seconds.", getEntityID(), filePath, secondsToRecord);
+        service.recordMp4(filePath, null, secondsToRecord);
+        return ActionResponseModel.showSuccess("SUCCESS");
     }
 
     @UIField(order = 15, inlineEdit = true)
@@ -97,22 +102,9 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         return this;
     }
 
-    @UIContextMenuAction(value = "RECORD_MP4", icon = "fas fa-file-video", inputs = {
-            @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
-            @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "10", min = 5, max = 100)
-    })
-    public ActionResponseModel recordMP4(JSONObject params) {
-        S service = getService();
-        Path filePath = buildFilePathForRecord(service.getFfmpegMP4OutputPath(), params.getString("fileName"), ".mp4");
-        int secondsToRecord = params.getInt("secondsToRecord");
-        log.debug("[{}]: Recording {}.mp4 for {} seconds.", getEntityID(), filePath, secondsToRecord);
-        service.recordMp4(filePath, null, secondsToRecord);
-        return ActionResponseModel.showSuccess("SUCCESS");
-    }
-
     @UIContextMenuAction(value = "RECORD_GIF", icon = "fas fa-magic", inputs = {
-            @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
-            @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "3", min = 1, max = 10)
+        @UIActionInput(name = "fileName", value = "record_${timestamp}", min = 4, max = 30),
+        @UIActionInput(name = "secondsToRecord", type = UIActionInput.Type.number, value = "3", min = 1, max = 10)
     })
     public ActionResponseModel recordGif(JSONObject params) {
         S service = getService();
@@ -121,6 +113,12 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         log.debug("[{}]: Recording {}.gif for {} seconds.", getEntityID(), filePath, secondsToRecord);
         service.recordGif(filePath, null, secondsToRecord);
         return ActionResponseModel.showSuccess("SUCCESS");
+    }
+
+    @JsonIgnore
+    public String getHlsStreamUrl() {
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+            "/ipvideo.m3u8";
     }
 
     @UIField(order = 200, hideInEdit = true)
@@ -281,45 +279,47 @@ public abstract class BaseFFMPEGVideoStreamEntity<T extends BaseFFMPEGVideoStrea
         setJsonData("mp4OutOptions", value);
     }
 
+    @JsonIgnore
+    public String getSnapshotsMjpegUrl() {
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+            "/snapshots.mjpeg";
+    }
+
+    @JsonIgnore
+    public String getAutofpsMjpegUrl() {
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+            "/autofps.mjpeg";
+    }
+
+    @JsonIgnore
+    public String getImageUrl() {
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+            "/ipvideo.jpg";
+    }
+
+    @JsonIgnore
+    public String getIpVideoMjpeg() {
+        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
+            "/ipvideo.mjpeg";
+    }
+
+    @Override
+    protected void fireUpdateSnapshot(EntityContext entityContext, JSONObject params) {
+        if (!isStart()) {
+            throw new ServerException("ERROR.VIDEO_NOT_STARTED", getTitle());
+        }
+        optService().ifPresent(BaseVideoService::startSnapshot);
+    }
+
     @Override
     protected void beforePersist() {
         setMp4OutOptions("-c:v copy~~~-c:a copy");
         setMjpegOutOptions("-q:v 5~~~-r 2~~~-vf scale=640:-2~~~-update 1");
         setSnapshotOutOptions("-vsync vfr~~~-q:v 2~~~-update 1~~~-frames:v 1");
         setGifOutOptions(
-                "-r 2~~~-filter_complex scale=-2:360:flags=lanczos,setpts=0.5*PTS,split[o1][o2];[o1]palettegen[p];[o2]fifo[o3];" +
-                        "[o3][p]paletteuse");
+            "-r 2~~~-filter_complex scale=-2:360:flags=lanczos,setpts=0.5*PTS,split[o1][o2];[o1]palettegen[p];[o2]fifo[o3];" +
+                "[o3][p]paletteuse");
         setServerPort(BaseVideoService.findFreeBootstrapServerPort());
-    }
-
-    @JsonIgnore
-    public String getHlsStreamUrl() {
-        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
-                "/ipvideo.m3u8";
-    }
-
-    @JsonIgnore
-    public String getSnapshotsMjpegUrl() {
-        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
-                "/snapshots.mjpeg";
-    }
-
-    @JsonIgnore
-    public String getAutofpsMjpegUrl() {
-        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
-                "/autofps.mjpeg";
-    }
-
-    @JsonIgnore
-    public String getImageUrl() {
-        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
-                "/ipvideo.jpg";
-    }
-
-    @JsonIgnore
-    public String getIpVideoMjpeg() {
-        return "http://" + CommonUtils.MACHINE_IP_ADDRESS + ":" + getService().getServerPort() +
-                "/ipvideo.mjpeg";
     }
 
     @Override

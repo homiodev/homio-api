@@ -2,53 +2,55 @@ package org.homio.api.entity.zigbee;
 
 import java.time.Duration;
 import java.util.function.Consumer;
-import org.homio.api.state.State;
 import org.homio.api.exception.ProhibitedExecution;
+import org.homio.api.model.Icon;
+import org.homio.api.state.State;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Specify zigbee single endpoint
  */
 public interface ZigBeeProperty {
+
     /**
      * @return This property name
      */
-    String getKey();
+    @NotNull String getKey();
 
     /**
-     * @return Property human representation name
      * @param shortFormat -
+     * @return Property human representation name
      */
-    String getName(boolean shortFormat);
+    @NotNull String getName(boolean shortFormat);
 
-    String getDescription();
+    @Nullable String getDescription();
 
-    String getIcon();
+    @NotNull Icon getIcon();
 
-    String getIconColor();
+    @Nullable String getUnit();
 
-    String getUnit();
-
-    String getVariableID();
+    @NotNull String getVariableID();
 
     /**
      * @return Must specify as ieeeAddress_key
      */
-    String getEntityID();
+    @NotNull String getEntityID();
 
     /**
      * @return Device's ieeeAddress
      */
-    String getIeeeAddress();
+    @NotNull String getIeeeAddress();
 
     /**
      * @return Last read value
      */
-    State getLastValue();
+    @Nullable State getLastValue();
 
     /**
      * @return duration since last event
      */
-    Duration getTimeSinceLastEvent();
+    @Nullable Duration getTimeSinceLastEvent();
 
     /**
      * @return is able to write value
@@ -60,11 +62,11 @@ public interface ZigBeeProperty {
      */
     boolean isReadable();
 
-    void addChangeListener(String id, Consumer<State> changeListener);
+    void addChangeListener(@Nullable String id, @Nullable Consumer<State> changeListener);
 
-    void removeChangeListener(String id);
+    void removeChangeListener(@Nullable String id);
 
-    PropertyType getPropertyType();
+    @Nullable PropertyType getPropertyType();
 
     /**
      * Implement by property that has ability to read value.
@@ -78,9 +80,10 @@ public interface ZigBeeProperty {
 
     /**
      * Implement by property that has ability to write value.
+     *
      * @param state -
      */
-    default void writeValue(State state) {
+    default void writeValue(@NotNull State state) {
         if (isWritable()) {
             throw new IllegalStateException("Method must be implemented by writable property");
         }

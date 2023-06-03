@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.homio.api.model.Icon;
 
 @Getter
 @Accessors(chain = true)
@@ -15,9 +16,7 @@ public class SourceHistory {
     private Float max;
     private Float median;
     @Setter
-    private String icon;
-    @Setter
-    private String iconColor;
+    private Icon icon;
     @Setter
     private String name;
     @Setter

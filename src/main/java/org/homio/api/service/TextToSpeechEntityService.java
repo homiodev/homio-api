@@ -16,8 +16,8 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.homio.api.util.CommonUtils;
 import org.homio.api.exception.ServerException;
+import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -114,7 +114,7 @@ public abstract class TextToSpeechEntityService {
         }
 
         if (maxQuota != null && getSynthesizedCharacters() > maxQuota) {
-            throw new ServerException("Exceeded quota of <" + maxQuota + "> characters");
+            throw new ServerException("ERROR.TTS_QUOTA", maxQuota);
         }
 
         // if not in cache, get audio data and put to cache

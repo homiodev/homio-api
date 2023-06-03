@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.homio.api.model.Icon;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
@@ -17,13 +18,11 @@ import org.json.JSONObject;
 public class TreeNodeChip {
 
     @Nullable
-    private final String icon;
+    private final Icon icon;
     @Nullable
     private final String text;
     @Nullable
     private String bgColor;
-    @Nullable
-    private String iconColor;
 
     private boolean clickable; // if Chip not only info but communicate with server
     private JSONObject metadata; // require if clickable and need handle Chip on server side

@@ -21,10 +21,6 @@ import org.jetbrains.annotations.Nullable;
                })
 public abstract class ZigBeeDeviceBaseEntity<T extends ZigBeeDeviceBaseEntity> extends DeviceBaseEntity<T> {
 
-    public abstract @Nullable String getIcon();
-
-    public abstract @Nullable String getIconColor();
-
     public abstract @Nullable String getDescription();
 
     @JsonIgnore

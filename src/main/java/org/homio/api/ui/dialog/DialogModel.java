@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.homio.api.EntityContextUI.DialogRequestHandler;
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.ActionInputParameter;
 
 @Getter
@@ -29,8 +30,7 @@ public class DialogModel {
     @JsonIgnore
     private int maxTimeoutInSec = 0;
     private String headerButtonAttachTo;
-    private String icon;
-    private String iconColor;
+    private Icon icon;
     private String dialogColor;
     // if need keep dialog on ui on refresh and attach to special header button
     private boolean keepOnUi = true;
@@ -101,9 +101,8 @@ public class DialogModel {
         return this;
     }
 
-    public DialogModel appearance(String icon, String iconColor, String dialogColor) {
+    public DialogModel appearance(Icon icon, String dialogColor) {
         this.icon = icon;
-        this.iconColor = iconColor;
         this.dialogColor = dialogColor;
         return this;
     }

@@ -1,5 +1,6 @@
 package org.homio.api.ui.field.action.v1;
 
+import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 
 public interface UIEntityItemBuilder<Owner, Value> extends UIEntityBuilder {
@@ -18,11 +19,7 @@ public interface UIEntityItemBuilder<Owner, Value> extends UIEntityBuilder {
 
     Owner setOrder(int order);
 
-    default Owner setIcon(String icon) {
-        return setIcon(icon, null);
-    }
-
-    Owner setIcon(String icon, String iconColor);
+    Owner setIcon(Icon icon);
 
     Owner setColor(String color);
 

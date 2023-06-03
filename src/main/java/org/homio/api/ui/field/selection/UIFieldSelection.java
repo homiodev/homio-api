@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.homio.api.model.Icon;
 import org.homio.api.ui.action.DynamicOptionLoader;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
@@ -38,8 +39,6 @@ public @interface UIFieldSelection {
      */
     interface SelectionConfiguration {
 
-        String selectionIcon();
-
-        String selectionIconColor();
+        Icon selectionIcon();
     }
 }

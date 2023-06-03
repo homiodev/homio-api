@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.http.Header;
@@ -42,10 +41,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.homio.api.exception.ServerException;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.api.ui.field.ProgressBar;
-import org.homio.api.exception.ServerException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -116,7 +115,10 @@ public final class Curl {
 
     @SneakyThrows
     public static void download(@NotNull String url, @NotNull Path targetPath) {
-        FileUtils.copyURLToFile(new URL(url), targetPath.toFile(), 60000, 60000);
+        URLConnection connection = getUrlConnection(new URL(url));
+        try (InputStream stream = connection.getInputStream()) {
+            Files.copy(stream, targetPath);
+        }
     }
 
     public static void downloadIfSizeNotMatch(@NotNull Path path, @NotNull String url) {
@@ -223,38 +225,59 @@ public final class Curl {
         URL url = new URL(urlStr);
         double fileSize = getFileSize(url);
         // download without progress if less then 2 megabytes
-        if (fileSize / 1000 < 2) {
+        if (fileSize / ONE_MB_BI.intValue() < 2) {
             download(urlStr, targetPath);
             return;
         }
         int maxMb = (int) (fileSize / ONE_MB_BI.intValue());
-        URLConnection connection = url.openConnection();
-        connection.setConnectTimeout(60000);
-        connection.setReadTimeout(60000);
-        InputStream input = connection.getInputStream();
-        FileUtils.copyInputStreamToFile(new FilterInputStream(input) {
-            int readBytes = 0;
-            final Consumer<Integer> progressHandler = new Consumer<>() {
-                int nextStep = 1;
+        URLConnection connection = getUrlConnection(url);
+        try (InputStream fileInputStream = new TransformFilterInputStream(connection.getInputStream(), progressBar, fileSize, maxMb)) {
+            Files.copy(fileInputStream, targetPath);
+        }
+    }
+
+    @SneakyThrows
+    public static <T> T getWithTimeout(@NotNull String command, @NotNull Class<T> returnType, int timeoutInSec) {
+        try (CloseableHttpResponse response = createApacheHttpClient(timeoutInSec).execute(new HttpGet(command))) {
+            HttpMessageConverterExtractor<T> responseExtractor =
+                new HttpMessageConverterExtractor<>(returnType, restTemplate.getMessageConverters());
+            return responseExtractor.extractData(new ClientHttpResponse() {
+                @Override
+                public @NotNull HttpStatus getStatusCode() {
+                    return HttpStatus.OK;
+                }
 
                 @Override
-                public void accept(Integer num) {
-                    readBytes += num;
-                    if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
-                        nextStep++;
-                        progressBar.progress((readBytes / fileSize * 100) * 0.9, // max 90%
-                            "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
-                    }
+                public int getRawStatusCode() {
+                    return response.getStatusLine().getStatusCode();
                 }
-            };
 
-            @Override
-            public int read(byte @NotNull [] b, int off, int len) throws IOException {
-                int read = super.read(b, off, len);
-                progressHandler.accept(read);
-                return read;
-            }
-        }, targetPath.toFile());
+                @Override
+                public @NotNull String getStatusText() {
+                    return response.getStatusLine().getReasonPhrase();
+                }
+
+                @Override
+                @SneakyThrows
+                public void close() {
+                    response.close();
+                }
+
+                @Override
+                public @NotNull InputStream getBody() throws IOException {
+                    return response.getEntity().getContent();
+                }
+
+                @Override
+                public @NotNull HttpHeaders getHeaders() {
+                    MultiValueMap<String, String> headers = new LinkedMultiValueMap<>(response.getAllHeaders().length);
+                    for (Header header : response.getAllHeaders()) {
+                        headers.put(header.getName(), Collections.singletonList(header.getValue()));
+                    }
+                    return new HttpHeaders(headers);
+                }
+            });
+        }
     }
 
     @SneakyThrows
@@ -280,53 +303,18 @@ public final class Curl {
         }
     }
 
-    @SneakyThrows
-    public static <T> T getWithTimeout(@NotNull String command, @NotNull Class<T> returnType, int timeoutInSec) {
-        CloseableHttpResponse response = createApacheHttpClient(timeoutInSec).execute(new HttpGet(command));
-        HttpMessageConverterExtractor<T> responseExtractor =
-                new HttpMessageConverterExtractor<>(returnType, restTemplate.getMessageConverters());
-        return responseExtractor.extractData(new ClientHttpResponse() {
-            @Override
-            public @NotNull HttpStatus getStatusCode() {
-                return HttpStatus.OK;
-            }
-
-            @Override
-            public int getRawStatusCode() {
-                return response.getStatusLine().getStatusCode();
-            }
-
-            @Override
-            public @NotNull String getStatusText() {
-                return response.getStatusLine().getReasonPhrase();
-            }
-
-            @Override
-            @SneakyThrows
-            public void close() {
-                response.close();
-            }
-
-            @Override
-            public @NotNull InputStream getBody() throws IOException {
-                return response.getEntity().getContent();
-            }
-
-            @Override
-            public @NotNull HttpHeaders getHeaders() {
-                MultiValueMap<String, String> headers = new LinkedMultiValueMap<>(response.getAllHeaders().length);
-                for (Header header : response.getAllHeaders()) {
-                    headers.put(header.getName(), Collections.singletonList(header.getValue()));
-                }
-                return new HttpHeaders(headers);
-            }
-        });
+    @NotNull
+    private static URLConnection getUrlConnection(URL url) throws IOException {
+        URLConnection connection = url.openConnection();
+        connection.setConnectTimeout(60000);
+        connection.setReadTimeout(60000);
+        return connection;
     }
 
     private static CloseableHttpClient createApacheHttpClient(int timeoutInSec) {
         RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(timeoutInSec * 1000)
-                .setSocketTimeout(timeoutInSec * 1000).build();
+                                            .setConnectTimeout(timeoutInSec * 1000)
+                                            .setSocketTimeout(timeoutInSec * 1000).build();
         return HttpClientBuilder.create().setDefaultRequestConfig(config).build();
     }
 
@@ -343,6 +331,36 @@ public final class Curl {
             this.bytes = bytes;
             this.mimeType = mimeType;
             this.name = name;
+        }
+    }
+
+    private static class TransformFilterInputStream extends FilterInputStream {
+
+        private final Consumer<Integer> progressHandler;
+        private int readBytes = 0;
+
+        protected TransformFilterInputStream(InputStream in, ProgressBar progressBar, double fileSize, int maxMb) {
+            super(in);
+            this.progressHandler = new Consumer<>() {
+                int nextStep = 1;
+
+                @Override
+                public void accept(Integer num) {
+                    readBytes += num;
+                    if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
+                        nextStep++;
+                        progressBar.progress((readBytes / fileSize * 100) * 0.9, // max 90%
+                            "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
+                    }
+                }
+            };
+        }
+
+        @Override
+        public int read(byte @NotNull [] b, int off, int len) throws IOException {
+            int read = super.read(b, off, len);
+            progressHandler.accept(read);
+            return read;
         }
     }
 }

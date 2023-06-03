@@ -1,13 +1,15 @@
 package org.homio.api.ui.field.action.v1.item;
 
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
+import org.jetbrains.annotations.NotNull;
 
 public interface UIMultiButtonItemBuilder
         extends UIEntityItemBuilder<UIMultiButtonItemBuilder, String> {
 
-    UIMultiButtonItemBuilder addButton(String title);
+    @NotNull UIMultiButtonItemBuilder addButton(@NotNull String title);
 
-    UIMultiButtonItemBuilder addButton(String title, String icon, String iconColor);
+    @NotNull UIMultiButtonItemBuilder addButton(@NotNull String title, @NotNull Icon icon);
 
-    UIMultiButtonItemBuilder setActive(String activeButton);
+    @NotNull UIMultiButtonItemBuilder setActive(@NotNull String activeButton);
 }

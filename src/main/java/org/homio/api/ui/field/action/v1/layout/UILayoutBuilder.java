@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.homio.api.model.Icon;
+import org.homio.api.ui.action.UIActionHandler;
 import org.homio.api.ui.field.action.v1.UIEntityBuilder;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UIButtonItemBuilder;
@@ -17,7 +19,6 @@ import org.homio.api.ui.field.action.v1.item.UISliderItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UITextInputItemBuilder;
 import org.homio.api.ui.field.action.v1.layout.dialog.UIDialogLayoutBuilder;
 import org.homio.api.ui.field.action.v1.layout.dialog.UIStickyDialogItemBuilder;
-import org.homio.api.ui.action.UIActionHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -119,52 +120,49 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     }
 
     default UISliderItemBuilder addNumberInput(@NotNull String name, Float value, Float min, Float max,
-                                               UIActionHandler action) {
+        UIActionHandler action) {
         return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Input, getNextOrder());
     }
 
     UISliderItemBuilder addSlider(@NotNull String name, Float value, Float min, Float max,
-                                  UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
+        UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
 
-    default UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
-                                          UIActionHandler action) {
-        return addButton(name, icon, iconColor, action, getNextOrder());
+    default UIButtonItemBuilder addButton(@NotNull String name, @Nullable Icon icon, UIActionHandler action) {
+        return addButton(name, icon, action, getNextOrder());
     }
 
-    UIButtonItemBuilder addButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
-                                  UIActionHandler action, int order);
+    UIButtonItemBuilder addButton(@NotNull String name, @Nullable Icon icon,
+        UIActionHandler action, int order);
 
     UIButtonItemBuilder addTableLayoutButton(@NotNull String name, int maxRows, int maxColumns, String value,
-                                             @Nullable String icon, @Nullable String iconColor,
-                                             UIActionHandler action, int order);
+        @Nullable Icon icon,
+        UIActionHandler action, int order);
 
-    default UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
-                                                      String[] supportedFormats, UIActionHandler action) {
-        return addSimpleUploadButton(name, icon, iconColor, supportedFormats, action, getNextOrder());
+    default UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable Icon icon,
+        String[] supportedFormats, UIActionHandler action) {
+        return addSimpleUploadButton(name, icon, supportedFormats, action, getNextOrder());
     }
 
-    UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable String icon, @Nullable String iconColor,
-                                              String[] supportedFormats, UIActionHandler action, int order);
+    UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable Icon icon,
+        String[] supportedFormats, UIActionHandler action, int order);
 
-    default DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable String icon,
-                                                                          @Nullable String iconColor) {
-        return addStickyDialogButton(name, icon, iconColor, getNextOrder());
+    default DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable Icon icon) {
+        return addStickyDialogButton(name, icon, getNextOrder());
     }
 
-    DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable String icon,
-                                                                  @Nullable String iconColor, int order);
+    DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable Icon icon, int order);
 
     // text or icon must be not null!
-    default DialogEntity<UIDialogLayoutBuilder> addOpenDialogActionButton(@NotNull String name, @Nullable String icon,
-                                                                          @Nullable String iconColor, @Nullable Integer width) {
-        return addOpenDialogActionButton(name, icon, iconColor, width, getNextOrder());
+    default DialogEntity<UIDialogLayoutBuilder> addOpenDialogActionButton(@NotNull String name, @Nullable Icon icon,
+        @Nullable Integer width) {
+        return addOpenDialogActionButton(name, icon, width, getNextOrder());
     }
 
-    DialogEntity<UIDialogLayoutBuilder> addOpenDialogActionButton(@NotNull String name, @Nullable String icon,
-                                                                  @Nullable String iconColor, @Nullable Integer width,
-                                                                  int order);
+    DialogEntity<UIDialogLayoutBuilder> addOpenDialogActionButton(@NotNull String name, @Nullable Icon icon,
+        @Nullable Integer width, int order);
 
     interface DialogEntity<D> {
+
         D up();
 
         D editButton(Consumer<UIButtonItemBuilder> editHandler);

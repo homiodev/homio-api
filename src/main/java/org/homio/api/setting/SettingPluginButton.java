@@ -3,9 +3,11 @@ package org.homio.api.setting;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.ActionInputParameter;
 import org.homio.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -22,7 +24,7 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
         return null;
     }
 
-    String getIcon();
+    @NotNull Icon getIcon();
 
     default String getText() {
         return null;

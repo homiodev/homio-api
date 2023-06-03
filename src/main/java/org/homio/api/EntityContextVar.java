@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -106,7 +107,7 @@ public interface EntityContextVar {
 
     boolean renameVariable(@NotNull String variableId, @NotNull String name, @Nullable String description);
 
-    boolean setVariableIcon(@NotNull String variableId, @NotNull String icon, @Nullable String iconColor);
+    boolean setVariableIcon(@NotNull String variableId, @NotNull Icon icon);
 
     @NotNull String createVariable(@NotNull String groupId,
                                    @Nullable String variableId,
@@ -121,39 +122,37 @@ public interface EntityContextVar {
                                        @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
     default boolean createGroup(@NotNull String groupId, @NotNull String groupName) {
-        return createGroup(groupId, groupName, false, "fas fa-layer-group", "#18C0DB", null);
+        return createGroup(groupId, groupName, false, new Icon("fas fa-layer-group", "#18C0DB"), null);
     }
 
     /**
      * @param groupId     -
      * @param groupName   -
      * @param icon        -
-     * @param iconColor   -
      * @param description -
      * @param locked      - locked group and related variables unable to remove from UI
      * @return false if group already exists
      */
-    boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
-        @NotNull String iconColor, @Nullable String description);
+    boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull Icon icon,
+        @Nullable String description);
 
-    default boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull String icon,
-                                @NotNull String iconColor) {
-        return createGroup(groupId, groupName, locked, icon, iconColor, null);
+    default boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull Icon icon) {
+        return createGroup(groupId, groupName, locked, icon, null);
     }
 
     /**
      * Create group and attach it to parent group
+     *
      * @param parentGroupId -
-     * @param groupId -
-     * @param groupName -
-     * @param locked -
-     * @param icon -
-     * @param iconColor -
-     * @param description -
+     * @param groupId       -
+     * @param groupName     -
+     * @param locked        -
+     * @param icon          -
+     * @param description   -
      * @return if group was create ot already exists
      */
     boolean createGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, boolean locked,
-                        @NotNull String icon, @NotNull String iconColor, @Nullable String description);
+        @NotNull Icon icon, @Nullable String description);
 
     /**
      * Remove group and all associated variables
