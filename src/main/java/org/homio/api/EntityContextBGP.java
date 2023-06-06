@@ -173,7 +173,12 @@ public interface EntityContextBGP {
 
         ProgressBuilder onError(@Nullable Runnable errorBlock);
 
-        ThreadContext<Void> execute(@NotNull ThrowingConsumer<ProgressBar, Exception> command);
+        default ThreadContext<Void> execute(@NotNull ThrowingConsumer<ProgressBar, Exception> command) {
+            return execute(progressBar -> {
+                command.accept(progressBar);
+                return null;
+            });
+        }
 
         <R> ThreadContext<R> execute(@NotNull ThrowingFunction<ProgressBar, R, Exception> command);
     }

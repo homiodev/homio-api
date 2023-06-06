@@ -1,5 +1,6 @@
 package org.homio.api.util;
 
+import static java.lang.String.format;
 import static org.apache.commons.io.FileUtils.ONE_MB_BI;
 import static org.apache.commons.io.IOUtils.DEFAULT_BUFFER_SIZE;
 import static org.apache.commons.io.IOUtils.EOF;
@@ -40,7 +41,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
 import org.homio.api.exception.ServerException;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
@@ -76,28 +76,21 @@ public final class Curl {
      * @param url            - url of archived source
      * @param targetFileName - target file name
      * @param progressBar    - progress bar to print progress
-     * @param log            - log info
      * @return unarchived downloaded folder
      */
     @SneakyThrows
-    public static @Nullable Path downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
-        @NotNull ProgressBar progressBar, @NotNull Logger log) {
-        log.info("Downloading <{}> from url <{}>", targetFileName, url);
+    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
+        @NotNull ProgressBar progressBar) {
+        progressBar.progress(0, format("Downloading '%s' from url '%s'", targetFileName, url));
         Path targetFolder = CommonUtils.getInstallPath();
         Path archiveFile = targetFolder.resolve(targetFileName);
         if (!Files.exists(archiveFile)) {
             Curl.downloadWithProgress(url, archiveFile, progressBar);
         }
-        progressBar.progress(90, "Unzip files...");
-        log.info("Extracting <{}> to path <{}>", archiveFile, targetFolder);
+        progressBar.progress(90, format("Extracting '%s' to path '%s'", archiveFile, targetFolder));
         List<Path> files = ArchiveUtil.unzip(archiveFile, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
         Files.deleteIfExists(archiveFile);
-        Path extractPath = files.isEmpty() ? null : files.iterator().next();
-        String desiredFolder = FilenameUtils.removeExtension(targetFileName);
-        if (extractPath != null && !extractPath.getFileName().toString().equals(desiredFolder)) {
-            return Files.move(extractPath, extractPath.resolveSibling(desiredFolder));
-        }
-        return extractPath;
+        return files;
     }
 
     public static <T> T get(@NotNull String url, @NotNull Class<T> responseType, Object... uriVariables) {
@@ -349,8 +342,9 @@ public final class Curl {
                     readBytes += num;
                     if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
                         nextStep++;
-                        progressBar.progress((readBytes / fileSize * 100) * 0.9, // max 90%
-                            "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
+                        double progress = (readBytes / fileSize * 100) * 0.9;
+                        progressBar.progress(progress, // max 90%
+                            "Downloading " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb. - " + String.format("%.2f", progress));
                     }
                 }
             };

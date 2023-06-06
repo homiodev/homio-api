@@ -127,16 +127,12 @@ public class CommonUtils {
     private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-    @Getter
-    public static final String FFMPEG_LOCATION;
 
     public static final ObjectMapper OBJECT_MAPPER;
     public static final ObjectMapper YAML_OBJECT_MAPPER;
     private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
 
     static {
-        FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
-            CommonUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
         OBJECT_MAPPER = new ObjectMapper()
             .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -275,7 +271,7 @@ public class CommonUtils {
 
     public static List<String> readFile(String fileName) {
         try {
-            return IOUtils.readLines(ClassLoader.getSystemClassLoader().getResourceAsStream(fileName),
+            return IOUtils.readLines(Objects.requireNonNull(ClassLoader.getSystemClassLoader().getResourceAsStream(fileName)),
                 Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
@@ -334,7 +330,7 @@ public class CommonUtils {
         return null;
     }
 
-    // consume file name with thymaleaf...
+    // consume file name with thymeleaf...
     public static TemplateBuilder templateBuilder(String templateName) {
         return new TemplateBuilder(templateName);
     }

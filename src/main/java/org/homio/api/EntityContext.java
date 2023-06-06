@@ -21,6 +21,8 @@ import org.springframework.security.core.userdetails.User;
 
 public interface EntityContext {
 
+    @NotNull EntityContextMedia media();
+
     @NotNull EntityContextWidget widget();
 
     @NotNull EntityContextUI ui();
