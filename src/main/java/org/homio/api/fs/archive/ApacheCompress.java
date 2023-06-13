@@ -3,6 +3,7 @@ package org.homio.api.fs.archive;
 import static org.apache.commons.compress.archivers.examples.Archiver.EMPTY_FileVisitOption;
 import static org.apache.commons.compress.utils.IOUtils.EMPTY_LINK_OPTIONS;
 import static org.apache.commons.io.FileUtils.ONE_MB_BI;
+import static org.homio.api.fs.archive.ArchiveUtil.fixPath;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +21,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -36,11 +38,12 @@ import org.jetbrains.annotations.Nullable;
 
 public class ApacheCompress {
 
-    public static void archive(List<Path> sources, ArchiveOutputStream out, ProgressBar progressBar) throws IOException {
+    public static void archive(@NotNull Collection<Path> sources, @NotNull ArchiveOutputStream out, @Nullable ProgressBar progressBar) throws IOException {
         for (Path source : sources) {
+            if (progressBar != null) {progressBar.progress(10, "Archive: " + source);}
             if (Files.isDirectory(source)) {
                 Files.walkFileTree(source, EMPTY_FileVisitOption, Integer.MAX_VALUE,
-                        new ArchiverFileVisitor(out, source.getParent()));
+                    new ArchiverFileVisitor(out, source.getParent()));
             } else {
                 writeZipEntry(source, true, source.getParent(), out);
             }
@@ -168,7 +171,7 @@ public class ApacheCompress {
     }
 
     @SneakyThrows
-    public static InputStream downloadEntry(ArchiveInputStream stream, String entryName) {
+    public static InputStream downloadEntry(@NotNull ArchiveInputStream stream, @NotNull String entryName) {
         ArchiveEntry entry;
         try {
             while ((entry = stream.getNextEntry()) != null) {
@@ -188,8 +191,13 @@ public class ApacheCompress {
     }
 
     @SneakyThrows
-    public static void downloadEntries(ArchiveInputStream stream, Path targetFolder, Set<String> entries) {
+    public static void downloadEntries(
+        @NotNull ArchiveInputStream stream,
+        @NotNull Path targetFolder,
+        @NotNull Set<String> entries,
+        boolean isSkipExisted) {
         ArchiveEntry entry;
+        entries = fixPath(entries);
         Files.createDirectories(targetFolder);
         while ((entry = stream.getNextEntry()) != null) {
             if (!stream.canReadEntryData(entry)) {
@@ -202,7 +210,10 @@ public class ApacheCompress {
                 if (entry.isDirectory()) {
                     Files.createDirectories(targetPath);
                 } else {
-                    Files.copy(stream, targetPath);
+                    Files.createDirectories(targetPath.getParent());
+                    if (!isSkipExisted || !Files.exists(targetPath)) {
+                        Files.copy(stream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
                 }
             }
         }

@@ -20,7 +20,7 @@ public class Icon {
 
     private @Nullable String icon;
     private @Nullable String color;
-    private boolean rotate;
+    private @Nullable Boolean rotate;
 
     public Icon(@Nullable String icon) {
         this.icon = icon;

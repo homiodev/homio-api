@@ -10,7 +10,6 @@ import lombok.SneakyThrows;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.exception.NotFoundException;
-import org.homio.api.workspace.scratch.Scratch3ExtensionBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -31,6 +30,10 @@ public interface EntityContext {
 
     @NotNull EntityContextInstall install();
 
+    @NotNull EntityContextWorkspace workspace();
+
+    @NotNull EntityContextService service();
+
     @NotNull EntityContextBGP bgp();
 
     @NotNull EntityContextSetting setting();
@@ -39,12 +42,7 @@ public interface EntityContext {
 
     @NotNull EntityContextHardware hardware();
 
-    /**
-     * Register custom Scratch3Extension
-     *
-     * @param scratch3ExtensionBlocks - dynamic block to register
-     */
-    void registerScratch3Extension(@NotNull Scratch3ExtensionBlocks scratch3ExtensionBlocks);
+    @NotNull EntityContextStorage storage();
 
     @Nullable
     default <T extends BaseEntity> T getEntity(@NotNull String entityID) {

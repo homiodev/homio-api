@@ -52,16 +52,16 @@ public interface EntityContextSetting {
         MEM_HANDLER.get().setValue(entity, distinguishKey, title, value);
     }
 
-    static Status getStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, Status defaultStatus) {
+    static Status getStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @Nullable Status defaultStatus) {
         return getMemValue(entity, distinguishKey, defaultStatus);
     }
 
-    static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, String title, Status status) {
+    static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title, @Nullable Status status) {
         setMemValue(entity, distinguishKey, title, status);
     }
 
-    static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, String title, Status status,
-                          String message) {
+    static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title, @Nullable Status status,
+        String message) {
         setMemValue(entity, distinguishKey + "Message", "", message);
         setMemValue(entity, distinguishKey, title, status);
     }
@@ -70,7 +70,7 @@ public interface EntityContextSetting {
         return getMemValue(entity, distinguishKey + "Message", null);
     }
 
-    static void setMessage(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, String message) {
+    static void setMessage(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @Nullable String message) {
         setMemValue(entity, distinguishKey + "Message", "", message);
     }
 
@@ -182,7 +182,7 @@ public interface EntityContextSetting {
     default int getApplicationMajorVersion() {
         return Integer.parseInt(getApplicationVersion().split("\\.")[0]);
     }
-    
+
     interface MemSetterHandler {
         void setValue(@NotNull HasEntityIdentifier entity, @NotNull String key, @NotNull String title, @Nullable Object value);
 

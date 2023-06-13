@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -110,7 +111,7 @@ public final class Curl {
     public static void download(@NotNull String url, @NotNull Path targetPath) {
         URLConnection connection = getUrlConnection(new URL(url));
         try (InputStream stream = connection.getInputStream()) {
-            Files.copy(stream, targetPath);
+            Files.copy(stream, targetPath, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 

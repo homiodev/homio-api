@@ -12,6 +12,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldTreeNodeSelection {
 
+    String IMAGE_PATTERN = ".*(jpg|jpeg|png|gif)";
+
     String LOCAL_FS = "LOCAL_FS";
 
     boolean allowInputRawText() default true;
@@ -32,6 +34,13 @@ public @interface UIFieldTreeNodeSelection {
     String icon() default "fas fa-folder-open";
 
     String iconColor() default "";
+
+    /**
+     * Specify select file/folder dialog title
+     *
+     * @return - dialog title
+     */
+    String dialogTitle() default "";
 
     /**
      * @return Specify file systems ids. All available if not specified

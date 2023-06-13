@@ -12,14 +12,16 @@ import org.jetbrains.annotations.Nullable;
 
 public interface DataStorageService<T extends DataStorageEntity> {
 
+    String CREATED = "created";
+
     List<SourceHistoryItem> getSourceHistoryItems(@Nullable String field, @Nullable String value, int from, int count);
 
     default SourceHistory getSourceHistory(@Nullable String field, @Nullable String value) {
         return new SourceHistory(
-                ((Number) aggregate(null, null, field, value, AggregationType.Count, false)).intValue(),
-                ((Number) aggregate(null, null, field, value, AggregationType.Min, false)).floatValue(),
-                ((Number) aggregate(null, null, field, value, AggregationType.Max, false)).floatValue(),
-                ((Number) aggregate(null, null, field, value, AggregationType.Median, false)).floatValue()
+            ((Number) aggregate(null, null, field, value, AggregationType.Count, false)).intValue(),
+            ((Number) aggregate(null, null, field, value, AggregationType.Min, false)).floatValue(),
+            ((Number) aggregate(null, null, field, value, AggregationType.Max, false)).floatValue(),
+            ((Number) aggregate(null, null, field, value, AggregationType.Median, false)).floatValue()
         );
     }
 
@@ -55,11 +57,11 @@ public interface DataStorageService<T extends DataStorageEntity> {
     }
 
     default @NotNull List<T> findAllBySortAsc(@NotNull String field, @NotNull String value) {
-        return findAllBy(field, value, SortBy.sortAsc(InMemoryDB.CREATED), null);
+        return findAllBy(field, value, SortBy.sortAsc(CREATED), null);
     }
 
     default @NotNull List<T> findAllBySortDesc(@NotNull String field, @NotNull String value) {
-        return findAllBy(field, value, SortBy.sortDesc(InMemoryDB.CREATED), null);
+        return findAllBy(field, value, SortBy.sortDesc(CREATED), null);
     }
 
     @Nullable T findLatestBy(@NotNull String field, @NotNull String value);
@@ -73,7 +75,7 @@ public interface DataStorageService<T extends DataStorageEntity> {
     @NotNull List<T> queryListWithSort(Bson filter, SortBy sort, Integer limit);
 
     default @NotNull List<T> findAllSince(long timestamp) {
-        return queryListWithSort(Filters.gte(InMemoryDB.CREATED, timestamp), SortBy.sortAsc(InMemoryDB.CREATED), null);
+        return queryListWithSort(Filters.gte(CREATED, timestamp), SortBy.sortAsc(CREATED), null);
     }
 
     default @NotNull List<T> findAll() {

@@ -52,7 +52,7 @@ public @interface UIFieldProgress {
 
         public static Progress of(int value, int maxValue, boolean showMessage) {
             return Progress.of(value, maxValue, Lang.getServerMessage("USED_QUOTA", FlowMap.of(
-                    "PC", value, "VAL", value, "MAX", maxValue)), showMessage);
+                "PC", value / (double) maxValue * 100, "VAL", value, "MAX", maxValue)), showMessage);
         }
     }
 }

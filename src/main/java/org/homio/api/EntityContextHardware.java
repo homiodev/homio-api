@@ -1,7 +1,7 @@
 package org.homio.api;
 
 import java.util.ArrayList;
-import java.util.function.BiConsumer;
+import org.homio.hquery.HQueryProgressBar;
 import org.homio.hquery.api.HQueryMaxWaitTimeout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,24 +13,24 @@ public interface EntityContextHardware {
     @NotNull String execute(String command);
 
     @NotNull String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
-        @Nullable BiConsumer<Double, String> progressBar);
+        @Nullable HQueryProgressBar progressBar);
 
     @NotNull ArrayList<String> executeNoErrorThrowList(@NotNull String command, int maxSecondsTimeout,
-        @Nullable BiConsumer<Double, String> progressBar);
+        @Nullable HQueryProgressBar progressBar);
 
-    @NotNull String execute(@NotNull String command, @Nullable BiConsumer<Double, String> progressBar);
+    @NotNull String execute(@NotNull String command, @Nullable HQueryProgressBar progressBar);
 
     @NotNull String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
     @NotNull String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-        @Nullable BiConsumer<Double, String> progressBar);
+        @Nullable HQueryProgressBar progressBar);
 
     boolean isSoftwareInstalled(@NotNull String soft);
 
     EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
     EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-        BiConsumer<Double, String> progressBar);
+        HQueryProgressBar progressBar);
 
     EntityContextHardware enableSystemCtl(@NotNull String soft);
 

@@ -42,9 +42,9 @@ public interface EntityContextUI {
 
     Logger log = LogManager.getLogger("asd");
 
-    EntityContext getEntityContext();
+    @NotNull EntityContext getEntityContext();
 
-    UIInputBuilder inputBuilder();
+    @NotNull UIInputBuilder inputBuilder();
 
     @SneakyThrows
     default <T> T runWithProgressAndGet(@NotNull String progressKey, boolean cancellable,
@@ -71,9 +71,11 @@ public interface EntityContextUI {
     }
 
     @SneakyThrows
-    default void runWithProgress(@NotNull String progressKey, boolean cancellable,
-                                 @NotNull ThrowingConsumer<ProgressBar, Exception> process,
-                                 @Nullable Consumer<Exception> finallyBlock) {
+    default void runWithProgress(
+        @NotNull String progressKey,
+        boolean cancellable,
+        @NotNull ThrowingConsumer<ProgressBar, Exception> process,
+        @Nullable Consumer<Exception> finallyBlock) {
         runWithProgressAndGet(progressKey, cancellable, progressBar -> {
             process.accept(progressBar);
             return null;
@@ -91,7 +93,7 @@ public interface EntityContextUI {
 
     <T extends ConsolePlugin> void registerConsolePlugin(@NotNull String name, @NotNull T plugin);
 
-    <T extends ConsolePlugin> T getRegisteredConsolePlugin(@NotNull String name);
+    @Nullable <T extends ConsolePlugin> T getRegisteredConsolePlugin(@NotNull String name);
 
     boolean unRegisterConsolePlugin(@NotNull String name);
 
@@ -135,15 +137,16 @@ public interface EntityContextUI {
      * @param updateField     - specific field name to update inside innerEntity
      * @param value           - value to send to UI
      */
-    void updateInnerSetItem(@NotNull BaseEntity<?> parentEntity, String parentFieldName, @NotNull String innerEntityID,
-                            @NotNull String updateField, @NotNull Object value);
+    void updateInnerSetItem(@NotNull BaseEntity<?> parentEntity, @NotNull String parentFieldName, @NotNull String innerEntityID,
+        @NotNull String updateField, @NotNull Object value);
 
     /**
      * Fire update to ui that entity was changed.
+     *
      * @param entity -
-     * @param <T> -
+     * @param <T>    -
      */
-    <T extends BaseEntity> void sendEntityUpdated(T entity);
+    <T extends BaseEntity> void sendEntityUpdated(@NotNull T entity);
 
     void progress(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
 
@@ -179,12 +182,13 @@ public interface EntityContextUI {
 
     /**
      * Send request dialog to ui
+     *
      * @param dialogModel -
      */
     void sendDialogRequest(@NotNull DialogModel dialogModel);
 
-    default void sendDialogRequest(@NotNull String key, @NotNull String title, DialogRequestHandler actionHandler,
-        Consumer<DialogModel> dialogBuilderSupplier) {
+    default void sendDialogRequest(@NotNull String key, @NotNull String title, @NotNull DialogRequestHandler actionHandler,
+        @NotNull Consumer<DialogModel> dialogBuilderSupplier) {
         DialogModel dialogModel = new DialogModel(key, title, actionHandler);
         dialogBuilderSupplier.accept(dialogModel);
         sendDialogRequest(dialogModel);

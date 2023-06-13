@@ -30,10 +30,13 @@ public interface EntityContextEvent {
      */
     void removeEvents(String key, String... additionalKeys);
 
+    void removeEventListener(String discriminator, String key);
+
     /**
      * Listen for general event with key. Replace listener if key already exists
-     * @param key - unique key
-     * @param  listener - listener
+     *
+     * @param key      - unique key
+     * @param listener - listener
      * @return this
      */
     default EntityContextEvent addEventListener(String key, Consumer<Object> listener) {
@@ -137,7 +140,8 @@ public interface EntityContextEvent {
 
     /**
      * Listen for any port changes with key. Replace listener if key already exists
-     * @param key - key
+     *
+     * @param key      - key
      * @param listener - listener
      */
     default void addPortChangeStatusListener(String key, Consumer<Object> listener) {
@@ -145,6 +149,7 @@ public interface EntityContextEvent {
     }
 
     interface EntityUpdateListener<T> {
+
         void entityUpdated(T newValue, T oldValue);
     }
 }

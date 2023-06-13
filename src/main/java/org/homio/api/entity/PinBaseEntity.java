@@ -1,8 +1,6 @@
 package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
-import java.util.Set;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -10,13 +8,13 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.ManyToOne;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
+import org.homio.api.converter.JSONConverter;
 import org.homio.api.model.JSON;
 import org.homio.api.ui.field.UIField;
-import org.homio.api.ui.field.UIFieldIgnore;
-import org.homio.api.converter.JSONConverter;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
@@ -70,19 +68,5 @@ public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends Dev
     @Override
     public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
         set.add(owner);
-    }
-
-    @Override
-    @JsonIgnore
-    @UIFieldIgnore
-    public @NotNull Date getCreationTime() {
-        return super.getCreationTime();
-    }
-
-    @Override
-    @JsonIgnore
-    @UIFieldIgnore
-    public @NotNull Date getUpdateTime() {
-        return super.getUpdateTime();
     }
 }

@@ -9,8 +9,10 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fazecast.jSerialComm.SerialPort;
@@ -56,6 +58,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -81,6 +84,7 @@ import org.homio.api.EntityContext;
 import org.homio.api.entity.RestartHandlerOnChange;
 import org.homio.api.fs.TreeNode;
 import org.homio.hquery.hardware.network.NetworkHardwareRepository;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -418,6 +422,46 @@ public class CommonUtils {
             jsonObject.put(key, value);
         }
         return jsonObject;
+    }
+
+    /**
+     * Update node value if not match expected value. Create missing nodes.
+     *
+     * @param node            target node to modify
+     * @param path            - full path to value. i.e.: 'my/path/to/value'
+     * @param requireUpdateFn - if require to update
+     * @param updateFn        - function to update value
+     * @return if node was updated
+     */
+    public static boolean updateJsonPath(@NotNull JsonNode node, @NotNull String path, @NotNull Predicate<JsonNode> requireUpdateFn,
+        @NotNull BiConsumer<ObjectNode, String> updateFn) {
+        JsonNode cursor = node;
+        JsonNode parent = null;
+        String[] pathItems = path.split("/");
+        for (String item : pathItems) {
+            if (!cursor.has(item)) {
+                ((ObjectNode) cursor).set(item, OBJECT_MAPPER.createObjectNode());
+            }
+            parent = cursor;
+            cursor = cursor.path(item);
+        }
+        if (requireUpdateFn.test(cursor)) {
+            updateFn.accept((ObjectNode) parent, pathItems[pathItems.length - 1]);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Update node value if not match expected integer value.
+     *
+     * @param jsonNode target node
+     * @param path     - path
+     * @param value    - expected value
+     * @return if node was updated
+     */
+    public static boolean updateJsonPath(@NotNull JsonNode jsonNode, @NotNull String path, int value) {
+        return updateJsonPath(jsonNode, path, node -> node.asInt(-1) != value, (node, s) -> node.put(s, value));
     }
 
     public static ResponseEntity<InputStreamResource> inputStreamToResource(InputStream stream, MediaType contentType) {

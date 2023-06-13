@@ -1,21 +1,18 @@
 package org.homio.api.ui.field.selection;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.homio.api.model.HasEntityIdentifier;
 
+/**
+ * Specify for entities to select entities by 'type'
+ */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(UIFieldEntityByClassListSelection.class)
-public @interface UIFieldEntityByClassSelection {
+public @interface UIFieldEntityTypeSelection {
 
-    /**
-     * @return Define base class/interface which should implement BaseEntity
-     */
-    Class<? extends HasEntityIdentifier> value();
+    String type();
 
     String[] staticParameters() default {};
 }

@@ -1,9 +1,10 @@
 package org.homio.api.model;
 
+import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
 import java.util.ArrayList;
@@ -25,9 +26,9 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.fs.TreeNode;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.fs.TreeNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,10 +48,9 @@ public class OptionModel implements Comparable<OptionModel> {
         return o1.getTitleOrKey().compareTo(o2.getTitleOrKey());
     };
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final ObjectNode json = OBJECT_MAPPER.createObjectNode();
     @Getter
-    private @NotNull String key;
+    private String key;
     @Setter
     private String title;
     @Setter
@@ -76,9 +76,6 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     private OptionModel(@NotNull Object key, @Nullable Object title) {
-        if (key == null) {
-            throw new IllegalArgumentException("key is null");
-        }
         this.key = key.toString();
         this.title = title == null ? null : title.toString();
     }

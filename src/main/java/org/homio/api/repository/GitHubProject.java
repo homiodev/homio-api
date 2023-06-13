@@ -4,6 +4,7 @@ import static java.lang.String.format;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.pivovarit.function.ThrowingFunction;
+import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.homio.api.cache.CachedValue;
 import org.homio.api.fs.archive.ArchiveUtil;
+import org.homio.api.fs.archive.ArchiveUtil.ArchiveFormat;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.ui.field.ProgressBar;
@@ -202,9 +205,11 @@ public class GitHubProject {
         this.updating = true;
         ProjectUpdate projectUpdate = new ProjectUpdate(name, projectPath, progressBar);
         try {
+            projectUpdate.backupProject();
             return updateHandler.apply(projectUpdate);
         } catch (Exception ex) {
-            log.error("Error during installing app", ex);
+            progressBar.progress(99, format("Error during updating: %s. Error: '%s'", name, CommonUtils.getErrorMessage(ex)));
+            projectUpdate.restoreProject();
             return ActionResponseModel.showError(ex);
         } finally {
             updating = false;
@@ -218,37 +223,39 @@ public class GitHubProject {
         private final @NotNull String name;
         private final @NotNull Path projectPath;
         private final @NotNull ProgressBar progressBar;
+        private @Nullable Path backup;
+
+        public boolean isHasBackup() {
+            return backup != null;
+        }
 
         @SneakyThrows
-        public @NotNull ProjectUpdate backup(@NotNull Path backupFileOrFolder) {
-            log.info("Backup files{}", backupFileOrFolder);
-            FileUtils.copyDirectory(projectPath.resolve(backupFileOrFolder).toFile(),
-                CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile());
+        public @NotNull ProjectUpdate copyFromBackup(Set<Path> nodes) {
+            if (backup == null) {
+                throw new IllegalArgumentException("Backup is null for project: " + name);
+            }
+            progressBar.progress(20, format("Restore project '%s' backup nodes: '%s'", name, nodes));
+            ArchiveUtil.copyEntries(backup, nodes, projectPath, false);
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate restore(@NotNull Path backupFileOrFolder) {
-            log.info("Restore files {}", backupFileOrFolder);
-            FileUtils.deleteDirectory(projectPath.resolve(backupFileOrFolder).toFile());
+            progressBar.progress(20, format("Move nodes from backup: '%s'", backupFileOrFolder));
+            File targetFileOrDirectory = projectPath.resolve(backupFileOrFolder).toFile();
+            // remove target node if exists
+            FileUtils.deleteDirectory(targetFileOrDirectory);
             FileUtils.moveDirectory(CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile(),
-                projectPath.resolve(backupFileOrFolder).toFile());
-            return this;
-        }
-
-        @SneakyThrows
-        public @NotNull ProjectUpdate deleteProject() {
-            log.info("Delete project {}", projectPath);
-            CommonUtils.deletePath(projectPath);
+                targetFileOrDirectory);
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate downloadSource(@NotNull String version) {
-            log.info("Download {}/{} sources of V{}", repo, project, version);
+            progressBar.progress(5, format("Download %s/%s sources of V%s", repo, project, version));
             Path targetPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
             Curl.downloadWithProgress(api + "tarball/" + version, targetPath, progressBar);
-            log.info("Unzip {} sources to {}", targetPath, CommonUtils.getTmpPath());
+            progressBar.progress(10, format("Unzip %s sources to %s", targetPath, CommonUtils.getTmpPath()));
             List<Path> files = ArchiveUtil.unzip(targetPath, CommonUtils.getTmpPath(), null, false, progressBar,
                 UnzipFileIssueHandler.replace);
             Files.delete(targetPath);
@@ -261,6 +268,30 @@ public class GitHubProject {
                 Files.move(CommonUtils.getTmpPath().resolve(unzipFolder), projectPath);
             }
             return this;
+        }
+
+        private void backupProject() {
+            progressBar.progress(20, format("Backup project: '%s'", name));
+            if (Files.exists(projectPath)) {
+                backup = CommonUtils.getInstallPath().resolve(projectPath.getFileName() + "_backup.zip");
+                ArchiveUtil.zip(projectPath, backup, ArchiveFormat.zip, progressBar, false);
+                try {
+                    CommonUtils.deletePath(projectPath);
+                } catch (Exception ex) {
+                    progressBar.progress(20, format("Unable to delete project: '%s'", name));
+                }
+            }
+        }
+
+        @SneakyThrows
+        private void restoreProject() {
+            if (backup != null) {
+                progressBar.progress(80, format("Restore project '%s'", name));
+                if (Files.exists(projectPath)) {
+                    CommonUtils.deletePath(projectPath);
+                }
+                ArchiveUtil.unzip(backup, projectPath, null, false, progressBar, UnzipFileIssueHandler.replace);
+            }
         }
     }
 }

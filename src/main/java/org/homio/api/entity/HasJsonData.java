@@ -1,5 +1,6 @@
 package org.homio.api.entity;
 
+import static java.lang.String.format;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -47,6 +48,16 @@ public interface HasJsonData {
             getJsonData().remove(key);
         }
         getJsonData().put(key, value);
+    }
+
+    default <P> void setJsonData(@NotNull String key, @Nullable Integer value, int defaultValue, int min, int max) {
+        if (value == null || value == defaultValue) {
+            getJsonData().remove(key);
+        } else if (value > max || value < min) {
+            throw new IllegalArgumentException(format("Value: '%s' must be in range: %s..%s", value, min, max));
+        } else {
+            getJsonData().put(key, value);
+        }
     }
 
     default Optional<Number> getJsonDataNumber(@NotNull String key) {

@@ -21,7 +21,6 @@ import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.util.ApplicationContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,13 +49,15 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     @UIFieldGroup(value = "GENERAL", order = 10)
     private String name;
 
+    @Getter
+    @JsonIgnore
     @Column(nullable = false)
-    @UIField(order = 20, hideInEdit = true, type = UIFieldType.StaticDate)
     @UIFieldGroup("GENERAL")
     private Date creationTime;
 
+    @Getter
+    @JsonIgnore
     @Column(nullable = false)
-    @UIField(order = 30, hideInEdit = true, type = UIFieldType.StaticDate)
     @UIFieldGroup("GENERAL")
     private Date updateTime;
 
@@ -85,14 +86,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
 
     public @NotNull String getEntityID() {
         return entityID;
-    }
-
-    public @NotNull Date getCreationTime() {
-        return creationTime;
-    }
-
-    public @NotNull Date getUpdateTime() {
-        return updateTime;
     }
 
     @Override

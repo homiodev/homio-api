@@ -28,18 +28,17 @@ public interface EntityContextVar {
      */
     void setLinkListener(@NotNull String variableId, @NotNull Consumer<Object> listener);
 
-    Object get(@NotNull String variableId);
+    @Nullable Object get(@NotNull String variableId);
 
     /**
      * Push new value in queue.
      *
      * @param variableId - variable id
-     * @param value      - value may be State type, primitive, or String/Number/Boolean/etc...
-     *                   ignore setting if value is null
+     * @param value      - value may be State type, primitive, or String/Number/Boolean/etc... ignore setting if value is null
      * @return converted value that has been stored into queue
      * @throws IllegalArgumentException if value doesn't validatet agains VariableType restriction
      */
-    default Object set(@NotNull String variableId, @Nullable Object value) throws IllegalArgumentException {
+    default @Nullable Object set(@NotNull String variableId, @Nullable Object value) throws IllegalArgumentException {
         AtomicReference<Object> ref = new AtomicReference<>();
         set(variableId, value, ref::set);
         return ref.get();
@@ -52,7 +51,7 @@ public interface EntityContextVar {
      * @param value          -
      * @param variableId     -
      */
-    void set(@NotNull String variableId, @Nullable Object value, Consumer<Object> convertedValue) throws IllegalArgumentException;
+    void set(@NotNull String variableId, @Nullable Object value, @NotNull Consumer<Object> convertedValue) throws IllegalArgumentException;
 
     default void setIfNotMatch(@NotNull String variableId, @Nullable Object value) {
         if (!Objects.equals(get(variableId), value)) {
@@ -198,14 +197,14 @@ public interface EntityContextVar {
     }
 
     interface VariableMetaBuilder {
-        VariableMetaBuilder setReadOnly(boolean value);
+        @NotNull VariableMetaBuilder setReadOnly(boolean value);
 
-        VariableMetaBuilder setColor(String value);
+        @NotNull VariableMetaBuilder setColor(@Nullable String value);
 
-        VariableMetaBuilder setDescription(String value);
+        @NotNull VariableMetaBuilder setDescription(@Nullable String value);
 
-        VariableMetaBuilder setUnit(String value);
+        @NotNull VariableMetaBuilder setUnit(@Nullable String value);
 
-        VariableMetaBuilder setAttributes(List<String> attributes);
+        @NotNull VariableMetaBuilder setAttributes(@Nullable List<String> attributes);
     }
 }

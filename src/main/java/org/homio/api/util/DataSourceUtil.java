@@ -3,10 +3,15 @@ package org.homio.api.util;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
+import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.widget.ability.HasSetStatusValue;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 public class DataSourceUtil {
@@ -49,8 +54,8 @@ public class DataSourceUtil {
      * @param dataSource    - source
      * @return dataSource context
      */
-    public static DataSourceContext getSource(EntityContext entityContext, String dataSource) {
-        DataSourceContext dataSourceContext = new DataSourceContext();
+    public static @NotNull DataSourceContext getSource(@NotNull EntityContext entityContext, @Nullable String dataSource) {
+        DataSourceContext dataSourceContext = new DataSourceContext(dataSource);
         if (StringUtils.isNotEmpty(dataSource)) {
             List<String> vds = Arrays.asList(dataSource.split("~~~"));
             Collections.reverse(vds);
@@ -65,14 +70,12 @@ public class DataSourceUtil {
         return dataSourceContext;
     }
 
-    private static Object evaluateDataSource(String dsb, String source, EntityContext entityContext) {
-        switch (dsb) {
-            case "bean":
-                return entityContext.getBean(source, Object.class);
-            case "entityByClass":
-                return entityContext.getEntity(source);
-        }
-        return null;
+    private static @Nullable Object evaluateDataSource(String dsb, String source, EntityContext entityContext) {
+        return switch (dsb) {
+            case "bean" -> entityContext.getBean(source, Object.class);
+            case "entityByClass" -> entityContext.getEntity(source);
+            default -> null;
+        };
     }
 
     /**
@@ -91,9 +94,23 @@ public class DataSourceUtil {
     }
 
     @Getter
+    @RequiredArgsConstructor
     public static class DataSourceContext {
 
+        private final String raw;
         private Object source;
         private String sourceClass;
+
+        public <T> T getSource(@NotNull Class<T> targetType, T defaultValue) {
+            if (targetType.isAssignableFrom(source.getClass())) {
+                return (T) source;
+            }
+            return defaultValue;
+        }
+
+        @Nullable
+        public String getSourceEntityID() {
+            return Optional.ofNullable(getSource(BaseEntity.class, null)).map(BaseEntity::getEntityID).orElse(null);
+        }
     }
 }

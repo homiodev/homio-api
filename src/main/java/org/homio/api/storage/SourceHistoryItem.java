@@ -1,14 +1,20 @@
 package org.homio.api.storage;
 
-import lombok.AllArgsConstructor;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
-@AllArgsConstructor
 public class SourceHistoryItem implements Comparable<SourceHistoryItem> {
-    private long timestamp;
-    private Object value;
+
+    private final long timestamp;
+    private final Object value;
+
+    public SourceHistoryItem(long timestamp, Object value) {
+        this.timestamp = timestamp;
+        this.value = value instanceof Double ? BigDecimal.valueOf((Double) value).setScale(2, RoundingMode.DOWN) : value;
+    }
 
     /**
      * Desc sorting

@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -123,7 +124,7 @@ public final class ArchiveUtil {
     }
 
     @SneakyThrows
-    public static List<File> getChildren(@NotNull Path archive, @Nullable String entryId) {
+    public static List<File> getChildren(@NotNull Path archive, @NotNull String entryId) {
         List<File> archiveEntries = getArchiveEntries(archive, null);
         return archiveEntries.stream().filter(f -> entryId.equals(f.getParent())).collect(Collectors.toList());
     }
@@ -149,16 +150,36 @@ public final class ArchiveUtil {
     @SneakyThrows
     public static Set<Path> removeEntries(@NotNull Path archive, @NotNull Set<String> entryNames, @Nullable String password) {
         return ArchiveFormat.getHandlerByPath(archive)
-                .removeEntries(archive, entryNames, password == null ? null : password.toCharArray());
+                            .removeEntries(archive, entryNames, password == null ? null : password.toCharArray());
     }
 
     public static void addToArchive(@NotNull Path archive, @NotNull Collection<TreeNode> files) {
         ArchiveFormat.getHandlerByPath(archive).addEntries(archive, files);
     }
 
+    /**
+     * Archive source directory to destination.
+     *
+     * @param sourceFolder        - existed source dir
+     * @param destinationFile     - dest file
+     * @param archiveFormat       -format
+     * @param progressBar         - progress
+     * @param includeParentFolder - does include parent folder to archive or not
+     */
     @SneakyThrows
-    public static @NotNull Path zip(@NotNull List<Path> sources, @NotNull Path destination, ArchiveFormat archiveFormat,
-                                    @Nullable String level, @Nullable String password, @Nullable ProgressBar progressBar) {
+    public static void zip(@NotNull Path sourceFolder, @NotNull Path destinationFile, ArchiveFormat archiveFormat,
+        @Nullable ProgressBar progressBar, boolean includeParentFolder) {
+        if (!Files.isDirectory(sourceFolder)) {
+            throw new IllegalArgumentException("SourceFolder must be a directory");
+        }
+        Set<Path> sources = includeParentFolder ? Set.of(sourceFolder)
+            : Arrays.stream(Objects.requireNonNull(sourceFolder.toFile().listFiles())).map(File::toPath).collect(Collectors.toSet());
+        zip(sources, destinationFile, archiveFormat, null, null, progressBar);
+    }
+
+    @SneakyThrows
+    public static void zip(@NotNull Collection<Path> sources, @NotNull Path destination, ArchiveFormat archiveFormat,
+        @Nullable String level, @Nullable String password, @Nullable ProgressBar progressBar) {
         if (progressBar != null) {
             progressBar.progress(0, "Zip files. Calculate size...");
         }
@@ -171,19 +192,32 @@ public final class ArchiveUtil {
         if (progressBar != null) {
             progressBar.progress(99, "Zip files done.");
         }
-        return destination;
     }
 
-    private static String fixPath(String path) {
+    /**
+     * Copy file or directory
+     *
+     * @param archive    - archive file
+     * @param sourcePath - source in archive
+     * @param targetPath - target on fs
+     */
+    @SneakyThrows
+    public static void copyEntries(@NotNull Path archive, @NotNull Set<Path> sourcePath, @NotNull Path targetPath, boolean isSkipExisted) {
+        ArchiveFormat archiveFormat = ArchiveFormat.getHandlerByPath(archive);
+        Set<String> entries = sourcePath.stream().map(Path::toString).collect(Collectors.toSet());
+        archiveFormat.downloadArchiveEntries(archive, targetPath, entries, isSkipExisted);
+    }
+
+    public static String fixPath(@NotNull String path) {
         return path.replaceAll("\\\\", "/");
     }
 
-    private static Set<String> fixPath(Collection<String> pathList) {
+    public static Set<String> fixPath(@NotNull Collection<String> pathList) {
         return pathList.stream().map(ArchiveUtil::fixPath).collect(Collectors.toSet());
     }
 
-    private static void writeSeven7ArchiveEntry(boolean isDirectory, TreeNode treeNode, SevenZOutputFile sevenZOutput)
-            throws IOException {
+    private static void writeSeven7ArchiveEntry(boolean isDirectory, @NotNull TreeNode treeNode, @NotNull SevenZOutputFile sevenZOutput)
+        throws IOException {
         SevenZArchiveEntry entry = new SevenZArchiveEntry();
         entry.setDirectory(isDirectory);
         entry.setName(treeNode.getName());
@@ -194,8 +228,8 @@ public final class ArchiveUtil {
         sevenZOutput.closeArchiveEntry();
     }
 
-    private void downloadArchiveEntries(Path archive, Path targetPath, Set<String> entries) {
-        ArchiveFormat.getHandlerByPath(archive).downloadArchiveEntries(archive, targetPath, fixPath(entries));
+    private void downloadArchiveEntries(@NotNull Path archive, @NotNull Path targetPath, @NotNull Set<String> entries, boolean isSkipExisted) {
+        ArchiveFormat.getHandlerByPath(archive).downloadArchiveEntries(archive, targetPath, entries, isSkipExisted);
     }
 
     public enum UnzipFileIssueHandler {
@@ -275,7 +309,7 @@ public final class ArchiveUtil {
                 final SevenZOutputFile target = new SevenZOutputFile(file.toFile());
 
                 @Override
-                public void putArchiveEntry(ArchiveEntry entry) throws IOException {
+                public void putArchiveEntry(ArchiveEntry entry) {
                     target.putArchiveEntry(entry);
                 }
 
@@ -310,7 +344,7 @@ public final class ArchiveUtil {
                 }
 
                 @Override
-                public ArchiveEntry createArchiveEntry(File inputFile, String entryNames) throws IOException {
+                public ArchiveEntry createArchiveEntry(File inputFile, String entryNames) {
                     return target.createArchiveEntry(inputFile, entryNames);
                 }
             };
@@ -346,21 +380,22 @@ public final class ArchiveUtil {
         }
 
         public void zip(@NotNull Path source, @NotNull Path destination, @Nullable String level, char[] password,
-                        @Nullable ProgressBar progressBar) throws Exception {
+            @Nullable ProgressBar progressBar) throws Exception {
             List<Path> sources =
-                    Stream.of(Objects.requireNonNull(source.toFile().listFiles())).map(File::toPath).collect(Collectors.toList());
-            ApacheCompress.archive(sources, createOutputStreamProducer.createStream(destination, level, password), progressBar);
+                Stream.of(Objects.requireNonNull(source.toFile().listFiles())).map(File::toPath).collect(Collectors.toList());
+            ArchiveOutputStream stream = createOutputStreamProducer.createStream(destination, level, password);
+            ApacheCompress.archive(sources, stream, progressBar);
         }
 
-        public void zip(@NotNull List<Path> sources, @NotNull Path destination, @Nullable String level, char[] password,
-                        @Nullable ProgressBar progressBar) throws Exception {
+        public void zip(@NotNull Collection<Path> sources, @NotNull Path destination, @Nullable String level, char[] password,
+            @Nullable ProgressBar progressBar) throws Exception {
             ApacheCompress.archive(sources, createOutputStreamProducer.createStream(destination, level, password), progressBar);
         }
 
         public InputStream downloadArchiveEntry(@NotNull Path archive, @NotNull String entryNames, char[] password)
-                throws Exception {
+            throws Exception {
             return ApacheCompress.downloadEntry(createInputStreamProducer.createStream(archive, password),
-                    entryNames);
+                entryNames);
         }
 
         public List<File> getArchiveEntries(@NotNull Path archive, char[] password) throws Exception {
@@ -430,9 +465,9 @@ public final class ArchiveUtil {
         }
 
         @SneakyThrows
-        public void downloadArchiveEntries(Path archive, Path targetFolder, Set<String> entries) {
+        public void downloadArchiveEntries(Path archive, Path targetFolder, Set<String> entries, boolean isSkipExisted) {
             ApacheCompress.downloadEntries(createInputStreamProducer.createStream(archive, null),
-                    targetFolder, entries);
+                targetFolder, entries, isSkipExisted);
         }
 
         public Set<Path> removeEntries(@NotNull Path archive, @NotNull Set<String> entryNames, char[] password) throws Exception {
