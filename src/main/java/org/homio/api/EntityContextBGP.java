@@ -1,5 +1,6 @@
 package org.homio.api;
 
+import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
@@ -18,23 +19,25 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.setting.SettingPlugin;
 import org.homio.api.ui.field.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
 public interface EntityContextBGP {
+
     EntityContext getEntityContext();
 
     /**
      * Create builder to run new thread/scheduler.
      *
      * @param name unique name of thread. cancel thread if already exists
-     * @param <T> -
+     * @param <T>  -
      * @return -
      */
-    <T> ScheduleBuilder<T> builder(@NotNull String name);
+    @NotNull <T> ScheduleBuilder<T> builder(@NotNull String name);
+
+    @NotNull ProcessBuilder processBuilder(@NotNull String name);
 
     /**
      * Await processes to be done
@@ -44,13 +47,13 @@ public interface EntityContextBGP {
      * @param processes     - list of processes to wait finished
      * @param logger        - logger
      * @param finallyBlock  - block to execute when all processes finished
-     * @param <T> -
+     * @param <T>           -
      * @return this
      */
-    default <T> ThreadContext<Map<String, T>> awaitProcesses(@NotNull String name, Duration maxTimeToWait,
-                                                             @NotNull List<ThreadContext<T>> processes,
-                                                             @NotNull Logger logger,
-                                                             @Nullable Consumer<Map<String, T>> finallyBlock) {
+    default @NotNull <T> ThreadContext<Map<String, T>> awaitProcesses(@NotNull String name, Duration maxTimeToWait,
+        @NotNull List<ThreadContext<T>> processes,
+        @NotNull Logger logger,
+        @Nullable Consumer<Map<String, T>> finallyBlock) {
         ScheduleBuilder<Map<String, T>> builder = builder(name);
         return builder.execute(arg -> {
             Map<String, T> result = new HashMap<>();
@@ -71,22 +74,6 @@ public interface EntityContextBGP {
     }
 
     /**
-     * Start service forever
-     *
-     * @param entityContext   -
-     * @param processConsumer -
-     * @param name            - service name to start
-     * @param settingClass    - setting class that store absolute path to service executable file. May be null for linux or in case if path equal to
-     *                        getInstallPath() + '/' + name
-     * @param <T>             setting class type
-     */
-    <T> void runService(
-        @NotNull EntityContext entityContext,
-        @NotNull Consumer<Process> processConsumer,
-        @NotNull String name,
-        @NotNull Class<? extends SettingPlugin<T>> settingClass);
-
-    /**
      * Run file watchdog. Check file's lastModification updates every 10 seconds and call onUpdateCommand if file had been changed
      *
      * @param file            - run file to check for changes
@@ -95,7 +82,7 @@ public interface EntityContextBGP {
      * @return -
      * @throws IllegalArgumentException if file not readable
      */
-    ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
+    @NotNull ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
         throws IllegalArgumentException;
 
     /**
@@ -107,7 +94,7 @@ public interface EntityContextBGP {
      * @return - thread context
      * @throws IllegalArgumentException if directory not exists or dir already under watching
      */
-    ThreadContext<Void> runDirectoryWatchdog(@NotNull Path dir, @NotNull ThrowingConsumer<WatchEvent<Path>, Exception> onUpdateCommand,
+    @NotNull ThreadContext<Void> runDirectoryWatchdog(@NotNull Path dir, @NotNull ThrowingConsumer<WatchEvent<Path>, Exception> onUpdateCommand,
         Kind<?>... eventsToListen);
 
     /**
@@ -116,7 +103,7 @@ public interface EntityContextBGP {
      * @param key - unique bgp builder key
      * @return - progress builder
      */
-    ProgressBuilder runWithProgress(@NotNull String key);
+    @NotNull ProgressBuilder runWithProgress(@NotNull String key);
 
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);
 
@@ -148,10 +135,10 @@ public interface EntityContextBGP {
     interface ProgressBuilder {
 
         // default - false
-        ProgressBuilder setCancellable(boolean cancellable);
+        @NotNull ProgressBuilder setCancellable(boolean cancellable);
 
         // default - true
-        ProgressBuilder setLogToConsole(boolean log);
+        @NotNull ProgressBuilder setLogToConsole(boolean log);
 
         /**
          * Throw error if process already exists
@@ -159,10 +146,11 @@ public interface EntityContextBGP {
          * @param ex - error to throw if process already exists
          * @return this
          */
-        ProgressBuilder setErrorIfExists(@Nullable Exception ex);
+        @NotNull ProgressBuilder setErrorIfExists(@Nullable Exception ex);
 
-        ProgressBuilder onFinally(@Nullable Consumer<Exception> finallyBlock);
+        @NotNull ProgressBuilder onFinally(@Nullable Consumer<Exception> finallyBlock);
 
+        @NotNull
         default ProgressBuilder onFinally(@Nullable Runnable finallyBlock) {
             return onFinally(ignore -> {
                 if (finallyBlock != null) {
@@ -171,8 +159,9 @@ public interface EntityContextBGP {
             });
         }
 
-        ProgressBuilder onError(@Nullable Runnable errorBlock);
+        @NotNull ProgressBuilder onError(@Nullable Runnable errorBlock);
 
+        @NotNull
         default ThreadContext<Void> execute(@NotNull ThrowingConsumer<ProgressBar, Exception> command) {
             return execute(progressBar -> {
                 command.accept(progressBar);
@@ -180,39 +169,59 @@ public interface EntityContextBGP {
             });
         }
 
-        <R> ThreadContext<R> execute(@NotNull ThrowingFunction<ProgressBar, R, Exception> command);
+        @NotNull <R> ThreadContext<R> execute(@NotNull ThrowingFunction<ProgressBar, R, Exception> command);
+    }
+
+    interface ProcessBuilder {
+
+        // default is true
+        @NotNull ProcessBuilder logToConsole(boolean value);
+
+        @NotNull ProcessBuilder onStarted(@NotNull ThrowingConsumer<ProcessContext, Exception> startedHandler);
+
+        default @NotNull ProcessBuilder onStarted(@NotNull ThrowingRunnable<Exception> startedHandler) {
+            return onStarted(processContext -> startedHandler.run());
+        }
+
+        // finish handler on error or on regular finish process. finishHandler get ex
+        @NotNull ProcessBuilder onFinished(@NotNull ThrowingBiConsumer<@Nullable Exception, @NotNull Integer, Exception> finishHandler);
+
+        @NotNull ProcessContext execute(@NotNull String command);
     }
 
     interface ScheduleBuilder<T> {
 
+        @NotNull
         default ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command) {
             return execute(command, true);
         }
 
+        @NotNull
         default ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command) {
             return execute(command, true);
         }
 
-        ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command, boolean start);
+        @NotNull ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command, boolean start);
 
-        ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command, boolean start);
+        @NotNull ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command, boolean start);
 
-        ScheduleBuilder<T> interval(@NotNull String cron);
+        @NotNull ScheduleBuilder<T> interval(@NotNull String cron);
 
-        ScheduleBuilder<T> interval(@NotNull Duration duration);
+        @NotNull ScheduleBuilder<T> interval(@NotNull Duration duration);
 
-        ScheduleBuilder<T> throwOnError(boolean value);
+        @NotNull ScheduleBuilder<T> throwOnError(boolean value);
 
-        ScheduleBuilder<T> onError(@NotNull Consumer<Exception> errorListener);
+        @NotNull ScheduleBuilder<T> onError(@NotNull Consumer<Exception> errorListener);
 
-        ScheduleBuilder<T> metadata(@NotNull String key, @NotNull Object value);
+        @NotNull ScheduleBuilder<T> metadata(@NotNull String key, @NotNull Object value);
 
         /**
          * Execute some code with ThreadContext before execution
+         *
          * @param handler - consumer to execute
          * @return ScheduleBuilder
          */
-        ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
+        @NotNull ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
 
         /**
          * Set delay before first execution.
@@ -220,49 +229,60 @@ public interface EntityContextBGP {
          * @param duration - wait timeout
          * @return ScheduleBuilder
          */
-        ScheduleBuilder<T> delay(@NotNull Duration duration);
+        @NotNull ScheduleBuilder<T> delay(@NotNull Duration duration);
 
         /**
          * Specify that need path requested authenticated user to background process thread
          *
          * @return this
          */
-        ScheduleBuilder<T> auth();
+        @NotNull ScheduleBuilder<T> auth();
 
         // default false
-        ScheduleBuilder<T> hideOnUI(boolean value);
+        @NotNull ScheduleBuilder<T> hideOnUI(boolean value);
 
         // default true
-        ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
+        @NotNull ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
 
         // default true
-        ScheduleBuilder<T> cancelOnError(boolean value);
+        @NotNull ScheduleBuilder<T> cancelOnError(boolean value);
 
         // link log file to be able to read on UI
-        ScheduleBuilder<T> linkLogFile(Path logFile);
+        @NotNull ScheduleBuilder<T> linkLogFile(@NotNull Path logFile);
 
         /**
          * Add value listener when run/schedule finished.
          *
          * @param name          - unique name of listener
-         * @param valueListener - listener: First 2 parameters is value from run/schedule and previous value.
-         *                      Return boolean where is remove listener or not after execute
+         * @param valueListener - listener: First 2 parameters is value from run/schedule and previous value. Return boolean where is remove listener or not
+         *                      after execute
          * @return true if listeners successfully added
          */
-        ScheduleBuilder<T> valueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
+        @NotNull ScheduleBuilder<T> valueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
     }
 
     interface ThreadPuller {
+
         @NotNull ThreadPuller addThread(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-                                        @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
+            @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
 
         @NotNull ThreadPuller addScheduler(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-                                           @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
-                                           int runCount,
-                                           @Nullable String bigDescription);
+            @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
+            int runCount,
+            @Nullable String bigDescription);
+    }
+
+    interface ProcessContext {
+
+        @NotNull String getName();
+
+        boolean isStopped();
+
+        void cancel(boolean sendSignal);
     }
 
     interface ThreadContext<T> {
+
         @NotNull String getName();
 
         @NotNull String getState();
@@ -288,9 +308,10 @@ public interface EntityContextBGP {
 
         /**
          * Next schedule call as string
+         *
          * @return next time to call
          */
-        String getTimeToNextSchedule();
+        @Nullable String getTimeToNextSchedule();
 
         /**
          * Await at most timeout to finish process
@@ -299,7 +320,7 @@ public interface EntityContextBGP {
          * @return response returned by thread
          * @throws Exception -
          */
-        T await(@NotNull Duration timeout) throws Exception;
+        @Nullable T await(@NotNull Duration timeout) throws Exception;
 
         /**
          * Add listener to fire when process finishes and value returned from process

@@ -1,9 +1,12 @@
 package org.homio.api.repository;
 
 import static java.lang.String.format;
+import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingFunction;
+import com.pivovarit.function.ThrowingSupplier;
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
@@ -55,8 +59,13 @@ public class GitHubProject {
     private final @NotNull String project;
     private final @NotNull String api;
     private final @NotNull HttpHeaders httpHeaders = new HttpHeaders();
-
+    private final @NotNull Path localProjectPath;
+    @Setter
+    private @Nullable String installedVersion;
     private boolean updating;
+    @Setter
+    private @Nullable ThrowingSupplier<String, Exception> installedVersionResolver;
+
     // releases sorted by published_at
     private final CachedValue<List<JsonNode>, GitHubProject> releasesCache =
         new CachedValue<>(Duration.ofHours(24), gitHubProject -> {
@@ -98,17 +107,59 @@ public class GitHubProject {
             repoURL = "https://github.com/" + (repoURL.startsWith("/") ? repoURL.substring(1) : repoURL);
         }
         String[] path = new URL(repoURL).getPath().substring(1).split("/");
-        return new GitHubProject(path[0], path[1]);
+        return of(path[0], path[1]);
     }
 
     public static GitHubProject of(@NotNull String project, @NotNull String repo) {
-        return new GitHubProject(project, repo);
+        return of(project, repo, null);
     }
 
-    private GitHubProject(@NotNull String project, @NotNull String repo) {
-        this.repo = repo;
+    public static GitHubProject of(@NotNull String project, @NotNull String repo, @Nullable Path localProjectPath) {
+        return new GitHubProject(project, repo, localProjectPath);
+    }
+
+    private GitHubProject(@NotNull String project, @NotNull String repo, @Nullable Path localProjectPath) {
         this.project = project;
+        this.repo = repo;
         this.api = format("https://api.github.com/repos/%s/%s/", project, repo);
+        this.localProjectPath = localProjectPath == null ? CommonUtils.getTmpPath().resolve(project) : localProjectPath;
+    }
+
+    @SneakyThrows
+    public @Nullable String getInstalledVersion() {
+        if (installedVersion == null) {
+            try {
+                if (installedVersionResolver != null) {
+                    installedVersion = installedVersionResolver.get();
+                }
+                Path versionPath = localProjectPath.resolve("package.json");
+                if (Files.exists(versionPath)) {
+                    ObjectNode packageNode = OBJECT_MAPPER.readValue(Files.readString(versionPath), ObjectNode.class);
+                    installedVersion = packageNode.get("version").asText();
+                }
+            } catch (Exception ex) {
+                log.error("Unable to fetch project '{}' installed version. Error: {}", project, CommonUtils.getErrorMessage(ex));
+            }
+        }
+        return installedVersion;
+    }
+
+    @SneakyThrows
+    public void deleteProject() {
+        installedVersion = null;
+        log.info("Delete project: '{}'", localProjectPath);
+        try {
+            if (Files.exists(localProjectPath)) {
+                if (Files.isDirectory(localProjectPath)) {
+                    FileUtils.deleteDirectory(localProjectPath.toFile());
+                } else {
+                    Files.delete(localProjectPath);
+                }
+            }
+        } catch (Exception ex) {
+            log.error("Unable to delete project: '{}'", localProjectPath);
+            throw ex;
+        }
     }
 
     public void setBasicAuthentication(String username, String password) {
@@ -194,16 +245,16 @@ public class GitHubProject {
     }
 
     // Helper method to execute some process i.e. download from github, backup, etc...
-    public @NotNull ActionResponseModel updating(
+    public @NotNull ActionResponseModel updateWithBackup(
         @NotNull String name,
-        @NotNull Path projectPath,
         @NotNull ProgressBar progressBar,
         @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler) {
         if (this.updating) {
             return ActionResponseModel.showError("W.ERROR.UPDATE_IN_PROGRESS");
         }
+        this.installedVersion = null;
         this.updating = true;
-        ProjectUpdate projectUpdate = new ProjectUpdate(name, projectPath, progressBar);
+        ProjectUpdate projectUpdate = new ProjectUpdate(name, progressBar, this);
         try {
             projectUpdate.backupProject();
             return updateHandler.apply(projectUpdate);
@@ -213,6 +264,7 @@ public class GitHubProject {
             return ActionResponseModel.showError(ex);
         } finally {
             updating = false;
+            projectUpdate.finish();
         }
     }
 
@@ -221,8 +273,8 @@ public class GitHubProject {
     public class ProjectUpdate {
 
         private final @NotNull String name;
-        private final @NotNull Path projectPath;
         private final @NotNull ProgressBar progressBar;
+        private final @NotNull GitHubProject project;
         private @Nullable Path backup;
 
         public boolean isHasBackup() {
@@ -235,14 +287,14 @@ public class GitHubProject {
                 throw new IllegalArgumentException("Backup is null for project: " + name);
             }
             progressBar.progress(20, format("Restore project '%s' backup nodes: '%s'", name, nodes));
-            ArchiveUtil.copyEntries(backup, nodes, projectPath, false);
+            ArchiveUtil.copyEntries(backup, nodes, localProjectPath, false);
             return this;
         }
 
         @SneakyThrows
         public @NotNull ProjectUpdate restore(@NotNull Path backupFileOrFolder) {
             progressBar.progress(20, format("Move nodes from backup: '%s'", backupFileOrFolder));
-            File targetFileOrDirectory = projectPath.resolve(backupFileOrFolder).toFile();
+            File targetFileOrDirectory = localProjectPath.resolve(backupFileOrFolder).toFile();
             // remove target node if exists
             FileUtils.deleteDirectory(targetFileOrDirectory);
             FileUtils.moveDirectory(CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile(),
@@ -264,22 +316,25 @@ public class GitHubProject {
                 while (unzipFolder.getParent() != null) {
                     unzipFolder = unzipFolder.getParent();
                 }
-                CommonUtils.deletePath(projectPath);
-                Files.move(CommonUtils.getTmpPath().resolve(unzipFolder), projectPath);
+                CommonUtils.deletePath(localProjectPath);
+                Files.move(CommonUtils.getTmpPath().resolve(unzipFolder), localProjectPath);
             }
             return this;
         }
 
+        @SneakyThrows
+        public void finish() {
+            if (backup != null) {
+                Files.delete(backup);
+                backup = null;
+            }
+        }
+
         private void backupProject() {
             progressBar.progress(20, format("Backup project: '%s'", name));
-            if (Files.exists(projectPath)) {
-                backup = CommonUtils.getInstallPath().resolve(projectPath.getFileName() + "_backup.zip");
-                ArchiveUtil.zip(projectPath, backup, ArchiveFormat.zip, progressBar, false);
-                try {
-                    CommonUtils.deletePath(projectPath);
-                } catch (Exception ex) {
-                    progressBar.progress(20, format("Unable to delete project: '%s'", name));
-                }
+            if (Files.exists(localProjectPath)) {
+                backup = CommonUtils.getInstallPath().resolve(localProjectPath.getFileName() + "_backup.zip");
+                ArchiveUtil.zip(localProjectPath, backup, ArchiveFormat.zip, progressBar, false);
             }
         }
 
@@ -287,10 +342,11 @@ public class GitHubProject {
         private void restoreProject() {
             if (backup != null) {
                 progressBar.progress(80, format("Restore project '%s'", name));
-                if (Files.exists(projectPath)) {
-                    CommonUtils.deletePath(projectPath);
+                if (Files.exists(localProjectPath)) {
+                    CommonUtils.deletePath(localProjectPath);
                 }
-                ArchiveUtil.unzip(backup, projectPath, null, false, progressBar, UnzipFileIssueHandler.replace);
+                ArchiveUtil.unzip(backup, localProjectPath, null, false, progressBar, UnzipFileIssueHandler.replace);
+                backup = null;
             }
         }
     }
