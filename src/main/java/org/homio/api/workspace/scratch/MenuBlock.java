@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.entity.BaseEntity;
-import org.homio.api.model.KeyValueEnum;
+import org.homio.api.model.OptionModel.KeyValueEnum;
 
 @Getter
 @RequiredArgsConstructor

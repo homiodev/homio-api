@@ -351,4 +351,21 @@ public class OptionModel implements Comparable<OptionModel> {
     public int hashCode() {
         return Objects.hash(key);
     }
+
+    /**
+     * Specify description for any pojo to allow it show on UI when convert to OptionModel
+     */
+    public interface HasDescription {
+        String getDescription();
+    }
+
+    public interface KeyValueEnum {
+        default String getKey() {
+            return ((Enum) this).name();
+        }
+
+        default String getValue() {
+            return this.toString();
+        }
+    }
 }

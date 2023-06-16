@@ -20,6 +20,10 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
      */
     String getConfirmMsg();
 
+    default String getDialogColor() {
+        return null;
+    }
+
     default String getConfirmTitle() {
         return null;
     }
@@ -67,6 +71,7 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
         CommonUtils.putOpt(parameters, "confirm", getConfirmMsg());
+        CommonUtils.putOpt(parameters, "dialogColor", getDialogColor());
         CommonUtils.putOpt(parameters, "title", getConfirmTitle());
         List<ActionInputParameter> actionInputParameters = getInputParameters(entityContext, value);
         if (actionInputParameters != null && !actionInputParameters.isEmpty()) {

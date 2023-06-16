@@ -2,8 +2,8 @@ package org.homio.api.setting;
 
 import java.util.Collection;
 import org.homio.api.EntityContext;
-import org.homio.api.model.KeyValueEnum;
 import org.homio.api.model.OptionModel;
+import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.homio.api.ui.field.UIFieldType;
 import org.json.JSONObject;
 

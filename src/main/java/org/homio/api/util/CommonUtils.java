@@ -5,6 +5,7 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -415,6 +416,10 @@ public class CommonUtils {
                 }
             }
         }
+    }
+
+    public static JSONObject putOpt(JSONObject jsonObject, String key, String value) {
+        return putOpt(jsonObject, key, (Object) trimToNull(value));
     }
 
     public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {

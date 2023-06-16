@@ -2,6 +2,7 @@ package org.homio.api.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.homio.api.model.OptionModel.KeyValueEnum;
 
 /**
  * Uses for styling html input element position

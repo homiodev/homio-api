@@ -7,7 +7,7 @@ import java.util.Map;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.model.HasEntityLog;
+import org.homio.api.entity.HasEntityLog;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldSlider;

@@ -17,5 +17,9 @@ public @interface UIContextMenuAction {
 
     String iconColor() default "";
 
+    String confirmMessage() default "";
+
+    String confirmMessageDialogColor() default "";
+
     UIActionInput[] inputs() default {};
 }

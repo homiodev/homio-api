@@ -7,7 +7,7 @@ import org.homio.api.EntityContext;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.model.Icon;
-import org.homio.api.model.KeyValueEnum;
+import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;

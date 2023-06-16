@@ -19,7 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.BaseEntity;
-import org.homio.api.model.KeyValueEnum;
+import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -206,7 +206,7 @@ public abstract class Scratch3ExtensionBlocks {
                         true));
     }
 
-    protected <T extends KeyValueEnum> MenuBlock.StaticMenuBlock<T> menuStaticKV(String name, Class<T> enumClass,
+    protected <T extends KeyValueEnum> MenuBlock.StaticMenuBlock<T> menuStaticKV(@NotNull String name, @NotNull Class<T> enumClass,
         T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnumKVE(enumClass).setDefaultValue(defaultValue));
     }

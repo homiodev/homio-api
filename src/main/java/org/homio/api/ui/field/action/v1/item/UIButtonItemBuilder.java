@@ -10,4 +10,8 @@ public interface UIButtonItemBuilder extends UIEntityItemBuilder<UIButtonItemBui
     UIButtonItemBuilder setHeight(int height);
 
     UIButtonItemBuilder setPrimary(boolean primary);
+
+    UIButtonItemBuilder setConfirmMessage(String message);
+
+    UIButtonItemBuilder setConfirmMessageDialogColor(String color);
 }

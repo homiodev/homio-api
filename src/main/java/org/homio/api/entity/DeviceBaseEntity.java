@@ -24,7 +24,6 @@ import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.homio.api.ui.field.selection.UIFieldSelection;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Entity
@@ -77,8 +76,9 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     /**
      * Uses on UI to set png image with appropriate status and mark extra image if need
      */
-    public @NotNull Status.StatusModel getEntityStatus() {
-        return EntityContextSetting.getStatus(this, "entity_status", Status.UNKNOWN).toModel();
+    public @Nullable Status.StatusModel getEntityStatus() {
+        Status entityStatus = EntityContextSetting.getStatus(this, "entity_status", getStatus());
+        return entityStatus == null || entityStatus == Status.UNKNOWN ? null : entityStatus.toModel();
     }
 
     public void setEntityStatus(@Nullable Status status) {
