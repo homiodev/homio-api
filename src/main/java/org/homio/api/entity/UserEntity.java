@@ -12,8 +12,6 @@ public interface UserEntity {
 
     String getName();
 
-    @NotNull String getLang();
-
     @NotNull UserType getUserType();
 
     @NotNull Set<String> getRoles();

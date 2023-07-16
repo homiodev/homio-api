@@ -8,23 +8,25 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Progress bar. Must return int or UIFieldProgress.Progress
- * Max value is 100!
+ * Progress bar. Must return int or UIFieldProgress.Progress Max value is 100!
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldProgress {
-    String color() default "";
 
-    String fillColor() default "";
+    @Nullable String color() default "";
 
-    UIFieldProgressColorChange[] colorChange() default {};
+    @Nullable String fillColor() default "";
+
+    @Nullable UIFieldProgressColorChange[] colorChange() default {};
 
     @Target({ElementType.FIELD})
     @Retention(RetentionPolicy.RUNTIME)
     @interface UIFieldProgressColorChange {
+
         String color();
 
         int whenMoreThan();

@@ -6,9 +6,8 @@ import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public enum Status {
-    ONLINE("#1F8D2D", "fas fa-check"),
+    ONLINE("#6E993D", "fas fa-check"),
     RUNNING("#B59324", "fas fa-person-running"),
-    INITIALIZE("#CF79ED", "fas fa-spinner fa-spin"),
     WAITING("#506ABF", "fas fa-pause fa-fade"),
     OFFLINE("#969696", "fab fa-hashnode"),
     UNKNOWN("#818744", "fas fa-circle-question"),
@@ -19,8 +18,10 @@ public enum Status {
     NOT_READY("#99A040", "fas fa-triangle-exclamation"),
     CLOSING("#992F5D", "fas fa-door-closed fa-fade"),
     TESTING("#A3A18E", "fas fa-vial fa-beat"),
-    RESTARTING("#99A040", "fas fa-hourglass-start fa-spin"),
-    DISABLED("#9E9E9E", "fas fa-ban");
+    DISABLED("#9E9E9E", "fas fa-ban"),
+    INITIALIZE("#CF79ED", "fas fa-spinner fa-spin"),
+    UPDATING("#602183", "fas fa-compact-disc fa-spin"),
+    RESTARTING("#99A040", "fas fa-hourglass-start fa-spin");
 
     @Getter
     private final String color;
@@ -48,13 +49,13 @@ public enum Status {
         return false;
     }
 
-    public StatusModel toModel() {
-        return new StatusModel(this);
+    public EntityStatus toModel() {
+        return new EntityStatus(this);
     }
 
     @Getter
     @RequiredArgsConstructor
-    public static class StatusModel {
+    public static class EntityStatus {
 
         private final @NotNull Status value;
 

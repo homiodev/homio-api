@@ -29,9 +29,9 @@ import org.homio.api.service.EntityService;
 import org.homio.api.state.RawType;
 import org.homio.api.state.State;
 import org.homio.api.util.CommonUtils;
-import org.homio.api.util.Curl;
 import org.homio.api.util.SpringUtils;
 import org.homio.api.workspace.scratch.MenuBlock;
+import org.homio.hquery.Curl;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

@@ -4,10 +4,10 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.ActionInputParameter;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,19 +18,19 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
      *
      * @return message
      */
-    String getConfirmMsg();
+    @Nullable String getConfirmMsg();
 
-    default String getDialogColor() {
+    default @Nullable String getDialogColor() {
         return null;
     }
 
-    default String getConfirmTitle() {
+    default @Nullable String getConfirmTitle() {
         return null;
     }
 
-    @NotNull Icon getIcon();
+    @Nullable Icon getIcon();
 
-    default String getText() {
+    default @Nullable String getText() {
         return null;
     }
 
@@ -44,13 +44,13 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     }
 
     @Override
-    default Class<JSONObject> getType() {
+    default @NotNull Class<JSONObject> getType() {
         return JSONObject.class;
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Button;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Button;
     }
 
     /**

@@ -1,13 +1,14 @@
 package org.homio.api.setting;
 
 import org.homio.api.EntityContext;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public interface SettingPluginTextInput extends SettingPlugin<String> {
+
     @Override
-    default Class<String> getType() {
+    default @NotNull Class<String> getType() {
         return String.class;
     }
 
@@ -16,8 +17,8 @@ public interface SettingPluginTextInput extends SettingPlugin<String> {
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.TextInput;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.TextInput;
     }
 
     @Override

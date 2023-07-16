@@ -12,10 +12,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.homio.api.EntityContextSetting;
 import org.homio.api.converter.JSONConverter;
 import org.homio.api.model.JSON;
 import org.homio.api.model.Status;
+import org.homio.api.model.Status.EntityStatus;
 import org.homio.api.optionProvider.SelectPlaceOptionLoader;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
@@ -40,6 +40,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
 
     @Setter
     @Getter
+    @Column(length = 64)
     @UIField(order = 50, type = UIFieldType.SelectBox, color = "#538744")
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE")
@@ -76,19 +77,22 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     /**
      * Uses on UI to set png image with appropriate status and mark extra image if need
      */
-    public @Nullable Status.StatusModel getEntityStatus() {
-        Status entityStatus = EntityContextSetting.getStatus(this, "entity_status", getStatus());
-        return entityStatus == null || entityStatus == Status.UNKNOWN ? null : entityStatus.toModel();
+    public @Nullable Status.EntityStatus getEntityStatus() {
+        Status status = getStatus();
+        return status == null ? null : new EntityStatus(status);
     }
 
-    public void setEntityStatus(@Nullable Status status) {
-        EntityContextSetting.setStatus(this, "entity_status", "Entity status", status);
+    /**
+     * Uses to show 'outdated' image on entity
+     */
+    public @Nullable Boolean isOutdated() {
+        return null;
     }
 
     @UIField(order = 500, hideInView = true)
     @UIFieldTreeNodeSelection(pattern = IMAGE_PATTERN, dialogTitle = "DIALOG.SELECT_IMAGE_ID")
     @UIFieldGroup(value = "ADVANCED", order = 50, borderColor = "#FF1E00")
-    public String getImageIdentifier() {
+    public @Nullable String getImageIdentifier() {
         return getImageIdentifierImpl();
     }
 
@@ -96,8 +100,17 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
         setJsonData("img", value);
     }
 
+    /**
+     * Uses as fallback image in case if getImageIdentifier() return null or if image not exists
+     *
+     * @return FQDN image url
+     */
+    public @Nullable String getFallbackImageIdentifier() {
+        return null;
+    }
+
     @JsonIgnore
-    protected String getImageIdentifierImpl() {
+    protected @Nullable String getImageIdentifierImpl() {
         return getJsonData("img");
     }
 }

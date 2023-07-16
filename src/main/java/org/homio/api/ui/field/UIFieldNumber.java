@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Number field
@@ -18,10 +19,10 @@ public @interface UIFieldNumber {
     /**
      * @return fetch min value from minRef field instead of min if specified
      */
-    String minRef() default "";
+    @Nullable String minRef() default "";
 
     /**
-     * @return  fetch max value from maxRef field instead of ax if specified
+     * @return fetch max value from maxRef field instead of ax if specified
      */
-    String maxRef() default "";
+    @Nullable String maxRef() default "";
 }

@@ -10,11 +10,12 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Version;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.GenericGenerator;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
@@ -33,16 +34,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     Comparable<BaseEntity> {
 
     @Id
-    @GeneratedValue
     @Getter
-    private Integer id;
+    @Column(length = 64, nullable = false, unique = true)
+    @GeneratedValue(generator = "id-generator")
+    @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.HomioIdGenerator")
+    private String entityID;
 
     @Version
     private Integer version;
-
-    @NaturalId
-    @Column(name = "entityID", unique = true, nullable = false)
-    private String entityID;
 
     @Getter
     @UIField(order = 10, inlineEdit = true)
@@ -69,11 +68,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public void configureOptionModel(@NotNull OptionModel optionModel) {
     }
 
-    public T setId(Integer id) {
-        this.id = id;
-        return (T) this;
-    }
-
     public T setName(String name) {
         this.name = name;
         return (T) this;
@@ -82,10 +76,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public T setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
         return (T) this;
-    }
-
-    public @NotNull String getEntityID() {
-        return entityID;
     }
 
     @Override
@@ -97,7 +87,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
             return false;
         }
         BaseEntity that = (BaseEntity) o;
-        return entityID != null ? entityID.equals(that.entityID) : that.entityID == null;
+        return Objects.equals(entityID, that.entityID);
     }
 
     /**
@@ -140,9 +130,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
             setName(refreshName());
         }
         this.beforePersist();
-        if (this.entityID == null) {
-            this.entityID = getEntityPrefix() + System.currentTimeMillis();
-        }
         this.validate();
     }
 
@@ -187,13 +174,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
     }
 
-    @Override
-    public String getIdentifier() {
-        return entityID == null ? String.valueOf(getId()) : getEntityID();
-    }
-
     public void copy() {
-        id = null;
         entityID = null;
         creationTime = null;
         updateTime = null;

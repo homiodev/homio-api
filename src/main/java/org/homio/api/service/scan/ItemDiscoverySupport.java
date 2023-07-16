@@ -1,7 +1,7 @@
 package org.homio.api.service.scan;
 
 import org.homio.api.EntityContext;
-import org.homio.api.ui.field.ProgressBar;
+import org.homio.hquery.ProgressBar;
 
 public interface ItemDiscoverySupport {
     String getName();

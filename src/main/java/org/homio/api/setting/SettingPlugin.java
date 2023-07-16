@@ -8,7 +8,6 @@ import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel.KeyValueEnum;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,24 +18,25 @@ public interface SettingPlugin<T> {
 
     /**
      * If want to show setting direct on top header panel instead of settings
+     *
      * @return Base entity which setting available to
      */
-    default Class<? extends BaseEntity> availableForEntity() {
+    default @Nullable Class<? extends BaseEntity> availableForEntity() {
         return null;
     }
 
-    Class<T> getType();
+    @NotNull Class<T> getType();
 
     // specify max width of rendered ui item. Uses with SelectBox/SelectBoxDynamic
-    default Integer getMaxWidth() {
+    default @Nullable Integer getMaxWidth() {
         return null;
     }
 
-    default Icon getIcon() {
-        return new Icon();
+    default @Nullable Icon getIcon() {
+        return null;
     }
 
-    default String getDefaultValue() {
+    default @NotNull String getDefaultValue() {
         switch (getSettingType()) {
             case Integer:
             case Slider:
@@ -62,7 +62,7 @@ public interface SettingPlugin<T> {
         return parameters;
     }
 
-    UIFieldType getSettingType();
+    @NotNull SettingType getSettingType();
 
     // if secured - users without admin privileges can't see values
     default boolean isSecuredValue() {
@@ -89,11 +89,11 @@ public interface SettingPlugin<T> {
     }
 
     // grouping settings by group name
-    default String group() {
+    default @Nullable String group() {
         return null;
     }
 
-    default T parseValue(EntityContext entityContext, String value) {
+    default @Nullable T parseValue(EntityContext entityContext, String value) {
         if (value == null) {
             return null;
         }
@@ -124,7 +124,7 @@ public interface SettingPlugin<T> {
 
     // Is it able to save value to database or local variable
     default boolean isStorable() {
-        return true;
+        return getSettingType().isStorable();
     }
 
     /**
@@ -132,12 +132,6 @@ public interface SettingPlugin<T> {
      * @return is setting is transient
      */
     default boolean transientState() {
-        if (this.getSettingType() == UIFieldType.Button) {
-            JSONObject parameters = this.getParameters(null, null);
-            if (parameters == null || parameters.length() == 1 && parameters.has("confirm")) {
-                return true;
-            }
-        }
         return !this.isStorable();
     }
 
@@ -152,17 +146,18 @@ public interface SettingPlugin<T> {
 
     /**
      * Covnerter from target type to string
+     *
      * @param value -
      * @return -
      */
-    default String writeValue(T value) {
+    default @NotNull String writeValue(T value) {
         if (value == null) {
             return "";
         }
         return value.toString();
     }
 
-    default T parseInteger(EntityContext entityContext, String value) {
+    default @NotNull T parseInteger(@NotNull EntityContext entityContext, @NotNull String value) {
         Integer parseValue;
         try {
             parseValue = Integer.valueOf(value);

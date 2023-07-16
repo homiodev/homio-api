@@ -1,5 +1,6 @@
 package org.homio.api.model;
 
+import static java.lang.String.format;
 import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -62,16 +64,14 @@ public class OptionModel implements Comparable<OptionModel> {
     @Getter
     private List<OptionModel> children;
     @Getter
+    private @Nullable Status status;
+    @Getter
     @Setter
+    // disabled option is shown but not clickable
     private boolean disabled;
 
     public OptionModel setStatus(HasStatusAndMsg statusEntity) {
-        if (statusEntity.getStatus().isOnline()) {
-            icon = "fas fa-circle-check";
-        } else {
-            icon = "fas fa-circle-xmark";
-            setDisabled(true);
-        }
+        this.status = statusEntity == null ? null : statusEntity.getStatus();
         return this;
     }
 
@@ -157,7 +157,7 @@ public class OptionModel implements Comparable<OptionModel> {
                 String[] toAndDefinition = items[1].split(";");
                 String title = toAndDefinition.length == 2 ? toAndDefinition[1] : "%s";
                 for (int i = Integer.parseInt(items[0]); i <= Integer.parseInt(toAndDefinition[0]); i++) {
-                    models.add(OptionModel.of(String.valueOf(i), String.format(title, i)));
+                    models.add(OptionModel.of(String.valueOf(i), format(title, i)));
                 }
             } else if (value.contains(":")) {
                 String[] items = value.split(":");
@@ -190,7 +190,7 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static <T> List<OptionModel> list(@NotNull Collection<T> list, @NotNull Function<T, String> keyFn,
-                                             @NotNull Function<T, String> valueFn) {
+        @NotNull Function<T, String> valueFn) {
         return list.stream().map(e -> OptionModel.of(keyFn.apply(e), valueFn.apply(e))).collect(Collectors.toList());
     }
 
@@ -199,14 +199,24 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> entityList(@NotNull Collection<? extends BaseEntity> list) {
+        return entityList(list, null);
+    }
+
+    public static List<OptionModel> entityList(
+        @NotNull Collection<? extends BaseEntity> list,
+        @Nullable BiConsumer<BaseEntity, OptionModel> configurator) {
         return list.stream().map(entity -> {
-                       OptionModel model = OptionModel.of(
-                           entity.getEntityID(),
-                           entity.getTitle());
+                       OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
+                       if (entity instanceof HasStatusAndMsg status) {
+                           model.setStatus(status);
+                       }
                        entity.configureOptionModel(model);
+                       if (configurator != null) {
+                           configurator.accept(entity, model);
+                       }
                        return model;
                    })
-                   .collect(Collectors.toList());
+                   .sorted().collect(Collectors.toList());
     }
 
     public static List<OptionModel> simpleNamelist(@NotNull Collection list) {
@@ -254,7 +264,7 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     @JsonIgnore
-    public Collection<OptionModel> getOrCreateChildren() {
+    public Collection<OptionModel> OptionModelgetOrCreateChildren() {
         return children == null ? Collections.emptyList() : children;
     }
 

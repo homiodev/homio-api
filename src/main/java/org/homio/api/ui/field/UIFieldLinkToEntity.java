@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 import org.homio.api.entity.BaseEntity;
 
 /**
- * Annotation for able to link field to another page on UI with matched entityID
+ * Annotation for able to link field to another page on UI with matched entityID Field return String value with format: 'TargetEntityID~~~'
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

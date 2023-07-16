@@ -1,6 +1,6 @@
 package org.homio.api;
 
-import org.homio.api.ui.field.ProgressBar;
+import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

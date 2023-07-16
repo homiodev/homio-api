@@ -45,12 +45,12 @@ public interface ZigBeeProperty {
     /**
      * @return Last read value
      */
-    @Nullable State getLastValue();
+    @NotNull State getLastValue();
 
     /**
      * @return duration since last event
      */
-    @Nullable Duration getTimeSinceLastEvent();
+    @NotNull Duration getTimeSinceLastEvent();
 
     /**
      * @return is able to write value
@@ -66,7 +66,7 @@ public interface ZigBeeProperty {
 
     void removeChangeListener(@Nullable String id);
 
-    @Nullable PropertyType getPropertyType();
+    @NotNull PropertyType getPropertyType();
 
     /**
      * Implement by property that has ability to read value.

@@ -5,6 +5,7 @@ import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import com.pivovarit.function.ThrowingSupplier;
 import java.io.File;
@@ -26,6 +27,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
@@ -36,9 +38,9 @@ import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.ArchiveFormat;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.api.model.ActionResponseModel;
-import org.homio.api.ui.field.ProgressBar;
+import org.homio.hquery.Curl;
+import org.homio.hquery.ProgressBar;
 import org.homio.api.util.CommonUtils;
-import org.homio.api.util.Curl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpEntity;
@@ -50,6 +52,7 @@ import org.springframework.http.ResponseEntity;
 @SuppressWarnings("unused")
 @Log4j2
 @Getter
+@Accessors(chain = true)
 @RequiredArgsConstructor
 public class GitHubProject {
 
@@ -131,11 +134,12 @@ public class GitHubProject {
             try {
                 if (installedVersionResolver != null) {
                     installedVersion = installedVersionResolver.get();
-                }
-                Path versionPath = localProjectPath.resolve("package.json");
-                if (Files.exists(versionPath)) {
-                    ObjectNode packageNode = OBJECT_MAPPER.readValue(Files.readString(versionPath), ObjectNode.class);
-                    installedVersion = packageNode.get("version").asText();
+                } else {
+                    Path versionPath = localProjectPath.resolve("package.json");
+                    if (Files.exists(versionPath)) {
+                        ObjectNode packageNode = OBJECT_MAPPER.readValue(Files.readString(versionPath), ObjectNode.class);
+                        installedVersion = packageNode.get("version").asText();
+                    }
                 }
             } catch (Exception ex) {
                 log.error("Unable to fetch project '{}' installed version. Error: {}", project, CommonUtils.getErrorMessage(ex));
@@ -244,27 +248,50 @@ public class GitHubProject {
             targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
+    @SneakyThrows
+    public void downloadReleaseFile(@NotNull String version, @NotNull String asset,
+        @NotNull Path targetPath, @NotNull ProgressBar progressBar) {
+        String downloadUrl = format("https://github.com/%s/%s/releases/download/%s/%s", project, repo, version, asset);
+        Curl.downloadWithProgress(downloadUrl, targetPath, progressBar);
+    }
+
     // Helper method to execute some process i.e. download from github, backup, etc...
-    public @NotNull ActionResponseModel updateWithBackup(
+    public @NotNull ActionResponseModel updateProject(
         @NotNull String name,
         @NotNull ProgressBar progressBar,
-        @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler) {
+        boolean backupProject,
+        @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler,
+        @Nullable ThrowingConsumer<Exception, Exception> onFinally) {
         if (this.updating) {
             return ActionResponseModel.showError("W.ERROR.UPDATE_IN_PROGRESS");
         }
+        onFinally = onFinally == null ? e -> {} : onFinally;
         this.installedVersion = null;
         this.updating = true;
         ProjectUpdate projectUpdate = new ProjectUpdate(name, progressBar, this);
         try {
-            projectUpdate.backupProject();
+            if (backupProject) {
+                projectUpdate.backupProject();
+            }
             return updateHandler.apply(projectUpdate);
         } catch (Exception ex) {
             progressBar.progress(99, format("Error during updating: %s. Error: '%s'", name, CommonUtils.getErrorMessage(ex)));
-            projectUpdate.restoreProject();
+            if (backupProject) {
+                projectUpdate.restoreProject();
+            }
+            try {
+                onFinally.accept(ex);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             return ActionResponseModel.showError(ex);
         } finally {
             updating = false;
             projectUpdate.finish();
+            try {
+                onFinally.accept(null);
+            } catch (Exception ignore) {
+            }
         }
     }
 
@@ -288,6 +315,12 @@ public class GitHubProject {
             }
             progressBar.progress(20, format("Restore project '%s' backup nodes: '%s'", name, nodes));
             ArchiveUtil.copyEntries(backup, nodes, localProjectPath, false);
+            return this;
+        }
+
+        @SneakyThrows
+        public @NotNull ProjectUpdate downloadReleaseFile(@NotNull String version, @NotNull String asset, @NotNull Path targetPath) {
+            project.downloadReleaseFile(version, asset, targetPath, progressBar);
             return this;
         }
 

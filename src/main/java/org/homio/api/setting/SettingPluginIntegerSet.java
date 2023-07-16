@@ -6,19 +6,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.homio.api.EntityContext;
-import org.homio.api.ui.field.UIFieldType;
+import org.jetbrains.annotations.NotNull;
 
 public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
 
     @Override
-    default Class<Set<Integer>> getType() {
+    default @NotNull Class<Set<Integer>> getType() {
         return (Class<Set<Integer>>) Collections.<Integer>emptySet().getClass();
     }
 
     int[] defaultValue();
 
     @Override
-    default String getDefaultValue() {
+    default @NotNull String getDefaultValue() {
         Set<String> values = new HashSet<>();
         for (int value : defaultValue()) {
             values.add(String.valueOf(value));
@@ -35,12 +35,12 @@ public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
     }
 
     @Override
-    default String writeValue(Set<Integer> value) {
+    default @NotNull String writeValue(Set<Integer> value) {
         return value.stream().map(Object::toString).collect(Collectors.joining("~~~"));
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Chips;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Chips;
     }
 }

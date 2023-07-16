@@ -1,21 +1,21 @@
 package org.homio.api.setting;
 
 import org.homio.api.model.Icon;
-import org.homio.api.ui.field.UIFieldType;
+import org.jetbrains.annotations.NotNull;
 
 public interface SettingPluginToggle extends SettingPlugin<Boolean> {
 
-    Icon getIcon();
+    @NotNull Icon getIcon();
 
-    Icon getToggleIcon();
+    @NotNull Icon getToggleIcon();
 
     @Override
-    default Class<Boolean> getType() {
+    default @NotNull Class<Boolean> getType() {
         return Boolean.class;
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Toggle;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Toggle;
     }
 }

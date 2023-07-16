@@ -4,18 +4,18 @@ import com.fazecast.jSerialComm.SerialPort;
 import java.util.Collection;
 import org.homio.api.EntityContext;
 import org.homio.api.model.OptionModel;
-import org.homio.api.ui.field.UIFieldType;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public interface SettingPluginOptionsPort extends SettingPlugin<SerialPort>, SettingPluginOptions<SerialPort> {
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.SelectBoxDynamic;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.SelectBoxDynamic;
     }
 
     @Override
-    default Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
+    default @NotNull Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
         return OptionModel.listOfPorts(withEmpty());
     }
 
@@ -24,12 +24,12 @@ public interface SettingPluginOptionsPort extends SettingPlugin<SerialPort>, Set
     }
 
     @Override
-    default String writeValue(SerialPort value) {
+    default @NotNull String writeValue(SerialPort value) {
         return value == null ? "" : value.getSystemPortName();
     }
 
     @Override
-    default Class<SerialPort> getType() {
+    default @NotNull Class<SerialPort> getType() {
         return SerialPort.class;
     }
 

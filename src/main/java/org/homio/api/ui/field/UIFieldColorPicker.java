@@ -17,9 +17,9 @@ public @interface UIFieldColorPicker {
     boolean allowThreshold() default false;
 
     /**
-     * Add user ability to specify 'animation' condition to UI.
-     * Color animation is animation blink from black to specified color with 1-2sec timeout
+     * Add user ability to specify 'pulse' condition to UI. Color pulse is animation blink from black to specified color with 1-2sec timeout
+     *
      * @return -
      */
-    boolean animateColorCondition() default false;
+    boolean pulseColorCondition() default false;
 }

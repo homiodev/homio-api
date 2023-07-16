@@ -50,7 +50,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.fs.TreeNode;
-import org.homio.api.ui.field.ProgressBar;
+import org.homio.hquery.ProgressBar;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -413,7 +413,7 @@ public final class ArchiveUtil {
         public void renameEntry(Path archive, String entryName, String newName) {
             if (hasBuildInFileSystem) {
                 // may rename only files, not folders
-                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
+                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
                     Path fsPath = archiveFS.getPath(entryName);
                     if (Files.isRegularFile(fsPath)) { // only regular path may be removed inside fs
                         Files.move(fsPath, fsPath.resolveSibling(newName), StandardCopyOption.REPLACE_EXISTING);
@@ -446,7 +446,7 @@ public final class ArchiveUtil {
         @SneakyThrows
         public void addEntries(@NotNull Path archive, @NotNull Collection<TreeNode> files) {
             if (hasBuildInFileSystem) {
-                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
+                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
                     CommonUtils.addFiles(Paths.get(""), files, (path, treeNode) ->
                         archiveFS.getPath(path.toString() + treeNode.getName()));
                 }
@@ -474,7 +474,7 @@ public final class ArchiveUtil {
             entryNames = fixPath(entryNames);
             Set<Path> removedItems = new HashSet<>();
             if (hasBuildInFileSystem) {
-                try (FileSystem zipFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
+                try (FileSystem zipFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
                     for (String entryName : entryNames) {
                         removedItems.addAll(CommonUtils.removeFileOrDirectory(zipFS.getPath(entryName)));
                     }

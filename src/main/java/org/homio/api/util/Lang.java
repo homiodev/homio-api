@@ -14,17 +14,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public enum Lang {
-  en, ua, ru, ge, fr, it, pl;
+    en, ru;
 
-  private static final Map<String, ObjectNode> i18nLang = new HashMap<>();
-  public static String CURRENT_LANG = "en";
+    private static final Map<String, ObjectNode> i18nLang = new HashMap<>();
+    public static String CURRENT_LANG = "en";
 
-  public static void clear() {
-    i18nLang.clear();
-  }
+    public static void clear() {
+        i18nLang.clear();
+    }
 
-  public static ObjectNode getLangJson(@Nullable String lang) {
-    return getJson(lang, false);
+    public static ObjectNode getLangJson(@Nullable String lang) {
+        return getJson(lang, false);
   }
 
   public static String findPathText(@NotNull String name) {

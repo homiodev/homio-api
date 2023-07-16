@@ -8,24 +8,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Uses to grouping fields. Grouped fields has border
+ * Specify confirm dialog on UI when user want to change value on UI when inlineEdit is true
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldGroup {
+public @interface UIFieldInlineEditConfirm {
 
-    /**
-     * @return Group name
-     */
     @NotNull String value();
 
-    /**
-     * @return  Specify custom group order, otherwise ordering by group name
-     */
-    int order() default 0;
+    @Nullable String dialogColor() default "";
 
     /**
-     * @return Define border color
+     * Specify conditional function to check if need to show confirm dialog
+     *
+     * @return function or null
      */
-    @Nullable String borderColor() default "";
+    @Nullable String showCondition() default "";
 }

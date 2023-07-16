@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface HasEntityIdentifier {
 
-    @NotNull String getEntityID();
+    String getEntityID();
 
     default @Nullable String getTitle() {
         return getEntityID();

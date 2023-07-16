@@ -1,5 +1,6 @@
 package org.homio.api;
 
+import com.pivovarit.function.ThrowingConsumer;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,12 +22,12 @@ public interface EntityContextVar {
     }
 
     /**
-     * Every writable variable has to have link listener which handle to write operation from UI, etc...
+     * Every writable variable has to have exact one link listener which handle to write operation from UI, etc...
      *
      * @param variableId -
      * @param listener   -
      */
-    void setLinkListener(@NotNull String variableId, @NotNull Consumer<Object> listener);
+    void setLinkListener(@NotNull String variableId, @NotNull ThrowingConsumer<Object, Exception> listener);
 
     @Nullable Object get(@NotNull String variableId);
 

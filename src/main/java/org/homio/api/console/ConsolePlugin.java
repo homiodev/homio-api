@@ -70,8 +70,12 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     default @Nullable ActionResponseModel executeAction(@NotNull String entityID, @Nullable JSONObject metadata, @Nullable JSONObject params)
-            throws Exception {
+        throws Exception {
         return null;
+    }
+
+    default void assembleOptions(JSONObject options) {
+
     }
 
     enum RenderType {

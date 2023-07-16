@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.homio.api.EntityContext;
-import org.homio.api.ui.field.ProgressBar;
+import org.homio.hquery.ProgressBar;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

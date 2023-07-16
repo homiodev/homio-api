@@ -26,7 +26,6 @@ import org.homio.api.setting.SettingPluginButton;
 import org.homio.api.ui.UI.Color;
 import org.homio.api.ui.action.UIActionHandler;
 import org.homio.api.ui.dialog.DialogModel;
-import org.homio.api.ui.field.ProgressBar;
 import org.homio.api.ui.field.action.ActionInputParameter;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.action.v1.layout.UIFlexLayoutBuilder;
@@ -34,6 +33,7 @@ import org.homio.api.ui.field.action.v1.layout.UILayoutBuilder;
 import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
 import org.homio.api.util.NotificationLevel;
+import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +50,7 @@ public interface EntityContextUI {
     default <T> T runWithProgressAndGet(@NotNull String progressKey, boolean cancellable,
         @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
         @Nullable Consumer<Exception> finallyBlock) {
-        ProgressBar progressBar = (progress, message) -> progress(progressKey, progress, message, cancellable);
+        ProgressBar progressBar = (progress, message, error) -> progress(progressKey, progress, message, cancellable);
         Exception exception = null;
         try {
             progressBar.progress(0, progressKey);
@@ -106,9 +106,15 @@ public interface EntityContextUI {
 
     /**
      * Request to reload window to UI
-     * @param reason -
+     *
+     * @param reason          -
+     * @param timeoutToReload - timeout to reload. Range 5..60 seconds
      */
-    void reloadWindow(@NotNull String reason);
+    void reloadWindow(@NotNull String reason, int timeoutToReload);
+
+    default void reloadWindow(@NotNull String reason) {
+        reloadWindow(reason, 5);
+    }
 
     void removeItem(@NotNull BaseEntity<?> baseEntity);
 
@@ -150,8 +156,17 @@ public interface EntityContextUI {
 
     void progress(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
 
+    /**
+     * Remove progress bar from UI
+     *
+     * @param key - progress id
+     */
+    default void progressDone(@NotNull String key) {
+        progress(key, 100D, null, false);
+    }
+
     default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
-                                  @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
+        @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
         sendConfirmation(key, title, responseType -> {
             if (responseType == DialogResponseType.Accepted) {
                 confirmHandler.run();

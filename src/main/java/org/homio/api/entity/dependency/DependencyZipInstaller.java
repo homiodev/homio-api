@@ -3,8 +3,8 @@ package org.homio.api.entity.dependency;
 import java.nio.file.Path;
 import org.homio.api.EntityContext;
 import org.homio.api.fs.archive.ArchiveUtil;
-import org.homio.api.ui.field.ProgressBar;
-import org.homio.api.util.Curl;
+import org.homio.hquery.Curl;
+import org.homio.hquery.ProgressBar;
 
 public interface DependencyZipInstaller {
 

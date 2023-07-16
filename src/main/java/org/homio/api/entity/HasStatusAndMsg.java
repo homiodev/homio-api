@@ -16,7 +16,7 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
 
     String DISTINGUISH_KEY = "status";
 
-    @UIField(order = 1, hideInEdit = true, hideOnEmpty = true)
+    @UIField(order = 1, hideInEdit = true, hideOnEmpty = true, disableEdit = true)
     @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     @UIFieldColorStatusMatch
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

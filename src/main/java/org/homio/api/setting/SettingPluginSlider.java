@@ -1,15 +1,15 @@
 package org.homio.api.setting;
 
 import org.homio.api.EntityContext;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public interface SettingPluginSlider extends SettingPluginInteger {
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Slider;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Slider;
     }
 
     default Integer getStep() {

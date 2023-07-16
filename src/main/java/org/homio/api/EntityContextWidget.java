@@ -61,7 +61,7 @@ public interface EntityContextWidget {
             @NotNull String entityID,
             @NotNull Consumer<LineChartBuilder> widgetBuilder);
 
-    enum AnimateColor {
+    enum PulseColor {
         black, red, blue, green, yellow
     }
 
@@ -271,7 +271,7 @@ public interface EntityContextWidget {
 
         DisplayWidgetBuilder setBackground(@Nullable String color,
                                            @Nullable Consumer<ThresholdBuilder> colorBuilder,
-                                           @Nullable Consumer<AnimateBuilder> animationBuilder);
+                                           @Nullable Consumer<PulseBuilder> animationBuilder);
 
         DisplayWidgetBuilder addSeries(@Nullable String name, @NotNull Consumer<DisplayWidgetSeriesBuilder> builder);
     }
@@ -659,10 +659,10 @@ public interface EntityContextWidget {
 
     interface ThresholdBuilder {
         //target i.e. icon/color,
-        ThresholdBuilder setThreshold(String target, Object numValue, ValueCompare op);
+        ThresholdBuilder setThreshold(String entity, Object numValue, ValueCompare op);
     }
 
-    interface AnimateBuilder {
-        AnimateBuilder setAnimate(AnimateColor animateColor, Object numValue, ValueCompare op);
+    interface PulseBuilder {
+        PulseBuilder setPulse(PulseColor pulseColor, Object numValue, ValueCompare op);
     }
 }

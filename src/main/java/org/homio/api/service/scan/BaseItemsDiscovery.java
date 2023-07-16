@@ -13,7 +13,7 @@ import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.ui.action.UIActionHandler;
-import org.homio.api.ui.field.ProgressBar;
+import org.homio.hquery.ProgressBar;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.util.FlowMap;
 import org.jetbrains.annotations.NotNull;

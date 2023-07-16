@@ -88,12 +88,24 @@ public class ActionResponseModel {
         return new ActionResponseModel(value, param0, value0, ResponseAction.info);
     }
 
+    public static ActionResponseModel showInfo(String value, String value0) {
+        return new ActionResponseModel(value, "VALUE", value0, ResponseAction.info);
+    }
+
     public static ActionResponseModel showWarn(String value, String param0, String value0) {
         return new ActionResponseModel(value, param0, value0, ResponseAction.warning);
     }
 
+    public static ActionResponseModel showWarn(String value, String value0) {
+        return new ActionResponseModel(value, "VALUE", value0, ResponseAction.warning);
+    }
+
     public static ActionResponseModel showError(String value, String param0, String value0) {
         return new ActionResponseModel(value, param0, value0, ResponseAction.error);
+    }
+
+    public static ActionResponseModel showError(String value, String value0) {
+        return new ActionResponseModel(value, "VALUE", value0, ResponseAction.error);
     }
 
     public static ActionResponseModel showSuccess(String value, String param0, String value0) {

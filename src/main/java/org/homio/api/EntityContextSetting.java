@@ -3,6 +3,7 @@ package org.homio.api;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.SystemUtils;
 import org.homio.api.model.HasEntityIdentifier;
@@ -165,17 +166,36 @@ public interface EntityContextSetting {
 
     <T> void setValueSilenceRaw(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String value);
 
+    default @NotNull String getEnvRequire(@NotNull String key) {
+        return Objects.requireNonNull(getEnv(key));
+    }
+
     @Nullable
     default String getEnv(@NotNull String key) {
-        return getEnv(key, String.class, null);
+        return getEnv(key, String.class, null, false);
     }
 
-    @NotNull
-    default String getEnv(@NotNull String key, @Nullable String defaultValue) {
-        return getEnv(key, String.class, defaultValue);
+    default @Nullable String getEnv(@NotNull String key, @Nullable String defaultValue, boolean store) {
+        return getEnv(key, String.class, defaultValue, store);
     }
 
-    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue);
+    default @NotNull <T> T getEnvRequire(@NotNull String key, @NotNull Class<T> classType, @NotNull T defaultValue, boolean store) {
+        return Objects.requireNonNull(getEnv(key, classType, defaultValue, store));
+    }
+
+    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue, boolean store);
+
+    default int getEnv(@NotNull String key, int defaultValue, boolean store) {
+        Integer value = getEnv(key, Integer.class, defaultValue, store);
+        return value == null ? defaultValue : value;
+    }
+
+    default boolean getEnv(@NotNull String key, boolean defaultValue, boolean store) {
+        Boolean value = getEnv(key, Boolean.class, defaultValue, store);
+        return value == null ? defaultValue : value;
+    }
+
+    void setEnv(@NotNull String key, @NotNull Object value);
 
     @NotNull String getApplicationVersion();
 
@@ -184,6 +204,7 @@ public interface EntityContextSetting {
     }
 
     interface MemSetterHandler {
+
         void setValue(@NotNull HasEntityIdentifier entity, @NotNull String key, @NotNull String title, @Nullable Object value);
 
         Object getValue(@NotNull HasEntityIdentifier entity, @NotNull String key, @Nullable Object defaultValue);

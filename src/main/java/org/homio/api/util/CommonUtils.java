@@ -1,5 +1,6 @@
 package org.homio.api.util;
 
+import static java.lang.String.format;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -8,7 +9,6 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,9 +71,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -84,11 +82,16 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.RestartHandlerOnChange;
 import org.homio.api.fs.TreeNode;
+import org.homio.api.fs.archive.ArchiveUtil;
+import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
+import org.homio.hquery.Curl;
+import org.homio.hquery.ProgressBar;
 import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.boot.system.ApplicationHome;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -102,8 +105,6 @@ import org.w3c.dom.Document;
 @Log4j2
 public class CommonUtils {
 
-    public static final String APP_UUID;
-    public static final int RUN_COUNT;
     @Getter
     private static final Path logsPath = getOrCreatePath("logs");
     @Getter
@@ -131,11 +132,12 @@ public class CommonUtils {
     @Getter
     private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
-    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static final ObjectMapper OBJECT_MAPPER;
     public static final ObjectMapper YAML_OBJECT_MAPPER;
     private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
+    private static Path rootPath;
 
     static {
         OBJECT_MAPPER = new ObjectMapper()
@@ -145,14 +147,33 @@ public class CommonUtils {
             .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        ConfFile confFile = readConfigurationFile();
-        APP_UUID = confFile.getUuid();
-        RUN_COUNT = confFile.getRunCount();
     }
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
+    }
+
+    /**
+     * Download archive file from url, extract, delete archive
+     *
+     * @param url            - url of archived source
+     * @param targetFileName - target file name
+     * @param progressBar    - progress bar to print progress
+     * @return unarchived downloaded folder
+     */
+    @SneakyThrows
+    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
+        @NotNull ProgressBar progressBar) {
+        progressBar.progress(0, format("Downloading '%s' from url '%s'", targetFileName, url));
+        Path targetFolder = CommonUtils.getInstallPath();
+        Path archiveFile = targetFolder.resolve(targetFileName);
+        if (!Files.exists(archiveFile)) {
+            Curl.downloadWithProgress(url, archiveFile, progressBar);
+        }
+        progressBar.progress(90, format("Extracting '%s' to path '%s'", archiveFile, targetFolder));
+        List<Path> files = ArchiveUtil.unzip(archiveFile, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
+        Files.deleteIfExists(archiveFile);
+        return files;
     }
 
     public static String getExtension(String fileName) {
@@ -238,7 +259,7 @@ public class CommonUtils {
 
     @SneakyThrows
     public static <T> List<T> readJSON(String resource, Class<T> targetClass) {
-        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(resource);
+        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(resource);
         List<T> list = new ArrayList<>();
         while (resources.hasMoreElements()) {
             list.add(OBJECT_MAPPER.readValue(resources.nextElement(), targetClass));
@@ -276,7 +297,7 @@ public class CommonUtils {
 
     public static List<String> readFile(String fileName) {
         try {
-            return IOUtils.readLines(Objects.requireNonNull(ClassLoader.getSystemClassLoader().getResourceAsStream(fileName)),
+            return IOUtils.readLines(Objects.requireNonNull(CommonUtils.class.getClassLoader().getResourceAsStream(fileName)),
                 Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
@@ -298,17 +319,15 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    private static List<Map<String, String>> readProperties(String path) {
-        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
-        List<Map<String, String>> properties = new ArrayList<>();
-        while (resources.hasMoreElements()) {
-            try (InputStream input = resources.nextElement().openStream()) {
-                Properties prop = new Properties();
-                prop.load(input);
-                properties.add(new HashMap(prop));
-            }
+    public static URL getResource(String addonID, String resource) {
+        URL resourceURL = null;
+        ArrayList<URL> urls = Collections.list(CommonUtils.class.getClassLoader().getResources(resource));
+        if (urls.size() == 1) {
+            resourceURL = urls.get(0);
+        } else if (urls.size() > 1 && addonID != null) {
+            resourceURL = urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
         }
-        return properties;
+        return resourceURL;
     }
 
     @SneakyThrows
@@ -356,24 +375,26 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static URL getResource(String addonID, String resource) {
-        URL resourceURL = null;
-        ArrayList<URL> urls = Collections.list(ClassLoader.getSystemClassLoader().getResources(resource));
-        if (urls.size() == 1) {
-            resourceURL = urls.get(0);
-        } else if (urls.size() > 1 && addonID != null) {
-            resourceURL = urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
-        }
-        return resourceURL;
-    }
-
-    @SneakyThrows
     public static <T> T readAndMergeJSON(String resource, T targetObject) {
         ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-        for (URL url : Collections.list(ClassLoader.getSystemClassLoader().getResources(resource))) {
+        for (URL url : Collections.list(CommonUtils.class.getClassLoader().getResources(resource))) {
             updater.readValue(url);
         }
         return targetObject;
+    }
+
+    @SneakyThrows
+    private static List<Map<String, String>> readProperties(String path) {
+        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(path);
+        List<Map<String, String>> properties = new ArrayList<>();
+        while (resources.hasMoreElements()) {
+            try (InputStream input = resources.nextElement().openStream()) {
+                Properties prop = new Properties();
+                prop.load(input);
+                properties.add(new HashMap(prop));
+            }
+        }
+        return properties;
     }
 
     public static boolean deletePath(Path path) {
@@ -540,9 +561,34 @@ public class CommonUtils {
         return relativePath;
     }
 
+    @SneakyThrows
+    public static @NotNull Path getHomioPropertiesLocation() {
+        Path propertiesFile = (SystemUtils.IS_OS_WINDOWS ? SystemUtils.getUserHome().toPath().resolve("homio") :
+            createDirectoriesIfNotExists(Paths.get("/opt/homio"))).resolve("homio.properties");
+        if (!Files.exists(propertiesFile)) {
+            ApplicationHome applicationHome = new ApplicationHome();
+            Path jarLocation = applicationHome.getDir().toPath();
+            return jarLocation.resolve("homio.properties");
+        }
+        return propertiesFile;
+    }
+
+    @SneakyThrows
     public static Path getRootPath() {
-        return SystemUtils.IS_OS_WINDOWS ? SystemUtils.getUserHome().toPath().resolve("homio") :
-            createDirectoriesIfNotExists(Paths.get("/opt/homio"));
+        if (rootPath == null) {
+            Path propertiesLocation = getHomioPropertiesLocation();
+            Properties homioProperties = new Properties();
+            try {
+                homioProperties.load(Files.newInputStream(propertiesLocation));
+                rootPath = Paths.get(homioProperties.getProperty("rootPath"));
+                Files.createDirectories(rootPath);
+            } catch (Exception ignore) {
+                rootPath = propertiesLocation.getParent();
+                homioProperties.setProperty("rootPath", rootPath.toString());
+                homioProperties.store(Files.newOutputStream(propertiesLocation), null);
+            }
+        }
+        return rootPath;
     }
 
     public static Path getOrCreatePath(String path) {
@@ -606,50 +652,8 @@ public class CommonUtils {
         NetworkHardwareRepository networkHardwareRepository = entityContext.getBean(NetworkHardwareRepository.class);
         String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
         deviceHandler.accept("127.0.0.1");
-        networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log, Collections.singleton(devicePort), 500,
+        networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log::info, Collections.singleton(devicePort), 500,
             (url, port) -> deviceHandler.accept(url));
-    }
-
- /*   @SneakyThrows
-    public static void tempDir(Consumer<Path> consumer) {
-        Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
-        Files.createDirectories(tmpDir);
-        try {
-            consumer.accept(tmpDir);
-        } finally {
-            if (!Files.deleteIfExists(tmpDir)) {
-                log.error("Unable to delete tmpDir: <{}>", tmpDir);
-            }
-        }
-    }*/
-
-    @SneakyThrows
-    private static ConfFile readConfigurationFile() {
-        Path confFilePath = getRootPath().resolve("homio.conf");
-        ConfFile confFile = null;
-        if (Files.exists(confFilePath)) {
-            try {
-                confFile = OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
-            } catch (Exception ex) {
-                log.error("Found corrupted config file. Regenerate new one.");
-            }
-        }
-        if (confFile == null) {
-            confFile = new ConfFile().setRunCount(0).setUuid(String.valueOf(System.currentTimeMillis()));
-        }
-        confFile.setRunCount(confFile.getRunCount() + 1);
-        OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
-        return confFile;
-    }
-
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    private static class ConfFile {
-
-        private String uuid;
-        @JsonProperty("run_count")
-        private int runCount;
     }
 
     public static class TemplateBuilder {

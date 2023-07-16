@@ -20,15 +20,9 @@ public class Icon {
 
     private @Nullable String icon;
     private @Nullable String color;
-    private @Nullable Boolean rotate;
 
     public Icon(@Nullable String icon) {
         this.icon = icon;
-    }
-
-    public Icon(@Nullable String icon, @Nullable String color) {
-        this.icon = icon;
-        this.color = color;
     }
 
     public static @Nullable String defaultOrIcon(@Nullable String defaultIcon, @Nullable Icon icon) {

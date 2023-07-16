@@ -2,19 +2,20 @@ package org.homio.api.setting;
 
 import java.util.Collection;
 import org.homio.api.EntityContext;
-import org.homio.api.model.OptionModel;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.exception.NotFoundException;
+import org.homio.api.model.OptionModel;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
+
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.SelectBoxDynamic;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.SelectBoxDynamic;
     }
 
     @Override
-    default Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
+    default @NotNull Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
         return OptionModel.simpleNamelist(entityContext.getBeansOfType(getType()));
     }
 

@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.ui.field.ProgressBar;
+import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -137,9 +137,6 @@ public interface EntityContextBGP {
         // default - false
         @NotNull ProgressBuilder setCancellable(boolean cancellable);
 
-        // default - true
-        @NotNull ProgressBuilder setLogToConsole(boolean log);
-
         /**
          * Throw error if process already exists
          *
@@ -174,8 +171,9 @@ public interface EntityContextBGP {
 
     interface ProcessBuilder {
 
-        // default is true
-        @NotNull ProcessBuilder logToConsole(boolean value);
+        @NotNull ProcessBuilder setInputLoggerOutput(@Nullable Consumer<String> inputConsumer);
+
+        @NotNull ProcessBuilder setErrorLoggerOutput(@Nullable Consumer<String> errorConsumer);
 
         @NotNull ProcessBuilder onStarted(@NotNull ThrowingConsumer<ProcessContext, Exception> startedHandler);
 

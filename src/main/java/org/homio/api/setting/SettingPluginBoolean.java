@@ -1,6 +1,6 @@
 package org.homio.api.setting;
 
-import org.homio.api.ui.field.UIFieldType;
+import org.jetbrains.annotations.NotNull;
 
 public interface SettingPluginBoolean extends SettingPlugin<Boolean> {
 
@@ -9,17 +9,17 @@ public interface SettingPluginBoolean extends SettingPlugin<Boolean> {
     }
 
     @Override
-    default String getDefaultValue() {
+    default @NotNull String getDefaultValue() {
         return Boolean.toString(defaultValue());
     }
 
     @Override
-    default Class<Boolean> getType() {
+    default @NotNull Class<Boolean> getType() {
         return Boolean.class;
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Boolean;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Boolean;
     }
 }

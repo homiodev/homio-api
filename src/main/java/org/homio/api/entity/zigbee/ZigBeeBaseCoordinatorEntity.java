@@ -6,8 +6,9 @@ import java.util.Collection;
 import java.util.Map;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.entity.log.HasEntityLog;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.entity.HasEntityLog;
+import org.homio.api.service.EntityService;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldSlider;
@@ -15,7 +16,6 @@ import org.homio.api.ui.field.selection.UIFieldDevicePortSelection;
 import org.homio.api.ui.field.selection.UIFieldSelectNoValue;
 import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.homio.api.util.CommonUtils;
-import org.homio.api.service.EntityService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +25,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     @UIField(order = 1, inlineEdit = true)
     @UIFieldGroup(value = "GENERAL", order = 1)
     default boolean isStart() {
-        return getJsonData("start", false);
+        return getJsonData("start", true);
     }
 
     default T setStart(boolean start) {

@@ -1,6 +1,6 @@
-package org.homio.api.entity;
+package org.homio.api.entity.log;
 
-import java.nio.file.Path;
+import org.homio.api.entity.HasJsonData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,15 +15,6 @@ public interface HasEntityLog extends HasJsonData {
     }
 
     void logBuilder(@NotNull EntityLogBuilder entityLogBuilder);
-
-    /**
-     * Some entity/service would provide extra log files.
-     *
-     * @return path to file or null
-     */
-    default @Nullable Path getExtraLogFile() {
-        return null;
-    }
 
     interface EntityLogBuilder {
 
