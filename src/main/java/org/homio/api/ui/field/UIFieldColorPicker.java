@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorPicker {
     /**
-     * @return  Allow user to use threshold functionality for showing different icon depend on 'value'
+     * @return Allow user to use threshold functionality for showing different icon depend on 'value'
      */
     boolean allowThreshold() default false;
 
@@ -22,4 +22,11 @@ public @interface UIFieldColorPicker {
      * @return -
      */
     boolean pulseColorCondition() default false;
+
+    /**
+     * Set if need select 'source'(variables) value to change on threshold background
+     *
+     * @return -
+     */
+    boolean thresholdSource() default false;
 }

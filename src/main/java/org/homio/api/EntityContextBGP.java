@@ -28,6 +28,14 @@ public interface EntityContextBGP {
 
     EntityContext getEntityContext();
 
+    static boolean cancel(ThreadContext<?> threadContext) {
+        if (threadContext != null) {
+            threadContext.cancel();
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Create builder to run new thread/scheduler.
      *

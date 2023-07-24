@@ -26,4 +26,10 @@ public @interface UIFieldSlider {
      * @return fetch max value from maxRef field instead of ax if specified
      */
     @Nullable String maxRef() default "";
+
+    /**
+     * Specify extra number value that able to apply to slider i.e. for disable status
+     * @return extra value
+     */
+    String extraValue() default "";
 }

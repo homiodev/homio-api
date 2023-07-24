@@ -35,6 +35,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
 
     @Id
     @Getter
+    @JsonIgnore // serialized by Bean2MixIn
     @Column(length = 64, nullable = false, unique = true)
     @GeneratedValue(generator = "id-generator")
     @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.HomioIdGenerator")
@@ -46,6 +47,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     @Getter
     @UIField(order = 10, inlineEdit = true)
     @UIFieldGroup(value = "GENERAL", order = 10)
+    @Nullable
     private String name;
 
     @Getter
@@ -68,18 +70,18 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public void configureOptionModel(@NotNull OptionModel optionModel) {
     }
 
-    public T setName(String name) {
+    public T setName(@Nullable String name) {
         this.name = name;
         return (T) this;
     }
 
-    public T setCreationTime(Date creationTime) {
+    public T setCreationTime(@Nullable Date creationTime) {
         this.creationTime = creationTime;
         return (T) this;
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public final boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }
@@ -94,6 +96,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
      * Method return default name to store when persist entity
      */
     @JsonIgnore
+    @Nullable
     public abstract String getDefaultName();
 
     @Override
@@ -174,14 +177,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
     }
 
-    public void copy() {
-        entityID = null;
-        creationTime = null;
-        updateTime = null;
-
-        getEntityContext().getBean(EntityManager.class).detach(this);
-    }
-
     @JsonIgnore
     @JSONPropertyIgnore
     public @NotNull EntityContext getEntityContext() {
@@ -202,5 +197,15 @@ public abstract class BaseEntity<T extends BaseEntity> implements
      */
     public @Nullable Icon getEntityIcon() {
         return null;
+    }
+
+    /**
+     * Specify type for dynamic update. For widget it will be always: 'widget', etc...
+     *
+     * @return - dynamic widget type
+     */
+    @JsonIgnore
+    public @NotNull String getDynamicUpdateType() {
+        return getType();
     }
 }

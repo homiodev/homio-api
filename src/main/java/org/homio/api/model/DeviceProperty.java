@@ -1,4 +1,4 @@
-package org.homio.api.entity.zigbee;
+package org.homio.api.model;
 
 import java.time.Duration;
 import java.util.function.Consumer;
@@ -9,9 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Specify zigbee single endpoint
+ * Specify device single endpoint
  */
-public interface ZigBeeProperty {
+public interface DeviceProperty {
 
     /**
      * @return This property name

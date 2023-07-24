@@ -24,6 +24,7 @@ import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.homio.api.ui.field.selection.UIFieldSelection;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Entity
@@ -36,6 +37,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
 
     @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
     @Getter
+    @Nullable
     private String ieeeAddress;
 
     @Setter
@@ -44,12 +46,14 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @UIField(order = 50, type = UIFieldType.SelectBox, color = "#538744")
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE")
+    @Nullable
     private String place;
 
     @Getter
     @Setter
     @Column(length = 100_000)
     @Convert(converter = JSONConverter.class)
+    @NotNull
     private JSON jsonData = new JSON();
 
     /**

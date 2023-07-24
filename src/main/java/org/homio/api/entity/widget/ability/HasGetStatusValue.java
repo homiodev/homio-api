@@ -8,17 +8,20 @@ import org.homio.api.EntityContext;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.storage.SourceHistory;
 import org.homio.api.storage.SourceHistoryItem;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 /**
  * For widget dataSource to fetch simple entity status
  */
 public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueListener {
-    Object getStatusValue(GetStatusValueRequest request);
 
-    SourceHistory getSourceHistory(GetStatusValueRequest request);
+    Object getStatusValue(@NotNull GetStatusValueRequest request);
 
-    List<SourceHistoryItem> getSourceHistoryItems(GetStatusValueRequest request, int from, int count);
+    SourceHistory getSourceHistory(@NotNull GetStatusValueRequest request);
+
+    List<SourceHistoryItem> getSourceHistoryItems(@NotNull GetStatusValueRequest request, int from, int count);
 
     /**
      * @return uses for UI to determine class type description
@@ -31,7 +34,7 @@ public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
      * @param entityContext -
      * @return Get current value with unit or whatever to show on ui in popup. May contains HTML
      */
-    default String getStatusValueRepresentation(EntityContext entityContext) {
+    default String getStatusValueRepresentation(@NotNull EntityContext entityContext) {
         return null;
     }
 
@@ -42,7 +45,8 @@ public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     @Getter
     @AllArgsConstructor
     class GetStatusValueRequest {
-        private EntityContext entityContext;
-        private JSONObject dynamicParameters;
+
+        private @NotNull EntityContext entityContext;
+        private @Nullable JSONObject dynamicParameters;
     }
 }

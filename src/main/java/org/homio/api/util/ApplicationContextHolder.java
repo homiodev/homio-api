@@ -1,5 +1,6 @@
 package org.homio.api.util;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -16,12 +17,12 @@ public class ApplicationContextHolder implements ApplicationContextAware {
         return applicationContext.getBean(clazz);
     }
 
-    public static <T> Object getBean(String name) {
+    public static Object getBean(String name) {
         return applicationContext.getBean(name);
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
+    public void setApplicationContext(@NotNull ApplicationContext context) throws BeansException {
         applicationContext = context;
     }
 }

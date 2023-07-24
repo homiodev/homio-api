@@ -8,9 +8,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import lombok.SneakyThrows;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
-import org.homio.api.exception.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -102,7 +102,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
      */
     @Nullable S createService(@NotNull EntityContext entityContext);
 
-    @NotNull String getEntityID();
+    String getEntityID();
 
     default void destroyService() throws Exception {
         S service = (S) entityToService.remove(getEntityID());
