@@ -10,6 +10,7 @@ import lombok.SneakyThrows;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.exception.NotFoundException;
+import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -49,6 +50,12 @@ public interface EntityContext {
         return getEntity(entityID, true);
     }
 
+    @Nullable
+    default <T extends BaseEntity> T getEntity(Class<T> entityClass, @NotNull String entityID) {
+        String fullEntityID = CommonUtils.newInstance(entityClass).setEntityID(entityID).getEntityID();
+        return getEntity(fullEntityID, true);
+    }
+
     @NotNull
     default <T extends BaseEntity> T getEntityRequire(@NotNull String entityID) {
         T entity = getEntity(entityID, true);
@@ -56,6 +63,12 @@ public interface EntityContext {
             throw new NotFoundException("Unable to find entity: " + entityID);
         }
         return entity;
+    }
+
+    @NotNull
+    default <T extends BaseEntity> T getEntityRequire(Class<T> entityClass, @NotNull String entityID) {
+        String fullEntityID = CommonUtils.newInstance(entityClass).setEntityID(entityID).getEntityID();
+        return getEntityRequire(fullEntityID);
     }
 
     @Nullable
@@ -110,8 +123,6 @@ public interface EntityContext {
     }
 
     @Nullable BaseEntity<? extends BaseEntity> delete(@NotNull String entityId);
-
-    @Nullable <T extends BaseEntity> T getEntityByName(@NotNull String name, @NotNull Class<T> entityClass);
 
     @NotNull <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
 

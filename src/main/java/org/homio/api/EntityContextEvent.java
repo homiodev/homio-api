@@ -133,10 +133,13 @@ public interface EntityContextEvent {
 
     /**
      * Run only once when internet became available. command executes in separate thread
-     * @param name - name
+     *
+     * @param name    - name
      * @param command - command
      */
     void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
+
+    boolean isInternetUp();
 
     /**
      * Listen for any port changes with key. Replace listener if key already exists

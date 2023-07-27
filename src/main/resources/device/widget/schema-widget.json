@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Request property name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Default property value",
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "type": {
+          "title": "Property type to render on UI",
+          "type": "string",
+          "enum": [
+            "number"
+          ]
+        },
+        "title": {
+          "title": "Property description on UI",
+          "type": "string"
+        },
+        "target": {
+          "title": "Property target to apply on",
+          "type": "string"
+        },
+        "min": {
+          "title": "set min value for 'number' request type",
+          "type": "number"
+        },
+        "max": {
+          "title": "set max value for 'number' request type",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "title",
+        "value",
+        "type",
+        "target"
+      ]
+    },
+    "prop": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Device property name",
+          "type": "string"
+        },
+        "valueConverter": {
+          "type": "string"
+        },
+        "valueColor": {
+          "type": "string"
+        },
+        "valueConverterRefreshInterval": {
+          "type": "integer",
+          "default": "0"
+        },
+        "valueSourceClickHistory": {
+          "title": "Set value as clickable to see property full history",
+          "type": "boolean",
+          "default": "true"
+        },
+        "iconColor": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "thresholds": {
+              "$ref": "/device/widget/schema-threshold.json"
+            }
+          }
+        },
+        "icon": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "thresholds": {
+              "$ref": "/device/widget/schema-threshold.json"
+            }
+          }
+        },
+        "chart": {
+          "$ref": "/device/widget/schema-chart.json"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  "properties": {
+    "type": {
+      "title": "Widget type",
+      "type": "string",
+      "enum": [
+        "color",
+        "display",
+        "compose",
+        "barTime",
+        "toggle",
+        "line"
+      ]
+    },
+    "requests": {
+      "title": "List of inputs to request on UI",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/request"
+      }
+    },
+    "props": {
+      "title": "Device list of properties to display",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/prop"
+      }
+    },
+    "name": {
+      "title": "Title to show in context menu on UI",
+      "type": "string"
+    },
+    "icon": {
+      "title": "Icon to show in context menu on UI",
+      "type": "string"
+    },
+    "autoDiscovery": {
+      "type": "boolean"
+    },
+    "leftEndpoint": {
+      "type": "string"
+    },
+    "centerEndpoint": {
+      "type": "string"
+    },
+    "rightEndpoint": {
+      "type": "string"
+    },
+    "index": {
+      "type": "integer"
+    },
+    "background": {
+      "$ref": "/device/widget/schema-color-picker.json"
+    },
+    "blockHeight": {
+      "type": "integer",
+      "default": "1"
+    },
+    "widgetHeight": {
+      "type": "integer"
+    },
+    "layout": {
+      "type": "string"
+    },
+    "options": {
+      "$ref": "/device/widget/schema-widget-options.json"
+    },
+    "padding": {
+      "type": "object",
+      "properties": {
+        "top": {
+          "type": "integer"
+        },
+        "right": {
+          "type": "integer"
+        },
+        "bottom": {
+          "type": "integer"
+        },
+        "left": {
+          "type": "integer"
+        }
+      }
+    },
+    "compose": {
+      "type": "array",
+      "items": {
+        "$ref": "/device/widget/schema-widget.json"
+      }
+    }
+  },
+  "required": [
+    "type"
+  ]
+}

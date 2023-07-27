@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "source": {
+      "$ref": "/device/widget/schema-source.json"
+    },
+    "stepped": {
+      "title": "Step Interpolation",
+      "type": "string",
+      "enum": [
+        "False",
+        "True",
+        "Before",
+        "After",
+        "Middle"
+      ],
+      "default": "False"
+    },
+    "fill": {
+      "title": "How to fill the area under the line",
+      "type": "string",
+      "enum": [
+        "Start",
+        "End",
+        "Origin",
+        "Disabled",
+        "Stack"
+      ],
+      "default": "Origin"
+    },
+    "lineBorderWidth": {
+      "title": "The line width (in pixels)",
+      "type": "integer",
+      "default": "2"
+    },
+    "color": {
+      "title": "Chart color",
+      "type": "string"
+    },
+    "aggregateFunc": {
+      "type": "string",
+      "enum": [
+        "None",
+        "First",
+        "Last",
+        "Min",
+        "Max",
+        "Sum",
+        "Count",
+        "Average",
+        "AverageNoZero",
+        "Median"
+      ],
+      "default": "Average"
+    },
+    "opacity": {
+      "title": "Specify chart fill opacity applied to Chart color",
+      "type": "integer",
+      "default": "50"
+    },
+    "height": {
+      "title": "Chart height in % of parent container",
+      "type": "integer",
+      "default": "30"
+    },
+    "smoothing": {
+      "type": "boolean",
+      "default": "true"
+    },
+    "fillEmptyValues": {
+      "title": "Fill empty values",
+      "type": "boolean",
+      "default": "false"
+    },
+    "min": {
+      "title": "Minimum chart value",
+      "type": "integer"
+    },
+    "max": {
+      "title": "Maximum chart value",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "source"
+  ]
+}

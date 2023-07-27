@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.model.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,7 +57,6 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
                 S service = createService(entityContext);
                 if (service != null) {
                     entityToService.put(getEntityID(), service);
-                    testService();
                 }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -65,32 +64,6 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             return Optional.ofNullable((S) entityToService.get(getEntityID()));
         } finally {
             serviceAccessLock.unlock();
-        }
-    }
-
-    default boolean requireTestServiceInBackground() {
-        return false;
-    }
-
-    default void testService() {
-        if (requireTestServiceInBackground()) {
-            getEntityContext().bgp().builder("service-test-" + getEntityID()).execute(this::testServiceInternal);
-        } else {
-            testServiceInternal();
-        }
-    }
-
-    private void testServiceInternal() {
-        try {
-            Status backupStatus = getStatus();
-            setStatus(Status.TESTING);
-            if (getService().testService()) {
-                setStatusOnline();
-            } else {
-                setStatus(backupStatus);
-            }
-        } catch (Exception ex) {
-            setStatusError(ex);
         }
     }
 
@@ -111,45 +84,75 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         }
     }
 
-    interface ServiceInstance<E extends EntityService<?, ?>> {
-        /**
-         * Fires to update entity inside in-memory service each time when entity fetched/updated
-         * testService() method calls always after this to check service actual status
-         *
-         * @param entity -
-         * @return true - need call testService()
-         */
-        boolean entityUpdated(@NotNull E entity);
+    @Getter
+    abstract class ServiceInstance<E extends EntityService<?, ?>> {
 
-        @NotNull E getEntity();
+        protected final EntityContext entityContext;
+        protected final String entityID;
+        protected E entity;
+        protected long entityHashCode;
+
+        public ServiceInstance(EntityContext entityContext, E entity) {
+            this.entityContext = entityContext;
+            this.entity = entity;
+            this.entityID = entity.getEntityID();
+            this.entityHashCode = getEntityHashCode(entity);
+        }
+
+        public void testServiceWithSetStatus() {
+            try {
+                testService();
+                entity.setStatusOnline();
+            } catch (Exception ex) {
+                entity.setStatusError(ex);
+            }
+        }
+
+        /**
+         * Fires to update entity inside in-memory service each time when entity fetched/updated testService() method calls always after this to check service
+         * actual status
+         *
+         * @param newEntity - updated entity
+         */
+        public final void entityUpdated(@NotNull E newEntity) {
+            long newEntityHashCode = getEntityHashCode(newEntity);
+            boolean requireReinitialize = entityHashCode != newEntityHashCode;
+            entityHashCode = newEntityHashCode;
+            entity = newEntity;
+
+            if (requireReinitialize) {
+                fireInitialize();
+            }
+        }
 
         /**
          * @return watchdog if service supports watchdog capabilities
          */
-        @Nullable default WatchdogService getWatchdog() {
+        public @Nullable WatchdogService getWatchdog() {
             return null;
         }
 
-        /**
-         * Test service must check if service became/still available.
-         *
-         * @return true - set entity status to ONLINE. false - keep existed
-         * @throws Exception - set entity status to ERROR
-         */
-        boolean testService() throws Exception;
-
-        default void testServiceWithSetStatus() throws Exception {
+        protected boolean fireInitialize() {
             try {
-                if (testService()) {
-                    getEntity().setStatusOnline();
-                }
+                initialize();
+                return true;
             } catch (Exception ex) {
-                getEntity().setStatusError(ex);
-                throw ex;
+                entity.setStatusError(ex);
+                return false;
             }
         }
 
-        void destroy() throws Exception;
+        protected void testService() {
+
+        }
+
+        protected abstract void initialize();
+
+        protected abstract long getEntityHashCode(E entity);
+
+        protected void destroy() throws Exception {
+
+        }
     }
 
     interface WatchdogService {

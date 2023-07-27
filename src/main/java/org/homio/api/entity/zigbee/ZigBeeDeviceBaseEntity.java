@@ -1,10 +1,9 @@
 package org.homio.api.entity.zigbee;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Map;
 import lombok.extern.log4j.Log4j2;
 import org.homio.api.entity.DeviceBaseEntity;
-import org.homio.api.model.DeviceProperty;
+import org.homio.api.entity.DeviceBaseEntity.HasEndpointsDevice;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.model.HrefModel;
 import org.jetbrains.annotations.NotNull;
@@ -23,30 +22,12 @@ import org.jetbrains.annotations.Nullable;
          "updated~#7EAD28:fas fa-clock-rotate-left:fas fa-clock-rotate-left fa-flip-horizontal",
          "status~#7EAD28:fas fa-turn-up:fas fa-turn-down",
          "place~#9C27B0:fas fa-location-dot:fas fa-location-dot fa-rotate-180"
-               })
-public abstract class ZigBeeDeviceBaseEntity<T extends ZigBeeDeviceBaseEntity> extends DeviceBaseEntity<T> {
-
-    public abstract @Nullable String getDescription();
-
-    /**
-     * Last item updated
-     *
-     * @return string representation of last item updated
-     */
-    public abstract @Nullable String getUpdated();
+     })
+public abstract class ZigBeeDeviceBaseEntity<T extends ZigBeeDeviceBaseEntity> extends DeviceBaseEntity<T>
+    implements HasEndpointsDevice {
 
     public abstract @Nullable HrefModel getManufacturer();
 
     @JsonIgnore
-    public abstract @NotNull String getModel();
-
-    @JsonIgnore
     public abstract @NotNull String getDeviceFullName();
-
-    @JsonIgnore
-    public abstract @NotNull Map<String, DeviceProperty> getProperties();
-
-    public @Nullable DeviceProperty getProperty(@NotNull String property) {
-        return getProperties().get(property);
-    }
 }

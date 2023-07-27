@@ -25,11 +25,19 @@ public interface HasJsonData {
     @NotNull
     JSON getJsonData();
 
-    default long getJsonDataHashCode(String key, String... extraKeys) {
-        long code = key.hashCode();
-        for (String extraKey : extraKeys) {
-            Object value = getJsonData().opt(extraKey);
+    default long getJsonDataHashCode(@Nullable String key, @Nullable String... extraKeys) {
+        long code = 0;
+        if (key != null) {
+            Object value = getJsonData().opt(key);
             code += (value == null ? 0 : value.hashCode());
+        }
+        if (extraKeys != null) {
+            for (String extraKey : extraKeys) {
+                if (extraKey != null) {
+                    Object value = getJsonData().opt(extraKey);
+                    code += (value == null ? 0 : value.hashCode());
+                }
+            }
         }
         return code;
     }
@@ -46,6 +54,17 @@ public interface HasJsonData {
     default <P> void setJsonData(@NotNull String key, @Nullable P value) {
         if (value == null) {
             getJsonData().remove(key);
+        }
+        getJsonData().put(key, value);
+    }
+
+    default <P> void setJsonDataSecure(@NotNull String key, @Nullable P value) {
+        if (value == null) {
+            getJsonData().remove(key);
+        }
+        // ignore if editing and pass 'Secure:XXXXX' to save
+        if ("Secure:XXXXX".equals(value)) {
+            return;
         }
         getJsonData().put(key, value);
     }

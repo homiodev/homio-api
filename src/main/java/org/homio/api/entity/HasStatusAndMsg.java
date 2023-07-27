@@ -20,38 +20,38 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
     @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     @UIFieldColorStatusMatch
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    default Status getStatus() {
+    default @NotNull Status getStatus() {
         return EntityContextSetting.getStatus(((T) this), DISTINGUISH_KEY, Status.UNKNOWN);
     }
 
-    @UIField(order = 2, hideInEdit = true, hideOnEmpty = true)
+    @UIField(order = 2, hideInEdit = true, hideOnEmpty = true, color = "#B22020")
     @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
-    default String getStatusMessage() {
+    default @Nullable String getStatusMessage() {
         return EntityContextSetting.getMessage(((T) this), DISTINGUISH_KEY);
     }
 
-    default T setStatusOnline() {
+    default @NotNull T setStatusOnline() {
         return setStatus(Status.ONLINE, null);
     }
 
-    default T setStatusError(@NotNull Exception ex) {
+    default @NotNull T setStatusError(@NotNull Exception ex) {
         return setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
     }
 
-    default T setStatusError(@NotNull String message) {
+    default @NotNull T setStatusError(@NotNull String message) {
         return setStatus(Status.ERROR, message);
     }
 
-    default T setStatus(@NotNull Status status) {
+    default @NotNull T setStatus(@NotNull Status status) {
         return setStatus(status, status == Status.ONLINE ? null : getStatusMessage());
     }
 
-    default T setStatus(@Nullable Status status, @Nullable String msg) {
+    default @NotNull T setStatus(@Nullable Status status, @Nullable String msg) {
         EntityContextSetting.setStatus((BaseEntityIdentifier) this, DISTINGUISH_KEY, "Status", status, msg);
         return (T) this;
     }
 
-    default T setStatusMessage(@Nullable String msg) {
+    default @NotNull T setStatusMessage(@Nullable String msg) {
         EntityContextSetting.setMessage(((T) this), DISTINGUISH_KEY, msg);
         return (T) this;
     }

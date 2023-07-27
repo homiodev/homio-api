@@ -2,6 +2,7 @@ package org.homio.api.util;
 
 public class Constants {
 
+    public static final String PRIMARY_DEVICE = "primary";
     public static final String PRIMARY_COLOR = "primary";
     public static final String DANGER_COLOR = "danger";
 

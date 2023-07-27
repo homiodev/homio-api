@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "version": {
+      "description": "Specify file version",
+      "type": "string"
+    },
+    "devices": {
+      "type": "array",
+      "description": "Device list",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Uses only in json file to distinguish devices by functionality",
+            "type": "string"
+          },
+          "endpoints": {
+            "title": "List of 'or' endpoints to apply widget for",
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "models": {
+            "title": "List of custom device's model to have same widgets/icons/etc...",
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "icon": {
+            "type": "string"
+          },
+          "iconColor": {
+            "type": "string"
+          },
+          "widgets": {
+            "title": "Describe widgets that able to create in context menu for device",
+            "type": "array",
+            "items": [
+              {
+                "$ref": "/device/widget/schema-widget.json"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    "propertiesWithoutVariables": {
+      "title": "Set of properties that should be created but do not create variable for storing in db",
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "ignoreProperties": {
+      "title": "Set of properties that should be fully ignored",
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "properties": {
+      "type": "array",
+      "description": "Device endpoint list",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Device property name",
+            "type": "string"
+          },
+          "icon": {
+            "title": "Device property icon",
+            "type": "string"
+          },
+          "iconColor": {
+            "title": "Device property icon color",
+            "type": "string"
+          },
+          "order": {
+            "title": "Device property order",
+            "type": "number"
+          },
+          "alias": {
+            "title": "List of property aliases. App skip property aliases if property exists alongside with any alias",
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "icon",
+          "iconColor"
+        ]
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "List of models group name",
+              "type": "string"
+            },
+            "models": {
+              "title": "Model list",
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "title": "JSON schema for the devices widget configuration file",
+  "type": "object"
+}

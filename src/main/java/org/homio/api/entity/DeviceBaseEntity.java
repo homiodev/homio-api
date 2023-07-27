@@ -1,5 +1,6 @@
 package org.homio.api.entity;
 
+import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
 import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -8,19 +9,26 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.converter.JSONConverter;
+import org.homio.api.model.Icon;
 import org.homio.api.model.JSON;
 import org.homio.api.model.Status;
 import org.homio.api.model.Status.EntityStatus;
+import org.homio.api.model.endpoint.DeviceEndpoint;
+import org.homio.api.model.endpoint.DeviceEndpointUI;
 import org.homio.api.optionProvider.SelectPlaceOptionLoader;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldType;
+import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
+import org.homio.api.ui.field.inline.UIFieldInlineEntities;
 import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.homio.api.ui.field.selection.UIFieldSelection;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
@@ -33,7 +41,9 @@ import org.jetbrains.annotations.Nullable;
 @NoArgsConstructor
 @Accessors(chain = true)
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
-        implements HasJsonData, HasStatusAndMsg<T> {
+    implements HasJsonData, HasStatusAndMsg<T> {
+
+    private static final String PREFIX = "dvc_";
 
     @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
     @Getter
@@ -81,9 +91,18 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     /**
      * Uses on UI to set png image with appropriate status and mark extra image if need
      */
-    public @Nullable Status.EntityStatus getEntityStatus() {
+    public @NotNull Status.EntityStatus getEntityStatus() {
         Status status = getStatus();
-        return status == null ? null : new EntityStatus(status);
+        return new EntityStatus(status);
+    }
+
+    // May be required for @UIFieldColorBgRef("statusColor")
+    public @NotNull String getStatusColor() {
+        EntityStatus entityStatus = getEntityStatus();
+        if (entityStatus.getValue().isOnline()) {
+            return "";
+        }
+        return entityStatus.getColor() + "30";
     }
 
     /**
@@ -100,7 +119,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
         return getImageIdentifierImpl();
     }
 
-    public void setImageIdentifier(String value) {
+    public void setImageIdentifier(@Nullable String value) {
         setJsonData("img", value);
     }
 
@@ -116,5 +135,51 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @JsonIgnore
     protected @Nullable String getImageIdentifierImpl() {
         return getJsonData("img");
+    }
+
+    @Override
+    public final @NotNull String getEntityPrefix() {
+        return PREFIX + getDevicePrefix() + "_";
+    }
+
+    protected abstract @NotNull String getDevicePrefix();
+
+    public interface HasEndpointsDevice extends HasDynamicContextMenuActions {
+
+        @JsonIgnore
+        @NotNull Map<String, DeviceEndpoint> getDeviceEndpoints();
+
+        default @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String endpoint) {
+            return getDeviceEndpoints().get(endpoint);
+        }
+
+        @Nullable String getDescription();
+
+        String getEntityID();
+
+        String getIeeeAddress();
+
+        @JsonIgnore
+        @NotNull String getModel();
+
+        /**
+         * Last item updated
+         *
+         * @return string representation of last item updated
+         */
+        default @Nullable String getUpdated() {
+            DeviceEndpoint endpoint = getDeviceEndpoint(ENDPOINT_LAST_SEEN);
+            return endpoint == null ? null : endpoint.getLastValue().stringValue();
+        }
+
+        @UIField(order = 9999)
+        @UIFieldInlineEntities(bg = "#27FF0005")
+        default List<DeviceEndpointUI> getEndpoints() {
+            return DeviceEndpointUI.build(getDeviceEndpoints().values());
+        }
+
+        @Nullable Icon getEntityIcon();
+
+        @Nullable String getPlace();
     }
 }

@@ -7,8 +7,8 @@ import java.util.Map;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.entity.log.HasEntityLog;
-import org.homio.api.model.DeviceProperty;
 import org.homio.api.model.HasEntityIdentifier;
+import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.service.EntityService;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
@@ -74,12 +74,10 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     }
 
     /**
-     * @return all available properties
-     * Key - device's ieeeAddress
-     * Value - Map[propertyName, property]
+     * @return all available properties Key - device's ieeeAddress Value - Map[propertyName, property]
      */
     @JsonIgnore
-    @NotNull Map<String, Map<String, ? extends DeviceProperty>> getCoordinatorTree();
+    @NotNull Map<String, Map<String, ? extends DeviceEndpoint>> getCoordinatorTree();
 
     /**
      * @return all zigbee devices registered in this coordinator

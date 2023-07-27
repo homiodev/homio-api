@@ -52,6 +52,14 @@ public interface State {
 
     int intValue();
 
+    default int intValue(int defaultValue) {
+        try {
+            return intValue();
+        } catch (Exception ex) {
+            return defaultValue;
+        }
+    }
+
     Object rawValue();
 
     String stringValue();

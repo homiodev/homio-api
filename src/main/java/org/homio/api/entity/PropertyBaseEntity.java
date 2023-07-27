@@ -21,9 +21,10 @@ import org.jetbrains.annotations.NotNull;
 @Setter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends DeviceBaseEntity<O>>
-        extends BaseEntity<T> implements HasJsonData {
-    public static final String PREFIX = "pin_";
+public abstract class PropertyBaseEntity<T extends PropertyBaseEntity<T, O>, O extends DeviceBaseEntity<O>>
+    extends BaseEntity<T> implements HasJsonData {
+
+    public static final String PREFIX = "prop_";
 
     @Override
     public String getDefaultName() {
@@ -46,24 +47,26 @@ public abstract class PinBaseEntity<T extends PinBaseEntity<T, O>, O extends Dev
         }
     }
 
-    @UIField(order = 20, hideInEdit = true)
-    private int address;
+    @UIField(order = 20, hideInEdit = true, hideOnEmpty = true)
+    private Integer address;
 
-    @UIField(order = 100, hideInView = true)
+    @UIField(order = 1)
     private String description;
 
     @Getter
     @Setter
-    @Column(length = 1000)
+    @Column(length = 10_000)
     @Convert(converter = JSONConverter.class)
     private JSON jsonData = new JSON();
 
     private int position;
 
     @Override
-    public @NotNull String getEntityPrefix() {
-        return PREFIX;
+    public final @NotNull String getEntityPrefix() {
+        return PREFIX + getPropertyPrefix() + "_";
     }
+
+    public abstract @NotNull String getPropertyPrefix();
 
     @Override
     public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {

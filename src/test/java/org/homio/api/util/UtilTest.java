@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class UtilTest {
 
     @Test
-    public void testZ2MUpdateConfiguration() {
+    public void testUpdateJsonPath() {
         ObjectNode node = OBJECT_MAPPER.createObjectNode();
         Assertions.assertTrue(updateJsonPath(node, "active/timeout", 14));
         Assertions.assertFalse(updateJsonPath(node, "active/timeout", 14));

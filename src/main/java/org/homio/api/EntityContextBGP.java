@@ -215,6 +215,11 @@ public interface EntityContextBGP {
 
         @NotNull ScheduleBuilder<T> interval(@NotNull Duration duration);
 
+        default @NotNull ScheduleBuilder<T> intervalWithDelay(@NotNull Duration duration) {
+            delay(duration);
+            return interval(duration);
+        }
+
         @NotNull ScheduleBuilder<T> throwOnError(boolean value);
 
         @NotNull ScheduleBuilder<T> onError(@NotNull Consumer<Exception> errorListener);

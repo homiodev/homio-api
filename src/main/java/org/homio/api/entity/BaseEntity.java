@@ -2,7 +2,6 @@ package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
@@ -36,7 +35,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     @Id
     @Getter
     @JsonIgnore // serialized by Bean2MixIn
-    @Column(length = 64, nullable = false, unique = true)
+    @Column(length = 128, nullable = false, unique = true)
     @GeneratedValue(generator = "id-generator")
     @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.HomioIdGenerator")
     private String entityID;

@@ -4,15 +4,32 @@ import java.util.List;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.homio.api.entity.DeviceBaseEntity;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
+import org.homio.api.model.endpoint.DeviceEndpoint;
+import org.homio.api.ui.field.action.v1.UIInputBuilder;
+import org.homio.api.widget.template.WidgetDefinition;
+import org.homio.api.widget.template.WidgetDefinition.WidgetType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface EntityContextWidget {
 
     @NotNull EntityContext getEntityContext();
+
+    void createTemplateWidgetActions(
+        @NotNull UIInputBuilder uiInputBuilder,
+        @NotNull DeviceBaseEntity.HasEndpointsDevice entity,
+        @NotNull List<WidgetDefinition> widgets);
+
+    void createTemplateWidget(
+        @NotNull WidgetType widgetType,
+        @NotNull WidgetDefinition widgetDefinition,
+        @Nullable String tab,
+        @NotNull DeviceBaseEntity.HasEndpointsDevice entity,
+        @NotNull List<DeviceEndpoint> endpoints);
 
     // get dashboard tabs
     @NotNull List<OptionModel> getDashboardTabs();

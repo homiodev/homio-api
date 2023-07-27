@@ -19,8 +19,12 @@ public class JsonType implements State, Comparable<JsonType> {
     private final JsonNode jsonNode;
 
     @SneakyThrows
-    public JsonType(String value) {
-        this.jsonNode = CommonUtils.OBJECT_MAPPER.readValue(value, JsonNode.class);
+    public JsonType(Object value) {
+        if (value instanceof String strValue) {
+            this.jsonNode = CommonUtils.OBJECT_MAPPER.readValue(strValue, JsonNode.class);
+        } else {
+            this.jsonNode = CommonUtils.OBJECT_MAPPER.valueToTree(value);
+        }
     }
 
     public JsonNode get(String... paths) {

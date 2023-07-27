@@ -53,6 +53,9 @@ public @interface UIField {
     // override field name
     String label() default "";
 
+    // override description label
+    String descriptionLabel() default "";
+
     // override for field name, useful in methods
     String name() default "";
 

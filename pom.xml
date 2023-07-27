@@ -12,12 +12,8 @@
     <version>2.5.0</version>
   </parent>
 
-  <scm>
-    <tag>v1.2.2</tag>
-  </scm>
-
   <properties>
-    <homio-hquery.version>1.2.4</homio-hquery.version>
+    <homio-hquery.version>1.2.5-SNAPSHOT</homio-hquery.version>
   </properties>
 
   <url>https://github.com/homiodev/homio-api</url>

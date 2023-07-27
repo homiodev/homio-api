@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "value": {
+      "title": "Color hex value",
+      "type": "string"
+    },
+    "thresholds": {
+      "type": "array",
+      "items": [
+        {
+          "$ref": "/device/widget/schema-threshold.json"
+        }
+      ]
+    },
+    "pulses": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "gt",
+                "lt",
+                "eq",
+                "neq",
+                "regexp"
+              ]
+            },
+            "value": {
+              "type": [
+                "integer",
+                "boolean",
+                "string"
+              ]
+            },
+            "color": {
+              "type": "string",
+              "enum": [
+                "black",
+                "red",
+                "blue",
+                "green",
+                "yellow"
+              ]
+            },
+            "source": {
+              "title": "Variable/property source name",
+              "$ref": "/device/widget/schema-source.json"
+            }
+          },
+          "required": [
+            "op",
+            "value",
+            "color",
+            "source"
+          ]
+        }
+      ]
+    }
+  }
+}

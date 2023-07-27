@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "gt",
+            "lt",
+            "eq",
+            "neq",
+            "regexp"
+          ]
+        },
+        "value": {
+          "title": "'string' type may have delimiter '|'",
+          "type": [
+            "integer",
+            "boolean",
+            "string"
+          ]
+        },
+        "target": {
+          "title": "Icon/Color string value",
+          "type": "string"
+        },
+        "source": {
+          "title": "Variable/property source name",
+          "$ref": "/device/widget/schema-source.json"
+        }
+      },
+      "required": [
+        "op",
+        "value",
+        "target"
+      ]
+    }
+  ]
+}
