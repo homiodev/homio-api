@@ -54,8 +54,8 @@
         ]
       }
     },
-    "propertiesWithoutVariables": {
-      "title": "Set of properties that should be created but do not create variable for storing in db",
+    "endpointsWithoutVariables": {
+      "title": "Set of endpoints that should be created but do not create variable for storing in db",
       "type": "array",
       "items": [
         {
@@ -63,8 +63,8 @@
         }
       ]
     },
-    "ignoreProperties": {
-      "title": "Set of properties that should be fully ignored",
+    "ignoreEndpoints": {
+      "title": "Set of endpoints that should be fully ignored",
       "type": "array",
       "items": [
         {
@@ -72,30 +72,30 @@
         }
       ]
     },
-    "properties": {
+    "endpoints": {
       "type": "array",
-      "description": "Device endpoint list",
+      "description": "Device endpoints",
       "items": {
         "type": "object",
         "properties": {
           "name": {
-            "title": "Device property name",
+            "title": "Device endpoint name",
             "type": "string"
           },
           "icon": {
-            "title": "Device property icon",
+            "title": "Device endpoint icon",
             "type": "string"
           },
           "iconColor": {
-            "title": "Device property icon color",
+            "title": "Device endpoint icon color",
             "type": "string"
           },
           "order": {
-            "title": "Device property order",
+            "title": "Device endpoint order",
             "type": "number"
           },
           "alias": {
-            "title": "List of property aliases. App skip property aliases if property exists alongside with any alias",
+            "title": "List of endpoint aliases. App skip endpoint aliases if endpoint exists alongside with any alias",
             "type": "array",
             "items": [
               {
