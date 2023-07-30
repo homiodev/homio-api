@@ -1,24 +1,27 @@
 package org.homio.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import com.pivovarit.function.ThrowingRunnable;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.HasEntityIdentifier;
+import org.homio.api.model.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Configure service for entities. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
  */
 public interface EntityService<S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
-    extends HasStatusAndMsg<T> {
+        extends HasStatusAndMsg<T> {
 
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
@@ -87,20 +90,23 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     @Getter
     abstract class ServiceInstance<E extends EntityService<?, ?>> {
 
-        protected final EntityContext entityContext;
-        protected final String entityID;
+        protected final @NotNull EntityContext entityContext;
+        protected String entityID;
         protected E entity;
         protected long entityHashCode;
 
-        public ServiceInstance(EntityContext entityContext, E entity) {
+        /**
+         * Avoid to save any data to db during create service instance.
+         *
+         * @param entityContext ec
+         */
+        public ServiceInstance(@NotNull EntityContext entityContext) {
             this.entityContext = entityContext;
-            this.entity = entity;
-            this.entityID = entity.getEntityID();
-            this.entityHashCode = getEntityHashCode(entity);
         }
 
         public void testServiceWithSetStatus() {
             try {
+                entity.setStatus(Status.TESTING);
                 testService();
                 entity.setStatusOnline();
             } catch (Exception ex) {
@@ -114,14 +120,18 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
          *
          * @param newEntity - updated entity
          */
-        public final void entityUpdated(@NotNull E newEntity) {
+        public void entityUpdated(@NotNull E newEntity) {
+            boolean firstSet = entity == null;
+            entityID = newEntity.getEntityID();
             long newEntityHashCode = getEntityHashCode(newEntity);
             boolean requireReinitialize = entityHashCode != newEntityHashCode;
             entityHashCode = newEntityHashCode;
             entity = newEntity;
 
-            if (requireReinitialize) {
-                fireInitialize();
+            if (firstSet) {
+                entityContext.bgp().execute(() -> fireWithSetStatus(this::firstInitialize));
+            } else if (requireReinitialize) {
+                entityContext.bgp().execute(() -> fireWithSetStatus(this::initialize));
             }
         }
 
@@ -132,9 +142,9 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             return null;
         }
 
-        protected boolean fireInitialize() {
+        protected boolean fireWithSetStatus(ThrowingRunnable<Exception> handler) {
             try {
-                initialize();
+                handler.run();
                 return true;
             } catch (Exception ex) {
                 entity.setStatusError(ex);
@@ -143,6 +153,12 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         }
 
         protected void testService() {
+
+        }
+
+        protected void firstInitialize() {
+            // fallback to initialize
+            initialize();
 
         }
 

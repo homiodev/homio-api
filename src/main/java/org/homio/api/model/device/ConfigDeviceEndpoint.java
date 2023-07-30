@@ -13,5 +13,6 @@ public class ConfigDeviceEndpoint {
     private String iconColor;
     private int order;
     private String unit;
+    boolean stateless;
     private List<String> alias;
 }

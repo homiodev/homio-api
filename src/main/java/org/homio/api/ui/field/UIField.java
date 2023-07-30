@@ -38,6 +38,9 @@ public @interface UIField {
     // required not null validation before save
     boolean required() default false;
 
+    // uses in case to show on UI field with * but don't mandatory to fill
+    boolean semiRequired() default false;
+
     // able to edit field directly from view mode (now works only in console)
     boolean inlineEdit() default false;
 

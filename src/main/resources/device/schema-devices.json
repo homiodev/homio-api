@@ -54,15 +54,6 @@
         ]
       }
     },
-    "endpointsWithoutVariables": {
-      "title": "Set of endpoints that should be created but do not create variable for storing in db",
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
-    },
     "ignoreEndpoints": {
       "title": "Set of endpoints that should be fully ignored",
       "type": "array",
@@ -88,6 +79,14 @@
           },
           "iconColor": {
             "title": "Device endpoint icon color",
+            "type": "string"
+          },
+          "stateless": {
+            "title": "Device endpoint should not create variable",
+            "type": "boolean"
+          },
+          "unit": {
+            "title": "Device endpoint unit",
             "type": "string"
           },
           "order": {

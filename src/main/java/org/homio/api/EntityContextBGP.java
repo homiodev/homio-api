@@ -1,27 +1,20 @@
 package org.homio.api;
 
-import com.pivovarit.function.ThrowingBiConsumer;
-import com.pivovarit.function.ThrowingBiFunction;
-import com.pivovarit.function.ThrowingConsumer;
-import com.pivovarit.function.ThrowingFunction;
-import com.pivovarit.function.ThrowingRunnable;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchEvent.Kind;
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import com.pivovarit.function.*;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchEvent.Kind;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public interface EntityContextBGP {
@@ -35,6 +28,13 @@ public interface EntityContextBGP {
         }
         return false;
     }
+
+    /**
+     * Simple create new thread and call runnable
+     *
+     * @param runnable code to run
+     */
+    void execute(ThrowingRunnable<Exception> runnable);
 
     /**
      * Create builder to run new thread/scheduler.

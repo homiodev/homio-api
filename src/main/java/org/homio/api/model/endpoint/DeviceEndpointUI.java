@@ -1,11 +1,6 @@
 package org.homio.api.model.endpoint;
 
-import static org.homio.api.ui.field.UIFieldType.HTML;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import org.homio.api.model.endpoint.DeviceEndpoint.EndpointType;
 import org.homio.api.ui.field.UIField;
@@ -14,15 +9,32 @@ import org.homio.api.ui.field.action.v1.UIInputEntity;
 import org.homio.api.ui.field.inline.UIFieldInlineEntityWidth;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.homio.api.ui.field.UIFieldType.HTML;
+
 @Getter
-public class DeviceEndpointUI implements Comparable<DeviceEndpoint> {
+public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
 
     private final String entityID;
+
     @UIField(order = 2, type = HTML)
     private final String title;
+
     private final String valueTitle;
+
     @JsonIgnore
     private final DeviceEndpoint endpoint;
+
+    // for reade @UIFields
+    public DeviceEndpointUI() {
+        this.entityID = "";
+        this.title = "";
+        this.valueTitle = "";
+        this.endpoint = null;
+    }
 
     public DeviceEndpointUI(DeviceEndpoint endpoint) {
         this.endpoint = endpoint;
@@ -31,10 +43,10 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpoint> {
         if (variableID != null) {
             String varSource = endpoint.getEntityContext().var().buildDataSource(variableID, false);
             this.title =
-                ("<div class=\"inline-2row_d\"><div class=\"clickable history-link\" data-hl=\"%s\" style=\"color:%s;\"><i class=\"mr-1 "
-                    + "%s\"></i>%s</div><span>%s</div></div>").formatted(
-                    varSource, endpoint.getIcon().getColor(), endpoint.getIcon().getIcon(),
-                    endpoint.getName(false), endpoint.getDescription());
+                    ("<div class=\"inline-2row_d\"><div class=\"clickable history-link\" data-hl=\"%s\" style=\"color:%s;\"><i class=\"mr-1 "
+                            + "%s\"></i>%s</div><span>%s</div></div>").formatted(
+                            varSource, endpoint.getIcon().getColor(), endpoint.getIcon().getIcon(),
+                            endpoint.getName(false), endpoint.getDescription());
         } else {
             this.title =
                 "<div class=\"inline-2row_d\"><div style=\"color:%s;\"><i class=\"mr-1 %s\"></i>%s</div><span>%s</div></div>".formatted(
@@ -64,7 +76,7 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpoint> {
 
 
     @Override
-    public int compareTo(@NotNull DeviceEndpoint o) {
-        return endpoint.compareTo(o);
+    public int compareTo(@NotNull DeviceEndpointUI o) {
+        return endpoint.compareTo(o.endpoint);
     }
 }

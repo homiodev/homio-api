@@ -630,6 +630,11 @@ public class CommonUtils {
         return true;
     }
 
+    public static String splitNameToReadableFormat(@NotNull String name) {
+        String[] items = name.split("_");
+        return StringUtils.capitalize(String.join(" ", items));
+    }
+
     // Simple utility for scan for ip range
     public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
         ThrowingFunction<String, Boolean, Exception> testDevice,

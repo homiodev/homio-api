@@ -115,12 +115,13 @@ public abstract class BaseDeviceEndpoint<D extends DeviceBaseEntity & HasEndpoin
     protected void getOrCreateVariable() {
         if (variableID == null) {
             VariableType variableType = getVariableType();
+            String varID = deviceEntityID + "_" + endpointEntityID;
             if (variableType == VariableType.Enum) {
                 variableID = entityContext.var().createEnumVariable(deviceEntityID,
-                    endpointEntityID, getName(false), getVariableEnumValues(), getVariableMetaBuilder());
+                    varID, getName(false), getVariableEnumValues(), getVariableMetaBuilder());
             } else {
                 variableID = entityContext.var().createVariable(deviceEntityID,
-                    endpointEntityID, getName(false), variableType, getVariableMetaBuilder());
+                    varID, getName(false), variableType, getVariableMetaBuilder());
             }
             entityContext.var().setVariableIcon(variableID, icon);
 

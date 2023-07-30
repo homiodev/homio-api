@@ -42,7 +42,7 @@ public class ConfigDeviceDefinitionService {
     private @NotNull Map<String, ConfigDeviceDefinition> deviceDefinitions = Collections.emptyMap();
 
     @Getter
-    private @NotNull Map<EndpointMatch, List<ConfigDeviceDefinition>> exposeDeviceDefinitions = Collections.emptyMap();
+    private @NotNull Map<EndpointMatch, List<ConfigDeviceDefinition>> endpointDeviceDefinitions = Collections.emptyMap();
 
     /**
      * Endpoints market with defined color, icon, etc...
@@ -52,7 +52,6 @@ public class ConfigDeviceDefinitionService {
     @Getter
     private @NotNull Map<String, ConfigDeviceEndpoint> deviceAliasEndpoints = Collections.emptyMap();
     private @NotNull Set<String> ignoreEndpoints = Collections.emptySet();
-    private @NotNull Set<String> endpointsWithoutVariables = Collections.emptySet();
     private @NotNull Set<String> hiddenEndpoints = Collections.emptySet();
 
     private final @NotNull Map<String, ModelDevices> modelIdToDevices = new HashMap<>();
@@ -67,7 +66,7 @@ public class ConfigDeviceDefinitionService {
     }
 
     public boolean isEndpointHasVariable(String endpoint) {
-        return !endpointsWithoutVariables.contains(endpoint);
+        return !deviceEndpoints.get(endpoint).stateless;
     }
 
     /**
@@ -83,11 +82,15 @@ public class ConfigDeviceDefinitionService {
 
         URL localZdFile = Objects.requireNonNull(getClass().getClassLoader().getResource(fileName));
         Path configFileLocation = localFilePath;
-        if (!Files.exists(configFileLocation) || EntityContextSetting.isDevEnvironment()) {
+        if (isRequireCopyJarFileToFIleSystem(configFileLocation)) {
             PathUtils.copy(localZdFile::openStream, configFileLocation, StandardCopyOption.REPLACE_EXISTING);
         }
         localConfigFileHashCode = Files.size(configFileLocation);
         readDeviceDefinitions();
+    }
+
+    private static boolean isRequireCopyJarFileToFIleSystem(Path configFileLocation) {
+        return !Files.exists(configFileLocation) || EntityContextSetting.isDevEnvironment();
     }
 
     public int getEndpointOrder(@NotNull String endpoint) {
@@ -102,15 +105,15 @@ public class ConfigDeviceDefinitionService {
 
     public @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModels(
             @NotNull String model,
-            @NotNull Set<String> exposes) {
-        int exposeHash = exposes.hashCode();
+            @NotNull Set<String> endpoints) {
+        int endpointHash = endpoints.hashCode();
         ModelDevices modelDevices = modelIdToDevices.get(model);
-        if (modelDevices == null || modelDevices.hashCode != exposeHash) {
+        if (modelDevices == null || modelDevices.hashCode != endpointHash) {
             try {
                 midLock.lock();
                 modelDevices = modelIdToDevices.get(model);
-                if (modelDevices == null || modelDevices.hashCode != exposeHash) {
-                    modelDevices = new ModelDevices(exposeHash, findDeviceDefinitionModelsInternal(model, exposes));
+                if (modelDevices == null || modelDevices.hashCode != endpointHash) {
+                    modelDevices = new ModelDevices(endpointHash, findDeviceDefinitionModelsInternal(model, endpoints));
                     modelIdToDevices.put(model, modelDevices);
                 }
             } finally {
@@ -185,13 +188,13 @@ public class ConfigDeviceDefinitionService {
             }
         }
 
-        var exposeDefinitions = new HashMap<EndpointMatch, List<ConfigDeviceDefinition>>();
+        var endpointDefinitions = new HashMap<EndpointMatch, List<ConfigDeviceDefinition>>();
         for (ConfigDeviceDefinition node : deviceConfigurations.getDevices()) {
             if (node.getEndpoints() != null) {
-                for (String expose : node.getEndpoints()) {
-                    val endpointMatch = new EndpointMatch(Stream.of(expose.split("~")).collect(Collectors.toSet()));
-                    exposeDefinitions.putIfAbsent(endpointMatch, new ArrayList<>());
-                    exposeDefinitions.get(endpointMatch).add(node);
+                for (String endpoint : node.getEndpoints()) {
+                    val endpointMatch = new EndpointMatch(Stream.of(endpoint.split("~")).collect(Collectors.toSet()));
+                    endpointDefinitions.putIfAbsent(endpointMatch, new ArrayList<>());
+                    endpointDefinitions.get(endpointMatch).add(node);
                 }
             }
         }
@@ -205,17 +208,14 @@ public class ConfigDeviceDefinitionService {
             }
         }
 
-        if (deviceConfigurations.getEndpointsWithoutVariables() != null) {
-            ignoreEndpoints = deviceConfigurations.getEndpointsWithoutVariables();
+        if (deviceConfigurations.getIgnoreEndpoints() != null) {
+            ignoreEndpoints = deviceConfigurations.getIgnoreEndpoints();
         }
         if (deviceConfigurations.getHiddenEndpoints() != null) {
             hiddenEndpoints = deviceConfigurations.getHiddenEndpoints();
         }
-        if (deviceConfigurations.getEndpointsWithoutVariables() != null) {
-            endpointsWithoutVariables = deviceConfigurations.getEndpointsWithoutVariables();
-        }
 
-        exposeDeviceDefinitions = exposeDefinitions;
+        endpointDeviceDefinitions = endpointDefinitions;
         deviceDefinitions = definitions;
         deviceEndpoints = deviceConfigurations.getEndpoints().stream()
                 .collect(Collectors.toMap(
@@ -231,7 +231,7 @@ public class ConfigDeviceDefinitionService {
         if (device != null) {
             devices.add(device);
         }
-        for (Map.Entry<EndpointMatch, List<ConfigDeviceDefinition>> item : exposeDeviceDefinitions.entrySet()) {
+        for (Map.Entry<EndpointMatch, List<ConfigDeviceDefinition>> item : endpointDeviceDefinitions.entrySet()) {
             if (endpoints.containsAll(item.getKey().andEndpoints)) {
                 devices.addAll(item.getValue());
             }
@@ -240,7 +240,7 @@ public class ConfigDeviceDefinitionService {
     }
 
     /**
-     * @param andEndpoints minimum of exposes to match
+     * @param andEndpoints minimum of endpoints to match
      */
     private record EndpointMatch(@NotNull Set<String> andEndpoints) {
 
