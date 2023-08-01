@@ -53,14 +53,14 @@ public interface HasJsonData {
     }
 
     default <P> void setJsonData(@NotNull String key, @Nullable P value) {
-        if (value == null) {
+        if (value == null || value.toString().isEmpty()) {
             getJsonData().remove(key);
         }
         getJsonData().put(key, value);
     }
 
     default <P> void setJsonDataSecure(@NotNull String key, @Nullable P value) {
-        if (value == null) {
+        if (value == null || value.toString().isEmpty()) {
             getJsonData().remove(key);
         }
         // ignore if editing and pass 'Secure:XXXXX' to save

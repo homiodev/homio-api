@@ -19,6 +19,7 @@ import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
+import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.util.ApplicationContextHolder;
@@ -46,19 +47,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     @Getter
     @UIField(order = 10, inlineEdit = true)
     @UIFieldGroup(value = "GENERAL", order = 10)
-    @Nullable
     private String name;
 
-    @Getter
     @JsonIgnore
     @Column(nullable = false)
-    @UIFieldGroup("GENERAL")
     private Date creationTime;
 
-    @Getter
     @JsonIgnore
     @Column(nullable = false)
-    @UIFieldGroup("GENERAL")
     private Date updateTime;
 
     /**
@@ -71,11 +67,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
 
     public T setName(@Nullable String name) {
         this.name = name;
-        return (T) this;
-    }
-
-    public T setCreationTime(@Nullable Date creationTime) {
-        this.creationTime = creationTime;
         return (T) this;
     }
 
@@ -188,6 +179,22 @@ public abstract class BaseEntity<T extends BaseEntity> implements
 
     @Override
     public int compareTo(@NotNull BaseEntity o) {
+        if (o instanceof HasOrder orderedEntity) {
+            int value = Integer.compare(((HasOrder) this).getOrder(), orderedEntity.getOrder());
+            if (value != 0) {
+                return value;
+            }
+        }
+        if (o instanceof HasStatusAndMsg other) {
+            Status leftStatus = ((HasStatusAndMsg<?>) this).getStatus();
+            Status rightStatus = other.getStatus();
+            if (leftStatus != null && rightStatus != null) {
+                int value = leftStatus.compareTo(rightStatus);
+                if (value != 0) {
+                    return value;
+                }
+            }
+        }
         return this.getTitle().compareTo(o.getTitle());
     }
 
@@ -206,5 +213,15 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     @JsonIgnore
     public @NotNull String getDynamicUpdateType() {
         return getType();
+    }
+
+    @JsonIgnore
+    public Date getEntityCreated() {
+        return creationTime;
+    }
+
+    @JsonIgnore
+    public Date getEntityUpdated() {
+        return updateTime;
     }
 }

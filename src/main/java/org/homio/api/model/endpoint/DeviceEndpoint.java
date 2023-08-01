@@ -42,12 +42,12 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     @Nullable String getVariableID();
 
-    @NotNull String getDeviceEntityID();
+    @NotNull String getDeviceID();
 
     @NotNull String getEndpointEntityID();
 
     default @NotNull String getEntityID() {
-        return getDeviceEntityID() + "_" + getEndpointEntityID();
+        return getDeviceID() + "_" + getEndpointEntityID();
     }
 
     /**

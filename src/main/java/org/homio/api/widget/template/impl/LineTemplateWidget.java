@@ -4,7 +4,7 @@ import static org.homio.api.widget.template.impl.DisplayTemplateWidget.fillHasLi
 
 import java.util.List;
 import org.homio.api.EntityContext;
-import org.homio.api.entity.DeviceBaseEntity.HasEndpointsDevice;
+import org.homio.api.entity.DeviceEndpointsBaseEntity;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
 import org.homio.api.widget.template.WidgetDefinition;
@@ -26,7 +26,7 @@ public class LineTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
         EntityContext entityContext = request.getWidgetRequest().getEntityContext();
-        HasEndpointsDevice entity = request.getWidgetRequest().getEntity();
+        DeviceEndpointsBaseEntity entity = request.getWidgetRequest().getEntity();
 
         WidgetDefinition wd = request.getItem();
         List<DeviceEndpoint> barSeries = wd.getIncludeEndpoints(request);

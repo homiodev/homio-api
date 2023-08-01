@@ -17,7 +17,7 @@ import org.homio.api.EntityContextWidget.PulseColor;
 import org.homio.api.EntityContextWidget.Stepped;
 import org.homio.api.EntityContextWidget.ToggleType;
 import org.homio.api.EntityContextWidget.ValueCompare;
-import org.homio.api.entity.DeviceBaseEntity.HasEndpointsDevice;
+import org.homio.api.entity.DeviceEndpointsBaseEntity;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder.MainWidgetRequest;
@@ -65,7 +65,7 @@ public class WidgetDefinition {
     @Getter
     private Padding padding;
 
-    public @NotNull List<DeviceEndpoint> getEndpoints(HasEndpointsDevice entity) {
+    public @NotNull List<DeviceEndpoint> getEndpoints(DeviceEndpointsBaseEntity entity) {
         if (this.isAutoDiscovery()) {
             if (type == WidgetType.toggle) {
                 return entity.getDeviceEndpoints().values().stream()

@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.val;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextWidget.HorizontalAlign;
-import org.homio.api.entity.DeviceBaseEntity.HasEndpointsDevice;
+import org.homio.api.entity.DeviceEndpointsBaseEntity;
 import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
@@ -29,7 +29,7 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildWidget(WidgetRequest widgetRequest) {
         EntityContext entityContext = widgetRequest.getEntityContext();
-        HasEndpointsDevice entity = widgetRequest.getEntity();
+        DeviceEndpointsBaseEntity entity = widgetRequest.getEntity();
         WidgetDefinition wd = widgetRequest.getWidgetDefinition();
         List<WidgetDefinition> composeContainer = wd.getCompose();
         if (composeContainer == null || composeContainer.isEmpty()) {

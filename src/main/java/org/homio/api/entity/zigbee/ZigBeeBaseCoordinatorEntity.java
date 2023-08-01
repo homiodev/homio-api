@@ -36,8 +36,8 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
 
     @UIField(order = 3, required = true)
     @UIFieldDevicePortSelection
-    @UIFieldSelectValueOnEmpty(label = "selection.selectPort", icon = "fas fa-door-open")
-    @UIFieldSelectNoValue("error.noPortsAvailable")
+    @UIFieldSelectValueOnEmpty(label = "SELECTION.SELECT_PORT", icon = "fas fa-door-open")
+    @UIFieldSelectNoValue("W.ERROR.NO_PORT")
     @UIFieldGroup(value = "PORT", order = 5, borderColor = "#29A397")
     default String getPort() {
         return getJsonData("port", "");

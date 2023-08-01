@@ -1,6 +1,5 @@
 package org.homio.api.entity;
 
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
 import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,26 +8,19 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-import java.util.List;
-import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.converter.JSONConverter;
-import org.homio.api.model.Icon;
 import org.homio.api.model.JSON;
 import org.homio.api.model.Status;
 import org.homio.api.model.Status.EntityStatus;
-import org.homio.api.model.endpoint.DeviceEndpoint;
-import org.homio.api.model.endpoint.DeviceEndpointUI;
 import org.homio.api.optionProvider.SelectPlaceOptionLoader;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldType;
-import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
-import org.homio.api.ui.field.inline.UIFieldInlineEntities;
 import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.homio.api.ui.field.selection.UIFieldSelection;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
@@ -91,7 +83,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     /**
      * Uses on UI to set png image with appropriate status and mark extra image if need
      */
-    public @NotNull Status.EntityStatus getEntityStatus() {
+    public @Nullable Status.EntityStatus getEntityStatus() {
         Status status = getStatus();
         return new EntityStatus(status);
     }
@@ -99,7 +91,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     // May be required for @UIFieldColorBgRef("statusColor")
     public @NotNull String getStatusColor() {
         EntityStatus entityStatus = getEntityStatus();
-        if (entityStatus.getValue().isOnline()) {
+        if (entityStatus == null || entityStatus.getValue().isOnline()) {
             return "";
         }
         return entityStatus.getColor() + "30";
@@ -143,43 +135,4 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     }
 
     protected abstract @NotNull String getDevicePrefix();
-
-    public interface HasEndpointsDevice extends HasDynamicContextMenuActions {
-
-        @JsonIgnore
-        @NotNull Map<String, DeviceEndpoint> getDeviceEndpoints();
-
-        default @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String endpoint) {
-            return getDeviceEndpoints().get(endpoint);
-        }
-
-        @Nullable String getDescription();
-
-        String getEntityID();
-
-        String getIeeeAddress();
-
-        @JsonIgnore
-        @NotNull String getModel();
-
-        /**
-         * Last item updated
-         *
-         * @return string representation of last item updated
-         */
-        default @Nullable String getUpdated() {
-            DeviceEndpoint endpoint = getDeviceEndpoint(ENDPOINT_LAST_SEEN);
-            return endpoint == null ? null : endpoint.getLastValue().stringValue();
-        }
-
-        @UIField(order = 9999)
-        @UIFieldInlineEntities(bg = "#27FF0005")
-        default List<DeviceEndpointUI> getEndpoints() {
-            return DeviceEndpointUI.build(getDeviceEndpoints().values());
-        }
-
-        @Nullable Icon getEntityIcon();
-
-        @Nullable String getPlace();
-    }
 }

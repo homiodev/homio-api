@@ -1,19 +1,26 @@
 package org.homio.api.model.endpoint;
 
+import static java.util.Objects.requireNonNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextVar.VariableMetaBuilder;
 import org.homio.api.EntityContextVar.VariableType;
-import org.homio.api.entity.DeviceBaseEntity;
-import org.homio.api.entity.DeviceBaseEntity.HasEndpointsDevice;
+import org.homio.api.entity.DeviceEndpointsBaseEntity;
 import org.homio.api.model.Icon;
+import org.homio.api.model.device.ConfigDeviceDefinitionService;
+import org.homio.api.model.device.ConfigDeviceEndpoint;
 import org.homio.api.state.State;
 import org.homio.api.state.StringType;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
@@ -21,55 +28,130 @@ import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder.InfoType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Specify device single endpoint base class
- */
-@Getter
-public abstract class BaseDeviceEndpoint<D extends DeviceBaseEntity & HasEndpointsDevice> implements DeviceEndpoint {
 
-    protected final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
+public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> implements DeviceEndpoint {
 
-    private final @NotNull Icon icon;
-    protected String endpointEntityID;
-    protected String deviceEntityID;
-    protected D device;
+    private final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
 
-    @Setter protected @Nullable String unit;
-    @Setter protected long updated;
-    @Getter protected EntityContext entityContext;
-    @Setter protected State value = new StringType("N/A");
-    protected @Nullable Object dbValue;
-    protected @Nullable String variableID;
-    @Setter private boolean readable = true;
-    @Setter private boolean writable = true;
-    private String endpointName;
-    private EndpointType endpointType;
-    private int order;
+    private final @Getter @NotNull Icon icon;
+    @Getter
+    private String endpointEntityID;
+    @Getter
+    private D device;
+
+    private @Getter @Nullable String unit;
+    private @Getter long updated;
+    private @Getter State value = new StringType("N/A");
+    private @Nullable Object dbValue;
+    private @Getter @Nullable String variableID;
+    private @Getter @Setter boolean readable = true;
+    private @Getter @Setter boolean writable = true;
+    private @Getter String endpointName;
+    private @Getter EndpointType endpointType;
+    private @Getter @Setter int order;
+
+    protected @Getter EntityContext entityContext;
+    private @Getter @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
+    private ConfigDeviceDefinitionService configService;
+    private @JsonIgnore @Nullable Set<String> alternateEndpoints;
 
     public BaseDeviceEndpoint(@NotNull Icon icon) {
         this.icon = icon;
     }
 
+    /**
+     * Set list of alternative endpoint names if endpointEntityID is null or if configService.getDeviceEndpoints().get(endpointEntityID) == null
+     *
+     * @param alternateEndpoints list if string(nullable)
+     */
+    public void setAlternateEndpoints(@Nullable String... alternateEndpoints) {
+        this.alternateEndpoints = new HashSet<>();
+        for (String endpoint : alternateEndpoints) {
+            if (endpoint != null) {
+                this.alternateEndpoints.add(endpoint);
+            }
+        }
+    }
+
+    public void setValue(State value, boolean externalUpdate) {
+        this.value = value;
+        if (externalUpdate) {
+            this.updated = System.currentTimeMillis();
+            for (Consumer<State> changeListener : changeListeners.values()) {
+                changeListener.accept(getValue());
+            }
+            updateUI();
+            pushVariable();
+        }
+    }
+
     public void init(
-        @NotNull String endpointEntityID,
+        @NotNull ConfigDeviceDefinitionService configService,
+        @Nullable String endpointEntityID,
         @NotNull D device,
         @NotNull EntityContext entityContext,
         @Nullable String unit,
         boolean readable,
         boolean writable,
-        @NotNull String endpointName,
-        int order,
+        @Nullable String endpointName,
         EndpointType endpointType) {
 
+        this.configService = configService;
+        configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
+        if (configDeviceEndpoint == null && alternateEndpoints != null) {
+            for (String alternativeEndpointEntityId : alternateEndpoints) {
+                configDeviceEndpoint = configService.getDeviceEndpoints().get(alternativeEndpointEntityId);
+                if (configDeviceEndpoint != null) {
+                    endpointEntityID = alternativeEndpointEntityId;
+                    break;
+                }
+            }
+        }
+
+        if (endpointName == null) {
+            endpointName = endpointEntityID;
+        }
+
+        if (endpointEntityID == null) {
+            throw new IllegalStateException("Unable to create device endpoint without endpoint id. " + endpointName);
+        }
+
+        this.device = device;
         this.endpointName = endpointName;
-        this.order = order;
         this.endpointEntityID = endpointEntityID;
-        this.deviceEntityID = device.getIeeeAddress();
         this.entityContext = entityContext;
-        this.unit = unit;
+        this.unit = StringUtils.isEmpty(unit) ? configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit() : unit;
         this.readable = readable;
         this.writable = writable;
         this.endpointType = endpointType;
+
+        order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
+        if (order == 0) {
+            order = endpointName.charAt(0) * 10 + endpointName.charAt(1);
+        }
+
+        boolean createVariable = configDeviceEndpoint == null || !configDeviceEndpoint.isStateless();
+        if (createVariable) {
+            getOrCreateVariable();
+        }
+    }
+
+    @Override
+    public boolean isVisible() {
+        if (configService.isHideEndpoint(getEndpointEntityID())) {
+            return false;
+        }
+        return !getHiddenEndpoints().contains(getEndpointEntityID());
+    }
+
+    public abstract @NotNull List<String> getHiddenEndpoints();
+
+    public @NotNull String getDeviceEntityID() {
+        return device.getEntityID();
+    }
+
+    public @NotNull String getDeviceID() {
+        return requireNonNull(device.getIeeeAddress());
     }
 
     public void assembleUIAction(@NotNull UIInputBuilder uiInputBuilder) {
@@ -115,18 +197,17 @@ public abstract class BaseDeviceEndpoint<D extends DeviceBaseEntity & HasEndpoin
     protected void getOrCreateVariable() {
         if (variableID == null) {
             VariableType variableType = getVariableType();
-            String varID = deviceEntityID + "_" + endpointEntityID;
             if (variableType == VariableType.Enum) {
-                variableID = entityContext.var().createEnumVariable(deviceEntityID,
-                    varID, getName(false), getVariableEnumValues(), getVariableMetaBuilder());
+                variableID = entityContext.var().createEnumVariable(getDeviceID(),
+                    getEntityID(), getName(false), getVariableEnumValues(), getVariableMetaBuilder());
             } else {
-                variableID = entityContext.var().createVariable(deviceEntityID,
-                    varID, getName(false), variableType, getVariableMetaBuilder());
+                variableID = entityContext.var().createVariable(getDeviceID(),
+                    getEntityID(), getName(false), variableType, getVariableMetaBuilder());
             }
             entityContext.var().setVariableIcon(variableID, icon);
 
             if (isWritable()) {
-                entityContext.var().setLinkListener(variableID, varValue -> {
+                entityContext.var().setLinkListener(requireNonNull(variableID), varValue -> {
                     if (!this.device.getStatus().isOnline()) {
                         throw new RuntimeException("Unable to handle property " + getVariableID() + " action. Device noy online");
                     }

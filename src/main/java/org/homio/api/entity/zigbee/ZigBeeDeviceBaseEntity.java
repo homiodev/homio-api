@@ -2,8 +2,7 @@ package org.homio.api.entity.zigbee;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.extern.log4j.Log4j2;
-import org.homio.api.entity.DeviceBaseEntity;
-import org.homio.api.entity.DeviceBaseEntity.HasEndpointsDevice;
+import org.homio.api.entity.DeviceEndpointsBaseEntity;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.model.HrefModel;
 import org.jetbrains.annotations.NotNull;
@@ -23,8 +22,7 @@ import org.jetbrains.annotations.Nullable;
          "status~#7EAD28:fas fa-turn-up:fas fa-turn-down",
          "place~#9C27B0:fas fa-location-dot:fas fa-location-dot fa-rotate-180"
      })
-public abstract class ZigBeeDeviceBaseEntity<T extends ZigBeeDeviceBaseEntity> extends DeviceBaseEntity<T>
-    implements HasEndpointsDevice {
+public abstract class ZigBeeDeviceBaseEntity extends DeviceEndpointsBaseEntity {
 
     public abstract @Nullable HrefModel getManufacturer();
 

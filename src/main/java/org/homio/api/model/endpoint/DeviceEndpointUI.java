@@ -38,7 +38,7 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
 
     public DeviceEndpointUI(DeviceEndpoint endpoint) {
         this.endpoint = endpoint;
-        this.entityID = endpoint.getEndpointEntityID();
+        this.entityID = endpoint.getEntityID();
         String variableID = endpoint.getVariableID();
         if (variableID != null) {
             String varSource = endpoint.getEntityContext().var().buildDataSource(variableID, false);

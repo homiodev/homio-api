@@ -1,30 +1,40 @@
 package org.homio.api.model.device;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.CommonUtils.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.*;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import lombok.val;
 import org.apache.commons.io.file.PathUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContextSetting;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.widget.template.WidgetDefinition;
 import org.homio.hquery.Curl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
-import static org.homio.api.util.CommonUtils.getErrorMessage;
 
 @Log4j2
 public class ConfigDeviceDefinitionService {
@@ -57,16 +67,12 @@ public class ConfigDeviceDefinitionService {
     private final @NotNull Map<String, ModelDevices> modelIdToDevices = new HashMap<>();
     private final @NotNull ReentrantLock midLock = new ReentrantLock();
 
-    public boolean isIgnoreEndpoint(String endpoint) {
+    public boolean isIgnoreEndpoint(@NotNull String endpoint) {
         return ignoreEndpoints.contains(endpoint);
     }
 
-    public boolean isHideEndpoint(String endpoint) {
+    public boolean isHideEndpoint(@NotNull String endpoint) {
         return hiddenEndpoints.contains(endpoint);
-    }
-
-    public boolean isEndpointHasVariable(String endpoint) {
-        return !deviceEndpoints.get(endpoint).stateless;
     }
 
     /**
@@ -93,19 +99,21 @@ public class ConfigDeviceDefinitionService {
         return !Files.exists(configFileLocation) || EntityContextSetting.isDevEnvironment();
     }
 
-    public int getEndpointOrder(@NotNull String endpoint) {
-        int order = Optional.ofNullable(deviceEndpoints.get(endpoint))
-                .map(ConfigDeviceEndpoint::getOrder)
-                .orElse(0);
+    public int getEndpointOrder(@Nullable ConfigDeviceEndpoint configDeviceEndpoint, String endpoint) {
+        int order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
         if (order == 0) {
-            order = endpoint.charAt(0) * 10 + endpoint.charAt(1);
+            ConfigDeviceEndpoint deviceEndpoint = deviceEndpoints.get(endpoint);
+            order = deviceEndpoint == null ? 0 : deviceEndpoint.getOrder();
+            if (order == 0) {
+                order = endpoint.charAt(0) * 10 + endpoint.charAt(1);
+            }
         }
         return order;
     }
 
     public @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModels(
-            @NotNull String model,
-            @NotNull Set<String> endpoints) {
+        @NotNull String model,
+        @NotNull Set<String> endpoints) {
         int endpointHash = endpoints.hashCode();
         ModelDevices modelDevices = modelIdToDevices.get(model);
         if (modelDevices == null || modelDevices.hashCode != endpointHash) {

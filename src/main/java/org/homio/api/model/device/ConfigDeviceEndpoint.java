@@ -1,12 +1,17 @@
 package org.homio.api.model.device;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 
 @Getter
 @Setter
+@ToString
+@Accessors(chain = true)
+@NoArgsConstructor
 public class ConfigDeviceEndpoint {
     private String name;
     private String icon;
