@@ -28,7 +28,6 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.apache.commons.io.file.PathUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContextSetting;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.widget.template.WidgetDefinition;
@@ -97,18 +96,6 @@ public class ConfigDeviceDefinitionService {
 
     private static boolean isRequireCopyJarFileToFIleSystem(Path configFileLocation) {
         return !Files.exists(configFileLocation) || EntityContextSetting.isDevEnvironment();
-    }
-
-    public int getEndpointOrder(@Nullable ConfigDeviceEndpoint configDeviceEndpoint, String endpoint) {
-        int order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
-        if (order == 0) {
-            ConfigDeviceEndpoint deviceEndpoint = deviceEndpoints.get(endpoint);
-            order = deviceEndpoint == null ? 0 : deviceEndpoint.getOrder();
-            if (order == 0) {
-                order = endpoint.charAt(0) * 10 + endpoint.charAt(1);
-            }
-        }
-        return order;
     }
 
     public @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModels(

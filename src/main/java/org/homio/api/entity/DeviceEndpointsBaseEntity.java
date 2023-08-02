@@ -68,7 +68,7 @@ public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceE
     @UIField(order = 9999)
     @UIFieldInlineEntities(bg = "#27FF0005")
     public List<DeviceEndpointUI> getEndpoints() {
-        return DeviceEndpointUI.build(getDeviceEndpoints().values());
+        return DeviceEndpointUI.buildEndpoints(getDeviceEndpoints().values());
     }
 
     @Override

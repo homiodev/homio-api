@@ -73,15 +73,17 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> im
         }
     }
 
-    public void setValue(State value, boolean externalUpdate) {
-        this.value = value;
-        if (externalUpdate) {
-            this.updated = System.currentTimeMillis();
-            for (Consumer<State> changeListener : changeListeners.values()) {
-                changeListener.accept(getValue());
+    public void setValue(@NotNull State value, boolean externalUpdate) {
+        if (!this.value.equals(value)) {
+            this.value = value;
+            if (externalUpdate) {
+                this.updated = System.currentTimeMillis();
+                for (Consumer<State> changeListener : changeListeners.values()) {
+                    changeListener.accept(getValue());
+                }
+                updateUI();
+                pushVariable();
             }
-            updateUI();
-            pushVariable();
         }
     }
 
@@ -94,7 +96,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> im
         boolean readable,
         boolean writable,
         @Nullable String endpointName,
-        EndpointType endpointType) {
+        @NotNull EndpointType endpointType) {
 
         this.configService = configService;
         configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
@@ -227,4 +229,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> im
     protected abstract @Nullable Consumer<VariableMetaBuilder> getVariableMetaBuilder();
 
     protected abstract @NotNull VariableType getVariableType();
+
+    @Override
+    public String toString() {
+        return "Entity: " + getEntityID() + ". Order: " + getOrder();
+    }
 }

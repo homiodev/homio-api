@@ -1,65 +1,37 @@
 package org.homio.api.model.endpoint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import org.homio.api.model.endpoint.DeviceEndpoint.EndpointType;
-import org.homio.api.ui.field.UIField;
-import org.homio.api.ui.field.UIFieldTitleRef;
-import org.homio.api.ui.field.action.v1.UIInputEntity;
-import org.homio.api.ui.field.inline.UIFieldInlineEntityWidth;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.homio.api.ui.field.UIFieldType.HTML;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.homio.api.model.Icon;
+import org.homio.api.ui.field.UIField;
+import org.homio.api.ui.field.action.v1.UIInputEntity;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
+@NoArgsConstructor
 public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
 
-    private final String entityID;
+    private String entityID;
 
-    @UIField(order = 2, type = HTML)
-    private final String title;
-
-    private final String valueTitle;
+    @UIField(order = 2)
+    private EndpointNode node;
 
     @JsonIgnore
-    private final DeviceEndpoint endpoint;
-
-    // for reade @UIFields
-    public DeviceEndpointUI() {
-        this.entityID = "";
-        this.title = "";
-        this.valueTitle = "";
-        this.endpoint = null;
-    }
+    private DeviceEndpoint endpoint;
 
     public DeviceEndpointUI(DeviceEndpoint endpoint) {
         this.endpoint = endpoint;
         this.entityID = endpoint.getEntityID();
-        String variableID = endpoint.getVariableID();
-        if (variableID != null) {
-            String varSource = endpoint.getEntityContext().var().buildDataSource(variableID, false);
-            this.title =
-                    ("<div class=\"inline-2row_d\"><div class=\"clickable history-link\" data-hl=\"%s\" style=\"color:%s;\"><i class=\"mr-1 "
-                            + "%s\"></i>%s</div><span>%s</div></div>").formatted(
-                            varSource, endpoint.getIcon().getColor(), endpoint.getIcon().getIcon(),
-                            endpoint.getName(false), endpoint.getDescription());
-        } else {
-            this.title =
-                "<div class=\"inline-2row_d\"><div style=\"color:%s;\"><i class=\"mr-1 %s\"></i>%s</div><span>%s</div></div>".formatted(
-                    endpoint.getIcon().getColor(), endpoint.getIcon().getIcon(), endpoint.getName(false), endpoint.getDescription());
-        }
-        if (endpoint.getEndpointType() == EndpointType.select) {
-            this.valueTitle = endpoint.getValue() + "Values: " + String.join(", ", endpoint.getSelectValues());
-        } else {
-            this.valueTitle = endpoint.getValue().toString();
-        }
+        String varSource = endpoint.getVariableID() == null ? null : endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID(), false);
+        node = new EndpointNode(endpoint.getIcon(), endpoint.getName(false), endpoint.getDescription(), varSource,
+            endpoint.createUIInputBuilder().buildAll());
     }
 
-    public static List<DeviceEndpointUI> build(Collection<DeviceEndpoint> entities) {
+    public static List<DeviceEndpointUI> buildEndpoints(Collection<DeviceEndpoint> entities) {
         return entities.stream()
                        .filter(DeviceEndpoint::isVisible)
                        .map(DeviceEndpointUI::new)
@@ -67,16 +39,16 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
                        .collect(Collectors.toList());
     }
 
-    @UIField(order = 4, style = "margin-left: auto; margin-right: 8px;")
-    @UIFieldInlineEntityWidth(30)
-    @UIFieldTitleRef("valueTitle")
-    public UIInputEntity getValue() {
-        return endpoint.createUIInputBuilder().buildAll().iterator().next();
-    }
-
-
     @Override
     public int compareTo(@NotNull DeviceEndpointUI o) {
         return endpoint.compareTo(o.endpoint);
+    }
+
+    public record EndpointNode(
+        Icon icon,
+        String title,
+        String description,
+        String varSource,
+        Collection<UIInputEntity> actions) {
     }
 }
