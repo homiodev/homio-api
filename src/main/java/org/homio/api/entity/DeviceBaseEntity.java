@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#51145e", overridePath = "devices")
+@UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#FFFFFF", overridePath = "devices")
 @NoArgsConstructor
 @Accessors(chain = true)
 public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
