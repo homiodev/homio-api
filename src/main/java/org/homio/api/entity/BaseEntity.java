@@ -39,7 +39,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     @JsonIgnore // serialized by Bean2MixIn
     @Column(length = 128, nullable = false, unique = true)
     @GeneratedValue(generator = "id-generator")
-    @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.HomioIdGenerator")
+    @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.generator.HomioIdGenerator")
     private String entityID;
 
     @Version
@@ -227,5 +227,11 @@ public abstract class BaseEntity<T extends BaseEntity> implements
         return updateTime;
     }
 
+    public int getEntityHashCode() {
+        int result = entityID != null ? entityID.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result + getChildEntityHashCode();
+    }
 
+    protected abstract int getChildEntityHashCode();
 }

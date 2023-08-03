@@ -166,4 +166,12 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     }
 
     protected abstract @NotNull String getDevicePrefix();
+
+    @Override
+    protected int getChildEntityHashCode() {
+        int result = ieeeAddress != null ? ieeeAddress.hashCode() : 0;
+        result = 31 * result + (place != null ? place.hashCode() : 0);
+        result = 31 * result + jsonData.hashCode();
+        return result;
+    }
 }

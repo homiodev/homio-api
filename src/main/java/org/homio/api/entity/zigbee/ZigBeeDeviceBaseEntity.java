@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.extern.log4j.Log4j2;
 import org.homio.api.entity.DeviceEndpointsBaseEntity;
 import org.homio.api.ui.UISidebarMenu;
+import org.homio.api.ui.UISidebarMenu.TopSidebarMenu;
 import org.homio.api.ui.field.model.HrefModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Log4j2
 @UISidebarMenu
-    (icon = "fas fa-bezier-curve", parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
+    (icon = "fas fa-bezier-curve", parent = TopSidebarMenu.DEVICES,
      bg = "#de9ed7", order = 5, overridePath = "zigbee",
      filter = {"*:fas fa-filter:#8DBA73", "status:fas fa-heart-crack:#C452C4"},
      sort = {

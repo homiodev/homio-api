@@ -88,11 +88,13 @@ import org.homio.hquery.Curl;
 import org.homio.hquery.ProgressBar;
 import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.thymeleaf.TemplateEngine;
@@ -490,11 +492,15 @@ public class CommonUtils {
         return updateJsonPath(jsonNode, path, node -> node.asInt(-1) != value, (node, s) -> node.put(s, value));
     }
 
-    public static ResponseEntity<InputStreamResource> inputStreamToResource(InputStream stream, MediaType contentType) {
+    public static ResponseEntity<InputStreamResource> inputStreamToResource(
+        @NotNull InputStream stream,
+        @NotNull MediaType contentType,
+        @Nullable HttpHeaders headers) {
         try {
             return ResponseEntity.ok()
                                  .contentLength(stream.available())
                                  .contentType(contentType)
+                                 .headers(headers)
                                  .body(new InputStreamResource(stream));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
