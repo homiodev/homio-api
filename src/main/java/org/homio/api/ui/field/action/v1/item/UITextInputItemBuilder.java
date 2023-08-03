@@ -7,4 +7,12 @@ public interface UITextInputItemBuilder extends UIEntityItemBuilder<UITextInputI
     enum InputType {
         Text, TextArea, Password, JSON, Ip
     }
+
+    /**
+     * Add apply button to input field. Default - false
+     *
+     * @param value on/off
+     * @return this
+     */
+    UITextInputItemBuilder setApplyButton(boolean value);
 }

@@ -21,7 +21,7 @@ public class ColorTemplateWidget implements TemplateWidgetBuilder {
         WidgetDefinition wd = widgetRequest.getWidgetDefinition();
 
         String layoutID = "lt-clr_" + entity.getIeeeAddress();
-        Map<String, DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
+        Map<String, ? extends DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
         DeviceEndpoint onOffEndpoint = endpoints.get("state");
         DeviceEndpoint brightnessEndpoint = endpoints.get("brightness");
         DeviceEndpoint colorEndpoint = endpoints.get("color");

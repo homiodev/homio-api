@@ -83,7 +83,13 @@
           },
           "stateless": {
             "title": "Device endpoint should not create variable",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
+          },
+          "persistent": {
+            "title": "Device endpoint variable is persistent",
+            "type": "boolean",
+            "default": false
           },
           "unit": {
             "title": "Device endpoint unit",

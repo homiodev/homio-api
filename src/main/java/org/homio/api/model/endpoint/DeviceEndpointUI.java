@@ -7,31 +7,53 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.homio.api.model.Icon;
-import org.homio.api.ui.field.UIField;
+import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.action.v1.UIInputEntity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @NoArgsConstructor
 public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
 
-    private String entityID;
-
-    @UIField(order = 2)
-    private EndpointNode node;
-
     @JsonIgnore
     private DeviceEndpoint endpoint;
 
-    public DeviceEndpointUI(DeviceEndpoint endpoint) {
-        this.endpoint = endpoint;
-        this.entityID = endpoint.getEntityID();
-        String varSource = endpoint.getVariableID() == null ? null : endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID(), false);
-        node = new EndpointNode(endpoint.getIcon(), endpoint.getName(false), endpoint.getDescription(), varSource,
-            endpoint.createUIInputBuilder().buildAll());
+    private @Nullable String varSource;
+
+    public @NotNull String getEntityID() {
+        return endpoint.getEntityID();
     }
 
-    public static List<DeviceEndpointUI> buildEndpoints(Collection<DeviceEndpoint> entities) {
+    public @NotNull Icon getIcon() {
+        return endpoint.getIcon();
+    }
+
+    public @NotNull String getTitle() {
+        return endpoint.getName(false);
+    }
+
+    public @Nullable String getDescription() {
+        return endpoint.getDescription();
+    }
+
+    public @Nullable Collection<UIInputEntity> getActions() {
+        UIInputBuilder builder = endpoint.createActionBuilder();
+        return builder == null ? null : builder.buildAll();
+    }
+
+    public @Nullable Collection<UIInputEntity> getSettings() {
+        UIInputBuilder builder = endpoint.createSettingsBuilder();
+        return builder == null ? null : builder.buildAll();
+    }
+
+    public DeviceEndpointUI(@NotNull DeviceEndpoint endpoint) {
+        this.endpoint = endpoint;
+        this.varSource = endpoint.getVariableID() == null ? null :
+            endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID(), false);
+    }
+
+    public static @NotNull List<DeviceEndpointUI> buildEndpoints(@NotNull Collection<? extends DeviceEndpoint> entities) {
         return entities.stream()
                        .filter(DeviceEndpoint::isVisible)
                        .map(DeviceEndpointUI::new)
@@ -42,13 +64,5 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
     @Override
     public int compareTo(@NotNull DeviceEndpointUI o) {
         return endpoint.compareTo(o.endpoint);
-    }
-
-    public record EndpointNode(
-        Icon icon,
-        String title,
-        String description,
-        String varSource,
-        Collection<UIInputEntity> actions) {
     }
 }

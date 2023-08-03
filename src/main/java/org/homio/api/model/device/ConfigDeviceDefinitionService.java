@@ -99,7 +99,7 @@ public class ConfigDeviceDefinitionService {
     }
 
     public @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModels(
-        @NotNull String model,
+        @Nullable String model,
         @NotNull Set<String> endpoints) {
         int endpointHash = endpoints.hashCode();
         ModelDevices modelDevices = modelIdToDevices.get(model);
@@ -176,9 +176,10 @@ public class ConfigDeviceDefinitionService {
 
         var definitions = new HashMap<String, ConfigDeviceDefinition>();
         for (ConfigDeviceDefinition node : deviceConfigurations.getDevices()) {
+            addDeviceDefinition(definitions, node, node.getName());
             if (node.getModels() != null) {
                 for (String model : node.getModels()) {
-                    definitions.put(model, node);
+                    addDeviceDefinition(definitions, node, model);
                 }
             }
         }
@@ -213,14 +214,20 @@ public class ConfigDeviceDefinitionService {
         endpointDeviceDefinitions = endpointDefinitions;
         deviceDefinitions = definitions;
         deviceEndpoints = deviceConfigurations.getEndpoints().stream()
-                .collect(Collectors.toMap(
-                        ConfigDeviceEndpoint::getName, Function.identity()));
+                                              .collect(Collectors.toMap(
+                                                  ConfigDeviceEndpoint::getName, Function.identity()));
         deviceAliasEndpoints = aliasEndpoints;
     }
 
+    private static void addDeviceDefinition(HashMap<String, ConfigDeviceDefinition> definitions, ConfigDeviceDefinition node, String model) {
+        if (definitions.put(model, node) != null) {
+            throw new IllegalArgumentException("Unable to handle few config device definitions with same name");
+        }
+    }
+
     private @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModelsInternal(
-            @NotNull String modelId,
-            @NotNull Set<String> endpoints) {
+        @Nullable String modelId,
+        @NotNull Set<String> endpoints) {
         List<ConfigDeviceDefinition> devices = new ArrayList<>();
         ConfigDeviceDefinition device = deviceDefinitions.get(modelId);
         if (device != null) {

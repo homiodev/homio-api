@@ -22,6 +22,7 @@ import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
+import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.homio.api.util.ApplicationContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,7 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     @Getter
     @UIField(order = 10, inlineEdit = true)
     @UIFieldGroup(value = "GENERAL", order = 10)
+    @UIFieldShowOnCondition("return !context.get('compactMode')")
     private String name;
 
     @JsonIgnore
@@ -224,4 +226,6 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public Date getEntityUpdated() {
         return updateTime;
     }
+
+
 }

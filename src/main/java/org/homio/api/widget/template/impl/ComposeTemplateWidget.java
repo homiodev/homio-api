@@ -67,13 +67,13 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
             currentLayoutRow.addAndGet(sumOfRowHeightsAdjusted);
         }
 
-        Map<String, DeviceEndpoint> endpoints = widgetRequest.getEntity().getDeviceEndpoints();
+        Map<String, ? extends DeviceEndpoint> endpoints = widgetRequest.getEntity().getDeviceEndpoints();
 
         addBottomRow(entityContext, wd, layoutID, currentLayoutRow.get(), endpoints);
     }
 
     public static void addBottomRow(EntityContext entityContext, WidgetDefinition wd, String layoutID, int row,
-        Map<String, DeviceEndpoint> endpoints) {
+        Map<String, ? extends DeviceEndpoint> endpoints) {
         DeviceEndpoint leftEndpoint = findCellEndpoint(wd.getLeftEndpoint(), endpoints, LEFT_ENDPOINTS);
         TemplateWidgetBuilder.addEndpoint(
             entityContext,
@@ -117,7 +117,7 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
 
     private static @Nullable DeviceEndpoint findCellEndpoint(
         @Nullable String endpoint,
-        @NotNull Map<String, DeviceEndpoint> endpoints,
+        @NotNull Map<String, ? extends DeviceEndpoint> endpoints,
         @NotNull String[] availableEndpoints) {
         if ("none".equals(endpoint)) {
             return null;

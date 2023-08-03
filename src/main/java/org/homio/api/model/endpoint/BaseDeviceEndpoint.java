@@ -191,22 +191,30 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> im
      */
     protected void updateUI() {
         entityContext.ui().updateInnerSetItem(device, "endpoints",
-            endpointEntityID, "value", new DeviceEndpointUI(this).getValue());
-        entityContext.ui().updateInnerSetItem(device, "endpoints",
-            endpointEntityID, "updated", updated);
+            endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
     }
 
     protected void getOrCreateVariable() {
         if (variableID == null) {
             VariableType variableType = getVariableType();
+            boolean persistent = configDeviceEndpoint != null && configDeviceEndpoint.isPersistent();
+            Consumer<VariableMetaBuilder> customVariableMetaBuilder = getVariableMetaBuilder();
+            Consumer<VariableMetaBuilder> variableMetaBuilder = builder -> {
+                builder.setIcon(icon);
+                if (customVariableMetaBuilder != null) {
+                    customVariableMetaBuilder.accept(builder);
+                }
+                if (persistent) {
+                    builder.setPersistent(true);
+                }
+            };
             if (variableType == VariableType.Enum) {
                 variableID = entityContext.var().createEnumVariable(getDeviceID(),
-                    getEntityID(), getName(false), getVariableEnumValues(), getVariableMetaBuilder());
+                    getEntityID(), getName(false), getVariableEnumValues(), variableMetaBuilder);
             } else {
                 variableID = entityContext.var().createVariable(getDeviceID(),
-                    getEntityID(), getName(false), variableType, getVariableMetaBuilder());
+                    getEntityID(), getName(false), variableType, variableMetaBuilder);
             }
-            entityContext.var().setVariableIcon(variableID, icon);
 
             if (isWritable()) {
                 entityContext.var().setLinkListener(requireNonNull(variableID), varValue -> {

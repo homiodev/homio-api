@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -65,11 +66,14 @@ public class WidgetDefinition {
     @Getter
     private Padding padding;
 
+    private static final Pattern AUTO_DISCOVERY_REGEXP = Pattern.compile("^(state|switch).*");
+
     public @NotNull List<DeviceEndpoint> getEndpoints(DeviceEndpointsBaseEntity entity) {
         if (this.isAutoDiscovery()) {
             if (type == WidgetType.toggle) {
                 return entity.getDeviceEndpoints().values().stream()
-                             .filter(p -> p.getEndpointName().startsWith("state"))
+                             .filter(p -> AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointName()).matches()
+                                 || AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointEntityID()).matches())
                              .collect(Collectors.toList());
             }
         }

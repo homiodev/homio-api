@@ -34,9 +34,13 @@ public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceE
     public ActionResponseModel handleAction(EntityContext entityContext, String actionID, JSONObject params) throws Exception {
         for (DeviceEndpointUI endpoint : getEndpoints()) {
             if (actionID.startsWith(endpoint.getEntityID())) {
-                UIActionHandler actionHandler = endpoint.getEndpoint().createUIInputBuilder().findActionHandler(actionID);
+                UIActionHandler actionHandler = endpoint.getEndpoint().createActionBuilder().findActionHandler(actionID);
                 if (actionHandler != null) {
                     return actionHandler.handleAction(entityContext, params);
+                }
+                UIActionHandler settingHandler = endpoint.getEndpoint().createSettingsBuilder().findActionHandler(actionID);
+                if (settingHandler != null) {
+                    return settingHandler.handleAction(entityContext, params);
                 }
             }
         }
@@ -44,16 +48,14 @@ public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceE
     }
 
     @JsonIgnore
-    public abstract @NotNull Map<String, DeviceEndpoint> getDeviceEndpoints();
+    public abstract @NotNull Map<String, ? extends DeviceEndpoint> getDeviceEndpoints();
 
     public @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String endpoint) {
         return getDeviceEndpoints().get(endpoint);
     }
 
-    public abstract @Nullable String getDescription();
-
     @JsonIgnore
-    public abstract @NotNull String getModel();
+    public abstract @Nullable String getDescription();
 
     /**
      * Last item updated
@@ -66,7 +68,7 @@ public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceE
     }
 
     @UIField(order = 9999)
-    @UIFieldInlineEntities(bg = "#27FF0005")
+    @UIFieldInlineEntities(bg = "#27FF0005", noContentTitle = "W.ERROR.NO_ENDPOINTS")
     public List<DeviceEndpointUI> getEndpoints() {
         return DeviceEndpointUI.buildEndpoints(getDeviceEndpoints().values());
     }
@@ -81,7 +83,9 @@ public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceE
         );
     }
 
+    @JsonIgnore
     public abstract @NotNull ConfigDeviceDefinitionService getConfigDeviceDefinitionService();
 
+    @JsonIgnore
     public abstract @NotNull List<ConfigDeviceDefinition> findMatchDeviceConfigurations();
 }

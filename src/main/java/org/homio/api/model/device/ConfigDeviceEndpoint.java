@@ -19,5 +19,6 @@ public class ConfigDeviceEndpoint {
     private int order;
     private String unit;
     boolean stateless;
+    boolean persistent;
     private List<String> alias;
 }

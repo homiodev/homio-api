@@ -107,19 +107,26 @@ public interface EntityContextVar {
 
     boolean renameVariable(@NotNull String variableId, @NotNull String name, @Nullable String description);
 
-    boolean setVariableIcon(@NotNull String variableId, @NotNull Icon icon);
+    boolean updateVariableIcon(@NotNull String variableId, @Nullable Icon icon);
 
     @NotNull String createVariable(@NotNull String groupId,
-                                   @Nullable String variableId,
-                                   @NotNull String variableName,
-                                   @NotNull VariableType variableType,
-                                   @Nullable Consumer<VariableMetaBuilder> metaBuilder);
+        @Nullable String variableId,
+        @NotNull String variableName,
+        @NotNull VariableType variableType,
+        @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
-    @NotNull String createEnumVariable(@NotNull String groupId,
-                                       @Nullable String variableId,
-                                       @NotNull String variableName,
-                                       @NotNull List<String> values,
-                                       @Nullable Consumer<VariableMetaBuilder> metaBuilder);
+    default @NotNull String createEnumVariable(@NotNull String groupId,
+        @Nullable String variableId,
+        @NotNull String variableName,
+        @NotNull List<String> values,
+        @Nullable Consumer<VariableMetaBuilder> metaBuilder) {
+        return createVariable(groupId, variableId, variableName, VariableType.Enum, builder -> {
+            builder.setValues(values);
+            if (metaBuilder != null) {
+                metaBuilder.accept(builder);
+            }
+        });
+    }
 
     default boolean createGroup(@NotNull String groupId, @NotNull String groupName) {
         return createGroup(groupId, groupName, false, new Icon("fas fa-layer-group", "#18C0DB"), null);
@@ -198,14 +205,26 @@ public interface EntityContextVar {
     }
 
     interface VariableMetaBuilder {
+
         @NotNull VariableMetaBuilder setReadOnly(boolean value);
 
         @NotNull VariableMetaBuilder setColor(@Nullable String value);
+
+        @NotNull VariableMetaBuilder setPersistent(boolean value);
 
         @NotNull VariableMetaBuilder setDescription(@Nullable String value);
 
         @NotNull VariableMetaBuilder setUnit(@Nullable String value);
 
+        @NotNull VariableMetaBuilder setIcon(@Nullable Icon icon);
+
         @NotNull VariableMetaBuilder setAttributes(@Nullable List<String> attributes);
+
+        /**
+         * Set enum values. Useful only for Enum variable type
+         *
+         * @param values list of available options
+         */
+        @NotNull VariableMetaBuilder setValues(List<String> values);
     }
 }

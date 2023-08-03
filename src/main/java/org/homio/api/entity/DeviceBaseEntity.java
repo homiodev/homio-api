@@ -1,5 +1,7 @@
 package org.homio.api.entity;
 
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.homio.api.ui.field.UIFieldType.HTML;
 import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,6 +23,8 @@ import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldType;
+import org.homio.api.ui.field.color.UIFieldColorBgRef;
+import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
 import org.homio.api.ui.field.selection.UIFieldSelection;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
@@ -49,6 +53,7 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE")
     @Nullable
+    @UIFieldShowOnCondition("return !context.get('compactMode')")
     private String place;
 
     @Getter
@@ -57,6 +62,32 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Convert(converter = JSONConverter.class)
     @NotNull
     private JSON jsonData = new JSON();
+
+    @UIField(order = 1, fullWidth = true, color = "#89AA50", type = HTML, style = "height: 32px;")
+    @UIFieldShowOnCondition("return context.get('compactMode')")
+    @UIFieldColorBgRef(value = "statusColor", animate = true)
+    @UIFieldGroup(value = "GENERAL", order = 1, borderColor = "#CDD649")
+    public String getCompactDescription() {
+        String description = getCompactDescriptionImpl();
+        if (description == null) {
+            description = getName();
+        }
+        Status status = getStatus();
+        return """
+            <div class="inline-2row_d"><div>%s <span style="color:%s">${%s}</span>
+            <span style="float:right" class="color-primary">%s</span></div><div>${%s}</div></div>""".formatted(
+            getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), description);
+    }
+
+    @JsonIgnore
+    public String getCompactDescriptionImpl() {
+        return null;
+    }
+
+    @JsonIgnore
+    public @Nullable String getModel() {
+        return null;
+    }
 
     /**
      * @return Define order in which entity will be shown on UI map

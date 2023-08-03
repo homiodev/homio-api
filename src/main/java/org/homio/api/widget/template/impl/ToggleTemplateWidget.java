@@ -34,7 +34,7 @@ public class ToggleTemplateWidget implements TemplateWidgetBuilder {
         WidgetRequest widgetRequest = request.getWidgetRequest();
         DeviceEndpointsBaseEntity entity = widgetRequest.getEntity();
 
-        Map<String, DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
+        Map<String, ? extends DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
         List<DeviceEndpoint> includeEndpoints = request.getItemIncludeEndpoints();
         if (includeEndpoints.isEmpty()) {
             throw new IllegalArgumentException("Unable to find endpoints from device: " + entity);

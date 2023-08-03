@@ -122,7 +122,21 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     State getValue();
 
-    @NotNull UIInputBuilder createUIInputBuilder();
+    /**
+     * Uses to create action(s)(i.e. slider/switch/text) for endpoint row
+     *
+     * @return action builder
+     */
+    @Nullable UIInputBuilder createActionBuilder();
+
+    /**
+     * Uses to create settings for single endpoint
+     *
+     * @return settings builder
+     */
+    default @Nullable UIInputBuilder createSettingsBuilder() {
+        return null;
+    }
 
     /**
      * @param endpoints list
