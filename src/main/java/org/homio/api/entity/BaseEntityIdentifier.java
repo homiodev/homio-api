@@ -5,10 +5,11 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import org.homio.api.EntityContext;
+import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface BaseEntityIdentifier<T> extends EntityFieldMetadata, Serializable {
+public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable {
 
     @JsonIgnore
     String getDefaultName();
@@ -39,4 +40,20 @@ public interface BaseEntityIdentifier<T> extends EntityFieldMetadata, Serializab
 
     @JsonIgnore
     @NotNull String getEntityPrefix();
+
+    /**
+     * Specify entity font awesome icon for UI purposes
+     */
+    default @Nullable Icon getEntityIcon() {
+        return null;
+    }
+
+    /**
+     * Specify type for dynamic update. For widget it will be always: 'widget', etc...
+     *
+     * @return - dynamic widget type
+     */
+    default @NotNull String getDynamicUpdateType() {
+        return getType();
+    }
 }

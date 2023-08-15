@@ -1,4 +1,4 @@
-package org.homio.api.entity;
+package org.homio.api.entity.device;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
@@ -13,6 +13,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 import org.homio.api.converter.JSONConverter;
+import org.homio.api.entity.BaseEntity;
+import org.homio.api.entity.HasJsonData;
 import org.homio.api.model.JSON;
 import org.homio.api.ui.field.UIField;
 import org.jetbrains.annotations.NotNull;
@@ -21,8 +23,8 @@ import org.jetbrains.annotations.NotNull;
 @Setter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public abstract class PropertyBaseEntity<T extends PropertyBaseEntity<T, O>, O extends DeviceBaseEntity<O>>
-    extends BaseEntity<T> implements HasJsonData {
+public abstract class PropertyBaseEntity<O extends DeviceBaseEntity>
+    extends BaseEntity implements HasJsonData {
 
     public static final String PREFIX = "prop_";
 

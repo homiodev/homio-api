@@ -17,7 +17,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.console.ConsolePlugin;
 import org.homio.api.entity.BaseEntity;
+import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.entity.device.DeviceBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.exception.ServerException;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
@@ -116,23 +119,24 @@ public interface EntityContextUI {
         reloadWindow(reason, 5);
     }
 
-    void removeItem(@NotNull BaseEntity<?> baseEntity);
+    void removeItem(@NotNull BaseEntity baseEntity);
 
-    void updateItem(@NotNull BaseEntity<?> baseEntity);
+    void updateItem(@NotNull BaseEntity baseEntity);
 
-    default void updateItems(@NotNull Class<? extends BaseEntity<?>> baseEntityClass) {
-        for (BaseEntity<?> baseEntity : getEntityContext().findAll(baseEntityClass)) {
+    default void updateItems(@NotNull Class<? extends BaseEntity> baseEntityClass) {
+        for (BaseEntity baseEntity : getEntityContext().findAll(baseEntityClass)) {
             updateItem(baseEntity);
         }
     }
 
     /**
      * Update specific field
-     * @param baseEntity -
+     *
+     * @param baseEntity  -
      * @param updateField -
-     * @param value -
+     * @param value       -
      */
-    void updateItem(@NotNull BaseEntity<?> baseEntity, @NotNull String updateField, @Nullable Object value);
+    void updateItem(@NotNull BaseEntityIdentifier baseEntity, @NotNull String updateField, @Nullable Object value);
 
     /**
      * Update specific field inside @UIFieldInlineEntities
@@ -143,7 +147,7 @@ public interface EntityContextUI {
      * @param updateField     - specific field name to update inside innerEntity
      * @param value           - value to send to UI
      */
-    void updateInnerSetItem(@NotNull BaseEntity<?> parentEntity, @NotNull String parentFieldName, @NotNull String innerEntityID,
+    void updateInnerSetItem(@NotNull BaseEntityIdentifier parentEntity, @NotNull String parentFieldName, @NotNull String innerEntityID,
         @NotNull String updateField, @NotNull Object value);
 
     /**
@@ -460,6 +464,28 @@ public interface EntityContextUI {
         @NotNull NotificationBlockBuilder contextMenuActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
 
         @NotNull NotificationBlockBuilder setNameColor(@Nullable String color);
+
+        default @NotNull NotificationBlockBuilder setDevices(@Nullable Collection<? extends DeviceBaseEntity> devices) {
+            if (devices != null) {
+                addInfo("sum", new Icon("fas fa-mountain-city", "#CDDC39"), Lang.getServerMessage("TITLE.DEVICES_STAT",
+                    FlowMap.of("ONLINE", devices.stream().filter(d -> d.getStatus().isOnline()).count(), "TOTAL", devices.size())));
+                if (devices.isEmpty()) {
+                    return this;
+                }
+                contextMenuActionBuilder(contextAction -> {
+                    for (DeviceBaseEntity device : devices) {
+                        String name = device instanceof DeviceEndpointsBehaviourContract
+                            ? ((DeviceEndpointsBehaviourContract) device).getDeviceFullName() :
+                            device.getTitle();
+                        contextAction.addInfo(name)
+                                     .setColor(device.getStatus().getColor())
+                                     .setIcon(device.getEntityIcon())
+                                     .linkToEntity(device);
+                    }
+                });
+            }
+            return this;
+        }
 
         /**
          * Specify whole notification block status and uses for getting border color

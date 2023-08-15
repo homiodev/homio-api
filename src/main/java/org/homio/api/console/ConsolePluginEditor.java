@@ -1,5 +1,7 @@
 package org.homio.api.console;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +12,6 @@ import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.FileContentType;
 import org.homio.api.model.FileModel;
 import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
-import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -24,7 +25,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
     ActionResponseModel save(FileModel content);
 
     default void sendValueToConsoleEditor(EntityContext entityContext) {
-        entityContext.ui().sendNotification("-editor-" + getEntityID(), CommonUtils.OBJECT_MAPPER.valueToTree(getValue()));
+        entityContext.ui().sendNotification("-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
     }
 
     default MonacoGlyphAction getGlyphAction() {
@@ -56,7 +57,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
     }
 
     @Override
-    default ActionResponseModel executeAction(String entityID, JSONObject metadata, JSONObject params) {
+    default ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata) {
         if (metadata.has("glyph")) {
             return this.glyphClicked(metadata.getString("glyph"));
         }

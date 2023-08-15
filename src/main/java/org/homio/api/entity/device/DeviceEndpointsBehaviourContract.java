@@ -1,4 +1,4 @@
-package org.homio.api.entity;
+package org.homio.api.entity.device;
 
 import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
 
@@ -18,29 +18,39 @@ import org.homio.api.ui.action.UIActionHandler;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
+import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.inline.UIFieldInlineEntities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceEndpointsBaseEntity> implements HasDynamicContextMenuActions {
+public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDynamicContextMenuActions {
+
+    @JsonIgnore
+    @NotNull String getDeviceFullName();
 
     @UIFieldGroup("GENERAL")
-    public @NotNull Date getUpdateTime() {
+    default @NotNull Date getUpdateTime() {
         return DeviceEndpoint.getLastUpdated(getDeviceEndpoints().values());
     }
 
     @Override
-    public ActionResponseModel handleAction(EntityContext entityContext, String actionID, JSONObject params) throws Exception {
+    default ActionResponseModel handleAction(EntityContext entityContext, String actionID, JSONObject params) throws Exception {
         for (DeviceEndpointUI endpoint : getEndpoints()) {
             if (actionID.startsWith(endpoint.getEntityID())) {
-                UIActionHandler actionHandler = endpoint.getEndpoint().createActionBuilder().findActionHandler(actionID);
-                if (actionHandler != null) {
-                    return actionHandler.handleAction(entityContext, params);
+                UIInputBuilder actionBuilder = endpoint.getEndpoint().createActionBuilder();
+                if (actionBuilder != null) {
+                    UIActionHandler actionHandler = actionBuilder.findActionHandler(actionID);
+                    if (actionHandler != null) {
+                        return actionHandler.handleAction(entityContext, params);
+                    }
                 }
-                UIActionHandler settingHandler = endpoint.getEndpoint().createSettingsBuilder().findActionHandler(actionID);
-                if (settingHandler != null) {
-                    return settingHandler.handleAction(entityContext, params);
+                UIInputBuilder settingsBuilder = endpoint.getEndpoint().createSettingsBuilder();
+                if (settingsBuilder != null) {
+                    UIActionHandler settingHandler = settingsBuilder.findActionHandler(actionID);
+                    if (settingHandler != null) {
+                        return settingHandler.handleAction(entityContext, params);
+                    }
                 }
             }
         }
@@ -48,33 +58,33 @@ public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceE
     }
 
     @JsonIgnore
-    public abstract @NotNull Map<String, ? extends DeviceEndpoint> getDeviceEndpoints();
+    @NotNull Map<String, ? extends DeviceEndpoint> getDeviceEndpoints();
 
-    public @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String endpoint) {
+    default @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String endpoint) {
         return getDeviceEndpoints().get(endpoint);
     }
 
     @JsonIgnore
-    public abstract @Nullable String getDescription();
+    @Nullable String getDescription();
 
     /**
      * Last item updated
      *
      * @return string representation of last item updated
      */
-    public @Nullable String getUpdated() {
+    default @Nullable String getUpdated() {
         DeviceEndpoint endpoint = getDeviceEndpoint(ENDPOINT_LAST_SEEN);
         return endpoint == null ? null : endpoint.getLastValue().stringValue();
     }
 
     @UIField(order = 9999)
     @UIFieldInlineEntities(bg = "#27FF0005", noContentTitle = "W.ERROR.NO_ENDPOINTS")
-    public List<DeviceEndpointUI> getEndpoints() {
+    default List<DeviceEndpointUI> getEndpoints() {
         return DeviceEndpointUI.buildEndpoints(getDeviceEndpoints().values());
     }
 
     @Override
-    public @NotNull Icon getEntityIcon() {
+    default @NotNull Icon getEntityIcon() {
         ConfigDeviceDefinitionService service = getConfigDeviceDefinitionService();
         List<ConfigDeviceDefinition> matchDevices = findMatchDeviceConfigurations();
         return new Icon(
@@ -84,8 +94,8 @@ public abstract class DeviceEndpointsBaseEntity extends DeviceBaseEntity<DeviceE
     }
 
     @JsonIgnore
-    public abstract @NotNull ConfigDeviceDefinitionService getConfigDeviceDefinitionService();
+    @NotNull ConfigDeviceDefinitionService getConfigDeviceDefinitionService();
 
     @JsonIgnore
-    public abstract @NotNull List<ConfigDeviceDefinition> findMatchDeviceConfigurations();
+    @NotNull List<ConfigDeviceDefinition> findMatchDeviceConfigurations();
 }

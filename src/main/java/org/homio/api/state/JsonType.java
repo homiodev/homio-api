@@ -1,5 +1,7 @@
 package org.homio.api.state;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.function.BiConsumer;
@@ -7,7 +9,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
 
@@ -21,9 +22,9 @@ public class JsonType implements State, Comparable<JsonType> {
     @SneakyThrows
     public JsonType(Object value) {
         if (value instanceof String strValue) {
-            this.jsonNode = CommonUtils.OBJECT_MAPPER.readValue(strValue, JsonNode.class);
+            this.jsonNode = OBJECT_MAPPER.readValue(strValue, JsonNode.class);
         } else {
-            this.jsonNode = CommonUtils.OBJECT_MAPPER.valueToTree(value);
+            this.jsonNode = OBJECT_MAPPER.valueToTree(value);
         }
     }
 

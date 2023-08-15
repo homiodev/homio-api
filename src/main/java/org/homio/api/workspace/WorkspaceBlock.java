@@ -23,6 +23,7 @@ import java.util.function.Predicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
+import org.homio.api.EntityContextBGP;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.exception.ServerException;
 import org.homio.api.service.EntityService;
@@ -352,6 +353,8 @@ public interface WorkspaceBlock {
     BroadcastLockManager getBroadcastLockManager();
 
     boolean isDestroyed();
+
+    void setThreadContext(EntityContextBGP.ThreadContext<?> threadContext);
 
     EntityContext getEntityContext();
 

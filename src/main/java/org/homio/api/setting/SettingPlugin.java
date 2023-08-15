@@ -1,5 +1,7 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.putOpt;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fazecast.jSerialComm.SerialPort;
 import java.nio.file.Paths;
@@ -58,7 +60,7 @@ public interface SettingPlugin<T> {
     // min/max/step (Slider)
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = new JSONObject();
-        CommonUtils.putOpt(parameters, "maxWidth", getMaxWidth());
+        putOpt(parameters, "maxWidth", getMaxWidth());
         return parameters;
     }
 
@@ -150,7 +152,7 @@ public interface SettingPlugin<T> {
      * @param value -
      * @return -
      */
-    default @NotNull String writeValue(T value) {
+    default @NotNull String writeValue(@Nullable T value) {
         if (value == null) {
             return "";
         }

@@ -20,7 +20,7 @@ public interface ConsolePluginCommunicator extends ConsolePluginComplexLines {
     }
 
     @Override
-    default ActionResponseModel executeAction(String entityID, JSONObject metadata, JSONObject params) {
+    default ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata) {
         return commandReceived(entityID);
     }
 }

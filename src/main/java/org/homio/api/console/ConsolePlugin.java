@@ -69,7 +69,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
         return true;
     }
 
-    default @Nullable ActionResponseModel executeAction(@NotNull String entityID, @Nullable JSONObject metadata, @Nullable JSONObject params)
+    default @Nullable ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata)
         throws Exception {
         return null;
     }

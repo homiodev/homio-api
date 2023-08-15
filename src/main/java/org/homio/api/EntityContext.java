@@ -52,8 +52,8 @@ public interface EntityContext {
 
     @Nullable
     default <T extends BaseEntity> T getEntity(Class<T> entityClass, @NotNull String entityID) {
-        String fullEntityID = CommonUtils.newInstance(entityClass).setEntityID(entityID).getEntityID();
-        return getEntity(fullEntityID, true);
+        T entity = CommonUtils.newInstance(entityClass);
+        return getEntity(entity.setEntityID(entityID), true);
     }
 
     @NotNull
@@ -67,8 +67,8 @@ public interface EntityContext {
 
     @NotNull
     default <T extends BaseEntity> T getEntityRequire(Class<T> entityClass, @NotNull String entityID) {
-        String fullEntityID = CommonUtils.newInstance(entityClass).setEntityID(entityID).getEntityID();
-        return getEntityRequire(fullEntityID);
+        T entity = CommonUtils.newInstance(entityClass);
+        return getEntityRequire(entity.setEntityID(entityID));
     }
 
     @Nullable
@@ -122,7 +122,7 @@ public interface EntityContext {
         return (List<T>) findAll(entity.getClass());
     }
 
-    @Nullable BaseEntity<? extends BaseEntity> delete(@NotNull String entityId);
+    @Nullable BaseEntity delete(@NotNull String entityId);
 
     @NotNull <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
 

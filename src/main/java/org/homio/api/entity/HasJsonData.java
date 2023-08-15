@@ -1,24 +1,23 @@
 package org.homio.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
-import org.homio.api.model.JSON;
-import org.homio.api.util.CommonUtils;
-import org.homio.api.util.SecureString;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import static java.lang.String.format;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.homio.api.EntityContext;
+import org.homio.api.model.JSON;
+import org.homio.api.util.SecureString;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface HasJsonData {
 
@@ -59,6 +58,14 @@ public interface HasJsonData {
         getJsonData().put(key, value);
     }
 
+    @SneakyThrows
+    default <P> void setJsonDataObject(@NotNull String key, @Nullable P value) {
+        if (value == null || value.toString().isEmpty()) {
+            getJsonData().remove(key);
+        }
+        getJsonData().put(key, OBJECT_MAPPER.writeValueAsString(value));
+    }
+
     default <P> void setJsonDataSecure(@NotNull String key, @Nullable P value) {
         if (value == null || value.toString().isEmpty()) {
             getJsonData().remove(key);
@@ -91,7 +98,9 @@ public interface HasJsonData {
     @SneakyThrows
     default <T> @Nullable T getJsonData(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
-            return CommonUtils.OBJECT_MAPPER.readValue(getJsonData(key), classType);
+            try {
+                return OBJECT_MAPPER.readValue(getJsonData(key), classType);
+            } catch (Exception ignore) {}
         }
         return null;
     }

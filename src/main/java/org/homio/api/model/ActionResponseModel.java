@@ -52,6 +52,10 @@ public class ActionResponseModel {
         return new ActionResponseModel(fileModels, ResponseAction.files);
     }
 
+    public static ActionResponseModel showFile(FileModel fileModel) {
+        return ActionResponseModel.showFiles(Set.of(fileModel));
+    }
+
     public static ActionResponseModel showInfoAlreadyDone() {
         return new ActionResponseModel("W.INFO.ALREADY_DONE", ResponseAction.info);
     }

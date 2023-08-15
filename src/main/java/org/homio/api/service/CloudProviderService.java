@@ -28,7 +28,7 @@ public interface CloudProviderService<T extends SshCloud> {
         updateNotificationBlock(null);
     }
 
-    interface SshCloud<T extends SshCloud> extends HasEntityIdentifier, HasStatusAndMsg<T>, HasJsonData {
+    interface SshCloud<T extends SshCloud> extends HasEntityIdentifier, HasStatusAndMsg, HasJsonData {
 
         /**
          * Does this cloud is primary. Only one entity may be primary. Primary entity uses for cloud provider as tunnel

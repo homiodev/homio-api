@@ -1,5 +1,7 @@
 package org.homio.api.workspace.scratch;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,14 +93,11 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         }
 
         EntityFieldMetadata entityFieldMetadata = CommonUtils.newInstance(settingClass);
-        if (entityFieldMetadata == null) {
-            throw new IllegalArgumentException("Setting class has to have empty constructor");
-        }
         if (StringUtils.isEmpty(entityFieldMetadata.getTitle())) {
             throw new IllegalArgumentException("Setting class has to have non null title method");
         }
 
-        return addArgument("SETTING", ArgumentType.setting, CommonUtils.OBJECT_MAPPER.writeValueAsString(entity));
+        return addArgument("SETTING", ArgumentType.setting, OBJECT_MAPPER.writeValueAsString(entity));
     }
 
     public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull ArgumentType type, @NotNull String defaultValue) {

@@ -1,5 +1,7 @@
 package org.homio.api.state;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -12,7 +14,7 @@ public interface State {
     static State of(Object value) {
         if (value == null || value instanceof State) return (State) value;
         if (value instanceof Map) {
-            return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
+            return new JsonType(OBJECT_MAPPER.convertValue(value, JsonNode.class));
         }
         if (Number.class.isAssignableFrom(value.getClass())) {
             if (value instanceof Double) {
@@ -26,7 +28,7 @@ public interface State {
             return OnOffType.of((boolean) value);
         } else if (value instanceof String) {
             try {
-                return new JsonType(CommonUtils.OBJECT_MAPPER.readValue((String) value, JsonNode.class));
+                return new JsonType(OBJECT_MAPPER.readValue((String) value, JsonNode.class));
             } catch (Exception ignore) {}
             return new StringType(value.toString());
         }

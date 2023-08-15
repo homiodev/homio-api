@@ -3,6 +3,7 @@ package org.homio.api;
 import com.pivovarit.function.ThrowingConsumer;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -118,7 +119,7 @@ public interface EntityContextVar {
     default @NotNull String createEnumVariable(@NotNull String groupId,
         @Nullable String variableId,
         @NotNull String variableName,
-        @NotNull List<String> values,
+        @NotNull Set<String> values,
         @Nullable Consumer<VariableMetaBuilder> metaBuilder) {
         return createVariable(groupId, variableId, variableName, VariableType.Enum, builder -> {
             builder.setValues(values);
@@ -225,6 +226,6 @@ public interface EntityContextVar {
          *
          * @param values list of available options
          */
-        @NotNull VariableMetaBuilder setValues(List<String> values);
+        @NotNull VariableMetaBuilder setValues(Set<String> values);
     }
 }

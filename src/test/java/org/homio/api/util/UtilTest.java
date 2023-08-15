@@ -1,7 +1,7 @@
 package org.homio.api.util;
 
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
-import static org.homio.api.util.CommonUtils.updateJsonPath;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.updateJsonPath;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Assertions;

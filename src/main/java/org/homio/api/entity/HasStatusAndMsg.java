@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
+public interface HasStatusAndMsg extends HasEntityIdentifier {
 
     String DISTINGUISH_KEY = "status";
 
@@ -23,39 +23,37 @@ public interface HasStatusAndMsg<T extends HasEntityIdentifier> {
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     default @NotNull Status getStatus() {
-        return EntityContextSetting.getStatus(((T) this), DISTINGUISH_KEY, Status.UNKNOWN);
+        return EntityContextSetting.getStatus(this, DISTINGUISH_KEY, Status.UNKNOWN);
+    }
+
+    default void setStatus(@NotNull Status status) {
+        setStatus(status, status == Status.ONLINE ? null : getStatusMessage());
     }
 
     @UIField(order = 2, hideInEdit = true, hideOnEmpty = true, color = "#B22020")
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     default @Nullable String getStatusMessage() {
-        return EntityContextSetting.getMessage(((T) this), DISTINGUISH_KEY);
+        return EntityContextSetting.getMessage(this, DISTINGUISH_KEY);
     }
 
-    default @NotNull T setStatusOnline() {
-        return setStatus(Status.ONLINE, null);
+    default void setStatusMessage(@Nullable String msg) {
+        EntityContextSetting.setMessage(this, DISTINGUISH_KEY, msg);
     }
 
-    default @NotNull T setStatusError(@NotNull Exception ex) {
-        return setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+    default void setStatusOnline() {
+        setStatus(Status.ONLINE, null);
     }
 
-    default @NotNull T setStatusError(@NotNull String message) {
-        return setStatus(Status.ERROR, message);
+    default void setStatusError(@NotNull Exception ex) {
+        setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
     }
 
-    default @NotNull T setStatus(@NotNull Status status) {
-        return setStatus(status, status == Status.ONLINE ? null : getStatusMessage());
+    default void setStatusError(@NotNull String message) {
+        setStatus(Status.ERROR, message);
     }
 
-    default @NotNull T setStatus(@Nullable Status status, @Nullable String msg) {
-        EntityContextSetting.setStatus((BaseEntityIdentifier) this, DISTINGUISH_KEY, "Status", status, msg);
-        return (T) this;
-    }
-
-    default @NotNull T setStatusMessage(@Nullable String msg) {
-        EntityContextSetting.setMessage(((T) this), DISTINGUISH_KEY, msg);
-        return (T) this;
+    default void setStatus(@Nullable Status status, @Nullable String msg) {
+        EntityContextSetting.setStatus(this, DISTINGUISH_KEY, "Status", status, msg);
     }
 }

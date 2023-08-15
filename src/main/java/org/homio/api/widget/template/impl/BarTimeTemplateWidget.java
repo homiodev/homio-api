@@ -1,7 +1,7 @@
 package org.homio.api.widget.template.impl;
 
 import java.util.List;
-import org.homio.api.entity.DeviceEndpointsBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
 import org.homio.api.widget.template.WidgetDefinition;
@@ -20,7 +20,7 @@ public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
         WidgetRequest widgetRequest = request.getWidgetRequest();
-        DeviceEndpointsBaseEntity entity = widgetRequest.getEntity();
+        DeviceEndpointsBehaviourContract entity = widgetRequest.getEntity();
         WidgetDefinition wd = request.getItem();
 
         List<DeviceEndpoint> barSeries = wd.getIncludeEndpoints(request);

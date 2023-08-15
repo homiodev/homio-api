@@ -1,6 +1,6 @@
 package org.homio.api.ui.field.action;
 
-import static org.homio.api.util.CommonUtils.putOpt;
+import static org.homio.api.util.JsonUtils.putOpt;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -2,6 +2,12 @@ package org.homio.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingRunnable;
+import java.time.Duration;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.homio.api.EntityContext;
@@ -12,16 +18,11 @@ import org.homio.api.model.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
  * Configure service for entities. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
  */
 public interface EntityService<S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
-        extends HasStatusAndMsg<T> {
+    extends HasStatusAndMsg {
 
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
@@ -91,17 +92,24 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     abstract class ServiceInstance<E extends EntityService<?, ?>> {
 
         protected final @NotNull EntityContext entityContext;
-        protected String entityID;
+        protected final String entityID;
+        private final AtomicBoolean initializing = new AtomicBoolean(false);
         protected E entity;
         protected long entityHashCode;
 
-        /**
-         * Avoid to save any data to db during create service instance.
-         *
-         * @param entityContext ec
-         */
-        public ServiceInstance(@NotNull EntityContext entityContext) {
+        public ServiceInstance(@NotNull EntityContext entityContext, @NotNull E entity, boolean fireFirstInitialize) {
             this.entityContext = entityContext;
+            this.entityID = entity.getEntityID();
+            this.entity = entity;
+            this.entityHashCode = getEntityHashCode(entity);
+
+            if (fireFirstInitialize) {
+                initializing.set(true);
+                entityContext.bgp().execute(Duration.ofSeconds(1), () -> {
+                    fireWithSetStatus(this::firstInitialize);
+                    initializing.set(false);
+                });
+            }
         }
 
         public void testServiceWithSetStatus() {
@@ -121,17 +129,19 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
          * @param newEntity - updated entity
          */
         public void entityUpdated(@NotNull E newEntity) {
-            boolean firstSet = entity == null;
-            entityID = newEntity.getEntityID();
             long newEntityHashCode = getEntityHashCode(newEntity);
             boolean requireReinitialize = entityHashCode != newEntityHashCode;
             entityHashCode = newEntityHashCode;
             entity = newEntity;
 
-            if (firstSet) {
-                entityContext.bgp().execute(() -> fireWithSetStatus(this::firstInitialize));
-            } else if (requireReinitialize) {
-                entityContext.bgp().execute(() -> fireWithSetStatus(this::initialize));
+            if (requireReinitialize) {
+                entityContext.bgp().execute(() -> {
+                    while (!initializing.compareAndSet(false, true)) {
+                        Thread.yield();
+                    }
+                    fireWithSetStatus(this::initialize);
+                    initializing.set(false);
+                });
             }
         }
 

@@ -6,16 +6,7 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
@@ -26,7 +17,9 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -59,7 +52,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -78,9 +70,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.homio.api.EntityContext;
-import org.homio.api.entity.RestartHandlerOnChange;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
@@ -89,9 +79,6 @@ import org.homio.hquery.ProgressBar;
 import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -136,20 +123,8 @@ public class CommonUtils {
     public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public static final ObjectMapper OBJECT_MAPPER;
-    public static final ObjectMapper YAML_OBJECT_MAPPER;
     private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
     private static Path rootPath;
-
-    static {
-        OBJECT_MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
-            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -259,16 +234,6 @@ public class CommonUtils {
         return IOUtils.toString(getResource(addonId, resource), Charset.defaultCharset());
     }
 
-    @SneakyThrows
-    public static <T> List<T> readJSON(String resource, Class<T> targetClass) {
-        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(resource);
-        List<T> list = new ArrayList<>();
-        while (resources.hasMoreElements()) {
-            list.add(OBJECT_MAPPER.readValue(resources.nextElement(), targetClass));
-        }
-        return list;
-    }
-
     public static void addToListSafe(List<String> list, String value) {
         if (!value.isEmpty()) {
             list.add(value);
@@ -339,7 +304,16 @@ public class CommonUtils {
             constructor.setAccessible(true);
             return constructor.newInstance();
         }
-        return null;
+        throw new IllegalArgumentException("Class " + clazz.getSimpleName() + " has to have empty constructor");
+    }
+
+    public static String ping(String host, int port) throws ConnectException {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress("google.com", port), 5000);
+            return socket.getLocalAddress().getHostAddress();
+        } catch (Exception ignore) {
+        }
+        throw new ConnectException("Host %s:%s not reachable".formatted(host, port));
     }
 
     @SneakyThrows
@@ -374,15 +348,6 @@ public class CommonUtils {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         transformer.transform(new DOMSource(document), new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
         return out.toString();
-    }
-
-    @SneakyThrows
-    public static <T> T readAndMergeJSON(String resource, T targetObject) {
-        ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-        for (URL url : Collections.list(CommonUtils.class.getClassLoader().getResources(resource))) {
-            updater.readValue(url);
-        }
-        return targetObject;
     }
 
     @SneakyThrows
@@ -439,57 +404,6 @@ public class CommonUtils {
                 }
             }
         }
-    }
-
-    public static JSONObject putOpt(JSONObject jsonObject, String key, String value) {
-        return putOpt(jsonObject, key, (Object) trimToNull(value));
-    }
-
-    public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {
-        if (StringUtils.isNotEmpty(key) && value != null) {
-            jsonObject.put(key, value);
-        }
-        return jsonObject;
-    }
-
-    /**
-     * Update node value if not match expected value. Create missing nodes.
-     *
-     * @param node            target node to modify
-     * @param path            - full path to value. i.e.: 'my/path/to/value'
-     * @param requireUpdateFn - if require to update
-     * @param updateFn        - function to update value
-     * @return if node was updated
-     */
-    public static boolean updateJsonPath(@NotNull JsonNode node, @NotNull String path, @NotNull Predicate<JsonNode> requireUpdateFn,
-        @NotNull BiConsumer<ObjectNode, String> updateFn) {
-        JsonNode cursor = node;
-        JsonNode parent = null;
-        String[] pathItems = path.split("/");
-        for (String item : pathItems) {
-            if (!cursor.has(item)) {
-                ((ObjectNode) cursor).set(item, OBJECT_MAPPER.createObjectNode());
-            }
-            parent = cursor;
-            cursor = cursor.path(item);
-        }
-        if (requireUpdateFn.test(cursor)) {
-            updateFn.accept((ObjectNode) parent, pathItems[pathItems.length - 1]);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Update node value if not match expected integer value.
-     *
-     * @param jsonNode target node
-     * @param path     - path
-     * @param value    - expected value
-     * @return if node was updated
-     */
-    public static boolean updateJsonPath(@NotNull JsonNode jsonNode, @NotNull String path, int value) {
-        return updateJsonPath(jsonNode, path, node -> node.asInt(-1) != value, (node, s) -> node.put(s, value));
     }
 
     public static ResponseEntity<InputStreamResource> inputStreamToResource(
@@ -601,39 +515,10 @@ public class CommonUtils {
         return createDirectoriesIfNotExists(getRootPath().resolve(path));
     }
 
-    @SneakyThrows
-    public static boolean isRequireRestartHandler(Object oldEntity, Object newEntity) {
-        if (oldEntity == null) { // in case if just created
-            return false;
-        }
-        Method[] methods = MethodUtils.getMethodsWithAnnotation(newEntity.getClass(), RestartHandlerOnChange.class, true, false);
-        for (Method method : methods) {
-            Object newValue = MethodUtils.invokeMethod(newEntity, method.getName());
-            Object oldValue = MethodUtils.invokeMethod(oldEntity, method.getName());
-            if (!Objects.equals(newValue, oldValue)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static SerialPort getSerialPort(String value) {
         return StringUtils.isEmpty(value) ? null :
             Stream.of(SerialPort.getCommPorts())
                   .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
-    }
-
-    public static boolean isValidJson(String json) {
-        try {
-            new JSONObject(json);
-        } catch (JSONException ignore) {
-            try {
-                new JSONArray(json);
-            } catch (JSONException ne) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public static String splitNameToReadableFormat(@NotNull String name) {

@@ -1,7 +1,8 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.putOpt;
+
 import org.homio.api.EntityContext;
-import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -35,8 +36,8 @@ public interface SettingPluginInteger extends SettingPlugin<Integer> {
     @Override
     default JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
-        CommonUtils.putOpt(parameters, "min", getMin());
-        CommonUtils.putOpt(parameters, "max", getMax());
+        putOpt(parameters, "min", getMin());
+        putOpt(parameters, "max", getMax());
         return parameters;
     }
 }

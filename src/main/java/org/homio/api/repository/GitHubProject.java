@@ -1,7 +1,8 @@
 package org.homio.api.repository;
 
 import static java.lang.String.format;
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.YAML_OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,9 +39,9 @@ import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.ArchiveFormat;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.api.model.ActionResponseModel;
+import org.homio.api.util.CommonUtils;
 import org.homio.hquery.Curl;
 import org.homio.hquery.ProgressBar;
-import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpEntity;
@@ -183,7 +184,7 @@ public class GitHubProject {
     public <T> @Nullable T getFile(@NotNull String path, @NotNull Class<T> type) {
         URL url = new URL(format("https://raw.githubusercontent.com/%s/%s/master/%s", project, repo, path));
         if (path.endsWith(".yaml") || path.endsWith(".yml")) {
-            return CommonUtils.YAML_OBJECT_MAPPER.readValue(url, type);
+            return YAML_OBJECT_MAPPER.readValue(url, type);
         }
         return Curl.restTemplate.getForObject(url.toURI(), type);
     }

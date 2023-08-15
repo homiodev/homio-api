@@ -1,6 +1,6 @@
 package org.homio.api.ui.field;
 
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.annotation.ElementType;

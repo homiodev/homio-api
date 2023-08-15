@@ -18,7 +18,7 @@ import org.homio.api.EntityContextWidget.PulseColor;
 import org.homio.api.EntityContextWidget.Stepped;
 import org.homio.api.EntityContextWidget.ToggleType;
 import org.homio.api.EntityContextWidget.ValueCompare;
-import org.homio.api.entity.DeviceEndpointsBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder.MainWidgetRequest;
@@ -68,7 +68,7 @@ public class WidgetDefinition {
 
     private static final Pattern AUTO_DISCOVERY_REGEXP = Pattern.compile("^(state|switch).*");
 
-    public @NotNull List<DeviceEndpoint> getEndpoints(DeviceEndpointsBaseEntity entity) {
+    public @NotNull List<DeviceEndpoint> getEndpoints(DeviceEndpointsBehaviourContract entity) {
         if (this.isAutoDiscovery()) {
             if (type == WidgetType.toggle) {
                 return entity.getDeviceEndpoints().values().stream()

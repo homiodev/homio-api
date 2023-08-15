@@ -22,7 +22,7 @@ import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 
 public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
-    extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData {
+    extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg, HasJsonData {
 
     Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
 

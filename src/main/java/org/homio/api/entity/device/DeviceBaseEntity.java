@@ -1,4 +1,4 @@
-package org.homio.api.entity;
+package org.homio.api.entity.device;
 
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static org.homio.api.ui.field.UIFieldType.HTML;
@@ -13,11 +13,10 @@ import jakarta.persistence.InheritanceType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.homio.api.converter.JSONConverter;
+import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.JSON;
 import org.homio.api.model.Status;
-import org.homio.api.model.Status.EntityStatus;
 import org.homio.api.optionProvider.SelectPlaceOptionLoader;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
@@ -35,39 +34,37 @@ import org.jetbrains.annotations.Nullable;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#FFFFFF", overridePath = "devices")
 @NoArgsConstructor
-@Accessors(chain = true)
-public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseEntity<T>
-    implements HasJsonData, HasStatusAndMsg<T> {
+public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContract {
 
     private static final String PREFIX = "dvc_";
 
     @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
     @Getter
-    @Nullable
-    private String ieeeAddress;
+    private @Nullable String ieeeAddress;
 
     @Setter
     @Getter
     @Column(length = 64)
     @UIField(order = 50, type = UIFieldType.SelectBox, color = "#538744")
     @UIFieldSelection(SelectPlaceOptionLoader.class)
-    @UIFieldSelectValueOnEmpty(label = "SELECT_PLACE")
-    @Nullable
+    @UIFieldSelectValueOnEmpty(label = "PLACEHOLDER.SELECT_PLACE")
     @UIFieldShowOnCondition("return !context.get('compactMode')")
-    private String place;
+    private @Nullable String place;
 
     @Getter
     @Setter
     @Column(length = 100_000)
     @Convert(converter = JSONConverter.class)
-    @NotNull
-    private JSON jsonData = new JSON();
+    private @NotNull JSON jsonData = new JSON();
 
     @UIField(order = 1, fullWidth = true, color = "#89AA50", type = HTML, style = "height: 32px;")
     @UIFieldShowOnCondition("return context.get('compactMode')")
     @UIFieldColorBgRef(value = "statusColor", animate = true)
     @UIFieldGroup(value = "GENERAL", order = 1, borderColor = "#CDD649")
     public String getCompactDescription() {
+        if (!isCompactMode()) {
+            return null;
+        }
         String description = getCompactDescriptionImpl();
         if (description == null) {
             description = getName();
@@ -79,13 +76,12 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
             getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), description);
     }
 
-    @JsonIgnore
-    public String getCompactDescriptionImpl() {
-        return null;
+    public boolean isCompactMode() {
+        return false;
     }
 
     @JsonIgnore
-    public @Nullable String getModel() {
+    public String getCompactDescriptionImpl() {
         return null;
     }
 
@@ -96,9 +92,8 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
         return 100;
     }
 
-    public T setIeeeAddress(String ieeeAddress) {
+    public void setIeeeAddress(@Nullable String ieeeAddress) {
         this.ieeeAddress = ieeeAddress;
-        return (T) this;
     }
 
     @Override
@@ -109,23 +104,6 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     @Override
     public boolean isDisableDelete() {
         return getJsonData("dis_del", false);
-    }
-
-    /**
-     * Uses on UI to set png image with appropriate status and mark extra image if need
-     */
-    public @Nullable Status.EntityStatus getEntityStatus() {
-        Status status = getStatus();
-        return new EntityStatus(status);
-    }
-
-    // May be required for @UIFieldColorBgRef("statusColor")
-    public @NotNull String getStatusColor() {
-        EntityStatus entityStatus = getEntityStatus();
-        if (entityStatus == null || entityStatus.getValue().isOnline()) {
-            return "";
-        }
-        return entityStatus.getColor() + "30";
     }
 
     /**
@@ -156,8 +134,11 @@ public abstract class DeviceBaseEntity<T extends DeviceBaseEntity> extends BaseE
     }
 
     @JsonIgnore
-    protected @Nullable String getImageIdentifierImpl() {
-        return getJsonData("img");
+    public @Nullable String getImageIdentifierImpl() {
+        if (getJsonData().has("img")) {
+            return getJsonData("img");
+        }
+        return getType() + ".png";
     }
 
     @Override

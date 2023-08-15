@@ -6,7 +6,7 @@ import static org.homio.api.ui.field.UIFieldLayout.HorizontalAlign.right;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.entity.DeviceEndpointsBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.ui.UI;
@@ -32,7 +32,7 @@ public class ToggleTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
         WidgetRequest widgetRequest = request.getWidgetRequest();
-        DeviceEndpointsBaseEntity entity = widgetRequest.getEntity();
+        DeviceEndpointsBehaviourContract entity = widgetRequest.getEntity();
 
         Map<String, ? extends DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
         List<DeviceEndpoint> includeEndpoints = request.getItemIncludeEndpoints();
@@ -69,7 +69,7 @@ public class ToggleTemplateWidget implements TemplateWidgetBuilder {
         return Math.round(endpoints.size() * 2F / 3);
     }
 
-    private String getName(DeviceEndpointsBaseEntity entity, DeviceEndpoint state) {
+    private String getName(DeviceEndpointsBehaviourContract entity, DeviceEndpoint state) {
         if (StringUtils.isNotEmpty(entity.getPlace())) {
             return "%s[%s]".formatted(entity.getPlace(), state.getName(true));
         }

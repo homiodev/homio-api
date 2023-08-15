@@ -1,7 +1,7 @@
 package org.homio.api.model;
 
 import static java.lang.String.format;
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -52,17 +52,16 @@ public class OptionModel implements Comparable<OptionModel> {
 
     private final ObjectNode json = OBJECT_MAPPER.createObjectNode();
     @Getter
-    private String key;
+    private @NotNull String key;
     @Setter
-    private String title;
+    private @Nullable String title;
+    @Getter
+    private @Nullable String icon;
     @Setter
     @Getter
-    private String icon;
-    @Setter
+    private @Nullable String color;
     @Getter
-    private String color;
-    @Getter
-    private List<OptionModel> children;
+    private @Nullable List<OptionModel> children;
     @Getter
     private @Nullable Status status;
     @Getter
@@ -70,8 +69,21 @@ public class OptionModel implements Comparable<OptionModel> {
     // disabled option is shown but not clickable
     private boolean disabled;
 
-    public OptionModel setStatus(HasStatusAndMsg statusEntity) {
+    public OptionModel setStatus(@Nullable HasStatusAndMsg statusEntity) {
         this.status = statusEntity == null ? null : statusEntity.getStatus();
+        return this;
+    }
+
+    public OptionModel setIcon(@Nullable Icon icon) {
+        if (icon != null) {
+            this.icon = icon.getIcon();
+            this.color = icon.getColor();
+        }
+        return this;
+    }
+
+    public OptionModel setIcon(@Nullable String icon) {
+        this.icon = icon;
         return this;
     }
 
@@ -219,7 +231,7 @@ public class OptionModel implements Comparable<OptionModel> {
                    .sorted().collect(Collectors.toList());
     }
 
-    public static List<OptionModel> simpleNamelist(@NotNull Collection list) {
+    public static @NotNull List<OptionModel> simpleNamelist(@NotNull Collection list) {
         List<OptionModel> optionModels = new ArrayList<>();
         for (Object o : list) {
             OptionModel optionModel = OptionModel.key(o.getClass().getSimpleName());
@@ -231,11 +243,11 @@ public class OptionModel implements Comparable<OptionModel> {
         return optionModels;
     }
 
-    public static void sort(List<OptionModel> options) {
+    public static void sort(@NotNull List<OptionModel> options) {
         sort(options, DEFAULT_COMPARATOR);
     }
 
-    public static void sort(List<OptionModel> options, Comparator<OptionModel> comparator) {
+    public static void sort(@NotNull List<OptionModel> options, Comparator<OptionModel> comparator) {
         options.sort(comparator);
         for (OptionModel option : options) {
             if (option.hasChildren()) {
@@ -244,19 +256,19 @@ public class OptionModel implements Comparable<OptionModel> {
         }
     }
 
-    public String getTitle() {
+    public @Nullable String getTitle() {
         return key.equals(title) ? null : title;
     }
 
-    public ObjectNode getJson() {
+    public @Nullable ObjectNode getJson() {
         return json.isEmpty() ? null : json;
     }
 
-    public boolean has(String key) {
+    public boolean has(@NotNull String key) {
         return json.has(key);
     }
 
-    public OptionModel setDescription(String description) {
+    public @NotNull OptionModel setDescription(@Nullable String description) {
         if (StringUtils.isNotEmpty(description)) {
             json(json -> json.put("description", description));
         }
@@ -264,12 +276,12 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     @JsonIgnore
-    public Collection<OptionModel> OptionModelgetOrCreateChildren() {
+    public @NotNull Collection<OptionModel> getOrCreateChildren() {
         return children == null ? Collections.emptyList() : children;
     }
 
     @JsonIgnore
-    public String getTitleOrKey() {
+    public @NotNull String getTitleOrKey() {
         return title == null ? key : title;
     }
 
@@ -278,14 +290,14 @@ public class OptionModel implements Comparable<OptionModel> {
         return children != null && !children.isEmpty();
     }
 
-    public OptionModel addChildIfHasSubChildren(@Nullable OptionModel child) {
+    public @NotNull OptionModel addChildIfHasSubChildren(@Nullable OptionModel child) {
         if (child != null && child.hasChildren()) {
             addChild(child);
         }
         return this;
     }
 
-    public OptionModel findByKey(@NotNull String key) {
+    public @Nullable OptionModel findByKey(@NotNull String key) {
         if (this.key.equals(key)) {
             return this;
         }
@@ -300,14 +312,14 @@ public class OptionModel implements Comparable<OptionModel> {
         return null;
     }
 
-    public OptionModel setChildren(Collection<OptionModel> children) {
+    public @NotNull OptionModel setChildren(@NotNull Collection<OptionModel> children) {
         for (OptionModel child : children) {
             this.addChild(child);
         }
         return this;
     }
 
-    public OptionModel addChild(@Nullable OptionModel child) {
+    public @NotNull OptionModel addChild(@Nullable OptionModel child) {
         if (child != null) {
             if (this.children == null) {
                 children = new ArrayList<>();
@@ -329,7 +341,7 @@ public class OptionModel implements Comparable<OptionModel> {
         }
     }
 
-    public OptionModel json(@NotNull Consumer<ObjectNode> consumer) {
+    public @NotNull OptionModel json(@NotNull Consumer<ObjectNode> consumer) {
         consumer.accept(json);
         return this;
     }
@@ -342,7 +354,7 @@ public class OptionModel implements Comparable<OptionModel> {
 
     @Override
     public int compareTo(@NotNull OptionModel other) {
-        return this.title.compareTo(other.title);
+        return getTitleOrKey().compareTo(other.getTitleOrKey());
     }
 
     @Override
@@ -350,10 +362,9 @@ public class OptionModel implements Comparable<OptionModel> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof OptionModel)) {
+        if (!(o instanceof OptionModel optionModel)) {
             return false;
         }
-        OptionModel optionModel = (OptionModel) o;
         return Objects.equals(key, optionModel.key);
     }
 
@@ -366,11 +377,13 @@ public class OptionModel implements Comparable<OptionModel> {
      * Specify description for any pojo to allow it show on UI when convert to OptionModel
      */
     public interface HasDescription {
-        String getDescription();
+
+        @Nullable String getDescription();
     }
 
     public interface KeyValueEnum {
-        default String getKey() {
+
+        default @NotNull String getKey() {
             return ((Enum) this).name();
         }
 

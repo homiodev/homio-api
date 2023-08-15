@@ -5,7 +5,6 @@ import com.pivovarit.function.ThrowingRunnable;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang3.SystemUtils;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPlugin;
@@ -17,23 +16,11 @@ import org.jetbrains.annotations.Nullable;
 
 public interface EntityContextSetting {
 
+    int SERVER_PORT = Integer.getInteger("server.port", 9111);
+    boolean IS_DEV_ENVIRONMENT = Boolean.getBoolean("development");
+    boolean IS_DOCKER_ENVIRONMENT = Boolean.getBoolean("docker");
+
     AtomicReference<MemSetterHandler> MEM_HANDLER = new AtomicReference<>();
-
-    static boolean isDevEnvironment() {
-        return "true".equals(System.getProperty("development"));
-    }
-
-    static boolean isDockerEnvironment() {
-        return "true".equals(System.getProperty("docker"));
-    }
-
-    static boolean isLinuxEnvironment() {
-        return SystemUtils.IS_OS_LINUX && !isDockerEnvironment() && !isDevEnvironment();
-    }
-
-    static boolean isLinuxOrDockerEnvironment() {
-        return SystemUtils.IS_OS_LINUX && !isDevEnvironment();
-    }
 
     static <T> T getMemValue(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @Nullable T defaultValue) {
         return (T) MEM_HANDLER.get().getValue(entity, distinguishKey, defaultValue);
@@ -150,21 +137,21 @@ public interface EntityContextSetting {
         listener.accept(getValue(settingClass));
     }
 
-    <T> void setValueRaw(@NotNull Class<? extends SettingPlugin<T>> settingPluginClazz, @NotNull String value);
+    <T> void setValueRaw(@NotNull Class<? extends SettingPlugin<T>> settingPluginClazz, @Nullable String value);
 
-    <T> void setValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull T value);
+    <T> void setValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @Nullable T value);
 
     /**
      * Save setting value without firing events
-     * @param value -
-     * @param settingClass -
-     * @param <T> -
      *
+     * @param value        -
+     * @param settingClass -
+     * @param <T>          -
      * @return value converted to string
      */
-    <T> String setValueSilence(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull T value);
+    <T> String setValueSilence(@NotNull Class<? extends SettingPlugin<T>> settingClass, @Nullable T value);
 
-    <T> void setValueSilenceRaw(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String value);
+    <T> void setValueSilenceRaw(@NotNull Class<? extends SettingPlugin<T>> settingClass, @Nullable String value);
 
     default @NotNull String getEnvRequire(@NotNull String key) {
         return Objects.requireNonNull(getEnv(key));

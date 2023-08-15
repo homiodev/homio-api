@@ -1,9 +1,11 @@
 package org.homio.api.model.endpoint;
 
 import static java.util.Objects.requireNonNull;
+import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +14,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextVar.VariableMetaBuilder;
 import org.homio.api.EntityContextVar.VariableType;
-import org.homio.api.entity.DeviceEndpointsBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.Icon;
 import org.homio.api.model.device.ConfigDeviceDefinitionService;
 import org.homio.api.model.device.ConfigDeviceEndpoint;
@@ -28,35 +31,61 @@ import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder.InfoType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
-public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> implements DeviceEndpoint {
+@Getter
+@RequiredArgsConstructor
+public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContract> implements DeviceEndpoint {
 
     private final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
+    private final @NotNull String group;
 
-    private final @Getter @NotNull Icon icon;
-    @Getter
-    private String endpointEntityID;
-    @Getter
-    private D device;
+    protected Icon icon;
+    protected String endpointEntityID;
 
-    private @Getter @Nullable String unit;
-    private @Getter long updated;
-    private @Getter State value = new StringType("N/A");
-    private @Nullable Object dbValue;
-    private @Getter @Nullable String variableID;
-    private @Getter @Setter boolean readable = true;
-    private @Getter @Setter boolean writable = true;
-    private @Getter String endpointName;
-    private @Getter EndpointType endpointType;
-    private @Getter @Setter int order;
+    protected D device;
 
-    protected @Getter EntityContext entityContext;
-    private @Getter @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
-    private ConfigDeviceDefinitionService configService;
+    protected @Nullable String unit;
+    protected long updated;
+    protected @NotNull State value = new StringType("N/A");
+    protected @Nullable Object dbValue;
+    protected @Nullable String variableID;
+    protected boolean readable = true;
+    protected boolean writable = true;
+    protected String endpointName;
+    protected EndpointType endpointType;
+    protected int order;
+
+    protected EntityContext entityContext;
+    protected ConfigDeviceDefinitionService configService;
+    protected @Nullable Float min;
     private @JsonIgnore @Nullable Set<String> alternateEndpoints;
+    protected @Nullable Float max;
+    protected @Nullable Set<String> range;
+    private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
 
-    public BaseDeviceEndpoint(@NotNull Icon icon) {
+    public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group) {
+        this(group);
         this.icon = icon;
+    }
+
+    @Override
+    public @NotNull String getName(boolean shortFormat) {
+        String l1Name = getEndpointEntityID();
+        String name = splitNameToReadableFormat(l1Name);
+        return shortFormat ? name : "${%s_N.%s~%s}".formatted(group, l1Name, name);
+    }
+
+    @Override
+    public @Nullable String getDescription() {
+        return "${%s_D.%s~%s}".formatted(group, endpointEntityID, endpointEntityID);
+    }
+
+    @Override
+    public @NotNull Set<String> getSelectValues() {
+        if (range != null) {
+            return range;
+        }
+        // throw error if not defined
+        return DeviceEndpoint.super.getSelectValues();
     }
 
     /**
@@ -73,8 +102,8 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> im
         }
     }
 
-    public void setValue(@NotNull State value, boolean externalUpdate) {
-        if (!this.value.equals(value)) {
+    public void setValue(@Nullable State value, boolean externalUpdate) {
+        if (value != null && !this.value.equals(value)) {
             this.value = value;
             if (externalUpdate) {
                 this.updated = System.currentTimeMillis();
@@ -146,7 +175,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> im
         return !getHiddenEndpoints().contains(getEndpointEntityID());
     }
 
-    public abstract @NotNull List<String> getHiddenEndpoints();
+    public abstract @NotNull Set<String> getHiddenEndpoints();
 
     public @NotNull String getDeviceEntityID() {
         return device.getEntityID();
@@ -230,13 +259,53 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBaseEntity> im
         }
     }
 
-    protected @NotNull List<String> getVariableEnumValues() {
-        throw new IllegalStateException("Property with enum variable must override this method");
+    protected @NotNull Set<String> getVariableEnumValues() {
+        if (range == null) {
+            throw new IllegalStateException("Property with enum variable must override this method");
+        }
+        return range;
     }
 
-    protected abstract @Nullable Consumer<VariableMetaBuilder> getVariableMetaBuilder();
+    protected @Nullable Consumer<VariableMetaBuilder> getVariableMetaBuilder() {
+        return builder -> {
+            builder.setDescription(getVariableDescription())
+                   .setReadOnly(!isWritable())
+                   .setColor(getIcon().getColor());
+            List<String> attributes = new ArrayList<>();
+            if (min != null) {
+                attributes.add("min:" + min);
+            }
+            if (max != null) {
+                attributes.add("max:" + max);
+            }
+            if (range != null && !range.isEmpty()) {
+                attributes.add("range:" + String.join(";", range));
+            }
+            builder.setAttributes(attributes);
+        };
+    }
 
-    protected abstract @NotNull VariableType getVariableType();
+    protected String getVariableDescription() {
+        List<String> description = new ArrayList<>();
+        description.add(getDescription());
+        if (range != null && !range.isEmpty()) {
+            description.add("(range:%s)".formatted(String.join(";", range)));
+        }
+        if (min != null && max != null) {
+            description.add("(min-max:%S...%s)".formatted(min, max));
+        }
+        return String.join(" ", description);
+    }
+
+    protected @NotNull VariableType getVariableType() {
+        switch (endpointType) {
+            case bool -> {return VariableType.Bool;}
+            case number, dimmer -> {return VariableType.Float;}
+            case select -> {return VariableType.Enum;}
+            case color -> {return VariableType.Color;}
+            default -> {return VariableType.Any;}
+        }
+    }
 
     @Override
     public String toString() {

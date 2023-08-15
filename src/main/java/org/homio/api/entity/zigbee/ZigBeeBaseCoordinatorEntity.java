@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEntity, S extends EntityService.ServiceInstance>
-        extends HasJsonData, HasEntityLog, HasEntityIdentifier, HasStatusAndMsg<T>, EntityService<S, T> {
+    extends HasJsonData, HasEntityLog, HasEntityIdentifier, HasStatusAndMsg, EntityService<S, T> {
 
     @UIField(order = 1, inlineEdit = true)
     @UIFieldGroup(value = "GENERAL", order = 1)

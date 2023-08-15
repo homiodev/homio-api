@@ -4,15 +4,22 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.homio.api.EntityContext;
 import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.Icon;
+import org.homio.api.state.DecimalType;
+import org.homio.api.state.OnOffType;
 import org.homio.api.state.State;
+import org.homio.api.state.StringType;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 
 /**
  * Specify device single endpoint
@@ -91,16 +98,11 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     }
 
     /**
-     * Implement by property that has ability to write value.
+     * Implement by property that has ability to write value. Calls external i.e. by scratch block
      *
-     * @param state -
+     * @param state - value to set. May be need convert value to correct format
      */
-    default void writeValue(@NotNull State state) {
-        if (isWritable()) {
-            throw new IllegalStateException("Method must be implemented by writable property");
-        }
-        throw new ProhibitedExecution();
-    }
+    void writeValue(@NotNull State state);
 
     /**
      * @return If visible on UI
@@ -114,13 +116,13 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         return Integer.compare(this.getOrder(), o.getOrder());
     }
 
-    default @NotNull List<String> getSelectValues() {
+    default @NotNull Set<String> getSelectValues() {
         throw new IllegalStateException("Must be implemented for 'select' type");
     }
 
-    EntityContext getEntityContext();
+    @NotNull EntityContext getEntityContext();
 
-    State getValue();
+    @NotNull State getValue();
 
     /**
      * Uses to create action(s)(i.e. slider/switch/text) for endpoint row
@@ -150,7 +152,16 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     }
 
 
+    @Getter
+    @RequiredArgsConstructor
     enum EndpointType {
-        bool, number, string, select
+        bool((jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s))),
+        number((jsonObject, s) -> new DecimalType(jsonObject.getInt(s))),
+        dimmer((jsonObject, s) -> new DecimalType(jsonObject.getInt(s))),
+        string((jsonObject, s) -> new StringType(jsonObject.getString(s))),
+        select((jsonObject, s) -> new StringType(jsonObject.getString(s))),
+        color((jsonObject, s) -> new StringType(jsonObject.getString(s)));
+
+        private final BiFunction<JSONObject, String, State> reader;
     }
 }

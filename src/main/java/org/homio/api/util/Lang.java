@@ -1,6 +1,6 @@
 package org.homio.api.util;
 
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Collections;
@@ -74,7 +74,7 @@ public enum Lang {
     String langStr = lang == null ? CURRENT_LANG : lang;
     String key = langStr + (isServer ? "_server" : "");
     if (!i18nLang.containsKey(key)) {
-      i18nLang.put(key, CommonUtils.readAndMergeJSON("i18n/" + key + ".json", OBJECT_MAPPER.createObjectNode()));
+      i18nLang.put(key, JsonUtils.readAndMergeJSON("i18n/" + key + ".json", OBJECT_MAPPER.createObjectNode()));
     }
     return i18nLang.get(key);
   }

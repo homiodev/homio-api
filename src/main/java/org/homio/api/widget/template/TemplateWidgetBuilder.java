@@ -28,7 +28,7 @@ import org.homio.api.EntityContextWidget.SimpleValueWidgetBuilder;
 import org.homio.api.EntityContextWidget.ThresholdBuilder;
 import org.homio.api.EntityContextWidget.VerticalAlign;
 import org.homio.api.EntityContextWidget.WidgetBaseBuilder;
-import org.homio.api.entity.DeviceEndpointsBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.WidgetDefinition.ColorPicker;
 import org.homio.api.widget.template.WidgetDefinition.IconPicker;
@@ -134,7 +134,7 @@ public interface TemplateWidgetBuilder {
         }
     }
 
-    static String buildDataSource(DeviceEndpointsBaseEntity entity, EntityContext entityContext, Source source) {
+    static String buildDataSource(DeviceEndpointsBehaviourContract entity, EntityContext entityContext, Source source) {
         switch (source.getKind()) {
             case variable -> {
                 String variable = entityContext.var().createVariable(entity.getEntityID(),
@@ -243,7 +243,7 @@ public interface TemplateWidgetBuilder {
     class WidgetRequest {
 
         private final @NotNull EntityContext entityContext;
-        private final @NotNull DeviceEndpointsBaseEntity entity;
+        private final @NotNull DeviceEndpointsBehaviourContract entity;
         private final @NotNull String tab;
         private final @NotNull WidgetDefinition widgetDefinition;
         private final @NotNull List<DeviceEndpoint> includeEndpoints;

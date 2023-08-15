@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.logging.log4j.Logger;
+import org.homio.api.state.DecimalType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,6 +56,18 @@ public interface EntityContextMedia {
 
     interface FFMPEG {
 
+        /**
+         * @return if ffmpeg was started. return true even if thread is dead and getIsAlive() return false
+         */
+        boolean isRunning();
+
+        default void restartIfRequire() {
+            if (isRunning() && !getIsAlive()) {
+                stopProcessIfNoKeepAlive();
+                startConverting();
+            }
+        }
+
         void setKeepAlive(int value);
 
         boolean startConverting();
@@ -71,13 +84,13 @@ public interface EntityContextMedia {
 
         String getDescription();
 
-        default void run(@Nullable FFMPEG ffmpeg, @NotNull Consumer<FFMPEG> handler) {
+        static void run(@Nullable FFMPEG ffmpeg, @NotNull Consumer<FFMPEG> handler) {
             if (ffmpeg != null) {
                 handler.accept(ffmpeg);
             }
         }
 
-        default <T> T execute(@Nullable FFMPEG ffmpeg, @NotNull Function<FFMPEG, T> handler) {
+        static <T> T execute(@Nullable FFMPEG ffmpeg, @NotNull Function<FFMPEG, T> handler) {
             if (ffmpeg != null) {
                 return handler.apply(ffmpeg);
             }
@@ -94,6 +107,8 @@ public interface EntityContextMedia {
         void audioDetected(boolean on);
 
         void ffmpegError(String error);
+
+        DecimalType getMotionThreshold();
     }
 
     enum FFMPEGFormat {

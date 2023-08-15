@@ -1,8 +1,9 @@
 package org.homio.api.model.device;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+import static org.homio.api.EntityContextSetting.IS_DEV_ENVIRONMENT;
 import static org.homio.api.util.CommonUtils.getErrorMessage;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
@@ -28,7 +29,6 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.apache.commons.io.file.PathUtils;
-import org.homio.api.EntityContextSetting;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.widget.template.WidgetDefinition;
 import org.homio.hquery.Curl;
@@ -95,7 +95,7 @@ public class ConfigDeviceDefinitionService {
     }
 
     private static boolean isRequireCopyJarFileToFIleSystem(Path configFileLocation) {
-        return !Files.exists(configFileLocation) || EntityContextSetting.isDevEnvironment();
+        return !Files.exists(configFileLocation) || IS_DEV_ENVIRONMENT;
     }
 
     public @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModels(

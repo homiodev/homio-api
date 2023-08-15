@@ -1,5 +1,8 @@
 package org.homio.api.model;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +54,10 @@ public enum Status {
 
     public EntityStatus toModel() {
         return new EntityStatus(this);
+    }
+
+    public static Set<String> set(Status... statuses) {
+        return Arrays.stream(statuses).map(Enum::name).collect(Collectors.toSet());
     }
 
     @Getter

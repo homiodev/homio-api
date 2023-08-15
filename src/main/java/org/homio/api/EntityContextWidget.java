@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.homio.api.entity.DeviceEndpointsBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
@@ -19,7 +19,7 @@ public interface EntityContextWidget {
 
     void createTemplateWidgetActions(
         @NotNull UIInputBuilder uiInputBuilder,
-        @NotNull DeviceEndpointsBaseEntity entity,
+        @NotNull DeviceEndpointsBehaviourContract entity,
         @NotNull List<WidgetDefinition> widgets);
 
     // get dashboard tabs

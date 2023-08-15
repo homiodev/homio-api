@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.entity.DeviceBaseEntity;
+import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.storage.BaseFileSystemEntity;
 import org.homio.api.model.Icon;
 

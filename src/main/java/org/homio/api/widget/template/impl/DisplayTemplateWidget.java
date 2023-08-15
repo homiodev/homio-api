@@ -15,7 +15,7 @@ import org.homio.api.EntityContextWidget.DisplayWidgetSeriesBuilder;
 import org.homio.api.EntityContextWidget.HasChartDataSource;
 import org.homio.api.EntityContextWidget.HasLineChartBehaviour;
 import org.homio.api.EntityContextWidget.VerticalAlign;
-import org.homio.api.entity.DeviceEndpointsBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.ui.UI;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
@@ -30,7 +30,7 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildWidget(WidgetRequest widgetRequest) {
         EntityContext entityContext = widgetRequest.getEntityContext();
-        DeviceEndpointsBaseEntity entity = widgetRequest.getEntity();
+        DeviceEndpointsBehaviourContract entity = widgetRequest.getEntity();
         WidgetDefinition wd = widgetRequest.getWidgetDefinition();
 
         int endpointCount = widgetRequest.getIncludeEndpoints().size();
@@ -58,7 +58,7 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
     public void buildMainWidget(MainWidgetRequest request) {
         WidgetRequest widgetRequest = request.getWidgetRequest();
         EntityContext entityContext = widgetRequest.getEntityContext();
-        DeviceEndpointsBaseEntity entity = widgetRequest.getEntity();
+        DeviceEndpointsBehaviourContract entity = widgetRequest.getEntity();
 
         List<DeviceEndpoint> includeEndpoints = request.getItemIncludeEndpoints();
         if (includeEndpoints.isEmpty()) {
@@ -120,7 +120,7 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
         builder.setFillEmptyValues(chart.isFillEmptyValues());
     }
 
-    private void buildPushValue(Options options, DisplayWidgetBuilder builder, DeviceEndpointsBaseEntity entity, EntityContext entityContext) {
+    private void buildPushValue(Options options, DisplayWidgetBuilder builder, DeviceEndpointsBehaviourContract entity, EntityContext entityContext) {
         builder.setValueOnClick(options.getValueOnClick());
         builder.setValueOnDoubleClick(options.getValueOnDoubleClick());
         builder.setValueOnHoldClick(options.getValueOnHoldClick());

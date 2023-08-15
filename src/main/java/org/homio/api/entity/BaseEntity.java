@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
-import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
@@ -30,8 +29,8 @@ import org.json.JSONPropertyIgnore;
 
 @Log4j2
 @MappedSuperclass
-public abstract class BaseEntity<T extends BaseEntity> implements
-    BaseEntityIdentifier<T>,
+public abstract class BaseEntity implements
+    BaseEntityIdentifier,
     Comparable<BaseEntity> {
 
     @Id
@@ -67,9 +66,8 @@ public abstract class BaseEntity<T extends BaseEntity> implements
     public void configureOptionModel(@NotNull OptionModel optionModel) {
     }
 
-    public T setName(@Nullable String name) {
+    public void setName(@Nullable String name) {
         this.name = name;
-        return (T) this;
     }
 
     @Override
@@ -152,18 +150,19 @@ public abstract class BaseEntity<T extends BaseEntity> implements
 
     }
 
-    public T setEntityID(@NotNull String entityID) {
+    public String setEntityID(@NotNull String entityID) {
         String prefix = getEntityPrefix();
         if (entityID.startsWith(prefix)) {
             this.entityID = entityID;
         } else {
             this.entityID = prefix + entityID;
         }
-        return (T) this;
+        return this.entityID;
     }
 
     /**
      * Accumulate list of related entities which has to be refreshed in cache after entity updated
+     *
      * @param set -
      */
     public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
@@ -188,33 +187,14 @@ public abstract class BaseEntity<T extends BaseEntity> implements
             }
         }
         if (o instanceof HasStatusAndMsg other) {
-            Status leftStatus = ((HasStatusAndMsg<?>) this).getStatus();
+            Status leftStatus = ((HasStatusAndMsg) this).getStatus();
             Status rightStatus = other.getStatus();
-            if (leftStatus != null && rightStatus != null) {
-                int value = leftStatus.compareTo(rightStatus);
-                if (value != 0) {
-                    return value;
-                }
+            int value = leftStatus.compareTo(rightStatus);
+            if (value != 0) {
+                return value;
             }
         }
         return this.getTitle().compareTo(o.getTitle());
-    }
-
-    /**
-     * Specify entity font awesome icon for UI purposes
-     */
-    public @Nullable Icon getEntityIcon() {
-        return null;
-    }
-
-    /**
-     * Specify type for dynamic update. For widget it will be always: 'widget', etc...
-     *
-     * @return - dynamic widget type
-     */
-    @JsonIgnore
-    public @NotNull String getDynamicUpdateType() {
-        return getType();
     }
 
     @JsonIgnore
