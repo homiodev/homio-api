@@ -1,5 +1,6 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -79,6 +80,11 @@ public class OnOffType implements State {
         } else {
             return State.super.as(target);
         }
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key,value);
     }
 
     @Override

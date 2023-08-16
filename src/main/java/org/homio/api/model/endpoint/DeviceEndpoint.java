@@ -7,16 +7,20 @@ import java.util.Date;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.EntityContext;
 import org.homio.api.exception.ProhibitedExecution;
+import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
+import org.homio.api.model.OptionModel;
 import org.homio.api.state.DecimalType;
 import org.homio.api.state.OnOffType;
 import org.homio.api.state.State;
 import org.homio.api.state.StringType;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
+import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder.InfoType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -120,16 +124,104 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         throw new IllegalStateException("Must be implemented for 'select' type");
     }
 
+    default @NotNull Float getMin() {
+        throw new IllegalStateException("Must be implemented for 'slider' type");
+    }
+
+    default @NotNull Float getMax() {
+        throw new IllegalStateException("Must be implemented for 'slider' type");
+    }
+
     @NotNull EntityContext getEntityContext();
 
     @NotNull State getValue();
+
+    void setValue(State value, boolean externalUpdate);
 
     /**
      * Uses to create action(s)(i.e. slider/switch/text) for endpoint row
      *
      * @return action builder
      */
-    @Nullable UIInputBuilder createActionBuilder();
+    default @Nullable UIInputBuilder createActionBuilder() {
+        UIInputBuilder uiInputBuilder = getEntityContext().ui().inputBuilder();
+        State value = getValue();
+        UIInputBuilder actionBuilder = null;
+
+        if (isWritable()) {
+            switch (getEndpointType()) {
+                case dimmer -> actionBuilder = createDimmerActionBuilder(uiInputBuilder);
+                case color -> actionBuilder = createColorActionBuilder(uiInputBuilder);
+                case bool -> actionBuilder = createBoolActionBuilder(uiInputBuilder);
+                case number -> actionBuilder = createNumberActionBuilder(uiInputBuilder);
+                case select -> actionBuilder = createSelectActionBuilder(uiInputBuilder);
+                case string -> actionBuilder = createStringActionBuilder(uiInputBuilder);
+            }
+        }
+        if (actionBuilder != null) {return actionBuilder;}
+        if (getUnit() != null) {
+            uiInputBuilder.addInfo("%s <small class=\"text-muted\">%s</small>"
+                .formatted(value.stringValue(), getUnit()), InfoType.HTML);
+        } else {
+            assembleUIAction(uiInputBuilder);
+        }
+        return uiInputBuilder;
+    }
+
+    default UIInputBuilder createColorActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        throw new IllegalStateException("Must be implemented");
+    }
+
+    default UIInputBuilder createDimmerActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        throw new IllegalStateException("Must be implemented");
+    }
+
+    default UIInputBuilder createStringActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        if (!getValue().stringValue().equals("N/A")) {
+            uiInputBuilder.addTextInput(getEntityID(), getValue().stringValue(), false).setApplyButton(true)
+                          .setDisabled(isDisabled());
+            return uiInputBuilder;
+        }
+        return null;
+    }
+
+    default UIInputBuilder createSelectActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        uiInputBuilder
+            .addSelectBox(getEntityID(), (entityContext, params) -> {
+                setValue(new StringType(params.getString("value")), false);
+                return onExternalUpdated();
+            })
+            .addOptions(OptionModel.list(getSelectValues()))
+            .setPlaceholder("-----------")
+            .setSelected(getValue().toString())
+            .setDisabled(isDisabled());
+        return uiInputBuilder;
+    }
+
+    default UIInputBuilder createNumberActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        uiInputBuilder.addSlider(getEntityID(), getValue().floatValue(0), getMin(), getMax(),
+            (entityContext, params) -> {
+                setValue(new DecimalType(params.getInt("value")), false);
+                return onExternalUpdated();
+            }).setDisabled(isDisabled());
+        return uiInputBuilder;
+    }
+
+    default UIInputBuilder createBoolActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        uiInputBuilder.addCheckbox(getEntityID(), getValue().boolValue(), (entityContext, params) -> {
+            setValue(OnOffType.of(params.getBoolean("value")), false);
+            return onExternalUpdated();
+        }).setDisabled(isDisabled());
+        return uiInputBuilder;
+    }
+
+    @Nullable ActionResponseModel onExternalUpdated();
+
+    boolean isDisabled();
+
+    default void assembleUIAction(@NotNull UIInputBuilder uiInputBuilder) {
+        uiInputBuilder.addInfo(getValue().toString(), InfoType.Text);
+    }
 
     /**
      * Uses to create settings for single endpoint
@@ -155,13 +247,14 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     @Getter
     @RequiredArgsConstructor
     enum EndpointType {
-        bool((jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s))),
-        number((jsonObject, s) -> new DecimalType(jsonObject.getInt(s))),
-        dimmer((jsonObject, s) -> new DecimalType(jsonObject.getInt(s))),
-        string((jsonObject, s) -> new StringType(jsonObject.getString(s))),
-        select((jsonObject, s) -> new StringType(jsonObject.getString(s))),
-        color((jsonObject, s) -> new StringType(jsonObject.getString(s)));
+        bool((jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s)), State::boolValue),
+        number((jsonObject, s) -> new DecimalType(jsonObject.getInt(s)), State::floatValue),
+        dimmer((jsonObject, s) -> new DecimalType(jsonObject.getInt(s)), State::intValue),
+        string((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue),
+        select((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue),
+        color((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue);
 
         private final BiFunction<JSONObject, String, State> reader;
+        private final Function<State, Object> fromStateConverter;
     }
 }

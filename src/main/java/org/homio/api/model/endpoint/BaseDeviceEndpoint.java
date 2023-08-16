@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,10 +25,10 @@ import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.Icon;
 import org.homio.api.model.device.ConfigDeviceDefinitionService;
 import org.homio.api.model.device.ConfigDeviceEndpoint;
+import org.homio.api.state.DecimalType;
+import org.homio.api.state.OnOffType;
 import org.homio.api.state.State;
 import org.homio.api.state.StringType;
-import org.homio.api.ui.field.action.v1.UIInputBuilder;
-import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder.InfoType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,6 +62,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     protected @Nullable Float max;
     protected @Nullable Set<String> range;
     private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
+    protected WriteHandler writeHandler;
 
     public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group) {
         this(group);
@@ -116,6 +118,11 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
     }
 
+    @Override
+    public boolean isDisabled() {
+        return !device.getStatus().isOnline();
+    }
+
     public void init(
         @NotNull ConfigDeviceDefinitionService configService,
         @Nullable String endpointEntityID,
@@ -165,6 +172,8 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         if (createVariable) {
             getOrCreateVariable();
         }
+
+        this.writeHandler = createExternalWriteHandler();
     }
 
     @Override
@@ -183,10 +192,6 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     public @NotNull String getDeviceID() {
         return requireNonNull(device.getIeeeAddress());
-    }
-
-    public void assembleUIAction(@NotNull UIInputBuilder uiInputBuilder) {
-        uiInputBuilder.addInfo(value.toString(), InfoType.Text);
     }
 
     @Override
@@ -248,7 +253,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             if (isWritable()) {
                 entityContext.var().setLinkListener(requireNonNull(variableID), varValue -> {
                     if (!this.device.getStatus().isOnline()) {
-                        throw new RuntimeException("Unable to handle property " + getVariableID() + " action. Device noy online");
+                        throw new RuntimeException("Unable to handle property " + getVariableID() + " actio. Device noy online");
                     }
                     // fire updates only if variable updates externally
                     if (!Objects.equals(dbValue, varValue)) {
@@ -310,5 +315,76 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     @Override
     public String toString() {
         return "Entity: " + getEntityID() + ". Order: " + getOrder();
+    }
+
+    public boolean writeValue(Object rawValue, boolean externalUpdate) {
+        return writeHandler.write(rawValue, externalUpdate);
+    }
+
+    protected WriteHandler createExternalWriteHandler() {
+        switch (endpointType) {
+            case bool -> {
+                return (rawValue, eu) -> {
+                    if (Boolean.class.isAssignableFrom(rawValue.getClass())) {
+                        setValue(OnOffType.of((boolean) rawValue), eu);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            case number -> {
+                return (rawValue, eu) -> {
+                    if (Number.class.isAssignableFrom(rawValue.getClass())) {
+                        setValue(new DecimalType((Number) rawValue), eu);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            case color -> {
+                return (rawValue, eu) -> {
+                    if (rawValue instanceof String) {
+                        setValue(new StringType(decodeColor((String) rawValue)), eu);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            case dimmer -> {
+                return (rawValue, eu) -> {
+                    if (Double.class.isAssignableFrom(rawValue.getClass())) {
+                        double value = (double) rawValue;
+                        if (value <= getMin()) {
+                            setValue(new DecimalType(getMin()), eu);
+                        } else if (value >= getMax()) {
+                            setValue(new DecimalType(getMax()), eu);
+                        } else {
+                            setValue(new DecimalType(new BigDecimal(100.0 * value / (getMax() - 0))), eu);
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            default -> {
+                // select, string
+                return (rawValue, eu) -> {
+                    if (rawValue instanceof String) {
+                        setValue(new StringType((String) rawValue), eu);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+        }
+    }
+
+    protected String decodeColor(String value) {
+        return value;
+    }
+
+    private interface WriteHandler {
+
+        boolean write(Object value, boolean externalUpdate);
     }
 }

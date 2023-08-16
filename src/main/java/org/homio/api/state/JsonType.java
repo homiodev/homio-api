@@ -28,28 +28,32 @@ public class JsonType implements State, Comparable<JsonType> {
         }
     }
 
-    public JsonNode get(String... paths) {
+    public JsonNode get(String fullPath) {
         JsonNode node = jsonNode;
-        for (String path : paths) {
+        for (String path : fullPath.split("/")) {
             node = node.path(path);
         }
         return node;
     }
 
-    public boolean set(String value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(String value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
     }
 
-    public boolean set(int value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(int value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
     }
 
-    public boolean set(float value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(float value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
     }
 
-    public boolean set(boolean value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(boolean value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
+    }
+
+    public boolean set(State value, String fullPath) {
+        return setByPath(value::setAsNode, fullPath.split("/"));
     }
 
     public boolean setByPath(BiConsumer<ObjectNode, String> handler, String... path) {
@@ -92,6 +96,11 @@ public class JsonType implements State, Comparable<JsonType> {
     @Override
     public RawType toRawType() {
         return new RawType(byteArrayValue(), MimeTypeUtils.APPLICATION_JSON_VALUE);
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.set(key, jsonNode);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
 import java.util.Objects;
 import lombok.Getter;
@@ -114,6 +115,11 @@ public class DecimalType implements State, Comparable<DecimalType> {
     @Override
     public boolean boolValue() {
         throw new IllegalStateException("Unable to fetch boolean value from DecimalType");
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, value);
     }
 
     @Override

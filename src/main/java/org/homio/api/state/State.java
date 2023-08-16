@@ -3,8 +3,10 @@ package org.homio.api.state;
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Objects;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.util.CommonUtils;
@@ -94,6 +96,9 @@ public interface State {
     @SneakyThrows
     default State optional(String value) {
         return StringUtils.isEmpty(value) ? this :
-                CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+            Objects.requireNonNull(CommonUtils.findObjectConstructor(this.getClass(), String.class))
+                   .newInstance(value);
     }
+
+    void setAsNode(ObjectNode node, String key);
 }

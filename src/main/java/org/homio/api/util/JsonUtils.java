@@ -66,7 +66,6 @@ public class JsonUtils {
         JsonNode cursor = node;
         for (String item : path.split("/")) {
             cursor = cursor.path(item);
-            cursor = cursor.path(item);
         }
         return cursor;
     }

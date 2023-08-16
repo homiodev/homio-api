@@ -138,7 +138,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
         if (getJsonData().has("img")) {
             return getJsonData("img");
         }
-        return getType() + ".png";
+        return getType();
     }
 
     @Override

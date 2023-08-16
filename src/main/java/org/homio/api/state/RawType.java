@@ -1,5 +1,6 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -110,6 +111,11 @@ public class RawType implements State {
             bytes = Files.readAllBytes(relatedFile);
         }
         return bytes;
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, bytes);
     }
 
     @Override

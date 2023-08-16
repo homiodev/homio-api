@@ -1,5 +1,6 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,6 +52,11 @@ public class StringType implements State {
     @Override
     public boolean boolValue() {
         return value.equals("ON") || value.equals("1") || value.equalsIgnoreCase("true");
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, value);
     }
 
     @Override

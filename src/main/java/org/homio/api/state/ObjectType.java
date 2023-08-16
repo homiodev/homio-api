@@ -1,5 +1,6 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,6 +56,11 @@ public class ObjectType implements State {
     @Override
     public boolean boolValue() {
         throw new IllegalStateException("Unable to fetch float value from string");
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, stringValue());
     }
 
     @Override
