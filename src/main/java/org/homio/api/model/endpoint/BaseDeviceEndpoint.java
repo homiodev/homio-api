@@ -235,6 +235,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             Consumer<VariableMetaBuilder> customVariableMetaBuilder = getVariableMetaBuilder();
             Consumer<VariableMetaBuilder> variableMetaBuilder = builder -> {
                 builder.setIcon(icon);
+                Integer quota = configDeviceEndpoint == null ? null : configDeviceEndpoint.getQuota();
+                if (quota != null) {
+                    builder.setQuota(quota);
+                }
                 if (customVariableMetaBuilder != null) {
                     customVariableMetaBuilder.accept(builder);
                 }

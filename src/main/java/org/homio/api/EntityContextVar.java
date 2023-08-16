@@ -207,6 +207,8 @@ public interface EntityContextVar {
 
     interface VariableMetaBuilder {
 
+        @NotNull VariableMetaBuilder setQuota(int value);
+
         @NotNull VariableMetaBuilder setReadOnly(boolean value);
 
         @NotNull VariableMetaBuilder setColor(@Nullable String value);
