@@ -1,21 +1,22 @@
 package org.homio.api.port;
 
-import static com.fazecast.jSerialComm.SerialPort.TIMEOUT_NONBLOCKING;
-import static org.homio.api.util.CommonUtils.getErrorMessage;
-
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.EntityContext;
 import org.springframework.boot.web.server.PortInUseException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static com.fazecast.jSerialComm.SerialPort.TIMEOUT_NONBLOCKING;
+import static org.homio.api.util.CommonUtils.getErrorMessage;
 
 @RequiredArgsConstructor
 public abstract class BaseSerialPort implements SerialPortDataListener {

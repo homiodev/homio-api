@@ -1,7 +1,5 @@
 package org.homio.api.ui.field.action.v1;
 
-import java.util.Collection;
-import java.util.function.Consumer;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.action.UIActionHandler;
@@ -11,6 +9,9 @@ import org.homio.api.ui.field.action.v1.layout.dialog.UIDialogLayoutBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.Collection;
+import java.util.function.Consumer;
 
 public interface UIInputBuilder extends UILayoutBuilder {
 
@@ -37,28 +38,28 @@ public interface UIInputBuilder extends UILayoutBuilder {
     }
 
     @NotNull UIButtonItemBuilder addSelectableButton(@NotNull String name, @Nullable Icon icon,
-        @Nullable UIActionHandler action, int order);
+                                                     @Nullable UIActionHandler action, int order);
 
     @NotNull
     default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Icon icon,
-        @Nullable Integer dialogWidth,
-        @NotNull UIActionHandler action) {
+                                                                            @Nullable Integer dialogWidth,
+                                                                            @NotNull UIActionHandler action) {
         return addOpenDialogSelectableButton(name, icon, dialogWidth, action, getNextOrder());
     }
 
     @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Icon icon,
-        @Nullable Integer dialogWidth,
-        @NotNull UIActionHandler action, int order);
+                                                                             @Nullable Integer dialogWidth,
+                                                                             @NotNull UIActionHandler action, int order);
 
     @NotNull
     default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
-        @NotNull UIActionHandler action) {
+                                                                            @NotNull UIActionHandler action) {
         return addOpenDialogSelectableButton(name, null, dialogWidth, action);
     }
 
     @NotNull
     default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
-        @NotNull UIActionHandler action, int order) {
+                                                                            @NotNull UIActionHandler action, int order) {
         return addOpenDialogSelectableButton(name, null, dialogWidth, action, order);
     }
 

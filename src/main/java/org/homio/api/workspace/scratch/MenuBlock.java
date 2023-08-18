@@ -1,13 +1,6 @@
 package org.homio.api.workspace.scratch;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +8,14 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.OptionModel.KeyValueEnum;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @RequiredArgsConstructor
@@ -97,10 +98,10 @@ public abstract class MenuBlock {
     public static class StaticMenuBlock<T> extends MenuBlock {
         private final boolean acceptReporters = true;
         private final List<StaticMenuItem> items = new ArrayList<>();
+        private final Class<T> typeClass;
         private Map<String, List> subMenu;
         @Setter
         private Object defaultValue;
-        private final Class<T> typeClass;
 
         StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
             super(name);

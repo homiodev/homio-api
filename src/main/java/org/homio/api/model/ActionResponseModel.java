@@ -1,8 +1,6 @@
 package org.homio.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -11,6 +9,9 @@ import org.homio.api.util.CommonUtils;
 import org.homio.api.util.Lang;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.Collections;
+import java.util.Set;
 
 @Getter
 @Setter

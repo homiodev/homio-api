@@ -1,16 +1,7 @@
 package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Version;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -27,11 +18,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONPropertyIgnore;
 
+import java.util.Date;
+import java.util.Objects;
+import java.util.Set;
+
 @Log4j2
 @MappedSuperclass
 public abstract class BaseEntity implements
-    BaseEntityIdentifier,
-    Comparable<BaseEntity> {
+        BaseEntityIdentifier,
+        Comparable<BaseEntity> {
 
     @Id
     @Getter

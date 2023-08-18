@@ -1,12 +1,13 @@
 package org.homio.api.ui.action;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import lombok.Getter;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.OptionModel;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Uses for load option.

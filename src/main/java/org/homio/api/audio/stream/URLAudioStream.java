@@ -1,5 +1,13 @@
 package org.homio.api.audio.stream;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.homio.api.audio.AudioFormat;
+import org.homio.api.audio.AudioStream;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,13 +20,6 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.homio.api.audio.AudioFormat;
-import org.homio.api.audio.AudioStream;
-import org.jetbrains.annotations.Nullable;
 
 @Log4j2
 public class URLAudioStream extends AudioStream {

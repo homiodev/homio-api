@@ -1,9 +1,10 @@
 package org.homio.api.state;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Objects;
 
 public class ObjectType implements State {
 

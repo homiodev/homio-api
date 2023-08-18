@@ -1,16 +1,17 @@
 package org.homio.api.entity.widget.ability;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import org.homio.api.entity.widget.PeriodRequest;
+import org.homio.api.exception.ProhibitedExecution;
+import org.homio.api.model.HasEntityIdentifier;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import lombok.Getter;
-import org.homio.api.entity.widget.PeriodRequest;
-import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.exception.ProhibitedExecution;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Implementation must override either {@link HasTimeValueSeries#getTimeValueSeries(PeriodRequest)} or
@@ -32,8 +33,8 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
      * Return line chart series.
      * <p>
      * Usually getLineChartSeries should return only one chart, but sometimes it may be more than one)
-     * @param request -
      *
+     * @param request -
      * @return LineChartDescription and list of points. point[0] - Date or long, point[1] - Float, point[2] - description.
      * point[2] - optional
      */

@@ -1,11 +1,6 @@
 package org.homio.api.console;
 
 import com.pivovarit.function.ThrowingSupplier;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,6 +9,12 @@ import org.homio.api.EntityContext;
 import org.homio.api.ui.UI;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor

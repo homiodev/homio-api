@@ -1,15 +1,7 @@
 package org.homio.api.setting;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
@@ -17,6 +9,10 @@ import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPluginPackageInstall extends SettingPluginButton {

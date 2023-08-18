@@ -1,7 +1,5 @@
 package org.homio.api;
 
-import java.util.List;
-import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
@@ -13,14 +11,17 @@ import org.homio.api.widget.template.WidgetDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 public interface EntityContextWidget {
 
     @NotNull EntityContext getEntityContext();
 
     void createTemplateWidgetActions(
-        @NotNull UIInputBuilder uiInputBuilder,
-        @NotNull DeviceEndpointsBehaviourContract entity,
-        @NotNull List<WidgetDefinition> widgets);
+            @NotNull UIInputBuilder uiInputBuilder,
+            @NotNull DeviceEndpointsBehaviourContract entity,
+            @NotNull List<WidgetDefinition> widgets);
 
     // get dashboard tabs
     @NotNull List<OptionModel> getDashboardTabs();
@@ -29,67 +30,144 @@ public interface EntityContextWidget {
     @NotNull String getDashboardDefaultID();
 
     void createLayoutWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<LayoutWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<LayoutWidgetBuilder> widgetBuilder);
 
     void createDisplayWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<DisplayWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<DisplayWidgetBuilder> widgetBuilder);
 
     void createSliderWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<SliderWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<SliderWidgetBuilder> widgetBuilder);
 
     void createSimpleValueWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<SimpleValueWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<SimpleValueWidgetBuilder> widgetBuilder);
 
     void createToggleWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<ToggleWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<ToggleWidgetBuilder> widgetBuilder);
 
     void createSimpleToggleWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<SimpleToggleWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<SimpleToggleWidgetBuilder> widgetBuilder);
 
     // color widget has available fields: colors, icon, name, brightness, colorTemp, onOff
     void createColorWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<ColorWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<ColorWidgetBuilder> widgetBuilder);
 
     void createSimpleColorWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<SimpleColorWidgetBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<SimpleColorWidgetBuilder> widgetBuilder);
 
     void createBarTimeChartWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<BarTimeChartBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<BarTimeChartBuilder> widgetBuilder);
 
     void createLineChartWidget(
-        @NotNull String entityID,
-        @NotNull Consumer<LineChartBuilder> widgetBuilder);
+            @NotNull String entityID,
+            @NotNull Consumer<LineChartBuilder> widgetBuilder);
+
+    enum PointStyle {
+        circle,
+        cross,
+        crossRot,
+        dash,
+        line,
+        rect,
+        rectRounded,
+        rectRot,
+        star,
+        triangle
+    }
+
+    enum Stepped {
+        False,
+        True,
+        Before,
+        After,
+        Middle
+    }
+
+    enum Fill {
+        Start,
+        End,
+        Origin,
+        Disabled,
+        Stack
+    }
+
+
+    enum ChartType {
+        line,
+        bar
+    }
+
+    enum ToggleType {
+        Regular,
+        Slide
+    }
+
+    enum PulseColor {
+        black, red, blue, green, yellow
+    }
+
+    @RequiredArgsConstructor
+    enum ValueCompare {
+        gt(">"), lt("<"), eq("="), neq("!="), regexp("RegExp");
+        @Getter
+        private final String op;
+    }
+
+    enum BarChartType {
+        Horizontal,
+        Vertical
+    }
+
+    enum LegendPosition {
+        top,
+        right,
+        bottom,
+        left
+    }
+
+    enum LegendAlign {
+        start,
+        center,
+        end
+    }
+
+    enum HorizontalAlign {
+        left, center, right
+    }
+
+    enum VerticalAlign {
+        top, middle, bottom
+    }
 
     interface LineChartBuilder extends
-        WidgetChartBaseBuilder<LineChartBuilder>,
-        HasLegend<LineChartBuilder>,
-        HasAxis<LineChartBuilder>,
-        HasHorizontalLine<LineChartBuilder>,
-        HasLineChartBehaviour<LineChartBuilder> {
+            WidgetChartBaseBuilder<LineChartBuilder>,
+            HasLegend<LineChartBuilder>,
+            HasAxis<LineChartBuilder>,
+            HasHorizontalLine<LineChartBuilder>,
+            HasLineChartBehaviour<LineChartBuilder> {
 
         @NotNull LineChartBuilder addSeries(@Nullable String name, @NotNull Consumer<LineChartSeriesBuilder> builder);
     }
 
     interface LineChartSeriesBuilder extends
-        HasChartDataSource<LineChartSeriesBuilder> {
+            HasChartDataSource<LineChartSeriesBuilder> {
     }
 
     interface BarTimeChartBuilder extends
-        HasLegend<BarTimeChartBuilder>,
-        WidgetChartBaseBuilder<BarTimeChartBuilder>,
-        HasChartTimePeriod<BarTimeChartBuilder>,
-        HasAxis<BarTimeChartBuilder>,
-        HasHorizontalLine<BarTimeChartBuilder>,
-        HasMinMaxChartValue<BarTimeChartBuilder> {
+            HasLegend<BarTimeChartBuilder>,
+            WidgetChartBaseBuilder<BarTimeChartBuilder>,
+            HasChartTimePeriod<BarTimeChartBuilder>,
+            HasAxis<BarTimeChartBuilder>,
+            HasHorizontalLine<BarTimeChartBuilder>,
+            HasMinMaxChartValue<BarTimeChartBuilder> {
 
         @NotNull BarTimeChartBuilder addSeries(@Nullable String name, @NotNull Consumer<BarTimeChartSeriesBuilder> builder);
 
@@ -103,15 +181,14 @@ public interface EntityContextWidget {
         @NotNull BarTimeChartBuilder setBarBorderWidth(@Nullable String value);
     }
 
-
     interface BarTimeChartSeriesBuilder extends
-        HasChartDataSource<BarTimeChartSeriesBuilder> {
+            HasChartDataSource<BarTimeChartSeriesBuilder> {
     }
 
     interface ColorWidgetBuilder extends
-        WidgetBaseBuilder<ColorWidgetBuilder>,
-        HasIconWithoutThreshold<ColorWidgetBuilder>,
-        HasLayout<ColorWidgetBuilder> {
+            WidgetBaseBuilder<ColorWidgetBuilder>,
+            HasIconWithoutThreshold<ColorWidgetBuilder>,
+            HasLayout<ColorWidgetBuilder> {
 
         // Default - "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FFFFFF"
         @NotNull ColorWidgetBuilder setColors(@NotNull String... colors);
@@ -161,10 +238,10 @@ public interface EntityContextWidget {
     }
 
     interface SimpleColorWidgetBuilder extends
-        WidgetBaseBuilder<SimpleColorWidgetBuilder>,
-        HasSingleValueDataSource<SimpleColorWidgetBuilder>,
-        HasSetSingleValueDataSource<SimpleColorWidgetBuilder>,
-        HasAlign<SimpleColorWidgetBuilder> {
+            WidgetBaseBuilder<SimpleColorWidgetBuilder>,
+            HasSingleValueDataSource<SimpleColorWidgetBuilder>,
+            HasSetSingleValueDataSource<SimpleColorWidgetBuilder>,
+            HasAlign<SimpleColorWidgetBuilder> {
 
         // Default - "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FFFFFF"
         @NotNull SimpleColorWidgetBuilder setColors(@NotNull String... colors);
@@ -186,32 +263,32 @@ public interface EntityContextWidget {
     }
 
     interface SimpleValueWidgetBuilder extends
-        WidgetBaseBuilder<SimpleValueWidgetBuilder>,
-        HasActionOnClick<SimpleValueWidgetBuilder>,
-        HasIcon<SimpleValueWidgetBuilder>,
-        HasPadding<SimpleValueWidgetBuilder>,
-        HasSingleValueDataSource<SimpleValueWidgetBuilder>,
-        HasAlign<SimpleValueWidgetBuilder>,
-        HasValueConverter<SimpleValueWidgetBuilder>,
-        HasValueTemplate<SimpleValueWidgetBuilder> {
+            WidgetBaseBuilder<SimpleValueWidgetBuilder>,
+            HasActionOnClick<SimpleValueWidgetBuilder>,
+            HasIcon<SimpleValueWidgetBuilder>,
+            HasPadding<SimpleValueWidgetBuilder>,
+            HasSingleValueDataSource<SimpleValueWidgetBuilder>,
+            HasAlign<SimpleValueWidgetBuilder>,
+            HasValueConverter<SimpleValueWidgetBuilder>,
+            HasValueTemplate<SimpleValueWidgetBuilder> {
     }
 
     interface SliderWidgetBuilder extends
-        WidgetBaseBuilder<SliderWidgetBuilder>,
-        HasName<SliderWidgetBuilder>,
-        HasPadding<SliderWidgetBuilder>,
-        HasLayout<SliderWidgetBuilder>,
-        HasSourceServerUpdates<SliderWidgetBuilder> {
+            WidgetBaseBuilder<SliderWidgetBuilder>,
+            HasName<SliderWidgetBuilder>,
+            HasPadding<SliderWidgetBuilder>,
+            HasLayout<SliderWidgetBuilder>,
+            HasSourceServerUpdates<SliderWidgetBuilder> {
 
         @NotNull SliderWidgetBuilder addSeries(@Nullable String name, @NotNull Consumer<SliderWidgetSeriesBuilder> builder);
     }
 
     interface ToggleWidgetBuilder extends
-        WidgetBaseBuilder<ToggleWidgetBuilder>,
-        HasName<ToggleWidgetBuilder>,
-        HasPadding<ToggleWidgetBuilder>,
-        HasLayout<ToggleWidgetBuilder>,
-        HasSourceServerUpdates<ToggleWidgetBuilder> {
+            WidgetBaseBuilder<ToggleWidgetBuilder>,
+            HasName<ToggleWidgetBuilder>,
+            HasPadding<ToggleWidgetBuilder>,
+            HasLayout<ToggleWidgetBuilder>,
+            HasSourceServerUpdates<ToggleWidgetBuilder> {
 
         // Default - false
         @NotNull ToggleWidgetBuilder setShowAllButton(@Nullable Boolean value);
@@ -223,15 +300,15 @@ public interface EntityContextWidget {
     }
 
     interface DisplayWidgetBuilder extends
-        WidgetChartBaseBuilder<DisplayWidgetBuilder>,
-        HasActionOnClick<DisplayWidgetBuilder>,
-        HasName<DisplayWidgetBuilder>,
-        HasPadding<DisplayWidgetBuilder>,
-        HasLayout<DisplayWidgetBuilder>,
-        HasChartDataSource<DisplayWidgetBuilder>,
-        HasHorizontalLine<DisplayWidgetBuilder>,
-        HasSourceServerUpdates<DisplayWidgetBuilder>,
-        HasLineChartBehaviour<DisplayWidgetBuilder> {
+            WidgetChartBaseBuilder<DisplayWidgetBuilder>,
+            HasActionOnClick<DisplayWidgetBuilder>,
+            HasName<DisplayWidgetBuilder>,
+            HasPadding<DisplayWidgetBuilder>,
+            HasLayout<DisplayWidgetBuilder>,
+            HasChartDataSource<DisplayWidgetBuilder>,
+            HasHorizontalLine<DisplayWidgetBuilder>,
+            HasSourceServerUpdates<DisplayWidgetBuilder>,
+            HasLineChartBehaviour<DisplayWidgetBuilder> {
 
         // Default - 30%
         @NotNull DisplayWidgetBuilder setChartHeight(int value);
@@ -267,22 +344,22 @@ public interface EntityContextWidget {
     }
 
     interface SimpleToggleWidgetBuilder extends
-        WidgetBaseBuilder<SimpleToggleWidgetBuilder>,
-        HasToggle<SimpleToggleWidgetBuilder>,
-        HasAlign<SimpleToggleWidgetBuilder>,
-        HasPadding<SimpleToggleWidgetBuilder>,
-        HasSingleValueDataSource<SimpleToggleWidgetBuilder>,
-        HasSetSingleValueDataSource<SimpleToggleWidgetBuilder>,
-        HasSourceServerUpdates<SimpleToggleWidgetBuilder> {
+            WidgetBaseBuilder<SimpleToggleWidgetBuilder>,
+            HasToggle<SimpleToggleWidgetBuilder>,
+            HasAlign<SimpleToggleWidgetBuilder>,
+            HasPadding<SimpleToggleWidgetBuilder>,
+            HasSingleValueDataSource<SimpleToggleWidgetBuilder>,
+            HasSetSingleValueDataSource<SimpleToggleWidgetBuilder>,
+            HasSourceServerUpdates<SimpleToggleWidgetBuilder> {
     }
 
     interface SliderWidgetSeriesBuilder extends
-        HasIcon<SliderWidgetSeriesBuilder>,
-        HasValueTemplate<SliderWidgetSeriesBuilder>,
-        HasName<SliderWidgetSeriesBuilder>,
-        HasPadding<SliderWidgetSeriesBuilder>,
-        HasSingleValueDataSource<SliderWidgetSeriesBuilder>,
-        HasSetSingleValueDataSource<SliderWidgetSeriesBuilder> {
+            HasIcon<SliderWidgetSeriesBuilder>,
+            HasValueTemplate<SliderWidgetSeriesBuilder>,
+            HasName<SliderWidgetSeriesBuilder>,
+            HasPadding<SliderWidgetSeriesBuilder>,
+            HasSingleValueDataSource<SliderWidgetSeriesBuilder>,
+            HasSetSingleValueDataSource<SliderWidgetSeriesBuilder> {
 
         // Default - random
         @NotNull SliderWidgetSeriesBuilder setSliderColor(@Nullable String value);
@@ -318,21 +395,21 @@ public interface EntityContextWidget {
     }
 
     interface DisplayWidgetSeriesBuilder extends
-        HasIcon<DisplayWidgetSeriesBuilder>,
-        HasValueTemplate<DisplayWidgetSeriesBuilder>,
-        HasName<DisplayWidgetSeriesBuilder>,
-        HasValueConverter<DisplayWidgetSeriesBuilder>,
-        HasSingleValueAggregatedDataSource<DisplayWidgetSeriesBuilder> {
+            HasIcon<DisplayWidgetSeriesBuilder>,
+            HasValueTemplate<DisplayWidgetSeriesBuilder>,
+            HasName<DisplayWidgetSeriesBuilder>,
+            HasValueConverter<DisplayWidgetSeriesBuilder>,
+            HasSingleValueAggregatedDataSource<DisplayWidgetSeriesBuilder> {
 
         @NotNull DisplayWidgetSeriesBuilder setStyle(@NotNull String... styles);
     }
 
     interface ToggleWidgetSeriesBuilder extends
-        HasIcon<ToggleWidgetSeriesBuilder>,
-        HasName<ToggleWidgetSeriesBuilder>,
-        HasToggle<ToggleWidgetSeriesBuilder>,
-        HasSingleValueDataSource<ToggleWidgetSeriesBuilder>,
-        HasSetSingleValueDataSource<ToggleWidgetSeriesBuilder> {
+            HasIcon<ToggleWidgetSeriesBuilder>,
+            HasName<ToggleWidgetSeriesBuilder>,
+            HasToggle<ToggleWidgetSeriesBuilder>,
+            HasSingleValueDataSource<ToggleWidgetSeriesBuilder>,
+            HasSetSingleValueDataSource<ToggleWidgetSeriesBuilder> {
     }
 
     interface HasValueTemplate<T> {
@@ -548,8 +625,8 @@ public interface EntityContextWidget {
 
         // Default - transparent
         @NotNull T setBackground(@Nullable String backgroundColor,
-            @Nullable Consumer<ThresholdBuilder> colorThresholdBuilder,
-            @Nullable Consumer<PulseBuilder> pulseThresholdBuilder
+                                 @Nullable Consumer<ThresholdBuilder> colorThresholdBuilder,
+                                 @Nullable Consumer<PulseBuilder> pulseThresholdBuilder
         );
 
         default @NotNull T setBackground(@Nullable String icon) {
@@ -627,15 +704,15 @@ public interface EntityContextWidget {
          * @return this
          */
         @NotNull ThresholdBuilder setThreshold(
-            @NotNull String entity,
-            @NotNull Object numValue,
-            @NotNull ValueCompare op,
-            @Nullable String source);
+                @NotNull String entity,
+                @NotNull Object numValue,
+                @NotNull ValueCompare op,
+                @Nullable String source);
 
         default @NotNull ThresholdBuilder setThreshold(
-            @NotNull String entity,
-            @NotNull Object numValue,
-            @NotNull ValueCompare op) {
+                @NotNull String entity,
+                @NotNull Object numValue,
+                @NotNull ValueCompare op) {
             return setThreshold(entity, numValue, op, null);
         }
     }
@@ -650,85 +727,9 @@ public interface EntityContextWidget {
          * @return this
          */
         @NotNull PulseBuilder setPulse(
-            @NotNull PulseColor pulseColor,
-            @NotNull Object numValue,
-            @NotNull ValueCompare op,
-            @NotNull String source);
-    }
-
-    enum PointStyle {
-        circle,
-        cross,
-        crossRot,
-        dash,
-        line,
-        rect,
-        rectRounded,
-        rectRot,
-        star,
-        triangle
-    }
-
-    enum Stepped {
-        False,
-        True,
-        Before,
-        After,
-        Middle
-    }
-
-    enum Fill {
-        Start,
-        End,
-        Origin,
-        Disabled,
-        Stack
-    }
-
-    enum ChartType {
-        line,
-        bar
-    }
-
-    enum ToggleType {
-        Regular,
-        Slide
-    }
-
-    enum PulseColor {
-        black, red, blue, green, yellow
-    }
-
-    @RequiredArgsConstructor
-    enum ValueCompare {
-        gt(">"), lt("<"), eq("="), neq("!="), regexp("RegExp");
-        @Getter
-        private final String op;
-    }
-
-    enum BarChartType {
-        Horizontal,
-        Vertical
-    }
-
-    enum LegendPosition {
-        top,
-        right,
-        bottom,
-        left
-    }
-
-    enum LegendAlign {
-        start,
-        center,
-        end
-    }
-
-    enum HorizontalAlign {
-        left, center, right
-    }
-
-    enum VerticalAlign {
-        top, middle, bottom
+                @NotNull PulseColor pulseColor,
+                @NotNull Object numValue,
+                @NotNull ValueCompare op,
+                @NotNull String source);
     }
 }

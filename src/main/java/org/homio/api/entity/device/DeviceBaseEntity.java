@@ -1,15 +1,7 @@
 package org.homio.api.entity.device;
 
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static org.homio.api.ui.field.UIFieldType.HTML;
-import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,6 +21,10 @@ import org.homio.api.ui.field.selection.UIFieldSelection;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.homio.api.ui.field.UIFieldType.HTML;
+import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -57,6 +53,22 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @Convert(converter = JSONConverter.class)
     private @NotNull JSON jsonData = new JSON();
 
+    @UIField(order = 1, hideOnEmpty = true, fullWidth = true, color = "#89AA50", type = HTML)
+    @UIFieldShowOnCondition("return !context.get('compactMode')")
+    @UIFieldColorBgRef(value = "statusColor", animate = true)
+    @UIFieldGroup(value = "GENERAL", order = 1, borderColor = "#CDD649")
+    public String getDescription() {
+        if (isCompactMode()) {
+            return null;
+        }
+        return getDescriptionImpl();
+    }
+
+    @JsonIgnore
+    public String getDescriptionImpl() {
+        return null;
+    }
+
     @UIField(order = 1, fullWidth = true, color = "#89AA50", type = HTML, style = "height: 32px;")
     @UIFieldShowOnCondition("return context.get('compactMode')")
     @UIFieldColorBgRef(value = "statusColor", animate = true)
@@ -65,24 +77,21 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
         if (!isCompactMode()) {
             return null;
         }
-        String description = getCompactDescriptionImpl();
-        if (description == null) {
-            description = getName();
-        }
-        Status status = getStatus();
-        return """
-            <div class="inline-2row_d"><div>%s <span style="color:%s">${%s}</span>
-            <span style="float:right" class="color-primary">%s</span></div><div>${%s}</div></div>""".formatted(
-            getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), description);
-    }
-
-    public boolean isCompactMode() {
-        return false;
+        return getCompactDescriptionImpl();
     }
 
     @JsonIgnore
     public String getCompactDescriptionImpl() {
-        return null;
+        String cd = getName();
+        Status status = getStatus();
+        return """
+                <div class="inline-2row_d"><div>%s <span style="color:%s">${%s}</span>
+                <span style="float:right" class="color-primary">%s</span></div><div>${%s}</div></div>""".formatted(
+                getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), cd);
+    }
+
+    public boolean isCompactMode() {
+        return false;
     }
 
     /**

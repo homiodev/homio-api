@@ -3,6 +3,15 @@ package org.homio.api.model;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.util.NumberUtils;
+import org.springframework.util.SystemPropertyUtils;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -14,25 +23,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.converter.ConditionalGenericConverter;
-import org.springframework.util.NumberUtils;
-import org.springframework.util.SystemPropertyUtils;
 
 /**
  * Represent object with ability to change it's value and notify observable classes
  */
 public class UpdatableValue<T> {
 
+    // any class which uses this UpdatableValue may listen it's changes
+    private final List<Consumer<T>> updateListeners = new ArrayList<>();
     protected T value;
     // when we create UpdatableValue which base on another UpdatableValue we must reflect base changes.
     List<Consumer<T>> reflectListeners = new ArrayList<>();
-    // any class which uses this UpdatableValue may listen it's changes
-    private final List<Consumer<T>> updateListeners = new ArrayList<>();
     private String name;
     private Function<String, T> stringConverter;
     private Function<T, T> extraFunc;

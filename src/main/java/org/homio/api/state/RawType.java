@@ -1,10 +1,6 @@
 package org.homio.api.state;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -13,6 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.homio.api.util.CommonUtils;
 import org.homio.hquery.Curl.RawResponse;
 import org.springframework.util.MimeTypeUtils;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Base64;
 
 @Accessors(chain = true)
 public class RawType implements State {

@@ -1,7 +1,5 @@
 package org.homio.api.console;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +12,8 @@ import org.homio.api.model.FileModel;
 import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 

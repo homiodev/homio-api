@@ -1,11 +1,6 @@
 package org.homio.api.entity.device;
 
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
@@ -23,6 +18,12 @@ import org.homio.api.ui.field.inline.UIFieldInlineEntities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
 
 public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDynamicContextMenuActions {
 
@@ -88,8 +89,8 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
         ConfigDeviceDefinitionService service = getConfigDeviceDefinitionService();
         List<ConfigDeviceDefinition> matchDevices = findMatchDeviceConfigurations();
         return new Icon(
-            service.getDeviceIcon(matchDevices, "fas fa-server"),
-            service.getDeviceIconColor(matchDevices, UI.Color.random())
+                service.getDeviceIcon(matchDevices, "fas fa-server"),
+                service.getDeviceIconColor(matchDevices, UI.Color.random())
         );
     }
 

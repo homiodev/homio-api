@@ -1,12 +1,5 @@
 package org.homio.api.ui.field.action;
 
-import static org.homio.api.util.JsonUtils.putOpt;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -14,6 +7,14 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.model.OptionModel;
 import org.json.JSONObject;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import static org.homio.api.util.JsonUtils.putOpt;
 
 // TODO:  ???????????????
 @Getter

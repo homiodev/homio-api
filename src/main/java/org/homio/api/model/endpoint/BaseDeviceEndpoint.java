@@ -1,19 +1,6 @@
 package org.homio.api.model.endpoint;
 
-import static java.util.Objects.requireNonNull;
-import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -31,6 +18,15 @@ import org.homio.api.state.State;
 import org.homio.api.state.StringType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+
+import static java.util.Objects.requireNonNull;
+import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 
 @Getter
 @RequiredArgsConstructor
@@ -58,11 +54,13 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     protected EntityContext entityContext;
     protected ConfigDeviceDefinitionService configService;
     protected @Nullable Float min;
-    private @JsonIgnore @Nullable Set<String> alternateEndpoints;
     protected @Nullable Float max;
     protected @Nullable Set<String> range;
-    private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
     protected WriteHandler writeHandler;
+    private @JsonIgnore
+    @Nullable Set<String> alternateEndpoints;
+    private @Setter
+    @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
 
     public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group) {
         this(group);
@@ -124,15 +122,15 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     }
 
     public void init(
-        @NotNull ConfigDeviceDefinitionService configService,
-        @Nullable String endpointEntityID,
-        @NotNull D device,
-        @NotNull EntityContext entityContext,
-        @Nullable String unit,
-        boolean readable,
-        boolean writable,
-        @Nullable String endpointName,
-        @NotNull EndpointType endpointType) {
+            @NotNull ConfigDeviceDefinitionService configService,
+            @Nullable String endpointEntityID,
+            @NotNull D device,
+            @NotNull EntityContext entityContext,
+            @Nullable String unit,
+            boolean readable,
+            boolean writable,
+            @Nullable String endpointName,
+            @NotNull EndpointType endpointType) {
 
         this.configService = configService;
         configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
@@ -225,7 +223,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
      */
     protected void updateUI() {
         entityContext.ui().updateInnerSetItem(device, "endpoints",
-            endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
+                endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
     }
 
     protected void getOrCreateVariable() {
@@ -248,10 +246,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             };
             if (variableType == VariableType.Enum) {
                 variableID = entityContext.var().createEnumVariable(getDeviceID(),
-                    getEntityID(), getName(false), getVariableEnumValues(), variableMetaBuilder);
+                        getEntityID(), getName(false), getVariableEnumValues(), variableMetaBuilder);
             } else {
                 variableID = entityContext.var().createVariable(getDeviceID(),
-                    getEntityID(), getName(false), variableType, variableMetaBuilder);
+                        getEntityID(), getName(false), variableType, variableMetaBuilder);
             }
 
             if (isWritable()) {
@@ -278,8 +276,8 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     protected @Nullable Consumer<VariableMetaBuilder> getVariableMetaBuilder() {
         return builder -> {
             builder.setDescription(getVariableDescription())
-                   .setReadOnly(!isWritable())
-                   .setColor(getIcon().getColor());
+                    .setReadOnly(!isWritable())
+                    .setColor(getIcon().getColor());
             List<String> attributes = new ArrayList<>();
             if (min != null) {
                 attributes.add("min:" + min);
@@ -308,11 +306,21 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     protected @NotNull VariableType getVariableType() {
         switch (endpointType) {
-            case bool -> {return VariableType.Bool;}
-            case number, dimmer -> {return VariableType.Float;}
-            case select -> {return VariableType.Enum;}
-            case color -> {return VariableType.Color;}
-            default -> {return VariableType.Any;}
+            case bool -> {
+                return VariableType.Bool;
+            }
+            case number, dimmer -> {
+                return VariableType.Float;
+            }
+            case select -> {
+                return VariableType.Enum;
+            }
+            case color -> {
+                return VariableType.Color;
+            }
+            default -> {
+                return VariableType.Any;
+            }
         }
     }
 

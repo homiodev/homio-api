@@ -1,26 +1,7 @@
 package org.homio.api.fs;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,6 +9,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Getter
 @Setter
@@ -65,17 +54,12 @@ public class TreeNode implements Comparable<TreeNode> {
         this.attributes.contentType = contentType;
     }
 
-    @Override
-    public String toString() {
-        return id;
-    }
-
     // TreeNode not related to saved data yet
     @SneakyThrows
     public static TreeNode of(@NotNull MultipartFile file) {
         String name = StringUtils.defaultIfEmpty(file.getOriginalFilename(), file.getName());
         return new TreeNode(false, false, name, name, file.getSize(), null, null, file.getContentType()).setInputStream(
-            file.getInputStream());
+                file.getInputStream());
     }
 
     public static TreeNode of(@NotNull String name, byte[] content) {
@@ -104,6 +88,11 @@ public class TreeNode implements Comparable<TreeNode> {
             cursor = cursor.addChild(new TreeNode(true, false, name, name, null, null, null, null));
         }
         return Pair.of(overRoot.getChildren().iterator().next(), cursor);
+    }
+
+    @Override
+    public String toString() {
+        return id;
     }
 
     public void visitTree(Consumer<TreeNode> supplier) {
@@ -232,8 +221,12 @@ public class TreeNode implements Comparable<TreeNode> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         TreeNode that = (TreeNode) o;
         return id.equals(that.id);
     }

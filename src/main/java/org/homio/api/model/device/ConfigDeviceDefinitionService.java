@@ -1,33 +1,8 @@
 package org.homio.api.model.device;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.homio.api.EntityContextSetting.IS_DEV_ENVIRONMENT;
-import static org.homio.api.util.CommonUtils.getErrorMessage;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
+import lombok.*;
 import lombok.extern.log4j.Log4j2;
-import lombok.val;
 import org.apache.commons.io.file.PathUtils;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.widget.template.WidgetDefinition;
@@ -35,10 +10,28 @@ import org.homio.hquery.Curl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import static org.homio.api.EntityContextSetting.IS_DEV_ENVIRONMENT;
+import static org.homio.api.util.CommonUtils.getErrorMessage;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 @Log4j2
 public class ConfigDeviceDefinitionService {
     private final String fileName;
     private final Path localFilePath;
+    private final @NotNull Map<String, ModelDevices> modelIdToDevices = new HashMap<>();
+    private final @NotNull ReentrantLock midLock = new ReentrantLock();
     private long localConfigFileHashCode;
     @Setter
     private String serverFilePath;
@@ -49,10 +42,8 @@ public class ConfigDeviceDefinitionService {
      */
     @Getter
     private @NotNull Map<String, ConfigDeviceDefinition> deviceDefinitions = Collections.emptyMap();
-
     @Getter
     private @NotNull Map<EndpointMatch, List<ConfigDeviceDefinition>> endpointDeviceDefinitions = Collections.emptyMap();
-
     /**
      * Endpoints market with defined color, icon, etc...
      */
@@ -62,17 +53,6 @@ public class ConfigDeviceDefinitionService {
     private @NotNull Map<String, ConfigDeviceEndpoint> deviceAliasEndpoints = Collections.emptyMap();
     private @NotNull Set<String> ignoreEndpoints = Collections.emptySet();
     private @NotNull Set<String> hiddenEndpoints = Collections.emptySet();
-
-    private final @NotNull Map<String, ModelDevices> modelIdToDevices = new HashMap<>();
-    private final @NotNull ReentrantLock midLock = new ReentrantLock();
-
-    public boolean isIgnoreEndpoint(@NotNull String endpoint) {
-        return ignoreEndpoints.contains(endpoint);
-    }
-
-    public boolean isHideEndpoint(@NotNull String endpoint) {
-        return hiddenEndpoints.contains(endpoint);
-    }
 
     /**
      * Create config service instance
@@ -98,9 +78,23 @@ public class ConfigDeviceDefinitionService {
         return !Files.exists(configFileLocation) || IS_DEV_ENVIRONMENT;
     }
 
+    private static void addDeviceDefinition(HashMap<String, ConfigDeviceDefinition> definitions, ConfigDeviceDefinition node, String model) {
+        if (definitions.put(model, node) != null) {
+            throw new IllegalArgumentException("Unable to handle few config device definitions with same name");
+        }
+    }
+
+    public boolean isIgnoreEndpoint(@NotNull String endpoint) {
+        return ignoreEndpoints.contains(endpoint);
+    }
+
+    public boolean isHideEndpoint(@NotNull String endpoint) {
+        return hiddenEndpoints.contains(endpoint);
+    }
+
     public @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModels(
-        @Nullable String model,
-        @NotNull Set<String> endpoints) {
+            @Nullable String model,
+            @NotNull Set<String> endpoints) {
         int endpointHash = endpoints.hashCode();
         ModelDevices modelDevices = modelIdToDevices.get(model);
         if (modelDevices == null || modelDevices.hashCode != endpointHash) {
@@ -214,20 +208,14 @@ public class ConfigDeviceDefinitionService {
         endpointDeviceDefinitions = endpointDefinitions;
         deviceDefinitions = definitions;
         deviceEndpoints = deviceConfigurations.getEndpoints().stream()
-                                              .collect(Collectors.toMap(
-                                                  ConfigDeviceEndpoint::getName, Function.identity()));
+                .collect(Collectors.toMap(
+                        ConfigDeviceEndpoint::getName, Function.identity()));
         deviceAliasEndpoints = aliasEndpoints;
     }
 
-    private static void addDeviceDefinition(HashMap<String, ConfigDeviceDefinition> definitions, ConfigDeviceDefinition node, String model) {
-        if (definitions.put(model, node) != null) {
-            throw new IllegalArgumentException("Unable to handle few config device definitions with same name");
-        }
-    }
-
     private @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModelsInternal(
-        @Nullable String modelId,
-        @NotNull Set<String> endpoints) {
+            @Nullable String modelId,
+            @NotNull Set<String> endpoints) {
         List<ConfigDeviceDefinition> devices = new ArrayList<>();
         ConfigDeviceDefinition device = deviceDefinitions.get(modelId);
         if (device != null) {

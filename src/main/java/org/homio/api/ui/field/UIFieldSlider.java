@@ -1,10 +1,11 @@
 package org.homio.api.ui.field;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.jetbrains.annotations.Nullable;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -29,6 +30,7 @@ public @interface UIFieldSlider {
 
     /**
      * Specify extra number value that able to apply to slider i.e. for disable status
+     *
      * @return extra value
      */
     String extraValue() default "";

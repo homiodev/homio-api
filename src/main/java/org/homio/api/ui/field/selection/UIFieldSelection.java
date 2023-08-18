@@ -1,12 +1,13 @@
 package org.homio.api.ui.field.selection;
 
+import org.homio.api.model.Icon;
+import org.homio.api.ui.action.DynamicOptionLoader;
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.homio.api.model.Icon;
-import org.homio.api.ui.action.DynamicOptionLoader;
-import org.jetbrains.annotations.NotNull;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

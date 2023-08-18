@@ -1,7 +1,8 @@
 package org.homio.api.audio;
 
-import java.util.Collection;
 import org.homio.api.model.OptionModel;
+
+import java.util.Collection;
 
 public interface SelfContainedAudioSourceContainer {
     Collection<OptionModel> getAudioSource();

@@ -1,8 +1,5 @@
 package org.homio.api.setting;
 
-import static org.homio.api.util.JsonUtils.putOpt;
-
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
@@ -11,6 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.List;
+
+import static org.homio.api.util.JsonUtils.putOpt;
 
 public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
@@ -56,8 +57,9 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
     /**
      * In case of action require user input. Dialog popup shows
+     *
      * @param entityContext -
-     * @param value -
+     * @param value         -
      * @return -
      */
     default List<ActionInputParameter> getInputParameters(EntityContext entityContext, String value) {

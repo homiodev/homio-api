@@ -1,7 +1,8 @@
 package org.homio.api.audio.stream;
 
-import java.io.InputStream;
 import org.homio.api.audio.AudioStream;
+
+import java.io.InputStream;
 
 public abstract class FixedLengthAudioStream extends AudioStream {
 

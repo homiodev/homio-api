@@ -10,10 +10,10 @@ public interface EntityContextStorage {
     @NotNull EntityContext getEntityContext();
 
     default <T extends DataStorageEntity> DataStorageService<T> getOrCreateInMemoryService(
-        @NotNull Class<T> pojoClass, @Nullable Long quota) {
+            @NotNull Class<T> pojoClass, @Nullable Long quota) {
         return getOrCreateInMemoryService(pojoClass, pojoClass.getSimpleName(), quota);
     }
 
     <T extends DataStorageEntity> DataStorageService<T> getOrCreateInMemoryService(
-        @NotNull Class<T> pojoClass, @NotNull String uniqueId, @Nullable Long quota);
+            @NotNull Class<T> pojoClass, @NotNull String uniqueId, @Nullable Long quota);
 }

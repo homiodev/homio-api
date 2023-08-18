@@ -1,12 +1,13 @@
 package org.homio.api.setting;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.homio.api.EntityContext;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public interface SettingPluginOptionsInteger extends SettingPluginInteger, SettingPluginOptions<Integer> {
 

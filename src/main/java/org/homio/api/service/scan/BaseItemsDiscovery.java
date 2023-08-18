@@ -1,9 +1,5 @@
 package org.homio.api.service.scan;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,11 +9,16 @@ import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.ui.action.UIActionHandler;
-import org.homio.hquery.ProgressBar;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.util.FlowMap;
+import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 
 /**
@@ -48,27 +49,27 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         String headerButtonKey = "SCAN." + getBatchName();
 
         entityContext.bgp().runInBatch(getBatchName(), Duration.ofSeconds(getMaxTimeToWaitInSeconds()), scanners,
-            scanner -> {
-                log.info("Start scan in thread <{}>", scanner.name);
-                AtomicInteger status =
-                    CommonUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
-                if (status.compareAndSet(0, 1)) {
-                    return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
-                        progressBar -> {
-                            try {
-                                return scanner.handler.handle(entityContext, progressBar, headerButtonKey);
-                            } catch (Exception ex) {
-                                log.error("Error while execute task: " + scanner.name, ex);
-                                return new DeviceScannerResult();
-                            }
-                        },
-                        ex -> {
-                            log.info("Done scan for <{}>", scanner.name);
-                            status.set(0);
-                            if (ex != null) {
-                                entityContext.ui()
-                                             .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", CommonUtils.getErrorMessage(ex)), ex);
-                            }
+                scanner -> {
+                    log.info("Start scan in thread <{}>", scanner.name);
+                    AtomicInteger status =
+                            CommonUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
+                    if (status.compareAndSet(0, 1)) {
+                        return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
+                                progressBar -> {
+                                    try {
+                                        return scanner.handler.handle(entityContext, progressBar, headerButtonKey);
+                                    } catch (Exception ex) {
+                                        log.error("Error while execute task: " + scanner.name, ex);
+                                        return new DeviceScannerResult();
+                                    }
+                                },
+                                ex -> {
+                                    log.info("Done scan for <{}>", scanner.name);
+                                    status.set(0);
+                                    if (ex != null) {
+                                        entityContext.ui()
+                                                .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", CommonUtils.getErrorMessage(ex)), ex);
+                                    }
                                 });
                     } else {
                         log.warn("Scan for <{}> already in progress", scanner.name);

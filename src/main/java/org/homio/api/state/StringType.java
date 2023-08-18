@@ -1,10 +1,11 @@
 package org.homio.api.state;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 public class StringType implements State {
     public static StringType EMPTY = new StringType("");

@@ -1,14 +1,11 @@
 package org.homio.api.audio.stream;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.audio.AudioFormat;
 import org.homio.api.exception.NotFoundException;
+
+import java.io.*;
 
 public class FileAudioStream extends FixedLengthAudioStream {
 

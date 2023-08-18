@@ -1,18 +1,19 @@
 package org.homio.api;
 
 import com.pivovarit.function.ThrowingConsumer;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public interface EntityContextVar {
 
@@ -82,6 +83,7 @@ public interface EntityContextVar {
 
     /**
      * Get variable title - name or defaultTitle
+     *
      * @param variableId-
      * @param defaultTitle-
      * @return -
@@ -90,6 +92,7 @@ public interface EntityContextVar {
 
     /**
      * Return count of messages
+     *
      * @param variableId -
      * @return count
      */
@@ -97,6 +100,7 @@ public interface EntityContextVar {
 
     /**
      * Does variable exists in system
+     *
      * @param variableId -
      * @return -
      */
@@ -111,16 +115,16 @@ public interface EntityContextVar {
     boolean updateVariableIcon(@NotNull String variableId, @Nullable Icon icon);
 
     @NotNull String createVariable(@NotNull String groupId,
-        @Nullable String variableId,
-        @NotNull String variableName,
-        @NotNull VariableType variableType,
-        @Nullable Consumer<VariableMetaBuilder> metaBuilder);
+                                   @Nullable String variableId,
+                                   @NotNull String variableName,
+                                   @NotNull VariableType variableType,
+                                   @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
     default @NotNull String createEnumVariable(@NotNull String groupId,
-        @Nullable String variableId,
-        @NotNull String variableName,
-        @NotNull Set<String> values,
-        @Nullable Consumer<VariableMetaBuilder> metaBuilder) {
+                                               @Nullable String variableId,
+                                               @NotNull String variableName,
+                                               @NotNull Set<String> values,
+                                               @Nullable Consumer<VariableMetaBuilder> metaBuilder) {
         return createVariable(groupId, variableId, variableName, VariableType.Enum, builder -> {
             builder.setValues(values);
             if (metaBuilder != null) {
@@ -142,7 +146,7 @@ public interface EntityContextVar {
      * @return false if group already exists
      */
     boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull Icon icon,
-        @Nullable String description);
+                        @Nullable String description);
 
     default boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull Icon icon) {
         return createGroup(groupId, groupName, locked, icon, null);
@@ -160,10 +164,11 @@ public interface EntityContextVar {
      * @return if group was create ot already exists
      */
     boolean createGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, boolean locked,
-        @NotNull Icon icon, @Nullable String description);
+                        @NotNull Icon icon, @Nullable String description);
 
     /**
      * Remove group and all associated variables
+     *
      * @param groupId -
      * @return if group was removed
      */
@@ -172,7 +177,7 @@ public interface EntityContextVar {
     /**
      * Build full data source path to variable
      *
-     * @param forSet - build data source for getting or setting value
+     * @param forSet     - build data source for getting or setting value
      * @param variableId - id
      * @return result
      */

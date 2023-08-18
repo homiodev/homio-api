@@ -3,6 +3,7 @@ package org.homio.api.service;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.service.CloudProviderService.SshCloud;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,8 @@ public interface CloudProviderService<T extends SshCloud> {
     void start() throws Exception;
 
     void stop() throws Exception;
+
+    ActionResponseModel sync() throws Exception;
 
     void updateNotificationBlock(@Nullable Exception ex);
 

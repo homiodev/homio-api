@@ -1,14 +1,15 @@
 package org.homio.api.storage;
 
 import com.mongodb.client.model.Filters;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.homio.api.entity.widget.AggregationType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public interface DataStorageService<T extends DataStorageEntity> {
 
@@ -18,10 +19,10 @@ public interface DataStorageService<T extends DataStorageEntity> {
 
     default SourceHistory getSourceHistory(@Nullable String field, @Nullable String value) {
         return new SourceHistory(
-            ((Number) aggregate(null, null, field, value, AggregationType.Count, false)).intValue(),
-            ((Number) aggregate(null, null, field, value, AggregationType.Min, false)).floatValue(),
-            ((Number) aggregate(null, null, field, value, AggregationType.Max, false)).floatValue(),
-            ((Number) aggregate(null, null, field, value, AggregationType.Median, false)).floatValue()
+                ((Number) aggregate(null, null, field, value, AggregationType.Count, false)).intValue(),
+                ((Number) aggregate(null, null, field, value, AggregationType.Min, false)).floatValue(),
+                ((Number) aggregate(null, null, field, value, AggregationType.Max, false)).floatValue(),
+                ((Number) aggregate(null, null, field, value, AggregationType.Median, false)).floatValue()
         );
     }
 

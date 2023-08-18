@@ -1,29 +1,5 @@
 package org.homio.api.fs.archive;
 
-import static org.apache.commons.compress.archivers.examples.Archiver.EMPTY_FileVisitOption;
-import static org.apache.commons.compress.utils.IOUtils.EMPTY_LINK_OPTIONS;
-import static org.apache.commons.io.FileUtils.ONE_MB_BI;
-import static org.homio.api.fs.archive.ArchiveUtil.fixPath;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -31,19 +7,34 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.io.IOUtils;
-import org.homio.hquery.ProgressBar;
 import org.homio.api.util.CommonUtils;
+import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import static org.apache.commons.compress.archivers.examples.Archiver.EMPTY_FileVisitOption;
+import static org.apache.commons.compress.utils.IOUtils.EMPTY_LINK_OPTIONS;
+import static org.apache.commons.io.FileUtils.ONE_MB_BI;
+import static org.homio.api.fs.archive.ArchiveUtil.fixPath;
 
 public class ApacheCompress {
 
     public static void archive(@NotNull Collection<Path> sources, @NotNull ArchiveOutputStream out, @Nullable ProgressBar progressBar) throws IOException {
         for (Path source : sources) {
-            if (progressBar != null) {progressBar.progress(10, "Archive: " + source);}
+            if (progressBar != null) {
+                progressBar.progress(10, "Archive: " + source);
+            }
             if (Files.isDirectory(source)) {
                 Files.walkFileTree(source, EMPTY_FileVisitOption, Integer.MAX_VALUE,
-                    new ArchiverFileVisitor(out, source.getParent()));
+                        new ArchiverFileVisitor(out, source.getParent()));
             } else {
                 writeZipEntry(source, true, source.getParent(), out);
             }
@@ -192,10 +183,10 @@ public class ApacheCompress {
 
     @SneakyThrows
     public static void downloadEntries(
-        @NotNull ArchiveInputStream stream,
-        @NotNull Path targetFolder,
-        @NotNull Set<String> entries,
-        boolean isSkipExisted) {
+            @NotNull ArchiveInputStream stream,
+            @NotNull Path targetFolder,
+            @NotNull Set<String> entries,
+            boolean isSkipExisted) {
         ArchiveEntry entry;
         entries = fixPath(entries);
         Files.createDirectories(targetFolder);

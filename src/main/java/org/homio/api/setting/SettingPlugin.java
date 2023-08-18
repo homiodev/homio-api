@@ -1,10 +1,7 @@
 package org.homio.api.setting;
 
-import static org.homio.api.util.JsonUtils.putOpt;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fazecast.jSerialComm.SerialPort;
-import java.nio.file.Paths;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
@@ -14,6 +11,10 @@ import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.nio.file.Paths;
+
+import static org.homio.api.util.JsonUtils.putOpt;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPlugin<T> {
@@ -131,6 +132,7 @@ public interface SettingPlugin<T> {
 
     /**
      * Values of settings with transient state doesn't save to db
+     *
      * @return is setting is transient
      */
     default boolean transientState() {
@@ -170,11 +172,11 @@ public interface SettingPlugin<T> {
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
                 throw new IllegalArgumentException(
-                    "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+                        "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
             }
             if (parameters.has("max") && parseValue > parameters.getInt("max")) {
                 throw new IllegalArgumentException(
-                    "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+                        "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
             }
         }
         return (T) parseValue;

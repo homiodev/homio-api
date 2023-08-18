@@ -1,11 +1,12 @@
 package org.homio.api.setting;
 
-import java.util.Collection;
 import org.homio.api.EntityContext;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+
+import java.util.Collection;
 
 public interface SettingPluginOptionsEnum<T extends Enum<T>> extends SettingPluginOptions<T> {
 

@@ -1,9 +1,10 @@
 package org.homio.api.service.scan;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.EntityContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * BaseItemsDiscovery successor that creates list of DevicesScanner based on declared beans

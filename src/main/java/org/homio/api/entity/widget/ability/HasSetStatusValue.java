@@ -1,12 +1,13 @@
 package org.homio.api.entity.widget.ability;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.text.NumberFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.homio.api.EntityContext;
 import org.homio.api.model.HasEntityIdentifier;
 import org.json.JSONObject;
+
+import java.text.NumberFormat;
 
 /**
  * For widget dataSource to set status value

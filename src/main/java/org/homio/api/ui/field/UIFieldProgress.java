@@ -1,14 +1,15 @@
 package org.homio.api.ui.field;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.Nullable;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Progress bar. Must return int or UIFieldProgress.Progress Max value is 100!
@@ -54,7 +55,7 @@ public @interface UIFieldProgress {
 
         public static Progress of(int value, int maxValue, boolean showMessage) {
             return Progress.of(value, maxValue, Lang.getServerMessage("USED_QUOTA", FlowMap.of(
-                "PC", value / (double) maxValue * 100, "VAL", value, "MAX", maxValue)), showMessage);
+                    "PC", value / (double) maxValue * 100, "VAL", value, "MAX", maxValue)), showMessage);
         }
     }
 }

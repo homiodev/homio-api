@@ -2,9 +2,6 @@ package org.homio.api;
 
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPlugin;
@@ -13,6 +10,10 @@ import org.homio.api.setting.console.header.dynamic.DynamicConsoleHeaderContaine
 import org.homio.api.setting.console.header.dynamic.DynamicConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface EntityContextSetting {
 
@@ -33,7 +34,7 @@ public interface EntityContextSetting {
      * @param distinguishKey - unqiue key for stored value that associanted with entity
      * @param title          - uses to log updated value to console
      * @param value          - value to store. remove from map if null
-     * @param <T> -
+     * @param <T>            -
      */
     static <T> void setMemValue(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title,
                                 @Nullable T value) {
@@ -49,7 +50,7 @@ public interface EntityContextSetting {
     }
 
     static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title, @Nullable Status status,
-        String message) {
+                          String message) {
         setMemValue(entity, distinguishKey + "Message", "", message);
         setMemValue(entity, distinguishKey, title, status);
     }
@@ -64,45 +65,51 @@ public interface EntityContextSetting {
 
     /**
      * Get unmodifiable list of all available places. Configured via settings
+     *
      * @return list of places
      */
     List<String> getPlaces();
 
     /**
      * Update setting components on ui
+     *
      * @param settingPlugin - setting to reload
      */
     void reloadSettings(@NotNull Class<? extends SettingPluginOptions> settingPlugin);
 
     /**
      * Update setting components on ui. Uses for updating dynamic settings
+     *
      * @param dynamicSettingPluginClass -
-     * @param dynamicSettings -
+     * @param dynamicSettings           -
      */
     void reloadSettings(@NotNull Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass,
                         @NotNull List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
 
     /**
      * Get setting value by class name
+     *
      * @param settingClass - setting
+     * @param <T>          -
      * @return setting value
-     * @param <T> -
      */
     <T> T getValue(@NotNull Class<? extends SettingPlugin<T>> settingClass);
 
     /**
      * Get unparsed setting value by class name
+     *
      * @param settingClass - setting
+     * @param <T>          -
      * @return raw value
-     * @param <T> -
      */
     <T> String getRawValue(@NotNull Class<? extends SettingPlugin<T>> settingClass);
 
     /**
      * Get setting value by class name or default value if null
+     *
      * @param settingClass - setting
      * @param defaultValue - def value
-     * @param <T> -
+     * @param <T>          -
      * @return value
      */
     default <T> T getValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @Nullable T defaultValue) {
@@ -118,10 +125,11 @@ public interface EntityContextSetting {
     /**
      * Usually listeners executes in separate thread but in some cases we need access to user who updating value and we need
      * run listener inside http request
-     * @param listener -
-     * @param key -
+     *
+     * @param listener     -
+     * @param key          -
      * @param settingClass -
-     * @param <T> -
+     * @param <T>          -
      */
     <T> void listenValueInRequest(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
                                   @NotNull ThrowingConsumer<T, Exception> listener);

@@ -7,8 +7,8 @@ import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
 
 @Entity
 @UISidebarMenu(icon = "fas fa-video", order = 1, parent = UISidebarMenu.TopSidebarMenu.MEDIA,
-               bg = "#5950A7", allowCreateNewItems = true, overridePath = "media")
+        bg = "#5950A7", allowCreateNewItems = true, overridePath = "media")
 public abstract class MediaEntity extends DeviceBaseEntity
-    implements HasDynamicContextMenuActions {
+        implements HasDynamicContextMenuActions {
 
 }

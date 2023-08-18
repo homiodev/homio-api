@@ -1,67 +1,9 @@
 package org.homio.api.util;
 
-import static java.lang.String.format;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
-
 import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -90,10 +32,44 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.net.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static java.lang.String.format;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.*;
+
 @SuppressWarnings("unused")
 @Log4j2
 public class CommonUtils {
 
+    // map for store different statuses
+    @Getter
+    private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
+    private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
+    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
+    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static Path rootPath;
     @Getter
     private static final Path logsPath = getOrCreatePath("logs");
     @Getter
@@ -117,15 +93,6 @@ public class CommonUtils {
     @Getter
     private static final Path tmpPath = getOrCreatePath("tmp");
 
-    // map for store different statuses
-    @Getter
-    private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
-    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
-    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
-    private static Path rootPath;
-
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
     }
@@ -140,7 +107,7 @@ public class CommonUtils {
      */
     @SneakyThrows
     public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
-        @NotNull ProgressBar progressBar) {
+                                                         @NotNull ProgressBar progressBar) {
         progressBar.progress(0, format("Downloading '%s' from url '%s'", targetFileName, url));
         Path targetFolder = CommonUtils.getInstallPath();
         Path archiveFile = targetFolder.resolve(targetFileName);
@@ -225,6 +192,9 @@ public class CommonUtils {
         if (cause instanceof UnknownHostException) {
             return "UnknownHost: " + cause.getMessage();
         }
+        if (cause instanceof NoSuchFileException) {
+            return "File not found: " + cause.getMessage();
+        }
 
         return StringUtils.defaultString(cause.getMessage(), cause.toString());
     }
@@ -265,7 +235,7 @@ public class CommonUtils {
     public static List<String> readFile(String fileName) {
         try {
             return IOUtils.readLines(Objects.requireNonNull(CommonUtils.class.getClassLoader().getResourceAsStream(fileName)),
-                Charset.defaultCharset());
+                    Charset.defaultCharset());
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
 
@@ -381,17 +351,17 @@ public class CommonUtils {
     }
 
     public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-        BiFunction<Path, TreeNode, Path> pathResolver) {
+                                BiFunction<Path, TreeNode, Path> pathResolver) {
         addFiles(tmpPath, files, pathResolver,
-            (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
-            (treeNode, path) -> Files.createDirectories(path));
+                (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
+                (treeNode, path) -> Files.createDirectories(path));
     }
 
     @SneakyThrows
     public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-        BiFunction<Path, TreeNode, Path> pathResolver,
-        ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
-        ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
+                                BiFunction<Path, TreeNode, Path> pathResolver,
+                                ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
+                                ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
         if (files != null) {
             for (TreeNode treeNode : files) {
                 Path filePath = pathResolver.apply(tmpPath, treeNode);
@@ -400,22 +370,22 @@ public class CommonUtils {
                 } else {
                     folderWriteResolver.accept(treeNode, filePath);
                     addFiles(filePath, treeNode.getChildren(true), pathResolver, fileWriteResolver,
-                        folderWriteResolver);
+                            folderWriteResolver);
                 }
             }
         }
     }
 
     public static ResponseEntity<InputStreamResource> inputStreamToResource(
-        @NotNull InputStream stream,
-        @NotNull MediaType contentType,
-        @Nullable HttpHeaders headers) {
+            @NotNull InputStream stream,
+            @NotNull MediaType contentType,
+            @Nullable HttpHeaders headers) {
         try {
             return ResponseEntity.ok()
-                                 .contentLength(stream.available())
-                                 .contentType(contentType)
-                                 .headers(headers)
-                                 .body(new InputStreamResource(stream));
+                    .contentLength(stream.available())
+                    .contentType(contentType)
+                    .headers(headers)
+                    .body(new InputStreamResource(stream));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -484,7 +454,7 @@ public class CommonUtils {
     @SneakyThrows
     public static @NotNull Path getHomioPropertiesLocation() {
         Path propertiesFile = (SystemUtils.IS_OS_WINDOWS ? SystemUtils.getUserHome().toPath().resolve("homio") :
-            createDirectoriesIfNotExists(Paths.get("/opt/homio"))).resolve("homio.properties");
+                createDirectoriesIfNotExists(Paths.get("/opt/homio"))).resolve("homio.properties");
         if (!Files.exists(propertiesFile)) {
             ApplicationHome applicationHome = new ApplicationHome();
             Path jarLocation = applicationHome.getDir().toPath();
@@ -517,8 +487,8 @@ public class CommonUtils {
 
     public static SerialPort getSerialPort(String value) {
         return StringUtils.isEmpty(value) ? null :
-            Stream.of(SerialPort.getCommPorts())
-                  .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
+                Stream.of(SerialPort.getCommPorts())
+                        .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
     }
 
     public static String splitNameToReadableFormat(@NotNull String name) {
@@ -528,8 +498,8 @@ public class CommonUtils {
 
     // Simple utility for scan for ip range
     public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
-        ThrowingFunction<String, Boolean, Exception> testDevice,
-        Consumer<String> createDeviceHandler) {
+                                     ThrowingFunction<String, Boolean, Exception> testDevice,
+                                     Consumer<String> createDeviceHandler) {
         Consumer<String> deviceHandler = (ip) -> {
             try {
                 if (testDevice.apply("127.0.0.1")) {
@@ -538,8 +508,8 @@ public class CommonUtils {
                     messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
                     messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
                     entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
-                        Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
-                            createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
+                            Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
+                                    createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
                 }
             } catch (Exception ignore) {
             }
@@ -549,7 +519,7 @@ public class CommonUtils {
         String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
         deviceHandler.accept("127.0.0.1");
         networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log::info, Collections.singleton(devicePort), 500,
-            (url, port) -> deviceHandler.accept(url));
+                (url, port) -> deviceHandler.accept(url));
     }
 
     public static class TemplateBuilder {

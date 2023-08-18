@@ -1,11 +1,12 @@
 package org.homio.api.setting;
 
-import java.util.Collection;
 import org.homio.api.EntityContext;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+
+import java.util.Collection;
 
 public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
 

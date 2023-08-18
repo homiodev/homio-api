@@ -1,7 +1,8 @@
 package org.homio.api.audio;
 
-import java.util.Set;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
 
 public class AudioFormat {
 
@@ -340,6 +341,7 @@ public class AudioFormat {
      * <p>
      * This AudioFormat is compatible with the passed AudioFormat if both have
      * the same value for all non-null members of this instance.
+     *
      * @param audioFormat -
      * @return -
      */

@@ -1,9 +1,10 @@
 package org.homio.api.setting;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.homio.api.EntityContext;
 import org.homio.api.util.CommonUtils;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public interface SettingPluginJarInstallButton extends SettingPluginButton {
 

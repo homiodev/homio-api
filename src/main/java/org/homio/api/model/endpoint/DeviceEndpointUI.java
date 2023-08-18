@@ -1,9 +1,6 @@
 package org.homio.api.model.endpoint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.homio.api.model.Icon;
@@ -11,6 +8,10 @@ import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.action.v1.UIInputEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -20,6 +21,20 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
     private DeviceEndpoint endpoint;
 
     private @Nullable String varSource;
+
+    public DeviceEndpointUI(@NotNull DeviceEndpoint endpoint) {
+        this.endpoint = endpoint;
+        this.varSource = endpoint.getVariableID() == null ? null :
+                endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID(), false);
+    }
+
+    public static @NotNull List<DeviceEndpointUI> buildEndpoints(@NotNull Collection<? extends DeviceEndpoint> entities) {
+        return entities.stream()
+                .filter(DeviceEndpoint::isVisible)
+                .map(DeviceEndpointUI::new)
+                .sorted()
+                .collect(Collectors.toList());
+    }
 
     public @NotNull String getEntityID() {
         return endpoint.getEntityID();
@@ -45,20 +60,6 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
     public @Nullable Collection<UIInputEntity> getSettings() {
         UIInputBuilder builder = endpoint.createSettingsBuilder();
         return builder == null ? null : builder.buildAll();
-    }
-
-    public DeviceEndpointUI(@NotNull DeviceEndpoint endpoint) {
-        this.endpoint = endpoint;
-        this.varSource = endpoint.getVariableID() == null ? null :
-            endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID(), false);
-    }
-
-    public static @NotNull List<DeviceEndpointUI> buildEndpoints(@NotNull Collection<? extends DeviceEndpoint> entities) {
-        return entities.stream()
-                       .filter(DeviceEndpoint::isVisible)
-                       .map(DeviceEndpointUI::new)
-                       .sorted()
-                       .collect(Collectors.toList());
     }
 
     @Override

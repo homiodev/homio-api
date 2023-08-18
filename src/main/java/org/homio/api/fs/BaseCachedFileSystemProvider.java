@@ -5,23 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Bytes;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
@@ -34,15 +17,33 @@ import org.homio.api.fs.BaseCachedFileSystemProvider.FsFileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystemEntity, FSFile extends FsFileEntity<FSFile>,
-    Service extends BaseFSService<FSFile>> implements
-    FileSystemProvider {
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-    protected @NotNull final Service service;
-    protected @NotNull final EntityContext entityContext;
-    protected @NotNull final LoadingCache<String, List<FSFile>> fileCache;
-    protected @NotNull final ReentrantLock lock = new ReentrantLock();
-    protected @NotNull final Condition condition;
+public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystemEntity, FSFile extends FsFileEntity<FSFile>,
+        Service extends BaseFSService<FSFile>> implements
+        FileSystemProvider {
+
+    protected @NotNull
+    final Service service;
+    protected @NotNull
+    final EntityContext entityContext;
+    protected @NotNull
+    final LoadingCache<String, List<FSFile>> fileCache;
+    protected @NotNull
+    final ReentrantLock lock = new ReentrantLock();
+    protected @NotNull
+    final Condition condition;
     @Getter
     protected @NotNull Entity entity;
     protected long connectionHashCode;
@@ -53,17 +54,29 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         this.condition = lock.newCondition();
 
         this.fileCache = CacheBuilder.newBuilder().
-                                     expireAfterWrite(1, TimeUnit.HOURS).build(new CacheLoader<>() {
-                public @NotNull List<FSFile> load(@NotNull String id) {
-                    try {
-                        return service.readChildren(id);
-                    } catch (Exception ex) {
-                        service.recreate();
-                        return service.readChildren(id);
+                expireAfterWrite(1, TimeUnit.HOURS).build(new CacheLoader<>() {
+                    public @NotNull List<FSFile> load(@NotNull String id) {
+                        try {
+                            return service.readChildren(id);
+                        } catch (Exception ex) {
+                            service.recreate();
+                            return service.readChildren(id);
+                        }
                     }
-                }
-            });
+                });
         this.service = createService();
+    }
+
+    public static String fixPath(Path path) {
+        return fixPath(path.toString());
+    }
+
+    public static String fixPath(String path) {
+        return SystemUtils.IS_OS_WINDOWS ? path.replace("\\", "/") : path;
+    }
+
+    public static String appendSlash(String path) {
+        return path.startsWith("/") ? path : "/" + path;
     }
 
     @Override
@@ -163,14 +176,6 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         return buildRoot(Collections.singleton(getFSFile(fullPath)), true);
     }
 
-    public static String fixPath(Path path) {
-        return fixPath(path.toString());
-    }
-
-    public static String fixPath(String path) {
-        return SystemUtils.IS_OS_WINDOWS ? path.replace("\\", "/") : path;
-    }
-
     @SneakyThrows
     @Override
     public TreeNode rename(@NotNull String id, @NotNull String newName, UploadOption uploadOption) {
@@ -217,8 +222,8 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         Set<TreeNode> rootChildren = getChildren(entity.getFileSystemRoot());
         Set<TreeNode> currentChildren = rootChildren;
         List<String> items = StreamSupport.stream(Paths.get(file.getAbsolutePathWithoutRoot()).spliterator(), false).map(Path::toString)
-                                            .collect(Collectors.toList());
-        for(int i = 0; i < items.size() - 1; i++) {
+                .collect(Collectors.toList());
+        for (int i = 0; i < items.size() - 1; i++) {
             String pathItem = items.get(i);
             TreeNode foundedObject = currentChildren.stream().filter(c -> {
                 return c.getName().equals(pathItem);
@@ -252,10 +257,6 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     @Override
     public void clearCache() {
         fileCache.invalidateAll();
-    }
-
-    public static String appendSlash(String path) {
-        return path.startsWith("/") ? path : "/" + path;
     }
 
     protected abstract @NotNull Service createService();
@@ -302,14 +303,14 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     private TreeNode buildTreeNode(@NotNull FSFile file, boolean handleAttributes) {
         boolean isDirectory = !handleAttributes || file.isDirectory();
         TreeNode treeNode = new TreeNode(
-            isDirectory,
-            isDirectory && !file.hasChildren(),
-            file.getFilename(),
-            file.getId(),
-            handleAttributes ? file.getSize() : null,
-            handleAttributes ? file.getModifiedDateTime() : null,
-            this,
-            handleAttributes ? file.getContentType() : null);
+                isDirectory,
+                isDirectory && !file.hasChildren(),
+                file.getFilename(),
+                file.getId(),
+                handleAttributes ? file.getSize() : null,
+                handleAttributes ? file.getModifiedDateTime() : null,
+                this,
+                handleAttributes ? file.getContentType() : null);
         buildTreeNodeExternal(treeNode, file);
         return treeNode;
     }
@@ -347,14 +348,14 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
             String fileId = appendSlash(appendRoot(id));
             String parentId = StringUtils.defaultIfEmpty(fixPath(Paths.get(fileId).getParent()), getNullParentId());
             fsFile = fileCache.get(parentId).stream()
-                              .filter(c -> {
-                                  if (c.getId().equals(fileId)) {
-                                      return true;
-                                  }
-                                  String path = appendSlash(fixPath(appendRoot(c.getId())));
-                                  return path.equals(fileId);
-                              })
-                              .findAny().orElse(null);
+                    .filter(c -> {
+                        if (c.getId().equals(fileId)) {
+                            return true;
+                        }
+                        String path = appendSlash(fixPath(appendRoot(c.getId())));
+                        return path.equals(fileId);
+                    })
+                    .findAny().orElse(null);
             if (fsFile == null) {
                 fsFile = service.getFile(fileId);
                 if (fsFile != null) {

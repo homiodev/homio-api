@@ -1,14 +1,15 @@
 package org.homio.api.console;
 
-import static org.apache.commons.lang3.StringUtils.defaultString;
-
-import java.util.Collection;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.defaultString;
 
 public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<String>> {
 

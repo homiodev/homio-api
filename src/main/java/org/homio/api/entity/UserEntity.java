@@ -1,12 +1,13 @@
 package org.homio.api.entity;
 
-import java.util.Set;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 public interface UserEntity {
 
-    @NotNull String getEntityID();
+    String getEntityID();
 
     String getEmail();
 
@@ -36,12 +37,12 @@ public interface UserEntity {
         return getUserType() == UserType.ADMIN;
     }
 
+    default boolean isAllowResource(String resource) {
+        return getUserType() == UserType.ADMIN;
+    }
+
     // other is not for homio user but other purposes
     enum UserType {
         ADMIN, PRIVILEGED, GUEST, OTHER
-    }
-
-    default boolean isAllowResource(String resource) {
-        return getUserType() == UserType.ADMIN;
     }
 }

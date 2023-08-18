@@ -1,13 +1,14 @@
 package org.homio.api.entity;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.Serializable;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.Serializable;
+
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
 public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable {
 

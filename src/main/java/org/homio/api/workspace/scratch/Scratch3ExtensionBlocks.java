@@ -1,17 +1,5 @@
 package org.homio.api.workspace.scratch;
 
-import static org.apache.commons.lang3.StringUtils.defaultString;
-
-import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -22,6 +10,14 @@ import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
+import static org.apache.commons.lang3.StringUtils.defaultString;
 
 @Getter
 public abstract class Scratch3ExtensionBlocks {
@@ -207,7 +203,7 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     protected <T extends KeyValueEnum> MenuBlock.StaticMenuBlock<T> menuStaticKV(@NotNull String name, @NotNull Class<T> enumClass,
-        T defaultValue) {
+                                                                                 T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnumKVE(enumClass).setDefaultValue(defaultValue));
     }
 

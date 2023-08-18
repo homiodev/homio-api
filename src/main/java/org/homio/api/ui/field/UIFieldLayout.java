@@ -1,8 +1,13 @@
 package org.homio.api.ui.field;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,12 +15,8 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 /**
  * Widget layout builder
@@ -65,6 +66,7 @@ public @interface UIFieldLayout {
 
         /**
          * Specify column width Restrictions: sum(columnWidthInPercent) must be 100. columnWidthInPercent[i] must be greater than 10%
+         *
          * @param columnWidthInPercent -
          * @return -
          */
@@ -138,7 +140,8 @@ public @interface UIFieldLayout {
         public RowBuilder addCol(@NotNull String value, @NotNull HorizontalAlign horizontalAlign, int colSpan) {
             RowBuilder rowBuilder = addCol(column -> column.setValue(value).setHorizontalAlign(horizontalAlign).setCollSpan(colSpan));
             for (int i = 1; i < colSpan; i++) {
-                addCol(column -> {});
+                addCol(column -> {
+                });
             }
             return rowBuilder;
         }

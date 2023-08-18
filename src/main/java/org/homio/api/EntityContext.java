@@ -1,11 +1,5 @@
 package org.homio.api;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import lombok.SneakyThrows;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
@@ -18,6 +12,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface EntityContext {
 
@@ -79,9 +80,10 @@ public interface EntityContext {
 
     /**
      * Get entity by entityID.
+     *
      * @param entityID - entity unique id to fetch
      * @param useCache - allow to use cache or direct db
-     * @param <T> -
+     * @param <T>      -
      * @return base entity
      */
     @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID, boolean useCache);

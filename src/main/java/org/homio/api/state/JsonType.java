@@ -1,16 +1,17 @@
 package org.homio.api.state;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.util.function.BiConsumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
+
+import java.util.function.BiConsumer;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 @Log4j2
 @RequiredArgsConstructor

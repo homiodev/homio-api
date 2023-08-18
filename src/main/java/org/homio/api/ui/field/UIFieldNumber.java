@@ -1,10 +1,11 @@
 package org.homio.api.ui.field;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Number field

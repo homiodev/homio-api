@@ -1,10 +1,11 @@
 package org.homio.api.widget.template.impl;
 
-import java.util.List;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
 import org.homio.api.widget.template.WidgetDefinition;
+
+import java.util.List;
 
 public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
 
@@ -13,7 +14,7 @@ public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
         WidgetDefinition wd = widgetRequest.getWidgetDefinition();
 
         var request = new MainWidgetRequest(widgetRequest, wd, 0,
-            0, builder -> TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder));
+                0, builder -> TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder));
         buildMainWidget(request);
     }
 
@@ -27,18 +28,18 @@ public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
         widgetRequest.getEntityContext().widget().createBarTimeChartWidget("bt-" + entity.getIeeeAddress(), builder -> {
             TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
             builder.setBlockSize(wd.getBlockWidth(3), wd.getBlockHeight(1))
-                   .setShowAxisX(wd.getOptions().isShowAxisX())
-                   .setShowAxisY(wd.getOptions().isShowAxisY())
-                   .setShowChartFullScreenButton(wd.getOptions().isShowChartFullScreenButton())
-                   .setChartPointsPerHour(wd.getOptions().getPointsPerHour())
-                   .setShowDynamicLine(wd.getOptions().isShowDynamicLine())
-                   .setDynamicLineColor(wd.getOptions().getDynamicLineColor());
+                    .setShowAxisX(wd.getOptions().isShowAxisX())
+                    .setShowAxisY(wd.getOptions().isShowAxisY())
+                    .setShowChartFullScreenButton(wd.getOptions().isShowChartFullScreenButton())
+                    .setChartPointsPerHour(wd.getOptions().getPointsPerHour())
+                    .setShowDynamicLine(wd.getOptions().isShowDynamicLine())
+                    .setDynamicLineColor(wd.getOptions().getDynamicLineColor());
             request.getAttachToLayoutHandler().accept(builder);
 
             for (DeviceEndpoint series : barSeries) {
                 builder.addSeries(series.getName(false), seriesBuilder ->
-                    seriesBuilder.setChartDataSource(
-                        TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), series, false)));
+                        seriesBuilder.setChartDataSource(
+                                TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), series, false)));
             }
         });
     }

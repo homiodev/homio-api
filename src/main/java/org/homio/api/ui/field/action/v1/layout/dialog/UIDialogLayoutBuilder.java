@@ -1,11 +1,12 @@
 package org.homio.api.ui.field.action.v1.layout.dialog;
 
-import java.util.function.Consumer;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.v1.UIEntityBuilder;
 import org.homio.api.ui.field.action.v1.layout.UIFlexLayoutBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public interface UIDialogLayoutBuilder extends UIEntityBuilder {
 

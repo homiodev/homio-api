@@ -1,11 +1,12 @@
 package org.homio.api.model.device;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+
+import java.util.List;
 
 @Getter
 @Setter

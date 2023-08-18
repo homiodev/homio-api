@@ -1,12 +1,6 @@
 package org.homio.api.workspace.scratch;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -19,10 +13,16 @@ import org.homio.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
     public static final String CONDITION = "CONDITION";
-    Object text;
     @JsonIgnore
     private final int order;
     private final String opcode;
@@ -32,15 +32,16 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     private final Scratch3BlockHandler handler;
     @JsonIgnore
     private final Scratch3BlockEvaluateHandler evaluateHandler;
+    Object text;
     @JsonIgnore
     private int spaceCount = 0;
 
     private Scratch3Color scratch3Color;
 
     protected Scratch3Block(int order, @NotNull String opcode, @NotNull BlockType blockType,
-        @NotNull Object text,
-        @Nullable Scratch3BlockHandler handler,
-        @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
+                            @NotNull Object text,
+                            @Nullable Scratch3BlockHandler handler,
+                            @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
         this.opcode = opcode;
         this.blockType = blockType;

@@ -2,8 +2,6 @@ package org.homio.api.entity.zigbee;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fazecast.jSerialComm.SerialPort;
-import java.util.Collection;
-import java.util.Map;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.entity.log.HasEntityLog;
@@ -20,8 +18,11 @@ import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Map;
+
 public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEntity, S extends EntityService.ServiceInstance>
-    extends HasJsonData, HasEntityLog, HasEntityIdentifier, HasStatusAndMsg, EntityService<S, T> {
+        extends HasJsonData, HasEntityLog, HasEntityIdentifier, HasStatusAndMsg, EntityService<S, T> {
 
     @UIField(order = 1, inlineEdit = true)
     @UIFieldGroup(value = "GENERAL", order = 1)

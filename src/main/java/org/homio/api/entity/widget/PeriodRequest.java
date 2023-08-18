@@ -1,11 +1,12 @@
 package org.homio.api.entity.widget;
 
-import java.util.Date;
 import lombok.Getter;
 import org.homio.api.EntityContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.util.Date;
 
 @Getter
 public class PeriodRequest {

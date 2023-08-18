@@ -1,27 +1,10 @@
 package org.homio.api.model;
 
-import static java.lang.String.format;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,6 +16,17 @@ import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.fs.TreeNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static java.lang.String.format;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 @Accessors(chain = true)
 @NoArgsConstructor
@@ -68,24 +62,6 @@ public class OptionModel implements Comparable<OptionModel> {
     @Setter
     // disabled option is shown but not clickable
     private boolean disabled;
-
-    public OptionModel setStatus(@Nullable HasStatusAndMsg statusEntity) {
-        this.status = statusEntity == null ? null : statusEntity.getStatus();
-        return this;
-    }
-
-    public OptionModel setIcon(@Nullable Icon icon) {
-        if (icon != null) {
-            this.icon = icon.getIcon();
-            this.color = icon.getColor();
-        }
-        return this;
-    }
-
-    public OptionModel setIcon(@Nullable String icon) {
-        this.icon = icon;
-        return this;
-    }
 
     private OptionModel(@NotNull Object key, @Nullable Object title) {
         this.key = key.toString();
@@ -202,7 +178,7 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static <T> List<OptionModel> list(@NotNull Collection<T> list, @NotNull Function<T, String> keyFn,
-        @NotNull Function<T, String> valueFn) {
+                                             @NotNull Function<T, String> valueFn) {
         return list.stream().map(e -> OptionModel.of(keyFn.apply(e), valueFn.apply(e))).collect(Collectors.toList());
     }
 
@@ -215,20 +191,20 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> entityList(
-        @NotNull Collection<? extends BaseEntity> list,
-        @Nullable BiConsumer<BaseEntity, OptionModel> configurator) {
+            @NotNull Collection<? extends BaseEntity> list,
+            @Nullable BiConsumer<BaseEntity, OptionModel> configurator) {
         return list.stream().map(entity -> {
-                       OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
-                       if (entity instanceof HasStatusAndMsg status) {
-                           model.setStatus(status);
-                       }
-                       entity.configureOptionModel(model);
-                       if (configurator != null) {
-                           configurator.accept(entity, model);
-                       }
-                       return model;
-                   })
-                   .sorted().collect(Collectors.toList());
+                    OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
+                    if (entity instanceof HasStatusAndMsg status) {
+                        model.setStatus(status);
+                    }
+                    entity.configureOptionModel(model);
+                    if (configurator != null) {
+                        configurator.accept(entity, model);
+                    }
+                    return model;
+                })
+                .sorted().collect(Collectors.toList());
     }
 
     public static @NotNull List<OptionModel> simpleNamelist(@NotNull Collection list) {
@@ -254,6 +230,24 @@ public class OptionModel implements Comparable<OptionModel> {
                 OptionModel.sort(option.getChildren());
             }
         }
+    }
+
+    public OptionModel setStatus(@Nullable HasStatusAndMsg statusEntity) {
+        this.status = statusEntity == null ? null : statusEntity.getStatus();
+        return this;
+    }
+
+    public OptionModel setIcon(@Nullable Icon icon) {
+        if (icon != null) {
+            this.icon = icon.getIcon();
+            this.color = icon.getColor();
+        }
+        return this;
+    }
+
+    public OptionModel setIcon(@Nullable String icon) {
+        this.icon = icon;
+        return this;
     }
 
     public @Nullable String getTitle() {

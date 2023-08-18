@@ -1,11 +1,12 @@
 package org.homio.api.setting;
 
+import org.homio.api.EntityContext;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.homio.api.EntityContext;
-import org.jetbrains.annotations.NotNull;
 
 public interface SettingPluginTextSet extends SettingPlugin<Set<String>> {
 

@@ -1,11 +1,12 @@
 package org.homio.api.model;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public enum Status {
@@ -32,6 +33,10 @@ public enum Status {
     @Getter
     private final String icon;
 
+    public static Set<String> set(Status... statuses) {
+        return Arrays.stream(statuses).map(Enum::name).collect(Collectors.toSet());
+    }
+
     public boolean isOnline() {
         return this == ONLINE;
     }
@@ -54,10 +59,6 @@ public enum Status {
 
     public EntityStatus toModel() {
         return new EntityStatus(this);
-    }
-
-    public static Set<String> set(Status... statuses) {
-        return Arrays.stream(statuses).map(Enum::name).collect(Collectors.toSet());
     }
 
     @Getter

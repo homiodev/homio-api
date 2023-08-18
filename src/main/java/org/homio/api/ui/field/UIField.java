@@ -20,7 +20,7 @@ public @interface UIField {
     boolean hideInEdit() default false;
 
     /**
-     * @return  Hide field in view mode
+     * @return Hide field in view mode
      */
     boolean hideInView() default false;
 

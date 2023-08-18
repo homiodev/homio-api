@@ -1,27 +1,21 @@
 package org.homio.api.ui.field.action.v1.layout;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.action.UIActionHandler;
 import org.homio.api.ui.field.action.v1.UIEntityBuilder;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UIButtonItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UICheckboxItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UIColorPickerItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UIMultiButtonItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UISelectBoxItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UISliderItemBuilder;
-import org.homio.api.ui.field.action.v1.item.UITextInputItemBuilder;
+import org.homio.api.ui.field.action.v1.item.*;
 import org.homio.api.ui.field.action.v1.layout.dialog.UIDialogLayoutBuilder;
 import org.homio.api.ui.field.action.v1.layout.dialog.UIStickyDialogItemBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public interface UILayoutBuilder extends UIEntityBuilder {
     @Unmodifiable
@@ -81,8 +75,9 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     /**
      * Add read-write color picker
-     * @param name -
-     * @param color -
+     *
+     * @param name   -
+     * @param color  -
      * @param action -
      * @return -
      */
@@ -120,31 +115,31 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     }
 
     default UISliderItemBuilder addNumberInput(@NotNull String name, Float value, Float min, Float max,
-        UIActionHandler action) {
+                                               UIActionHandler action) {
         return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Input, getNextOrder());
     }
 
     UISliderItemBuilder addSlider(@NotNull String name, Float value, Float min, Float max,
-        UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
+                                  UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
 
     default UIButtonItemBuilder addButton(@NotNull String name, @Nullable Icon icon, UIActionHandler action) {
         return addButton(name, icon, action, getNextOrder());
     }
 
     UIButtonItemBuilder addButton(@NotNull String name, @Nullable Icon icon,
-        UIActionHandler action, int order);
+                                  UIActionHandler action, int order);
 
     UIButtonItemBuilder addTableLayoutButton(@NotNull String name, int maxRows, int maxColumns, String value,
-        @Nullable Icon icon,
-        UIActionHandler action, int order);
+                                             @Nullable Icon icon,
+                                             UIActionHandler action, int order);
 
     default UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable Icon icon,
-        String[] supportedFormats, UIActionHandler action) {
+                                                      String[] supportedFormats, UIActionHandler action) {
         return addSimpleUploadButton(name, icon, supportedFormats, action, getNextOrder());
     }
 
     UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable Icon icon,
-        String[] supportedFormats, UIActionHandler action, int order);
+                                              String[] supportedFormats, UIActionHandler action, int order);
 
     default DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable Icon icon) {
         return addStickyDialogButton(name, icon, getNextOrder());
@@ -154,12 +149,12 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     // text or icon must be not null!
     default DialogEntity<UIDialogLayoutBuilder> addOpenDialogActionButton(@NotNull String name, @Nullable Icon icon,
-        @Nullable Integer width) {
+                                                                          @Nullable Integer width) {
         return addOpenDialogActionButton(name, icon, width, getNextOrder());
     }
 
     DialogEntity<UIDialogLayoutBuilder> addOpenDialogActionButton(@NotNull String name, @Nullable Icon icon,
-        @Nullable Integer width, int order);
+                                                                  @Nullable Integer width, int order);
 
     interface DialogEntity<D> {
 

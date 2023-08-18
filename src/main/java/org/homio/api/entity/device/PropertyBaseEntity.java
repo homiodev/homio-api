@@ -1,14 +1,7 @@
 package org.homio.api.entity.device;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.ManyToOne;
-import java.util.Set;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
@@ -19,23 +12,34 @@ import org.homio.api.model.JSON;
 import org.homio.api.ui.field.UIField;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class PropertyBaseEntity<O extends DeviceBaseEntity>
-    extends BaseEntity implements HasJsonData {
+        extends BaseEntity implements HasJsonData {
 
     public static final String PREFIX = "prop_";
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DeviceBaseEntity.class)
+    private O owner;
+    @UIField(order = 20, hideInEdit = true, hideOnEmpty = true)
+    private Integer address;
+    @UIField(order = 1)
+    private String description;
+    @Getter
+    @Setter
+    @Column(length = 10_000)
+    @Convert(converter = JSONConverter.class)
+    private JSON jsonData = new JSON();
+    private int position;
 
     @Override
     public String getDefaultName() {
         return null;
     }
-
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DeviceBaseEntity.class)
-    private O owner;
 
     @JsonIgnore
     public O getOwnerTarget() {
@@ -48,20 +52,6 @@ public abstract class PropertyBaseEntity<O extends DeviceBaseEntity>
             return owner;
         }
     }
-
-    @UIField(order = 20, hideInEdit = true, hideOnEmpty = true)
-    private Integer address;
-
-    @UIField(order = 1)
-    private String description;
-
-    @Getter
-    @Setter
-    @Column(length = 10_000)
-    @Convert(converter = JSONConverter.class)
-    private JSON jsonData = new JSON();
-
-    private int position;
 
     @Override
     public final @NotNull String getEntityPrefix() {

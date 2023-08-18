@@ -1,15 +1,16 @@
 package org.homio.api.fs.archive.tar.bz2;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.homio.api.fs.archive.tar.AbstractTarFileSystem;
+import org.homio.api.fs.archive.tar.AbstractTarFileSystemProvider;
+import org.homio.api.fs.archive.tar.TarUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
-import org.homio.api.fs.archive.tar.AbstractTarFileSystemProvider;
-import org.homio.api.fs.archive.tar.TarUtils;
-import org.homio.api.fs.archive.tar.AbstractTarFileSystem;
 
 class TarBzip2FileSystem extends AbstractTarFileSystem {
 

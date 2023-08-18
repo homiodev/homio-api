@@ -1,12 +1,13 @@
 package org.homio.api.util;
 
 import com.pivovarit.function.ThrowingBiFunction;
+import lombok.SneakyThrows;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.SneakyThrows;
 
 public class SpringUtils {
 
@@ -71,9 +72,9 @@ public class SpringUtils {
      *
      * @param text           - text to search pattern values
      * @param propertyGetter - function to apply
-     * @param pattern -
-     * @param prefixLength -
-     * @param suffixLength -
+     * @param pattern        -
+     * @param prefixLength   -
+     * @param suffixLength   -
      * @return updated text
      */
     public static String replaceValues(String text, BiFunction<String, String, String> propertyGetter, Pattern pattern,

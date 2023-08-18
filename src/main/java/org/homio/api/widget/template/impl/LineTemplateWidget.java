@@ -1,8 +1,5 @@
 package org.homio.api.widget.template.impl;
 
-import static org.homio.api.widget.template.impl.DisplayTemplateWidget.fillHasLineChartBehaviour;
-
-import java.util.List;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
@@ -11,6 +8,10 @@ import org.homio.api.widget.template.WidgetDefinition;
 import org.homio.api.widget.template.WidgetDefinition.ItemDefinition;
 import org.homio.api.widget.template.WidgetDefinition.Options.Chart;
 
+import java.util.List;
+
+import static org.homio.api.widget.template.impl.DisplayTemplateWidget.fillHasLineChartBehaviour;
+
 public class LineTemplateWidget implements TemplateWidgetBuilder {
 
     @Override
@@ -18,8 +19,8 @@ public class LineTemplateWidget implements TemplateWidgetBuilder {
         WidgetDefinition widgetDefinition = widgetRequest.getWidgetDefinition();
 
         var request = new MainWidgetRequest(widgetRequest, widgetDefinition, 0,
-            0, builder ->
-            TemplateWidgetBuilder.buildCommon(widgetDefinition, widgetRequest, builder));
+                0, builder ->
+                TemplateWidgetBuilder.buildCommon(widgetDefinition, widgetRequest, builder));
         buildMainWidget(request);
     }
 
@@ -34,14 +35,14 @@ public class LineTemplateWidget implements TemplateWidgetBuilder {
         entityContext.widget().createLineChartWidget("ln-" + entity.getIeeeAddress(), builder -> {
             TemplateWidgetBuilder.buildCommon(wd, request.getWidgetRequest(), builder);
             builder.setBlockSize(wd.getBlockWidth(3), wd.getBlockHeight(1))
-                   .setShowAxisX(wd.getOptions().isShowAxisX())
-                   .setShowAxisY(wd.getOptions().isShowAxisY())
-                   .setShowChartFullScreenButton(wd.getOptions().isShowChartFullScreenButton())
-                   .setChartPointsPerHour(wd.getOptions().getPointsPerHour())
-                   .setPointRadius(wd.getOptions().getPointRadius())
-                   .setShowDynamicLine(wd.getOptions().isShowDynamicLine())
-                   .setDynamicLineColor(wd.getOptions().getDynamicLineColor())
-                   .setPointBorderColor(wd.getOptions().getPointBorderColor());
+                    .setShowAxisX(wd.getOptions().isShowAxisX())
+                    .setShowAxisY(wd.getOptions().isShowAxisY())
+                    .setShowChartFullScreenButton(wd.getOptions().isShowChartFullScreenButton())
+                    .setChartPointsPerHour(wd.getOptions().getPointsPerHour())
+                    .setPointRadius(wd.getOptions().getPointRadius())
+                    .setShowDynamicLine(wd.getOptions().isShowDynamicLine())
+                    .setDynamicLineColor(wd.getOptions().getDynamicLineColor())
+                    .setPointBorderColor(wd.getOptions().getPointBorderColor());
             request.getAttachToLayoutHandler().accept(builder);
 
             for (DeviceEndpoint series : barSeries) {

@@ -1,5 +1,9 @@
 package org.homio.api.fs.archive.tar.gz;
 
+import org.homio.api.fs.archive.tar.AbstractTarFileSystem;
+import org.homio.api.fs.archive.tar.AbstractTarFileSystemProvider;
+import org.homio.api.fs.archive.tar.TarUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,9 +11,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import org.homio.api.fs.archive.tar.AbstractTarFileSystemProvider;
-import org.homio.api.fs.archive.tar.TarUtils;
-import org.homio.api.fs.archive.tar.AbstractTarFileSystem;
 
 class TarGzipFileSystem extends AbstractTarFileSystem {
 

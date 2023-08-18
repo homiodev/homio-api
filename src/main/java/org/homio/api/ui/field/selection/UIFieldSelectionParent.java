@@ -66,6 +66,8 @@ public @interface UIFieldSelectionParent {
         }
 
         // if we want grouping of groups
-        default SelectionParent getSuperParent() {return null;}
+        default SelectionParent getSuperParent() {
+            return null;
+        }
     }
 }

@@ -1,13 +1,14 @@
 package org.homio.api.state;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.math.BigDecimal;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
+
+import java.math.BigDecimal;
+import java.util.Objects;
 
 @Log4j2
 @Accessors(chain = true)

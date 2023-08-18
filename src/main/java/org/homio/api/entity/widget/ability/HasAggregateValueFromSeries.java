@@ -12,7 +12,7 @@ public interface HasAggregateValueFromSeries extends HasEntityIdentifier, HasUpd
     /**
      * Aggregate value or take first/last values.
      *
-     * @param request -
+     * @param request         -
      * @param aggregationType -
      * @param exactNumber     - if aggregate exact number values or take any value (i.e.: for display widget)
      * @return -

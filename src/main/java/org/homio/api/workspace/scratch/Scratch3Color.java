@@ -1,7 +1,8 @@
 package org.homio.api.workspace.scratch;
 
-import java.awt.Color;
 import lombok.Getter;
+
+import java.awt.*;
 
 @Getter
 public class Scratch3Color {

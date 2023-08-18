@@ -2,12 +2,6 @@ package org.homio.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingRunnable;
-import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.homio.api.EntityContext;
@@ -18,11 +12,18 @@ import org.homio.api.model.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Configure service for entities. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
  */
 public interface EntityService<S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
-    extends HasStatusAndMsg {
+        extends HasStatusAndMsg {
 
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
@@ -86,6 +87,20 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         if (service != null) {
             service.destroy();
         }
+    }
+
+    interface WatchdogService {
+        /**
+         * Restarting service fired by watchdog service if isWatchdogEnabled true. Restart service in interval 1..2 minutes
+         * Service should be as fast as possible. Use inner async if possible
+         * Method calls in ForkJoin pool at same time with other services if need
+         */
+        void restartService();
+
+        /**
+         * @return Check if need restart service before call restartService()..
+         */
+        boolean isRequireRestartService();
     }
 
     @Getter
@@ -179,20 +194,6 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         protected void destroy() throws Exception {
 
         }
-    }
-
-    interface WatchdogService {
-        /**
-         * Restarting service fired by watchdog service if isWatchdogEnabled true. Restart service in interval 1..2 minutes
-         * Service should be as fast as possible. Use inner async if possible
-         * Method calls in ForkJoin pool at same time with other services if need
-         */
-        void restartService();
-
-        /**
-         * @return Check if need restart service before call restartService()..
-         */
-        boolean isRequireRestartService();
     }
 }
 
