@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
+import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
@@ -16,6 +18,7 @@ import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.homio.api.util.ApplicationContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 import org.json.JSONPropertyIgnore;
 
 import java.util.Date;
@@ -209,4 +212,20 @@ public abstract class BaseEntity implements
     }
 
     protected abstract int getChildEntityHashCode();
+
+    /**
+     * Calls only in case if field return 'string' value that has link with attributes name="link"
+     *
+     * @param entityContext ec
+     * @param field         target field
+     * @param metadata      has all attached values 'data-xxx="value"'
+     * @return response
+     */
+    public @Nullable ActionResponseModel handleTextFieldAction(
+            @NotNull EntityContext entityContext,
+            @NotNull String field,
+            @NotNull JSONObject metadata) {
+        throw new NotImplementedException("Method 'handleTextFieldAction' must be implemented in class: " + getClass().getSimpleName()
+                + " if calls by UI. Field: " + field + ". Meta: " + metadata);
+    }
 }

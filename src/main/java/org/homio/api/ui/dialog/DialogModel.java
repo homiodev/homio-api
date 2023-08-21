@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 import org.homio.api.EntityContextUI.DialogRequestHandler;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.ActionInputParameter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -98,7 +99,7 @@ public class DialogModel {
         return this;
     }
 
-    public DialogModel appearance(Icon icon, String dialogColor) {
+    public DialogModel appearance(@Nullable Icon icon, @Nullable String dialogColor) {
         this.icon = icon;
         this.dialogColor = dialogColor;
         return this;
@@ -126,7 +127,11 @@ public class DialogModel {
         private final String title;
         private final ButtonType type;
 
-        private String icon;
+        private Icon icon;
+
+        public void setIcon(String icon) {
+            this.icon = new Icon(icon);
+        }
 
         private enum ButtonType {
             submit, cancel, extra

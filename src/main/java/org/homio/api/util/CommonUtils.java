@@ -234,8 +234,9 @@ public class CommonUtils {
 
     public static List<String> readFile(String fileName) {
         try {
-            return IOUtils.readLines(Objects.requireNonNull(CommonUtils.class.getClassLoader().getResourceAsStream(fileName)),
-                    Charset.defaultCharset());
+            try (InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
+                return IOUtils.readLines(Objects.requireNonNull(resource), Charset.defaultCharset());
+            }
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
 
@@ -258,7 +259,7 @@ public class CommonUtils {
     @SneakyThrows
     public static URL getResource(String addonID, String resource) {
         URL resourceURL = null;
-        ArrayList<URL> urls = Collections.list(CommonUtils.class.getClassLoader().getResources(resource));
+        ArrayList<URL> urls = Collections.list(Thread.currentThread().getContextClassLoader().getResources(resource));
         if (urls.size() == 1) {
             resourceURL = urls.get(0);
         } else if (urls.size() > 1 && addonID != null) {
@@ -322,7 +323,7 @@ public class CommonUtils {
 
     @SneakyThrows
     private static List<Map<String, String>> readProperties(String path) {
-        Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(path);
+        Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(path);
         List<Map<String, String>> properties = new ArrayList<>();
         while (resources.hasMoreElements()) {
             try (InputStream input = resources.nextElement().openStream()) {

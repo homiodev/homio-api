@@ -41,7 +41,8 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @Setter
     @Getter
     @Column(length = 64)
-    @UIField(order = 50, type = UIFieldType.SelectBox, color = "#538744")
+    @UIField(order = 30, type = UIFieldType.SelectBox, color = "#538744")
+    @UIFieldGroup("GENERAL")
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "PLACEHOLDER.SELECT_PLACE")
     @UIFieldShowOnCondition("return !context.get('compactMode')")
@@ -51,12 +52,12 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @Setter
     @Column(length = 100_000)
     @Convert(converter = JSONConverter.class)
+    @JsonIgnore
     private @NotNull JSON jsonData = new JSON();
 
-    @UIField(order = 1, hideOnEmpty = true, fullWidth = true, color = "#89AA50", type = HTML)
+    @UIField(order = 1, hideOnEmpty = true, hideInEdit = true, fullWidth = true, color = "#89AA50", type = HTML)
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @UIFieldColorBgRef(value = "statusColor", animate = true)
-    @UIFieldGroup(value = "GENERAL", order = 1, borderColor = "#CDD649")
     public String getDescription() {
         if (isCompactMode()) {
             return null;
@@ -72,7 +73,6 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @UIField(order = 1, fullWidth = true, color = "#89AA50", type = HTML, style = "height: 32px;")
     @UIFieldShowOnCondition("return context.get('compactMode')")
     @UIFieldColorBgRef(value = "statusColor", animate = true)
-    @UIFieldGroup(value = "GENERAL", order = 1, borderColor = "#CDD649")
     public String getCompactDescription() {
         if (!isCompactMode()) {
             return null;

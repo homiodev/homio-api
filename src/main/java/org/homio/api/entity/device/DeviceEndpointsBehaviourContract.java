@@ -65,7 +65,6 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
         return getDeviceEndpoints().get(endpoint);
     }
 
-    @JsonIgnore
     @Nullable String getDescription();
 
     /**

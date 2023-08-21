@@ -30,7 +30,7 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
         setStatus(status, status == Status.ONLINE ? null : getStatusMessage());
     }
 
-    @UIField(order = 2, hideInEdit = true, hideOnEmpty = true, color = "#B22020")
+    @UIField(order = 6, hideInEdit = true, hideOnEmpty = true, color = "#B22020")
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     default @Nullable String getStatusMessage() {
