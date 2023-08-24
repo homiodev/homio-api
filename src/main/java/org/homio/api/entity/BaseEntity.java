@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import java.util.Date;
 import java.util.Objects;
@@ -34,6 +35,10 @@ import org.json.JSONObject;
 public abstract class BaseEntity implements
         BaseEntityIdentifier,
         Comparable<BaseEntity> {
+
+    @JsonIgnore
+    @Transient
+    private EntityContext entityContext;
 
     @Id
     @JsonIgnore // serialized by Bean2MixIn
@@ -148,7 +153,7 @@ public abstract class BaseEntity implements
 
     }
 
-    public void beforeDelete(@NotNull EntityContext entityContext) {
+    public void beforeDelete() {
 
     }
 
@@ -215,16 +220,19 @@ public abstract class BaseEntity implements
     /**
      * Calls only in case if field return 'string' value that has link with attributes name="link"
      *
-     * @param entityContext ec
      * @param field         target field
      * @param metadata      has all attached values 'data-xxx="value"'
      * @return response
      */
     public @Nullable ActionResponseModel handleTextFieldAction(
-            @NotNull EntityContext entityContext,
             @NotNull String field,
             @NotNull JSONObject metadata) {
         throw new NotImplementedException("Method 'handleTextFieldAction' must be implemented in class: " + getClass().getSimpleName()
                 + " if calls by UI. Field: " + field + ". Meta: " + metadata);
+    }
+
+    @Override
+    public void afterFetch(@NotNull EntityContext entityContext) {
+        this.entityContext = entityContext;
     }
 }

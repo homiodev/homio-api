@@ -28,8 +28,6 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
     Map<String, Object> entityToService = new ConcurrentHashMap<>();
 
-    EntityContext getEntityContext();
-
     @JsonIgnore
     long getEntityServiceHashCode();
 

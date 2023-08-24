@@ -88,9 +88,6 @@ public class CommonUtils {
 
     // map for store different statuses
     private static final @Getter Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
-    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static Path rootPath;
-
     private static final @Getter Path logsPath = getOrCreatePath("logs");
     private static final @Getter Path configPath = getOrCreatePath("conf");
     private static final @Getter Path filesPath = getOrCreatePath("asm_files");
@@ -102,6 +99,9 @@ public class CommonUtils {
     private static final @Getter Path imagePath = getOrCreatePath("media/image");
     private static final @Getter Path sshPath = getOrCreatePath("ssh");
     private static final @Getter Path tmpPath = getOrCreatePath("tmp");
+
+    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static Path rootPath;
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
