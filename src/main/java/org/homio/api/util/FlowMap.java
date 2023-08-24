@@ -5,8 +5,8 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class FlowMap {
-    @Getter
     private final Map<String, String> params = new HashMap<>();
 
     private FlowMap(String name, Object value, String name1, Object value1, String name2, Object value2, String name3,

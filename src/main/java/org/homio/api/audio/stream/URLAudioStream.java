@@ -47,7 +47,7 @@ public class URLAudioStream extends AudioStream {
         try {
             switch (extension) {
                 case M3U_EXTENSION:
-                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
+                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8)) {
                         while (true) {
                             String line = scanner.nextLine();
                             if (!line.isEmpty() && !line.startsWith("#")) {
@@ -60,7 +60,7 @@ public class URLAudioStream extends AudioStream {
                     }
                     break;
                 case PLS_EXTENSION:
-                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
+                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8)) {
                         while (true) {
                             String line = scanner.nextLine();
                             if (!line.isEmpty() && line.startsWith("File")) {

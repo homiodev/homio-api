@@ -369,8 +369,7 @@ public class AudioFormat {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        if (obj instanceof AudioFormat) {
-            AudioFormat format = (AudioFormat) obj;
+        if (obj instanceof AudioFormat format) {
             if (!(null == getCodec() ? null == format.getCodec() : getCodec().equals(format.getCodec()))) {
                 return false;
             }

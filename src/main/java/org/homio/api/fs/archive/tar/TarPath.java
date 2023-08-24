@@ -478,9 +478,6 @@ public class TarPath implements Path {
 
     // Remove DotSlash(./) and resolve DotDot (..) components
     private byte[] getResolved() {
-        if (path.length == 0) {
-            return path;
-        }
         for (byte c : path) {
             if (c == (byte) '.') {
                 return resolve0();
@@ -636,12 +633,10 @@ public class TarPath implements Path {
     }
 
     InputStream newInputStream(OpenOption... options) throws IOException {
-        if (options.length > 0) {
-            for (OpenOption opt : options) {
-                if (opt != READ) {
-                    throw new UnsupportedOperationException("'" + opt
-                            + "' not allowed");
-                }
+        for (OpenOption opt : options) {
+            if (opt != READ) {
+                throw new UnsupportedOperationException("'" + opt
+                    + "' not allowed");
             }
         }
         return tfs.newInputStream(getResolvedPath());

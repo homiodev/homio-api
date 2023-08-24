@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Getter
 @RequiredArgsConstructor
 public enum Status {
     ONLINE("#6E993D", "fas fa-check"),
@@ -27,7 +28,6 @@ public enum Status {
     OFFLINE("#969696", "fab fa-hashnode"),
     DISABLED("#9E9E9E", "fas fa-ban");
 
-    @Getter
     private final String color;
 
     @Getter

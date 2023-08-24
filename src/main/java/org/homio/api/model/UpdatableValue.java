@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.TypeDescriptor;
@@ -34,11 +35,11 @@ public class UpdatableValue<T> {
     protected T value;
     // when we create UpdatableValue which base on another UpdatableValue we must reflect base changes.
     List<Consumer<T>> reflectListeners = new ArrayList<>();
-    private String name;
+    @Getter private String name;
     private Function<String, T> stringConverter;
     private Function<T, T> extraFunc;
     private Set<Validator> validators = new HashSet<>();
-    private int updateCount;
+    @Getter private int updateCount;
 
     private UpdatableValue() {
     }
@@ -105,10 +106,6 @@ public class UpdatableValue<T> {
         return update(stringConverter.apply(updatedValue));
     }
 
-    public int getUpdateCount() {
-        return updateCount;
-    }
-
     public T update(T updatedValue) {
         T prevValue = this.value;
         if (!this.value.equals(updatedValue)) {
@@ -131,10 +128,6 @@ public class UpdatableValue<T> {
 
     public void addListener(Consumer<T> listener) {
         this.updateListeners.add(listener);
-    }
-
-    public String getName() {
-        return name;
     }
 
     public UpdatableValue<T> andExtra(Function<T, T> extraFunc) {

@@ -6,12 +6,12 @@ import lombok.Setter;
 
 import java.util.Objects;
 
+@Getter
 public class OnOffType implements State {
 
     public static final OnOffType ON = new OnOffType(true);
     public static final OnOffType OFF = new OnOffType(false);
 
-    @Getter
     private final boolean value;
 
     @Getter

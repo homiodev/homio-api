@@ -16,11 +16,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 @Component
 @RequiredArgsConstructor
 public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
-    @Getter
     private final EntityContext entityContext;
     private final List<ConsolePluginComplexLines.ComplexString> values = new ArrayList<>();
 

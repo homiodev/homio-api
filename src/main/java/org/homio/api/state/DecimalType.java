@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Getter
 @Log4j2
 @Accessors(chain = true)
 public class DecimalType implements State, Comparable<DecimalType> {
@@ -20,7 +21,6 @@ public class DecimalType implements State, Comparable<DecimalType> {
     public static final DecimalType ZERO = new DecimalType(0);
     public static final DecimalType HUNDRED = new DecimalType(100);
 
-    @Getter
     private final @NotNull BigDecimal value;
 
     @Getter

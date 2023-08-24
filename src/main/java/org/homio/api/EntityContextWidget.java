@@ -114,10 +114,10 @@ public interface EntityContextWidget {
         black, red, blue, green, yellow
     }
 
+    @Getter
     @RequiredArgsConstructor
     enum ValueCompare {
         gt(">"), lt("<"), eq("="), neq("!="), regexp("RegExp");
-        @Getter
         private final String op;
     }
 

@@ -7,10 +7,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+@Getter
 public class StringType implements State {
     public static StringType EMPTY = new StringType("");
 
-    @Getter
     private final @NotNull String value;
 
     @Getter

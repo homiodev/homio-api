@@ -13,11 +13,11 @@ import java.util.function.BiConsumer;
 
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
+@Getter
 @Log4j2
 @RequiredArgsConstructor
 public class JsonType implements State, Comparable<JsonType> {
 
-    @Getter
     private final JsonNode jsonNode;
 
     @SneakyThrows

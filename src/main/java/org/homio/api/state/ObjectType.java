@@ -6,9 +6,9 @@ import lombok.Setter;
 
 import java.util.Objects;
 
+@Getter
 public class ObjectType implements State {
 
-    @Getter
     private final Object value;
 
     @Getter
@@ -71,7 +71,7 @@ public class ObjectType implements State {
 
         ObjectType that = (ObjectType) o;
 
-        return value != null ? value.equals(that.value) : that.value == null;
+        return Objects.equals(value, that.value);
     }
 
     @Override

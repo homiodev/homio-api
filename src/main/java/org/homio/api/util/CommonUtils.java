@@ -34,7 +34,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,38 +81,27 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
 
-@SuppressWarnings("unused")
+@Getter
 @Log4j2
+@SuppressWarnings("unused")
 public class CommonUtils {
 
     // map for store different statuses
-    @Getter
-    private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
-    private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
+    private static final @Getter Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Path rootPath;
-    @Getter
-    private static final Path logsPath = getOrCreatePath("logs");
-    @Getter
-    private static final Path configPath = getOrCreatePath("conf");
-    @Getter
-    private static final Path filesPath = getOrCreatePath("asm_files");
-    @Getter
-    private static final Path installPath = getOrCreatePath("installs");
-    @Getter
-    private static final Path externalJarClassPath = getOrCreatePath("external_jars");
-    @Getter
-    private static final Path addonPath = getOrCreatePath("addons");
-    @Getter
-    private static final Path mediaPath = getOrCreatePath("media");
-    @Getter
-    private static final Path audioPath = getOrCreatePath("media/audio");
-    @Getter
-    private static final Path imagePath = getOrCreatePath("media/image");
-    @Getter
-    private static final Path sshPath = getOrCreatePath("ssh");
-    @Getter
-    private static final Path tmpPath = getOrCreatePath("tmp");
+
+    private static final @Getter Path logsPath = getOrCreatePath("logs");
+    private static final @Getter Path configPath = getOrCreatePath("conf");
+    private static final @Getter Path filesPath = getOrCreatePath("asm_files");
+    private static final @Getter Path installPath = getOrCreatePath("installs");
+    private static final @Getter Path externalJarClassPath = getOrCreatePath("external_jars");
+    private static final @Getter Path addonPath = getOrCreatePath("addons");
+    private static final @Getter Path mediaPath = getOrCreatePath("media");
+    private static final @Getter Path audioPath = getOrCreatePath("media/audio");
+    private static final @Getter Path imagePath = getOrCreatePath("media/image");
+    private static final @Getter Path sshPath = getOrCreatePath("ssh");
+    private static final @Getter Path tmpPath = getOrCreatePath("tmp");
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -142,7 +130,7 @@ public class CommonUtils {
 
     public static String getExtension(String fileName) {
         String extension = FilenameUtils.getExtension(fileName);
-        if (specialExtensions.contains(extension)) {
+        if (List.of("gz", "xz").contains(extension)) {
             if (fileName.endsWith(".tar." + extension)) {
                 return "tar." + extension;
             }

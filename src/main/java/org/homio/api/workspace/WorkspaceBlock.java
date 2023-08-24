@@ -378,8 +378,7 @@ public interface WorkspaceBlock {
         Object input = getInput(key, true);
         byte[] content = null;
         String name = null;
-        if (input instanceof String) {
-            String mediaURL = (String) input;
+        if (input instanceof String mediaURL) {
             if (mediaURL.startsWith("http")) {
                 // max 10mb
                 return new RawType(Curl.download(mediaURL, maxDownloadSize));

@@ -24,10 +24,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Interface for entities who have ability to convert text to sound
  */
+@Getter
 @Log4j2
 public abstract class TextToSpeechEntityService {
 
-    @Getter
     private final Path cacheFolder;
     private final Integer maxQuota;
     public long lastTimeCleanOldCache = 0;

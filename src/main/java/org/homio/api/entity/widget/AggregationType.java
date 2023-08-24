@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+@Getter
 @RequiredArgsConstructor
 public enum AggregationType {
     None(false),
@@ -21,7 +22,6 @@ public enum AggregationType {
     AverageNoZero(false),
     Median(false);
 
-    @Getter
     private final boolean requireSorting;
 
     /**

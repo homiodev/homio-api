@@ -15,10 +15,10 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Base64;
 
+@Getter
 @Accessors(chain = true)
 public class RawType implements State {
 
-    @Getter
     @Setter
     protected String name;
     protected byte[] bytes;

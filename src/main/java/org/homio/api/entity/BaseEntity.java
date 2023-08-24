@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+@Getter
 @Log4j2
 @MappedSuperclass
 public abstract class BaseEntity implements
@@ -35,7 +36,6 @@ public abstract class BaseEntity implements
         Comparable<BaseEntity> {
 
     @Id
-    @Getter
     @JsonIgnore // serialized by Bean2MixIn
     @Column(length = 128, nullable = false, unique = true)
     @GeneratedValue(generator = "id-generator")

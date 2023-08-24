@@ -30,6 +30,7 @@ import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Getter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#FFFFFF", overridePath = "devices")
@@ -39,7 +40,6 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     private static final String PREFIX = "dvc_";
 
     @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
-    @Getter
     private @Nullable String ieeeAddress;
 
     @Setter

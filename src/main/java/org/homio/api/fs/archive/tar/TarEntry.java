@@ -1,10 +1,11 @@
 package org.homio.api.fs.archive.tar;
 
 import java.util.Date;
+import lombok.Getter;
 
 public class TarEntry {
-    protected byte[] file;
-    protected TarHeader header;
+    @Getter protected byte[] file;
+    @Getter protected TarHeader header;
     protected boolean isDirectory;
 
     private TarEntry() {
@@ -32,15 +33,11 @@ public class TarEntry {
     }
 
     public boolean equals(TarEntry it) {
-        return header.name.toString().equals(it.header.name.toString());
+        return header.name.toString().contentEquals(it.header.name);
     }
 
     public boolean isDescendent(TarEntry desc) {
         return desc.header.name.toString().startsWith(header.name.toString());
-    }
-
-    public TarHeader getHeader() {
-        return header;
     }
 
     public String getName() {
@@ -104,10 +101,6 @@ public class TarEntry {
 
     public void setModTime(Date time) {
         header.modTime = time.getTime() / 1000;
-    }
-
-    public byte[] getFile() {
-        return file;
     }
 
     public long getSize() {
@@ -186,7 +179,7 @@ public class TarEntry {
         offset = TarHeader.getNameBytes(header.namePrefix, outbuf, offset,
                 TarHeader.USTAR_FILENAME_PREFIX);
 
-        for (; offset < outbuf.length; ) {
+        while (offset < outbuf.length) {
             outbuf[offset++] = 0;
         }
 
