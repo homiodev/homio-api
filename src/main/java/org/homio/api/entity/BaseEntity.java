@@ -1,7 +1,16 @@
 package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Version;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Set;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.NotImplementedException;
@@ -15,15 +24,9 @@ import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
-import org.homio.api.util.ApplicationContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-import org.json.JSONPropertyIgnore;
-
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
 
 @Log4j2
 @MappedSuperclass
@@ -40,6 +43,7 @@ public abstract class BaseEntity implements
     private String entityID;
 
     @Version
+    @JsonIgnore
     private Integer version;
 
     @Getter
@@ -166,12 +170,6 @@ public abstract class BaseEntity implements
     public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
     }
 
-    @JsonIgnore
-    @JSONPropertyIgnore
-    public @NotNull EntityContext getEntityContext() {
-        return ApplicationContextHolder.getBean(EntityContext.class);
-    }
-
     public @Nullable String getAddonID() {
         return AddonEntrypoint.getAddonID(getClass());
     }
@@ -205,13 +203,14 @@ public abstract class BaseEntity implements
         return updateTime;
     }
 
-    public int getEntityHashCode() {
-        int result = entityID != null ? entityID.hashCode() : 0;
+    @JsonIgnore
+    public long getEntityHashCode() {
+        long result = entityID != null ? entityID.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result + getChildEntityHashCode();
     }
 
-    protected abstract int getChildEntityHashCode();
+    protected abstract long getChildEntityHashCode();
 
     /**
      * Calls only in case if field return 'string' value that has link with attributes name="link"

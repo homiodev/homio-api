@@ -1,5 +1,29 @@
 package org.homio.api.fs.archive;
 
+import static org.apache.commons.compress.archivers.examples.Archiver.EMPTY_FileVisitOption;
+import static org.apache.commons.compress.utils.IOUtils.EMPTY_LINK_OPTIONS;
+import static org.apache.commons.io.FileUtils.ONE_MB_BI;
+import static org.homio.api.fs.archive.ArchiveUtil.fixPath;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -7,23 +31,11 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.io.IOUtils;
+import org.homio.api.exception.ServerException;
 import org.homio.api.util.CommonUtils;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import static org.apache.commons.compress.archivers.examples.Archiver.EMPTY_FileVisitOption;
-import static org.apache.commons.compress.utils.IOUtils.EMPTY_LINK_OPTIONS;
-import static org.apache.commons.io.FileUtils.ONE_MB_BI;
-import static org.homio.api.fs.archive.ArchiveUtil.fixPath;
 
 public class ApacheCompress {
 
@@ -64,24 +76,25 @@ public class ApacheCompress {
     }
 
     public static ArchiveInputStream createSeven7InputStream(Path path, char[] password) throws IOException {
-        SevenZFile sevenZFile = new SevenZFile(path.toFile(), password);
-        return new ArchiveInputStream() {
+        try (SevenZFile sevenZFile = new SevenZFile(path.toFile(), password)) {
+            return new ArchiveInputStream() {
 
-            @Override
-            public ArchiveEntry getNextEntry() throws IOException {
-                return sevenZFile.getNextEntry();
-            }
+                @Override
+                public ArchiveEntry getNextEntry() throws IOException {
+                    return sevenZFile.getNextEntry();
+                }
 
-            @Override
-            public int read(byte[] buf, int offset, int numToRead) throws IOException {
-                return sevenZFile.read(buf, offset, numToRead);
-            }
+                @Override
+                public int read(byte @NotNull [] buf, int offset, int numToRead) throws IOException {
+                    return sevenZFile.read(buf, offset, numToRead);
+                }
 
-            @Override
-            public void close() throws IOException {
-                sevenZFile.close();
-            }
-        };
+                @Override
+                public void close() throws IOException {
+                    sevenZFile.close();
+                }
+            };
+        }
     }
 
     @SneakyThrows
@@ -96,7 +109,6 @@ public class ApacheCompress {
                 new OpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.WRITE};
         ArchiveEntry entry;
         int nextStep = 1;
-        int readBytes = 0;
         while ((entry = stream.getNextEntry()) != null) {
             if (!stream.canReadEntryData(entry)) {
                 continue;
@@ -114,44 +126,39 @@ public class ApacheCompress {
 
                 if (Files.exists(entryPath)) {
                     switch (fileResolveHandler) {
-                        case skip:
+                        case skip -> {
                             continue;
-                        case replace: // already in OpenOptions
-                            break;
-                        case replaceNotMatch:
+                        }
+                        case replace -> {
+                        } // already in OpenOptions
+                        case replaceNotMatch -> {
                             Path tmpPath = CommonUtils.getTmpPath().resolve(entry.getName());
                             Files.copy(stream, tmpPath, StandardCopyOption.REPLACE_EXISTING);
                             if (IOUtils.contentEquals(Files.newInputStream(tmpPath), Files.newInputStream(entryPath))) {
                                 Files.delete(tmpPath);
                                 continue;
                             }
-                            break;
-                        case error:
-                            throw new FileAlreadyExistsException("Unarchive file '" + entry + "' already exists");
+                        }
+                        case error -> throw new FileAlreadyExistsException("Unarchive file '" + entry + "' already exists");
                     }
                 }
 
                 paths.add(entryPath);
 
+                int readLength;
                 try (OutputStream out = Files.newOutputStream(entryPath, openOptions)) {
-                    int bytesToRead = (int) entry.getSize();
-                    if (bytesToRead == -1) {
-                        IOUtils.copy(stream, out);
-                    }
-                    while (bytesToRead > 0) {
-                        long bytes = Math.min(bytesToRead, ONE_MB_BI.intValue());
-                        byte[] content = bytes == ONE_MB_BI.intValue() ? oneMBBuff : new byte[(int) bytes];
-                        stream.read(content);
-                        out.write(content);
-                        bytesToRead -= bytes;
-                        readBytes += bytes;
-
-                        if (readBytes / ONE_MB_BI.doubleValue() > nextStep) {
-                            nextStep++;
-                            if (progressBar != null) {
-                                progressBar.progress((readBytes / fileSize * 100) * 0.99, // max 99%
-                                        "Extract " + readBytes / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
+                    while ((readLength = stream.read(oneMBBuff)) != -1) {
+                        out.write(oneMBBuff, 0, readLength);
+                        if (progressBar != null) {
+                            if (readLength / ONE_MB_BI.doubleValue() > nextStep) {
+                                nextStep++;
+                                progressBar.progress((readLength / fileSize * 100) * 0.99, // max 99%
+                                    "Extract " + readLength / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
                             }
+                            if (progressBar.isCancelled()) {
+                                throw new ServerException("Unarchive task cancelled");
+                            }
+
                         }
                     }
                 }
@@ -164,7 +171,7 @@ public class ApacheCompress {
     @SneakyThrows
     public static InputStream downloadEntry(@NotNull ArchiveInputStream stream, @NotNull String entryName) {
         ArchiveEntry entry;
-        try {
+        try (stream) {
             while ((entry = stream.getNextEntry()) != null) {
                 if (!stream.canReadEntryData(entry)) {
                     continue;
@@ -175,8 +182,6 @@ public class ApacheCompress {
                     return new ByteArrayInputStream(out.toByteArray());
                 }
             }
-        } finally {
-            stream.close();
         }
         return null;
     }

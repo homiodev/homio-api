@@ -1,6 +1,11 @@
 package org.homio.api.entity.device;
 
+import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
@@ -19,18 +24,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
-
 public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDynamicContextMenuActions {
 
     @JsonIgnore
     @NotNull String getDeviceFullName();
 
-    @UIFieldGroup("GENERAL")
+    @UIFieldGroup(value = "GENERAL", order = 10)
     default @NotNull Date getUpdateTime() {
         return DeviceEndpoint.getLastUpdated(getDeviceEndpoints().values());
     }

@@ -1,20 +1,19 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.putOpt;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fazecast.jSerialComm.SerialPort;
+import java.nio.file.Paths;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel.KeyValueEnum;
-import org.homio.api.util.CommonUtils;
+import org.homio.api.util.HardwareUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import java.nio.file.Paths;
-
-import static org.homio.api.util.JsonUtils.putOpt;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPlugin<T> {
@@ -120,7 +119,7 @@ public interface SettingPlugin<T> {
             return (T) Enum.valueOf((Class) getType(), value);
         }
         if (SerialPort.class.equals(getType())) {
-            return (T) CommonUtils.getSerialPort(value);
+            return (T) HardwareUtils.getSerialPort(value);
         }
         return (T) value;
     }

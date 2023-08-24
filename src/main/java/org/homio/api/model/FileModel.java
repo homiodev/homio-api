@@ -1,21 +1,24 @@
 package org.homio.api.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Objects;
+import java.util.function.Consumer;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Accessors(chain = true)
+@RequiredArgsConstructor
 public class FileModel implements Comparable<FileModel> {
-    private String name;
-    private String content;
-    private FileContentType contentType;
-    private boolean readOnly; // for now only readOnly supports because don't where to pass save handler yet
+
+    private @NotNull final String name;
+    private @NotNull final String content;
+    private @NotNull final FileContentType contentType;
+    private @Nullable @Setter @JsonIgnore Consumer<String> saveHandler;
 
     @Override
     public int compareTo(FileModel o) {
@@ -33,5 +36,9 @@ public class FileModel implements Comparable<FileModel> {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    public boolean isReadOnly() {
+        return saveHandler == null;
     }
 }

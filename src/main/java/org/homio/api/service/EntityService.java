@@ -2,6 +2,12 @@ package org.homio.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingRunnable;
+import java.time.Duration;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.homio.api.EntityContext;
@@ -11,13 +17,6 @@ import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Configure service for entities. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
@@ -30,6 +29,9 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     Map<String, Object> entityToService = new ConcurrentHashMap<>();
 
     EntityContext getEntityContext();
+
+    @JsonIgnore
+    long getEntityServiceHashCode();
 
     /**
      * @return Get service or throw error if not found
@@ -189,7 +191,9 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
         protected abstract void initialize();
 
-        protected abstract long getEntityHashCode(E entity);
+        protected long getEntityHashCode(E entity) {
+            return entity.getEntityServiceHashCode();
+        }
 
         protected void destroy() throws Exception {
 

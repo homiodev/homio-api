@@ -1,5 +1,7 @@
 package org.homio.api.ui.field.action.v1;
 
+import java.util.Collection;
+import java.util.function.Consumer;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.action.UIActionHandler;
@@ -10,12 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.Collection;
-import java.util.function.Consumer;
-
 public interface UIInputBuilder extends UILayoutBuilder {
 
-    void from(@NotNull UIInputBuilder source);
+    void from(@Nullable UIInputBuilder source);
 
     @Unmodifiable
     @NotNull Collection<UIInputEntity> buildAll();

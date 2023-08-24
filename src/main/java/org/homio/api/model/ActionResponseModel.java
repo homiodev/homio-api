@@ -1,6 +1,8 @@
 package org.homio.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -9,9 +11,6 @@ import org.homio.api.util.CommonUtils;
 import org.homio.api.util.Lang;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.Collections;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -46,7 +45,7 @@ public class ActionResponseModel {
         } else {
             content = new ObjectMapper().writeValueAsString(value);
         }
-        return showFiles(Collections.singleton(new FileModel(title, content, FileContentType.json, true)));
+        return showFiles(Collections.singleton(new FileModel(title, content, FileContentType.json)));
     }
 
     public static ActionResponseModel showFiles(Set<FileModel> fileModels) {

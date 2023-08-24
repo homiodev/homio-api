@@ -22,7 +22,9 @@ public interface HasEntityLog extends HasJsonData {
             addTopic(topicClass, null);
         }
 
-        void addTopic(@NotNull Class<?> topicClass, String filterByField);
+        default void addTopic(@NotNull Class<?> topicClass, String filterByField) {
+            addTopic(topicClass.getName(), filterByField);
+        }
 
         default void addTopic(@NotNull String topic) {
             addTopic(topic, null);
@@ -33,6 +35,14 @@ public interface HasEntityLog extends HasJsonData {
         default void addTopicFilterByEntityID(@NotNull String topic) {
             addTopic(topic, "entityID");
         }
+
+        default void addTopicFilterByEntityID(@NotNull Class<?> entityClass) {
+            addTopicFilterByEntityID(entityClass.getName());
+        }
+
+        // log also to separate file named as entityID.
+        // file will be removed if entity not exists anymore
+        void logToSeparateFile(boolean value);
     }
 }
 

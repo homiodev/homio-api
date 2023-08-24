@@ -1,16 +1,15 @@
 package org.homio.api;
 
-import org.apache.logging.log4j.Logger;
-import org.homio.api.state.DecimalType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.awt.*;
+import java.awt.Dimension;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.apache.logging.log4j.Logger;
+import org.homio.api.state.DecimalType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface EntityContextMedia {
 
@@ -46,7 +45,7 @@ public interface EntityContextMedia {
         RTSP_ALARMS,
         MJPEG,
         SNAPSHOT,
-        GENERAL
+        MUXER
     }
 
     interface VideoInputDevice {

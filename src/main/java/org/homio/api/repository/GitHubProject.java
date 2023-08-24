@@ -1,10 +1,31 @@
 package org.homio.api.repository;
 
+import static java.lang.String.format;
+import static org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler.replace;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.YAML_OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
-import com.pivovarit.function.ThrowingSupplier;
+import java.io.File;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -15,34 +36,20 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.homio.api.EntityContext;
 import org.homio.api.cache.CachedValue;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.ArchiveFormat;
-import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.util.CommonUtils;
+import org.homio.api.util.HardwareUtils;
+import org.homio.api.util.HardwareUtils.Architecture;
 import org.homio.hquery.Curl;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-
-import java.io.File;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-import static org.homio.api.util.JsonUtils.YAML_OBJECT_MAPPER;
 
 @SuppressWarnings("unused")
 @Log4j2
@@ -89,13 +96,13 @@ public class GitHubProject {
     private @Nullable String installedVersion;
     private boolean updating;
     @Setter
-    private @Nullable ThrowingSupplier<String, Exception> installedVersionResolver;
+    private @Nullable ThrowingBiFunction<EntityContext, GitHubProject, String, Exception> installedVersionResolver;
 
     private GitHubProject(@NotNull String project, @NotNull String repo, @Nullable Path localProjectPath) {
         this.project = project;
         this.repo = repo;
         this.api = format("https://api.github.com/repos/%s/%s/", project, repo);
-        this.localProjectPath = localProjectPath == null ? CommonUtils.getTmpPath().resolve(project) : localProjectPath;
+        this.localProjectPath = localProjectPath == null ? CommonUtils.getInstallPath().resolve(repo) : localProjectPath;
     }
 
     /**
@@ -130,12 +137,24 @@ public class GitHubProject {
         return versions;
     }
 
+    public void installLatestRelease(EntityContext entityContext) {
+        if (!Files.isDirectory(localProjectPath)) {
+            entityContext.event().runOnceOnInternetUp("download-" + repo, () -> {
+                String version = getLastReleaseVersion();
+                if (version != null) {
+                    downloadReleaseAndInstall(entityContext, version, (progress, message, error) ->
+                        log.info(message));
+                }
+            });
+        }
+    }
+
     @SneakyThrows
-    public @Nullable String getInstalledVersion() {
+    public @Nullable String getInstalledVersion(EntityContext entityContext) {
         if (installedVersion == null) {
             try {
                 if (installedVersionResolver != null) {
-                    installedVersion = installedVersionResolver.get();
+                    installedVersion = installedVersionResolver.apply(entityContext, this);
                 } else {
                     Path versionPath = localProjectPath.resolve("package.json");
                     if (Files.exists(versionPath)) {
@@ -235,7 +254,7 @@ public class GitHubProject {
         Path tmpPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
         Curl.download(api + "tarball/" + version, tmpPath);
         ArchiveUtil.unzip(tmpPath, CommonUtils.getTmpPath(), null, false, null,
-                ArchiveUtil.UnzipFileIssueHandler.replace);
+            replace);
         Files.delete(tmpPath);
         Files.move(CommonUtils.getTmpPath().resolve(name + "-" + version),
                 targetPath, StandardCopyOption.REPLACE_EXISTING);
@@ -243,9 +262,26 @@ public class GitHubProject {
 
     @SneakyThrows
     public void downloadReleaseFile(@NotNull String version, @NotNull String asset,
-                                    @NotNull Path targetPath, @NotNull ProgressBar progressBar) {
+        @NotNull Path archive, @NotNull ProgressBar progressBar) {
         String downloadUrl = format("https://github.com/%s/%s/releases/download/%s/%s", project, repo, version, asset);
-        Curl.downloadWithProgress(downloadUrl, targetPath, progressBar);
+        Curl.downloadWithProgress(downloadUrl, archive, progressBar);
+    }
+
+    @SneakyThrows
+    public void downloadReleaseAndInstall(
+        @NotNull EntityContext entityContext,
+        @NotNull String version,
+        @NotNull ProgressBar progressBar) {
+        List<JsonNode> releases = releasesCache.getValue(this);
+        JsonNode release = releases.stream().filter(r -> r.path("tag_name").asText("").equals(version))
+                                   .findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find release: " + version));
+        JsonNode asset = findAssertByArchitecture(entityContext, release);
+        String downloadUrl = asset.get("browser_download_url").asText();
+        Path archive = CommonUtils.getTmpPath()
+                                  .resolve(project)
+                                  .resolve(project + "." + CommonUtils.getExtension(downloadUrl));
+        Curl.downloadWithProgress(downloadUrl, archive, progressBar);
+        CommonUtils.unzipAndMove(progressBar, archive, localProjectPath);
     }
 
     // Helper method to execute some process i.e. download from GitHub, backup, etc...
@@ -289,13 +325,27 @@ public class GitHubProject {
         }
     }
 
+    private static @NotNull JsonNode findAssertByArchitecture(@NotNull EntityContext entityContext, JsonNode release) {
+        Architecture architecture = HardwareUtils.getArchitecture(entityContext);
+        List<String> assetNames = new ArrayList<>();
+        for (JsonNode asset : release.withArray("assets")) {
+            String assetName = asset.get("name").asText();
+            if (architecture.matchName.test(assetName)) {
+                return asset;
+            }
+            assetNames.add(assetName);
+        }
+        throw new IllegalStateException("Unable to find release asset for current architecture: " + architecture.name()
+            + ". Available assets: " + String.join("\n", assetNames));
+    }
+
     @Getter
     @RequiredArgsConstructor
     public class ProjectUpdate {
 
         private final @NotNull String name;
         private final @NotNull ProgressBar progressBar;
-        private final @NotNull GitHubProject project;
+        private final @NotNull GitHubProject gitHubProject;
         private @Nullable Path backup;
 
         public boolean isHasBackup() {
@@ -314,7 +364,7 @@ public class GitHubProject {
 
         @SneakyThrows
         public @NotNull ProjectUpdate downloadReleaseFile(@NotNull String version, @NotNull String asset, @NotNull Path targetPath) {
-            project.downloadReleaseFile(version, asset, targetPath, progressBar);
+            gitHubProject.downloadReleaseFile(version, asset, targetPath, progressBar);
             return this;
         }
 
@@ -332,20 +382,10 @@ public class GitHubProject {
         @SneakyThrows
         public @NotNull ProjectUpdate downloadSource(@NotNull String version) {
             progressBar.progress(5, format("Download %s/%s sources of V%s", repo, project, version));
-            Path targetPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
-            Curl.downloadWithProgress(api + "tarball/" + version, targetPath, progressBar);
-            progressBar.progress(10, format("Unzip %s sources to %s", targetPath, CommonUtils.getTmpPath()));
-            List<Path> files = ArchiveUtil.unzip(targetPath, CommonUtils.getTmpPath(), null, false, progressBar,
-                    UnzipFileIssueHandler.replace);
-            Files.delete(targetPath);
-            if (!files.isEmpty()) {
-                Path unzipFolder = CommonUtils.getTmpPath().relativize(files.iterator().next());
-                while (unzipFolder.getParent() != null) {
-                    unzipFolder = unzipFolder.getParent();
-                }
-                CommonUtils.deletePath(localProjectPath);
-                Files.move(CommonUtils.getTmpPath().resolve(unzipFolder), localProjectPath);
-            }
+            Path workingPath = CommonUtils.getTmpPath().resolve(project);
+            Path archive = workingPath.resolve(name + ".tar.gz");
+            Curl.downloadWithProgress(api + "tarball/" + version, archive, progressBar);
+            CommonUtils.unzipAndMove(progressBar, archive, localProjectPath);
             return this;
         }
 
@@ -372,7 +412,7 @@ public class GitHubProject {
                 if (Files.exists(localProjectPath)) {
                     CommonUtils.deletePath(localProjectPath);
                 }
-                ArchiveUtil.unzip(backup, localProjectPath, null, false, progressBar, UnzipFileIssueHandler.replace);
+                ArchiveUtil.unzip(backup, localProjectPath, null, false, progressBar, replace);
                 backup = null;
             }
         }

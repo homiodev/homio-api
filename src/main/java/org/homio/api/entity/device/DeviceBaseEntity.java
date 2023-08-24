@@ -1,7 +1,15 @@
 package org.homio.api.entity.device;
 
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.homio.api.ui.field.UIFieldType.HTML;
+import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,10 +30,6 @@ import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static org.homio.api.ui.field.UIFieldType.HTML;
-import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
-
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#FFFFFF", overridePath = "devices")
@@ -42,7 +46,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @Getter
     @Column(length = 64)
     @UIField(order = 30, type = UIFieldType.SelectBox, color = "#538744")
-    @UIFieldGroup("GENERAL")
+    @UIFieldGroup(value = "GENERAL", order = 10)
     @UIFieldSelection(SelectPlaceOptionLoader.class)
     @UIFieldSelectValueOnEmpty(label = "PLACEHOLDER.SELECT_PLACE")
     @UIFieldShowOnCondition("return !context.get('compactMode')")
@@ -58,6 +62,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @UIField(order = 1, hideOnEmpty = true, hideInEdit = true, fullWidth = true, color = "#89AA50", type = HTML)
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @UIFieldColorBgRef(value = "statusColor", animate = true)
+    @UIFieldGroup(value = "TOP", order = 1)
     public String getDescription() {
         if (isCompactMode()) {
             return null;
@@ -73,6 +78,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @UIField(order = 1, fullWidth = true, color = "#89AA50", type = HTML, style = "height: 32px;")
     @UIFieldShowOnCondition("return context.get('compactMode')")
     @UIFieldColorBgRef(value = "statusColor", animate = true)
+    @UIFieldGroup(value = "TOP", order = 1)
     public String getCompactDescription() {
         if (!isCompactMode()) {
             return null;
@@ -158,8 +164,8 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     protected abstract @NotNull String getDevicePrefix();
 
     @Override
-    protected int getChildEntityHashCode() {
-        int result = ieeeAddress != null ? ieeeAddress.hashCode() : 0;
+    protected long getChildEntityHashCode() {
+        long result = ieeeAddress != null ? ieeeAddress.hashCode() : 0;
         result = 31 * result + (place != null ? place.hashCode() : 0);
         result = 31 * result + jsonData.hashCode();
         return result;

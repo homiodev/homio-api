@@ -1,9 +1,63 @@
 package org.homio.api.util;
 
-import com.fazecast.jSerialComm.SerialPort;
+import static java.lang.String.format;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler.replace;
+
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
-import com.pivovarit.function.ThrowingFunction;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -11,17 +65,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.homio.api.EntityContext;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.hquery.Curl;
 import org.homio.hquery.ProgressBar;
-import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.boot.system.ApplicationHome;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,33 +82,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.net.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.nio.file.StandardOpenOption.*;
-
 @SuppressWarnings("unused")
 @Log4j2
 public class CommonUtils {
@@ -67,7 +90,6 @@ public class CommonUtils {
     @Getter
     private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
-    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Path rootPath;
     @Getter
@@ -100,23 +122,21 @@ public class CommonUtils {
     /**
      * Download archive file from url, extract, delete archive
      *
-     * @param url            - url of archived source
-     * @param targetFileName - target file name
-     * @param progressBar    - progress bar to print progress
+     * @param url             - url of archived source
+     * @param archiveFileName - archive file name
+     * @param progressBar     - progress bar to print progress
      * @return unarchived downloaded folder
      */
     @SneakyThrows
-    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String targetFileName,
-                                                         @NotNull ProgressBar progressBar) {
-        progressBar.progress(0, format("Downloading '%s' from url '%s'", targetFileName, url));
+    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String archiveFileName,
+        @NotNull ProgressBar progressBar) {
+        progressBar.progress(0, format("Downloading '%s' from url '%s'", archiveFileName, url));
         Path targetFolder = CommonUtils.getInstallPath();
-        Path archiveFile = targetFolder.resolve(targetFileName);
-        if (!Files.exists(archiveFile)) {
-            Curl.downloadWithProgress(url, archiveFile, progressBar);
-        }
-        progressBar.progress(90, format("Extracting '%s' to path '%s'", archiveFile, targetFolder));
-        List<Path> files = ArchiveUtil.unzip(archiveFile, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
-        Files.deleteIfExists(archiveFile);
+        Path archivePath = CommonUtils.getTmpPath().resolve(archiveFileName);
+        Curl.downloadWithProgress(url, archivePath, progressBar);
+        progressBar.progress(90, format("Extracting '%s' to path '%s'", archivePath, targetFolder));
+        List<Path> files = ArchiveUtil.unzip(archivePath, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
+        Files.delete(archivePath);
         return files;
     }
 
@@ -278,15 +298,6 @@ public class CommonUtils {
         throw new IllegalArgumentException("Class " + clazz.getSimpleName() + " has to have empty constructor");
     }
 
-    public static String ping(String host, int port) throws ConnectException {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("google.com", port), 5000);
-            return socket.getLocalAddress().getHostAddress();
-        } catch (Exception ignore) {
-        }
-        throw new ConnectException("Host %s:%s not reachable".formatted(host, port));
-    }
-
     @SneakyThrows
     public static <T> Constructor<T> findObjectConstructor(Class<T> clazz, Class<?>... parameterTypes) {
         if (parameterTypes.length > 0) {
@@ -335,6 +346,31 @@ public class CommonUtils {
         return properties;
     }
 
+    public static void unzipAndMove(@NotNull ProgressBar progressBar, Path archive, Path targetPath) throws IOException {
+        progressBar.progress(70, format("Unzip %s sources", archive));
+        Path workingPath = archive.getParent();
+        List<Path> files = ArchiveUtil.unzip(archive, workingPath, null, false, progressBar, replace);
+        if (!files.isEmpty()) {
+            /*Path unzipFolder = CommonUtils.getTmpPath().relativize(files.iterator().next());
+            while (unzipFolder.getParent() != null) {
+                unzipFolder = unzipFolder.getParent();
+            }*/
+            Files.delete(archive);
+            CommonUtils.deletePath(targetPath);
+            File srcDir = workingPath.toFile();
+            // we need copy only desired files if we unzip many files to single folder
+            if (files.size() > 1) {
+                File[] listFiles = Objects.requireNonNull(srcDir.listFiles());
+                if (listFiles.length == 1) {
+                    srcDir = listFiles[0];
+                }
+            }
+            // Path unzipPath = CommonUtils.getTmpPath().resolve(unzipFolder);
+            FileUtils.copyDirectory(srcDir, targetPath.toFile());
+        }
+        FileUtils.deleteDirectory(workingPath.toFile());
+    }
+
     public static boolean deletePath(Path path) {
         try {
             if (Files.exists(path)) {
@@ -352,17 +388,17 @@ public class CommonUtils {
     }
 
     public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-                                BiFunction<Path, TreeNode, Path> pathResolver) {
+        BiFunction<Path, TreeNode, Path> pathResolver) {
         addFiles(tmpPath, files, pathResolver,
-                (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
-                (treeNode, path) -> Files.createDirectories(path));
+            (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
+            (treeNode, path) -> Files.createDirectories(path));
     }
 
     @SneakyThrows
     public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-                                BiFunction<Path, TreeNode, Path> pathResolver,
-                                ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
-                                ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
+        BiFunction<Path, TreeNode, Path> pathResolver,
+        ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
+        ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
         if (files != null) {
             for (TreeNode treeNode : files) {
                 Path filePath = pathResolver.apply(tmpPath, treeNode);
@@ -371,22 +407,22 @@ public class CommonUtils {
                 } else {
                     folderWriteResolver.accept(treeNode, filePath);
                     addFiles(filePath, treeNode.getChildren(true), pathResolver, fileWriteResolver,
-                            folderWriteResolver);
+                        folderWriteResolver);
                 }
             }
         }
     }
 
     public static ResponseEntity<InputStreamResource> inputStreamToResource(
-            @NotNull InputStream stream,
-            @NotNull MediaType contentType,
-            @Nullable HttpHeaders headers) {
+        @NotNull InputStream stream,
+        @NotNull MediaType contentType,
+        @Nullable HttpHeaders headers) {
         try {
             return ResponseEntity.ok()
-                    .contentLength(stream.available())
-                    .contentType(contentType)
-                    .headers(headers)
-                    .body(new InputStreamResource(stream));
+                                 .contentLength(stream.available())
+                                 .contentType(contentType)
+                                 .headers(headers)
+                                 .body(new InputStreamResource(stream));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -453,30 +489,13 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static @NotNull Path getHomioPropertiesLocation() {
-        Path propertiesFile = (SystemUtils.IS_OS_WINDOWS ? SystemUtils.getUserHome().toPath().resolve("homio") :
-                createDirectoriesIfNotExists(Paths.get("/opt/homio"))).resolve("homio.properties");
-        if (!Files.exists(propertiesFile)) {
-            ApplicationHome applicationHome = new ApplicationHome();
-            Path jarLocation = applicationHome.getDir().toPath();
-            return jarLocation.resolve("homio.properties");
-        }
-        return propertiesFile;
-    }
-
-    @SneakyThrows
     public static Path getRootPath() {
         if (rootPath == null) {
-            Path propertiesLocation = getHomioPropertiesLocation();
-            Properties homioProperties = new Properties();
-            try {
-                homioProperties.load(Files.newInputStream(propertiesLocation));
-                rootPath = Paths.get(homioProperties.getProperty("rootPath"));
-                Files.createDirectories(rootPath);
-            } catch (Exception ignore) {
-                rootPath = propertiesLocation.getParent();
-                homioProperties.setProperty("rootPath", rootPath.toString());
-                homioProperties.store(Files.newOutputStream(propertiesLocation), null);
+            String sysRootPath = System.getProperty("rootPath");
+            if (StringUtils.isEmpty(sysRootPath)) {
+                throw new IllegalAccessException("System property 'rootPath' must be specified");
+            } else {
+                rootPath = Paths.get(sysRootPath);
             }
         }
         return rootPath;
@@ -486,41 +505,9 @@ public class CommonUtils {
         return createDirectoriesIfNotExists(getRootPath().resolve(path));
     }
 
-    public static SerialPort getSerialPort(String value) {
-        return StringUtils.isEmpty(value) ? null :
-                Stream.of(SerialPort.getCommPorts())
-                        .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
-    }
-
     public static String splitNameToReadableFormat(@NotNull String name) {
         String[] items = name.split("_");
         return StringUtils.capitalize(String.join(" ", items));
-    }
-
-    // Simple utility for scan for ip range
-    public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
-                                     ThrowingFunction<String, Boolean, Exception> testDevice,
-                                     Consumer<String> createDeviceHandler) {
-        Consumer<String> deviceHandler = (ip) -> {
-            try {
-                if (testDevice.apply("127.0.0.1")) {
-                    List<String> messages = new ArrayList<>();
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", deviceName));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
-                    entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
-                            Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
-                                    createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
-                }
-            } catch (Exception ignore) {
-            }
-        };
-
-        NetworkHardwareRepository networkHardwareRepository = entityContext.getBean(NetworkHardwareRepository.class);
-        String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
-        deviceHandler.accept("127.0.0.1");
-        networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log::info, Collections.singleton(devicePort), 500,
-                (url, port) -> deviceHandler.accept(url));
     }
 
     public static class TemplateBuilder {

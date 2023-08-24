@@ -1,5 +1,7 @@
 package org.homio.api.console;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +14,6 @@ import org.homio.api.model.FileModel;
 import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 
@@ -62,7 +62,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
             return this.glyphClicked(metadata.getString("glyph"));
         }
         if (StringUtils.isNotEmpty(entityID) && metadata.has("content")) {
-            return save(new FileModel(entityID, metadata.getString("content"), null, false));
+            return save(new FileModel(entityID, metadata.getString("content"), FileContentType.plaintext));
         }
         return null;
     }
