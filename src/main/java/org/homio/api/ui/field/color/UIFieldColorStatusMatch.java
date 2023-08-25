@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorStatusMatch {
+
     // Status.ONLINE
     String online() default "#1F8D2D";
 

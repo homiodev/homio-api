@@ -33,8 +33,8 @@ import org.json.JSONObject;
 @Log4j2
 @MappedSuperclass
 public abstract class BaseEntity implements
-        BaseEntityIdentifier,
-        Comparable<BaseEntity> {
+    BaseEntityIdentifier,
+    Comparable<BaseEntity> {
 
     @JsonIgnore
     @Transient
@@ -120,39 +120,6 @@ public abstract class BaseEntity implements
         return false;
     }
 
-    @PrePersist
-    private void prePersist() {
-        if (this.creationTime == null) {
-            this.creationTime = new Date();
-        }
-        this.updateTime = new Date();
-        if (StringUtils.isEmpty(getName())) {
-            setName(refreshName());
-        }
-        this.beforePersist();
-        this.validate();
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        this.updateTime = new Date();
-        this.beforeUpdate();
-        this.validate();
-    }
-
-    // fires before persist/update
-    protected void validate() {
-
-    }
-
-    protected void beforePersist() {
-
-    }
-
-    protected void beforeUpdate() {
-
-    }
-
     public void beforeDelete() {
 
     }
@@ -215,24 +182,57 @@ public abstract class BaseEntity implements
         return result + getChildEntityHashCode();
     }
 
-    protected abstract long getChildEntityHashCode();
-
     /**
      * Calls only in case if field return 'string' value that has link with attributes name="link"
      *
-     * @param field         target field
-     * @param metadata      has all attached values 'data-xxx="value"'
+     * @param field    target field
+     * @param metadata has all attached values 'data-xxx="value"'
      * @return response
      */
     public @Nullable ActionResponseModel handleTextFieldAction(
-            @NotNull String field,
-            @NotNull JSONObject metadata) {
+        @NotNull String field,
+        @NotNull JSONObject metadata) {
         throw new NotImplementedException("Method 'handleTextFieldAction' must be implemented in class: " + getClass().getSimpleName()
-                + " if calls by UI. Field: " + field + ". Meta: " + metadata);
+            + " if calls by UI. Field: " + field + ". Meta: " + metadata);
     }
 
     @Override
     public void afterFetch(@NotNull EntityContext entityContext) {
         this.entityContext = entityContext;
+    }
+
+    // fires before persist/update
+    protected void validate() {
+
+    }
+
+    protected void beforePersist() {
+
+    }
+
+    protected void beforeUpdate() {
+
+    }
+
+    protected abstract long getChildEntityHashCode();
+
+    @PrePersist
+    private void prePersist() {
+        if (this.creationTime == null) {
+            this.creationTime = new Date();
+        }
+        this.updateTime = new Date();
+        if (StringUtils.isEmpty(getName())) {
+            setName(refreshName());
+        }
+        this.beforePersist();
+        this.validate();
+    }
+
+    @PreUpdate
+    private void preUpdate() {
+        this.updateTime = new Date();
+        this.beforeUpdate();
+        this.validate();
     }
 }

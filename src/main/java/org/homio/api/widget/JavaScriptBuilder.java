@@ -1,11 +1,10 @@
 package org.homio.api.widget;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import lombok.SneakyThrows;
 import org.homio.api.EntityContext;
 import org.json.JSONObject;
-
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public interface JavaScriptBuilder {
 
@@ -93,16 +92,19 @@ public interface JavaScriptBuilder {
     }
 
     interface ProxyEntityContextValue {
+
         void apply(EntityContext entityContext);
     }
 
     interface JSONParameterContext {
+
         JSONParameter obj(String name);
 
         JSONParameter array(String name);
     }
 
     interface JSONParameter {
+
         JSONParameter obj(String key);
 
         JSONParameter array(String key);
@@ -167,6 +169,7 @@ public interface JavaScriptBuilder {
     }
 
     interface Builder {
+
         String build();
     }
 }

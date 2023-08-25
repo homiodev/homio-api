@@ -46,7 +46,7 @@ public class ApacheCompress {
             }
             if (Files.isDirectory(source)) {
                 Files.walkFileTree(source, EMPTY_FileVisitOption, Integer.MAX_VALUE,
-                        new ArchiverFileVisitor(out, source.getParent()));
+                    new ArchiverFileVisitor(out, source.getParent()));
             } else {
                 writeZipEntry(source, true, source.getParent(), out);
             }
@@ -55,22 +55,9 @@ public class ApacheCompress {
         out.close();
     }
 
-    private static void writeZipEntry(Path path, boolean isFile, Path directory, ArchiveOutputStream target) throws IOException {
-        String name = directory.relativize(path).toString().replace('\\', '/');
-        if (!name.isEmpty()) {
-            ArchiveEntry archiveEntry =
-                    target.createArchiveEntry(path, isFile || name.endsWith("/") ? name : name + "/", EMPTY_LINK_OPTIONS);
-            target.putArchiveEntry(archiveEntry);
-            if (isFile) {
-                Files.copy(path, target);
-            }
-            target.closeArchiveEntry();
-        }
-    }
-
     public static List<Path> unzipSeven7Archive(Path path, Path destination, char[] password,
-                                                ProgressBar progressBar,
-                                                ArchiveUtil.UnzipFileIssueHandler handler, double fileSize) throws IOException {
+        ProgressBar progressBar,
+        ArchiveUtil.UnzipFileIssueHandler handler, double fileSize) throws IOException {
         ArchiveInputStream stream = createSeven7InputStream(path, password);
         return ApacheCompress.unzipCompress(stream, destination, handler, fileSize, progressBar);
     }
@@ -99,14 +86,14 @@ public class ApacheCompress {
 
     @SneakyThrows
     public static List<Path> unzipCompress(@NotNull ArchiveInputStream stream, @NotNull Path destination,
-                                           @NotNull ArchiveUtil.UnzipFileIssueHandler fileResolveHandler,
-                                           double fileSize, @Nullable ProgressBar progressBar) {
+        @NotNull ArchiveUtil.UnzipFileIssueHandler fileResolveHandler,
+        double fileSize, @Nullable ProgressBar progressBar) {
         List<Path> paths = new ArrayList<>();
         int maxMb = (int) (fileSize / ONE_MB_BI.intValue());
         byte[] oneMBBuff = new byte[ONE_MB_BI.intValue()];
         OpenOption[] openOptions = fileResolveHandler == ArchiveUtil.UnzipFileIssueHandler.replace ?
-                new OpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING} :
-                new OpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.WRITE};
+            new OpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING} :
+            new OpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.WRITE};
         ArchiveEntry entry;
         int nextStep = 1;
         while ((entry = stream.getNextEntry()) != null) {
@@ -188,10 +175,10 @@ public class ApacheCompress {
 
     @SneakyThrows
     public static void downloadEntries(
-            @NotNull ArchiveInputStream stream,
-            @NotNull Path targetFolder,
-            @NotNull Set<String> entries,
-            boolean isSkipExisted) {
+        @NotNull ArchiveInputStream stream,
+        @NotNull Path targetFolder,
+        @NotNull Set<String> entries,
+        boolean isSkipExisted) {
         ArchiveEntry entry;
         entries = fixPath(entries);
         Files.createDirectories(targetFolder);
@@ -253,6 +240,19 @@ public class ApacheCompress {
         return files;
     }
 
+    private static void writeZipEntry(Path path, boolean isFile, Path directory, ArchiveOutputStream target) throws IOException {
+        String name = directory.relativize(path).toString().replace('\\', '/');
+        if (!name.isEmpty()) {
+            ArchiveEntry archiveEntry =
+                target.createArchiveEntry(path, isFile || name.endsWith("/") ? name : name + "/", EMPTY_LINK_OPTIONS);
+            target.putArchiveEntry(archiveEntry);
+            if (isFile) {
+                Files.copy(path, target);
+            }
+            target.closeArchiveEntry();
+        }
+    }
+
     @AllArgsConstructor
     private static class ArchiverFileVisitor extends SimpleFileVisitor<Path> {
 
@@ -264,14 +264,14 @@ public class ApacheCompress {
             return visit(dir, attrs, false);
         }
 
-        protected FileVisitResult visit(Path path, BasicFileAttributes attrs, boolean isFile) throws IOException {
-            writeZipEntry(path, isFile, directory, target);
-            return FileVisitResult.CONTINUE;
-        }
-
         @Override
         public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
             return visit(file, attrs, true);
+        }
+
+        protected FileVisitResult visit(Path path, BasicFileAttributes attrs, boolean isFile) throws IOException {
+            writeZipEntry(path, isFile, directory, target);
+            return FileVisitResult.CONTINUE;
         }
     }
 }

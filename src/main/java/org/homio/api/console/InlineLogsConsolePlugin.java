@@ -1,6 +1,11 @@
 package org.homio.api.console;
 
 import com.pivovarit.function.ThrowingSupplier;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -9,12 +14,6 @@ import org.homio.api.EntityContext;
 import org.homio.api.ui.UI;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @Getter
 @Component
@@ -41,7 +40,7 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
     public void add(String value, boolean error) {
         ComplexString complexString =
-                ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
+            ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
         values.add(complexString);
         entityContext.ui().sendNotification("-lines-icl", complexString.toString());
     }
@@ -68,6 +67,7 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
     @RequiredArgsConstructor
     private class StdoutOutputStream extends ByteArrayOutputStream {
+
         private final boolean stdErr;
 
         String value = "";

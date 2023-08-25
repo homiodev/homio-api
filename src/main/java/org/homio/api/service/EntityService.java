@@ -2,6 +2,7 @@ package org.homio.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingRunnable;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
  * Configure service for entities. I.e. MongoEntity has MongoService which correspond for communications, RabbitMQ, etc...
  */
 public interface EntityService<S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
-        extends HasStatusAndMsg {
+    extends HasStatusAndMsg {
 
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
@@ -89,20 +90,6 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         }
     }
 
-    interface WatchdogService {
-        /**
-         * Restarting service fired by watchdog service if isWatchdogEnabled true. Restart service in interval 1..2 minutes
-         * Service should be as fast as possible. Use inner async if possible
-         * Method calls in ForkJoin pool at same time with other services if need
-         */
-        void restartService();
-
-        /**
-         * @return Check if need restart service before call restartService()..
-         */
-        boolean isRequireRestartService();
-    }
-
     @Getter
     abstract class ServiceInstance<E extends EntityService<?, ?>> {
 
@@ -138,6 +125,15 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         }
 
         /**
+         * Not used yet. Able to fire to backup data
+         *
+         * @param backupContext - context
+         */
+        public void backupData(BackupContext backupContext) {
+
+        }
+
+        /**
          * Fires to update entity inside in-memory service each time when entity fetched/updated testService() method calls always after this to check service
          * actual status
          *
@@ -161,19 +157,29 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
         }
 
         /**
-         * @return watchdog if service supports watchdog capabilities
+         * Async restarting service fired by watchdog service if isRequireRestartService return not null. Restart service in interval 1..2 minutes Service
+         * should be as fast as possible. Use inner async if possible Method calls in ForkJoin pool at same time with other services if need
          */
-        public @Nullable WatchdogService getWatchdog() {
+        public void restartService() {
+            if (initializing.compareAndSet(false, true)) {
+                fireWithSetStatus(this::initialize);
+                initializing.set(false);
+            }
+        }
+
+        /**
+         * Executes +- every minute
+         * @return Check if need restart service before call restartService().. Return restart reason or null if not require
+         */
+        public String isRequireRestartService() {
             return null;
         }
 
-        protected boolean fireWithSetStatus(ThrowingRunnable<Exception> handler) {
+        private void fireWithSetStatus(ThrowingRunnable<Exception> handler) {
             try {
                 handler.run();
-                return true;
             } catch (Exception ex) {
                 entity.setStatusError(ex);
-                return false;
             }
         }
 
@@ -195,6 +201,11 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
         protected void destroy() throws Exception {
 
+        }
+
+        public interface BackupContext {
+
+            Path getBackupPath();
         }
     }
 }

@@ -91,9 +91,9 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
         String cd = getName();
         Status status = getStatus();
         return """
-                <div class="inline-2row_d"><div>%s <span style="color:%s">${%s}</span>
-                <span style="float:right" class="color-primary">%s</span></div><div>${%s}</div></div>""".formatted(
-                getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), cd);
+            <div class="inline-2row_d"><div>%s <span style="color:%s">${%s}</span>
+            <span style="float:right" class="color-primary">%s</span></div><div>${%s}</div></div>""".formatted(
+            getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), cd);
     }
 
     public boolean isCompactMode() {

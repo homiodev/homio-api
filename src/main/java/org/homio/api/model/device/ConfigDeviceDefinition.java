@@ -1,13 +1,12 @@
 package org.homio.api.model.device;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import org.homio.api.widget.template.WidgetDefinition;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter

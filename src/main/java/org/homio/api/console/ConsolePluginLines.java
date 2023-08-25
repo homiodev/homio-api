@@ -1,8 +1,7 @@
 package org.homio.api.console;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
+import org.jetbrains.annotations.NotNull;
 
 public interface ConsolePluginLines extends ConsolePlugin<Collection<String>> {
 

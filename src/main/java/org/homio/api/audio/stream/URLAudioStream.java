@@ -1,13 +1,5 @@
 package org.homio.api.audio.stream;
 
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.homio.api.audio.AudioFormat;
-import org.homio.api.audio.AudioStream;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,6 +12,13 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.homio.api.audio.AudioFormat;
+import org.homio.api.audio.AudioStream;
+import org.jetbrains.annotations.Nullable;
 
 @Log4j2
 public class URLAudioStream extends AudioStream {
@@ -39,6 +38,29 @@ public class URLAudioStream extends AudioStream {
         this.url = url;
         this.audioFormat = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_MP3, false, 16, null, null);
         this.inputStream = createInputStream();
+    }
+
+    @Override
+    public AudioFormat getFormat() {
+        return audioFormat;
+    }
+
+    @Override
+    public int read() throws IOException {
+        return inputStream.read();
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        if (shoutCastSocket != null) {
+            shoutCastSocket.close();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return url;
     }
 
     private InputStream createInputStream() throws Exception {
@@ -90,7 +112,7 @@ public class URLAudioStream extends AudioStream {
                 OutputStream os = socket.getOutputStream();
                 String userAgent = "WinampMPEG/5.09";
                 String req = "GET / HTTP/1.0\r\nuser-agent: " + userAgent
-                        + "\r\nIcy-MetaData: 1\r\nConnection: keep-alive\r\n\r\n";
+                    + "\r\nIcy-MetaData: 1\r\nConnection: keep-alive\r\n\r\n";
                 os.write(req.getBytes());
                 return socket.getInputStream();
             } else {
@@ -106,28 +128,5 @@ public class URLAudioStream extends AudioStream {
             log.error("Cannot set up stream '{}': {}", url, e.getMessage(), e);
             throw new IOException("IO Error");
         }
-    }
-
-    @Override
-    public AudioFormat getFormat() {
-        return audioFormat;
-    }
-
-    @Override
-    public int read() throws IOException {
-        return inputStream.read();
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-        if (shoutCastSocket != null) {
-            shoutCastSocket.close();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return url;
     }
 }

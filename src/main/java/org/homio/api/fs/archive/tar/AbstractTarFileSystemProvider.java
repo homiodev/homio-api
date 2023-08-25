@@ -8,8 +8,21 @@ import java.net.URISyntaxException;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.*;
+import java.nio.file.AccessMode;
+import java.nio.file.CopyOption;
+import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.ProviderMismatchException;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
@@ -26,57 +39,9 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
     public AbstractTarFileSystemProvider() {
     }
 
-    // Checks that the given file is a UnixPath
-    static final TarPath toTarPath(Path path) {
-        if (path == null) {
-            throw new NullPointerException();
-        }
-        if (!(path instanceof TarPath)) {
-            throw new ProviderMismatchException();
-        }
-        return (TarPath) path;
-    }
-
-    protected Path uriToPath(URI uri) {
-        String scheme = uri.getScheme();
-        if (scheme == null || !scheme.equalsIgnoreCase(getScheme())) {
-            throw new IllegalArgumentException("URI scheme is not '"
-                    + getScheme() + "'");
-        }
-        try {
-            String spec = uri.getRawSchemeSpecificPart();
-            int sep = spec.indexOf("!/");
-            if (sep != -1) {
-                spec = spec.substring(0, sep);
-            }
-            return Paths.get(new URI(spec)).toAbsolutePath();
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-    }
-
-    protected abstract AbstractTarFileSystem newInstance(
-            AbstractTarFileSystemProvider provider, Path path,
-            Map<String, ?> env) throws IOException;
-
-    protected boolean ensureFile(Path path) {
-        try {
-            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-            if (!attrs.isRegularFile()) {
-                throw new UnsupportedOperationException();
-            }
-            if (!path.toString().endsWith(getScheme())) {
-                throw new UnsupportedOperationException();
-            }
-            return true;
-        } catch (IOException ioe) {
-            return false;
-        }
-    }
-
     @Override
     public FileSystem newFileSystem(URI uri, Map<String, ?> env)
-            throws IOException {
+        throws IOException {
         Path path = uriToPath(uri);
         synchronized (filesystems) {
             Path realPath = null;
@@ -95,7 +60,7 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
 
     @Override
     public FileSystem newFileSystem(Path path, Map<String, ?> env)
-            throws IOException {
+        throws IOException {
         if (path.getFileSystem() != FileSystems.getDefault()) {
             throw new UnsupportedOperationException();
         }
@@ -110,9 +75,9 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
         int sep = spec.indexOf("!/");
         if (sep == -1) {
             throw new IllegalArgumentException(
-                    "URI: "
-                            + uri
-                            + " does not contain path info ex. tar:file:/c:/foo.tar!/BAR");
+                "URI: "
+                    + uri
+                    + " does not contain path info ex. tar:file:/c:/foo.tar!/BAR");
         }
         return getFileSystem(uri).getPath(spec.substring(sep + 1));
     }
@@ -140,14 +105,14 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void copy(Path src, Path target, CopyOption... options)
-            throws IOException {
+        throws IOException {
         AbstractTarFileSystemProvider.toTarPath(src).copy(
-                AbstractTarFileSystemProvider.toTarPath(target), options);
+            AbstractTarFileSystemProvider.toTarPath(target), options);
     }
 
     @Override
     public void createDirectory(Path path, FileAttribute<?>... attrs)
-            throws IOException {
+        throws IOException {
         AbstractTarFileSystemProvider.toTarPath(path).createDirectory(attrs);
     }
 
@@ -158,9 +123,9 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
 
     @Override
     public <V extends FileAttributeView> V getFileAttributeView(Path path,
-                                                                Class<V> type, LinkOption... options) {
+        Class<V> type, LinkOption... options) {
         return TarFileAttributeView.get(
-                AbstractTarFileSystemProvider.toTarPath(path), type);
+            AbstractTarFileSystemProvider.toTarPath(path), type);
     }
 
     @Override
@@ -180,72 +145,72 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void move(Path src, Path target, CopyOption... options)
-            throws IOException {
+        throws IOException {
         AbstractTarFileSystemProvider.toTarPath(src).move(
-                AbstractTarFileSystemProvider.toTarPath(target), options);
+            AbstractTarFileSystemProvider.toTarPath(target), options);
     }
 
     @Override
     public AsynchronousFileChannel newAsynchronousFileChannel(Path path,
-                                                              Set<? extends OpenOption> options, ExecutorService exec,
-                                                              FileAttribute<?>... attrs) throws IOException {
+        Set<? extends OpenOption> options, ExecutorService exec,
+        FileAttribute<?>... attrs) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public SeekableByteChannel newByteChannel(Path path,
-                                              Set<? extends OpenOption> options, FileAttribute<?>... attrs)
-            throws IOException {
+        Set<? extends OpenOption> options, FileAttribute<?>... attrs)
+        throws IOException {
         return AbstractTarFileSystemProvider.toTarPath(path).newByteChannel(
-                options, attrs);
+            options, attrs);
     }
 
     @Override
     public DirectoryStream<Path> newDirectoryStream(Path path,
-                                                    Filter<? super Path> filter) throws IOException {
+        Filter<? super Path> filter) throws IOException {
         return AbstractTarFileSystemProvider.toTarPath(path)
-                .newDirectoryStream(filter);
+                                            .newDirectoryStream(filter);
     }
 
     @Override
     public FileChannel newFileChannel(Path path,
-                                      Set<? extends OpenOption> options, FileAttribute<?>... attrs)
-            throws IOException {
+        Set<? extends OpenOption> options, FileAttribute<?>... attrs)
+        throws IOException {
         return AbstractTarFileSystemProvider.toTarPath(path).newFileChannel(
-                options, attrs);
+            options, attrs);
     }
 
     @Override
     public InputStream newInputStream(Path path, OpenOption... options)
-            throws IOException {
+        throws IOException {
         return AbstractTarFileSystemProvider.toTarPath(path).newInputStream(
-                options);
+            options);
     }
 
     @Override
     public OutputStream newOutputStream(Path path, OpenOption... options)
-            throws IOException {
+        throws IOException {
         return AbstractTarFileSystemProvider.toTarPath(path).newOutputStream(
-                options);
+            options);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path,
-                                                            Class<A> type, LinkOption... options) throws IOException {
+        Class<A> type, LinkOption... options) throws IOException {
         if (type == BasicFileAttributes.class
-                || type == TarFileAttributes.class) {
+            || type == TarFileAttributes.class) {
             return (A) AbstractTarFileSystemProvider.toTarPath(path)
-                    .getAttributes();
+                                                    .getAttributes();
         }
         return null;
     }
 
     @Override
     public Map<String, Object> readAttributes(Path path, String attribute,
-                                              LinkOption... options) throws IOException {
+        LinkOption... options) throws IOException {
         return AbstractTarFileSystemProvider.toTarPath(path).readAttributes(
-                attribute, options);
+            attribute, options);
     }
 
     @Override
@@ -255,18 +220,66 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void setAttribute(Path path, String attribute, Object value,
-                             LinkOption... options) throws IOException {
+        LinkOption... options) throws IOException {
         AbstractTarFileSystemProvider.toTarPath(path).setAttribute(attribute,
-                value, options);
+            value, options);
+    }
+
+    // Checks that the given file is a UnixPath
+    static final TarPath toTarPath(Path path) {
+        if (path == null) {
+            throw new NullPointerException();
+        }
+        if (!(path instanceof TarPath)) {
+            throw new ProviderMismatchException();
+        }
+        return (TarPath) path;
     }
 
     void removeFileSystem(Path tfpath, AbstractTarFileSystem tfs)
-            throws IOException {
+        throws IOException {
         synchronized (filesystems) {
             Path realPath = tfpath.toRealPath();
             if (filesystems.get(realPath) == tfs) {
                 filesystems.remove(realPath);
             }
+        }
+    }
+
+    protected Path uriToPath(URI uri) {
+        String scheme = uri.getScheme();
+        if (scheme == null || !scheme.equalsIgnoreCase(getScheme())) {
+            throw new IllegalArgumentException("URI scheme is not '"
+                + getScheme() + "'");
+        }
+        try {
+            String spec = uri.getRawSchemeSpecificPart();
+            int sep = spec.indexOf("!/");
+            if (sep != -1) {
+                spec = spec.substring(0, sep);
+            }
+            return Paths.get(new URI(spec)).toAbsolutePath();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
+
+    protected abstract AbstractTarFileSystem newInstance(
+        AbstractTarFileSystemProvider provider, Path path,
+        Map<String, ?> env) throws IOException;
+
+    protected boolean ensureFile(Path path) {
+        try {
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+            if (!attrs.isRegularFile()) {
+                throw new UnsupportedOperationException();
+            }
+            if (!path.toString().endsWith(getScheme())) {
+                throw new UnsupportedOperationException();
+            }
+            return true;
+        } catch (IOException ioe) {
+            return false;
         }
     }
 }

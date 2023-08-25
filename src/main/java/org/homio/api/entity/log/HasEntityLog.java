@@ -40,9 +40,13 @@ public interface HasEntityLog extends HasJsonData {
             addTopicFilterByEntityID(entityClass.getName());
         }
 
-        // log also to separate file named as entityID.
-        // file will be removed if entity not exists anymore
-        void logToSeparateFile(boolean value);
+        default void addTopicFilterByEntityID(@NotNull Package pack) {
+            addTopicFilterByEntityID(pack.getName());
+        }
+
+        default void addTopic(@NotNull Package pack) {
+            addTopic(pack.getName());
+        }
     }
 }
 

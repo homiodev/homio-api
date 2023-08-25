@@ -1,12 +1,11 @@
 package org.homio.api.setting;
 
 import com.fazecast.jSerialComm.SerialPort;
+import java.util.Collection;
 import org.homio.api.EntityContext;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-
-import java.util.Collection;
 
 public interface SettingPluginOptionsPort extends SettingPlugin<SerialPort>, SettingPluginOptions<SerialPort> {
 

@@ -88,6 +88,8 @@ public class CommonUtils {
 
     // map for store different statuses
     private static final @Getter Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
+    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static Path rootPath;
     private static final @Getter Path logsPath = getOrCreatePath("logs");
     private static final @Getter Path configPath = getOrCreatePath("conf");
     private static final @Getter Path filesPath = getOrCreatePath("asm_files");
@@ -99,9 +101,6 @@ public class CommonUtils {
     private static final @Getter Path imagePath = getOrCreatePath("media/image");
     private static final @Getter Path sshPath = getOrCreatePath("ssh");
     private static final @Getter Path tmpPath = getOrCreatePath("tmp");
-
-    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static Path rootPath;
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -320,20 +319,6 @@ public class CommonUtils {
         return out.toString();
     }
 
-    @SneakyThrows
-    private static List<Map<String, String>> readProperties(String path) {
-        Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(path);
-        List<Map<String, String>> properties = new ArrayList<>();
-        while (resources.hasMoreElements()) {
-            try (InputStream input = resources.nextElement().openStream()) {
-                Properties prop = new Properties();
-                prop.load(input);
-                properties.add(new HashMap(prop));
-            }
-        }
-        return properties;
-    }
-
     public static void unzipAndMove(@NotNull ProgressBar progressBar, Path archive, Path targetPath) throws IOException {
         progressBar.progress(70, format("Unzip %s sources", archive));
         Path workingPath = archive.getParent();
@@ -421,10 +406,6 @@ public class CommonUtils {
         return getTimestampString(new Date());
     }
 
-    private static String getTimestampString(Date date) {
-        return DATE_TIME_FORMAT.format(date);
-    }
-
     public static List<Date> range(Date minDate, Date maxDate) {
         long time = (maxDate.getTime() - minDate.getTime()) / 10;
         List<Date> dates = new ArrayList<>();
@@ -496,6 +477,24 @@ public class CommonUtils {
     public static String splitNameToReadableFormat(@NotNull String name) {
         String[] items = name.split("_");
         return StringUtils.capitalize(String.join(" ", items));
+    }
+
+    @SneakyThrows
+    private static List<Map<String, String>> readProperties(String path) {
+        Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(path);
+        List<Map<String, String>> properties = new ArrayList<>();
+        while (resources.hasMoreElements()) {
+            try (InputStream input = resources.nextElement().openStream()) {
+                Properties prop = new Properties();
+                prop.load(input);
+                properties.add(new HashMap(prop));
+            }
+        }
+        return properties;
+    }
+
+    private static String getTimestampString(Date date) {
+        return DATE_TIME_FORMAT.format(date);
     }
 
     public static class TemplateBuilder {

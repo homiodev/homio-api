@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldImageSrc {
+
     int maxWidth() default 100;
 
     int maxHeight() default 100;

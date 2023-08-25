@@ -4,10 +4,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fazecast.jSerialComm.SerialPort;
+import java.io.IOException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
 
 @Log4j2
 public class SerialPortDeserializer extends JsonDeserializer<SerialPort> {

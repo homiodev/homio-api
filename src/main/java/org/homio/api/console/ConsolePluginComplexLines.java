@@ -1,15 +1,14 @@
 package org.homio.api.console;
 
+import static org.apache.commons.lang3.StringUtils.defaultString;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.StringUtils.defaultString;
 
 public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<String>> {
 
@@ -31,6 +30,7 @@ public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<Stri
     @Accessors(chain = true)
     @RequiredArgsConstructor
     class ComplexString {
+
         private final String value;
         private Long date;
         private String color;
@@ -49,7 +49,7 @@ public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<Stri
             StringBuilder sb = new StringBuilder(value);
             if (date != null || color != null || positionToRight != null) {
                 sb.append("~~~").append(date == null ? "" : date).append("~~~").append(defaultString(color))
-                        .append("~~~").append(positionToRight == null ? "" : positionToRight);
+                  .append("~~~").append(positionToRight == null ? "" : positionToRight);
             }
             return sb.toString();
         }

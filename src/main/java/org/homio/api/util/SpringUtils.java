@@ -1,13 +1,12 @@
 package org.homio.api.util;
 
 import com.pivovarit.function.ThrowingBiFunction;
-import lombok.SneakyThrows;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.SneakyThrows;
 
 public class SpringUtils {
 
@@ -78,7 +77,7 @@ public class SpringUtils {
      * @return updated text
      */
     public static String replaceValues(String text, BiFunction<String, String, String> propertyGetter, Pattern pattern,
-                                       int prefixLength, int suffixLength) {
+        int prefixLength, int suffixLength) {
         Matcher matcher = pattern.matcher(text);
         StringBuffer noteBuffer = new StringBuffer();
         while (matcher.find()) {
@@ -93,7 +92,7 @@ public class SpringUtils {
     }
 
     public static String getEnvProperty(String value, BiFunction<String, String, String> propertyGetter,
-                                        int prefixLength, int suffixLength) {
+        int prefixLength, int suffixLength) {
         String[] array = getSpringValuesPattern(value, prefixLength, suffixLength);
         return propertyGetter.apply(array[0], array[1]);
     }
@@ -112,6 +111,7 @@ public class SpringUtils {
     }
 
     public interface ReplaceEnvHandler {
+
         String replace(String env, String defValue, StringBuffer fullPrefix) throws Exception;
     }
 }

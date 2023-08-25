@@ -10,6 +10,7 @@ import org.json.JSONObject;
  * For BaseItems that wants dynamic context menu items
  */
 public interface HasDynamicContextMenuActions {
+
     void assembleActions(UIInputBuilder uiInputBuilder);
 
     default ActionResponseModel handleAction(EntityContext entityContext, String actionID, JSONObject params) throws Exception {

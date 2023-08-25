@@ -1,13 +1,16 @@
 package org.homio.api.model;
 
-import lombok.*;
-import lombok.experimental.Accessors;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Optional;
-
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultString;
+
+import java.util.Optional;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter

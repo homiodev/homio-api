@@ -7,15 +7,15 @@ import java.util.Map;
 public class TarFileSystemProvider extends AbstractTarFileSystemProvider {
 
     @Override
-    protected AbstractTarFileSystem newInstance(
-            AbstractTarFileSystemProvider provider, Path path,
-            Map<String, ?> env) throws IOException {
-        return new TarFileSystem(provider, path, env);
+    public String getScheme() {
+        return "tar";
     }
 
     @Override
-    public String getScheme() {
-        return "tar";
+    protected AbstractTarFileSystem newInstance(
+        AbstractTarFileSystemProvider provider, Path path,
+        Map<String, ?> env) throws IOException {
+        return new TarFileSystem(provider, path, env);
     }
 
 }

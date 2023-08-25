@@ -1,14 +1,13 @@
 package org.homio.api;
 
+import static java.lang.String.format;
+
+import java.util.function.Consumer;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Consumer;
-
-import static java.lang.String.format;
 
 public interface EntityContextService {
 

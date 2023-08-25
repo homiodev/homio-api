@@ -1,6 +1,16 @@
 package org.homio.api.entity;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
@@ -8,17 +18,6 @@ import org.homio.api.model.JSON;
 import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface HasJsonData {
 
@@ -153,7 +152,7 @@ public interface HasJsonData {
 
     default @NotNull Stream<String> getJsonDataStream(@NotNull String key, @NotNull String delimiter) {
         return Stream.of(getJsonData().optString(key, "").split(delimiter))
-                .filter(StringUtils::isNotEmpty);
+                     .filter(StringUtils::isNotEmpty);
     }
 
     default @NotNull Long getJsonData(@NotNull String key, long defaultValue) {

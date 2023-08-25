@@ -1,5 +1,13 @@
 package org.homio.api.model.endpoint;
 
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
@@ -17,15 +25,6 @@ import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder.InfoType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Specify device single endpoint
@@ -45,9 +44,9 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
      */
     static @NotNull Date getLastUpdated(@NotNull Collection<? extends DeviceEndpoint> endpoints) {
         return new Date(endpoints
-                .stream()
-                .max(Comparator.comparingLong(DeviceEndpoint::getUpdated))
-                .map(DeviceEndpoint::getUpdated).orElse(0L));
+            .stream()
+            .max(Comparator.comparingLong(DeviceEndpoint::getUpdated))
+            .map(DeviceEndpoint::getUpdated).orElse(0L));
     }
 
     @NotNull String getEndpointName();
@@ -176,7 +175,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         }
         if (getUnit() != null) {
             uiInputBuilder.addInfo("%s <small class=\"text-muted\">%s</small>"
-                    .formatted(value.stringValue(), getUnit()), InfoType.HTML);
+                .formatted(value.stringValue(), getUnit()), InfoType.HTML);
         } else {
             assembleUIAction(uiInputBuilder);
         }
@@ -194,7 +193,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     default UIInputBuilder createStringActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
         if (!getValue().stringValue().equals("N/A")) {
             uiInputBuilder.addTextInput(getEntityID(), getValue().stringValue(), false).setApplyButton(true)
-                    .setDisabled(isDisabled());
+                          .setDisabled(isDisabled());
             return uiInputBuilder;
         }
         return null;
@@ -202,23 +201,23 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     default UIInputBuilder createSelectActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
         uiInputBuilder
-                .addSelectBox(getEntityID(), (entityContext, params) -> {
-                    setValue(new StringType(params.getString("value")), false);
-                    return onExternalUpdated();
-                })
-                .addOptions(OptionModel.list(getSelectValues()))
-                .setPlaceholder("-----------")
-                .setSelected(getValue().toString())
-                .setDisabled(isDisabled());
+            .addSelectBox(getEntityID(), (entityContext, params) -> {
+                setValue(new StringType(params.getString("value")), false);
+                return onExternalUpdated();
+            })
+            .addOptions(OptionModel.list(getSelectValues()))
+            .setPlaceholder("-----------")
+            .setSelected(getValue().toString())
+            .setDisabled(isDisabled());
         return uiInputBuilder;
     }
 
     default UIInputBuilder createNumberActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
         uiInputBuilder.addSlider(getEntityID(), getValue().floatValue(0), getMin(), getMax(),
-                (entityContext, params) -> {
-                    setValue(new DecimalType(params.getInt("value")), false);
-                    return onExternalUpdated();
-                }).setDisabled(isDisabled());
+            (entityContext, params) -> {
+                setValue(new DecimalType(params.getInt("value")), false);
+                return onExternalUpdated();
+            }).setDisabled(isDisabled());
         return uiInputBuilder;
     }
 

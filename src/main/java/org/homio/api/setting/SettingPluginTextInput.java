@@ -1,11 +1,11 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.putOpt;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.homio.api.EntityContext;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-
-import static org.homio.api.util.JsonUtils.putOpt;
 
 public interface SettingPluginTextInput extends SettingPlugin<String> {
 

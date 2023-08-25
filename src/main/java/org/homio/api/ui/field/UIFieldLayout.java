@@ -1,13 +1,8 @@
 package org.homio.api.ui.field;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -15,8 +10,12 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Widget layout builder

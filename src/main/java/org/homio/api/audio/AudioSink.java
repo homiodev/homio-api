@@ -1,13 +1,13 @@
 package org.homio.api.audio;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 public interface AudioSink {
+
     String getId();
 
     Map<String, String> getSources();

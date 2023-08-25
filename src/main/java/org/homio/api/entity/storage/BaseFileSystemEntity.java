@@ -1,6 +1,10 @@
 package org.homio.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.homio.api.EntityContext;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.BaseEntityIdentifier;
@@ -17,13 +21,8 @@ import org.homio.api.ui.field.action.UIContextMenuAction;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
-        extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg, HasJsonData {
+    extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg, HasJsonData {
 
     Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
 

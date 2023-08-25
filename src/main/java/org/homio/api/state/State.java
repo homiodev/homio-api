@@ -1,21 +1,20 @@
 package org.homio.api.state;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Objects;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.util.CommonUtils;
 
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 public interface State {
 
     static State of(Object value) {
-        if (value == null || value instanceof State) return (State) value;
+        if (value == null || value instanceof State) {return (State) value;}
         if (value instanceof Map) {
             return new JsonType(OBJECT_MAPPER.convertValue(value, JsonNode.class));
         }
@@ -98,8 +97,8 @@ public interface State {
     @SneakyThrows
     default State optional(String value) {
         return StringUtils.isEmpty(value) ? this :
-                Objects.requireNonNull(CommonUtils.findObjectConstructor(this.getClass(), String.class))
-                        .newInstance(value);
+            Objects.requireNonNull(CommonUtils.findObjectConstructor(this.getClass(), String.class))
+                   .newInstance(value);
     }
 
     void setAsNode(ObjectNode node, String key);

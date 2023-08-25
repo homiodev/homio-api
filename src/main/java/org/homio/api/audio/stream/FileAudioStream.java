@@ -1,11 +1,14 @@
 package org.homio.api.audio.stream;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.audio.AudioFormat;
 import org.homio.api.exception.NotFoundException;
-
-import java.io.*;
 
 public class FileAudioStream extends FixedLengthAudioStream {
 
@@ -28,32 +31,6 @@ public class FileAudioStream extends FixedLengthAudioStream {
         this.inputStream = getInputStream(file);
         this.audioFormat = format;
         this.length = file.length();
-    }
-
-    private static AudioFormat getAudioFormat(File file) {
-        final String filename = file.getName().toLowerCase();
-        final String extension = StringUtils.defaultString(FilenameUtils.getExtension(filename), "");
-        switch (extension) {
-            case WAV_EXTENSION:
-                return new AudioFormat(AudioFormat.CONTAINER_WAVE, AudioFormat.CODEC_PCM_SIGNED, false, 16, 705600,
-                        44100L);
-            case MP3_EXTENSION:
-                return AudioFormat.MP3;
-            case OGG_EXTENSION:
-                return AudioFormat.OGG;
-            case AAC_EXTENSION:
-                return AudioFormat.AAC;
-            default:
-                throw new IllegalArgumentException("Unsupported file extension!");
-        }
-    }
-
-    private static InputStream getInputStream(File file) throws Exception {
-        try {
-            return new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            throw new NotFoundException("File '" + file.getAbsolutePath() + "' not found!");
-        }
     }
 
     @Override
@@ -93,5 +70,31 @@ public class FileAudioStream extends FixedLengthAudioStream {
     @Override
     public InputStream getClonedStream() throws Exception {
         return getInputStream(file);
+    }
+
+    private static AudioFormat getAudioFormat(File file) {
+        final String filename = file.getName().toLowerCase();
+        final String extension = StringUtils.defaultString(FilenameUtils.getExtension(filename), "");
+        switch (extension) {
+            case WAV_EXTENSION:
+                return new AudioFormat(AudioFormat.CONTAINER_WAVE, AudioFormat.CODEC_PCM_SIGNED, false, 16, 705600,
+                    44100L);
+            case MP3_EXTENSION:
+                return AudioFormat.MP3;
+            case OGG_EXTENSION:
+                return AudioFormat.OGG;
+            case AAC_EXTENSION:
+                return AudioFormat.AAC;
+            default:
+                throw new IllegalArgumentException("Unsupported file extension!");
+        }
+    }
+
+    private static InputStream getInputStream(File file) throws Exception {
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException("File '" + file.getAbsolutePath() + "' not found!");
+        }
     }
 }

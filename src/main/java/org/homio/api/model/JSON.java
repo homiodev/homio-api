@@ -13,8 +13,8 @@ public class JSON extends JSONObject {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JSONObject)) return false;
+        if (this == o) {return true;}
+        if (!(o instanceof JSONObject)) {return false;}
         return this.toString().equals(o.toString());
     }
 }

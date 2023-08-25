@@ -1,5 +1,9 @@
 package org.homio.api.service.scan;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,28 +19,12 @@ import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
 
 /**
  * Base class for scan devices, controllers, camera, etc...
  */
 @Log4j2
 public abstract class BaseItemsDiscovery implements UIActionHandler {
-
-    protected abstract List<DevicesScanner> getScanners(EntityContext entityContext);
-
-    protected abstract String getBatchName();
-
-    /**
-     * @return Max time in seconds for wait each DevicesScanner to be done.
-     */
-    protected int getMaxTimeToWaitInSeconds() {
-        return 10 * 60;
-    }
 
     @Override
     public ActionResponseModel handleAction(EntityContext entityContext, JSONObject ignore) {
@@ -49,44 +37,55 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
         String headerButtonKey = "SCAN." + getBatchName();
 
         entityContext.bgp().runInBatch(getBatchName(), Duration.ofSeconds(getMaxTimeToWaitInSeconds()), scanners,
-                scanner -> {
-                    log.info("Start scan in thread <{}>", scanner.name);
-                    AtomicInteger status =
-                            CommonUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
-                    if (status.compareAndSet(0, 1)) {
-                        return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
-                                progressBar -> {
-                                    try {
-                                        return scanner.handler.handle(entityContext, progressBar, headerButtonKey);
-                                    } catch (Exception ex) {
-                                        log.error("Error while execute task: " + scanner.name, ex);
-                                        return new DeviceScannerResult();
-                                    }
-                                },
-                                ex -> {
-                                    log.info("Done scan for <{}>", scanner.name);
-                                    status.set(0);
-                                    if (ex != null) {
-                                        entityContext.ui()
-                                                .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", CommonUtils.getErrorMessage(ex)), ex);
-                                    }
-                                });
-                    } else {
-                        log.warn("Scan for <{}> already in progress", scanner.name);
-                    }
-                    return null;
-                }, completedTasks -> {
-                }, (Consumer<List<DeviceScannerResult>>) result -> {
-                    int foundNewCount = 0;
-                    int foundOldCount = 0;
-                    for (DeviceScannerResult deviceScannerResult : result) {
-                        foundNewCount += deviceScannerResult.newCount.get();
-                        foundOldCount += deviceScannerResult.existedCount.get();
-                    }
-                    entityContext.ui().sendInfoMessage("SCAN.RESULT", FlowMap.of("OLD", foundOldCount, "NEW", foundNewCount));
-                    log.info("Done batch scanning for <{}>", getBatchName());
-                });
+            scanner -> {
+                log.info("Start scan in thread <{}>", scanner.name);
+                AtomicInteger status =
+                    CommonUtils.getStatusMap().computeIfAbsent("scan-" + scanner.name, s -> new AtomicInteger(0));
+                if (status.compareAndSet(0, 1)) {
+                    return () -> entityContext.ui().runWithProgressAndGet(scanner.name, true,
+                        progressBar -> {
+                            try {
+                                return scanner.handler.handle(entityContext, progressBar, headerButtonKey);
+                            } catch (Exception ex) {
+                                log.error("Error while execute task: " + scanner.name, ex);
+                                return new DeviceScannerResult();
+                            }
+                        },
+                        ex -> {
+                            log.info("Done scan for <{}>", scanner.name);
+                            status.set(0);
+                            if (ex != null) {
+                                entityContext.ui()
+                                             .sendErrorMessage("SCAN.ERROR", FlowMap.of("MSG", CommonUtils.getErrorMessage(ex)), ex);
+                            }
+                        });
+                } else {
+                    log.warn("Scan for <{}> already in progress", scanner.name);
+                }
+                return null;
+            }, completedTasks -> {
+            }, (Consumer<List<DeviceScannerResult>>) result -> {
+                int foundNewCount = 0;
+                int foundOldCount = 0;
+                for (DeviceScannerResult deviceScannerResult : result) {
+                    foundNewCount += deviceScannerResult.newCount.get();
+                    foundOldCount += deviceScannerResult.existedCount.get();
+                }
+                entityContext.ui().sendInfoMessage("SCAN.RESULT", FlowMap.of("OLD", foundOldCount, "NEW", foundNewCount));
+                log.info("Done batch scanning for <{}>", getBatchName());
+            });
         return ActionResponseModel.showSuccess("SCAN.STARTED");
+    }
+
+    protected abstract List<DevicesScanner> getScanners(EntityContext entityContext);
+
+    protected abstract String getBatchName();
+
+    /**
+     * @return Max time in seconds for wait each DevicesScanner to be done.
+     */
+    protected int getMaxTimeToWaitInSeconds() {
+        return 10 * 60;
     }
 
     public interface DeviceScannerHandler {
@@ -107,6 +106,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
     @Accessors(chain = true)
     @NoArgsConstructor
     public static class DeviceScannerResult {
+
         private AtomicInteger existedCount = new AtomicInteger(0);
         private AtomicInteger newCount = new AtomicInteger(0);
 
@@ -117,6 +117,7 @@ public abstract class BaseItemsDiscovery implements UIActionHandler {
     }
 
     public static class DevicesScanner implements HasEntityIdentifier {
+
         private final String name;
         private final DeviceScannerHandler handler;
 

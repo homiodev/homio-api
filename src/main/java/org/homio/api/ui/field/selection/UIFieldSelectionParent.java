@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSelectionParent {
+
     /**
      * @return Parent's name
      */
@@ -32,11 +33,11 @@ public @interface UIFieldSelectionParent {
     String iconColor() default "";
 
     /**
-     * In case if we want to configure parent dynamically. If entity/bean configured by anotation @UIFieldSelectionParent and
-     * implement SelectionParent interface that it's merge both. interface SelectionParent overrides annotated values if values
-     * not null
+     * In case if we want to configure parent dynamically. If entity/bean configured by anotation @UIFieldSelectionParent and implement SelectionParent
+     * interface that it's merge both. interface SelectionParent overrides annotated values if values not null
      */
     interface SelectionParent {
+
         String getParentId();
 
         /**

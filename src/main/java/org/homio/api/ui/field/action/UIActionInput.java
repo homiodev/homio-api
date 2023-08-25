@@ -1,7 +1,6 @@
 package org.homio.api.ui.field.action;
 
 import jakarta.validation.constraints.Pattern;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,6 +9,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIActionInput {
+
     String name();
 
     String value() default "";

@@ -9,7 +9,7 @@ public class SignalIconEndpointBuilder implements IconEndpointBuilder {
     @Override
     public void build(HasIcon<?> iconWidgetBuilder) {
         iconWidgetBuilder.setIconColor(Color.GREEN, colorBuilder ->
-                colorBuilder.setThreshold(Color.WARNING, 50, ValueCompare.lt)
+            colorBuilder.setThreshold(Color.WARNING, 50, ValueCompare.lt)
                         .setThreshold(Color.RED, 0, ValueCompare.eq));
     }
 }

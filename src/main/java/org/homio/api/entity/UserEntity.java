@@ -1,9 +1,8 @@
 package org.homio.api.entity;
 
+import java.util.Set;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Set;
 
 public interface UserEntity {
 

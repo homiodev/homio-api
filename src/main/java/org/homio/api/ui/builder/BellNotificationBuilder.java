@@ -3,6 +3,7 @@ package org.homio.api.ui.builder;
 import org.homio.api.util.NotificationLevel;
 
 public interface BellNotificationBuilder {
+
     default void danger(String entityID, String title, String value) {
         notification(NotificationLevel.error, entityID, title, value);
     }

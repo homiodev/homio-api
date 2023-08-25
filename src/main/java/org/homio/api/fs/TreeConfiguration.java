@@ -1,5 +1,9 @@
 package org.homio.api.fs;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -8,14 +12,10 @@ import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.storage.BaseFileSystemEntity;
 import org.homio.api.model.Icon;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 @Getter
 @Accessors(chain = true)
 public class TreeConfiguration {
+
     private final String id;
     private final String name;
     private Icon icon;
@@ -53,8 +53,8 @@ public class TreeConfiguration {
         this.zipOpenExtensions = fs.getSupportArchiveFormats();
 
         this.editableExtensions =
-                Arrays.asList("txt", "java", "cpp", "sh", "css", "scss", "js", "json", "xml", "html", "php", "py", "ts",
-                        "ino", "conf", "service", "md", "png", "jpg", "jpeg");
+            Arrays.asList("txt", "java", "cpp", "sh", "css", "scss", "js", "json", "xml", "html", "php", "py", "ts",
+                "ino", "conf", "service", "md", "png", "jpg", "jpeg");
     }
 
     public void setIcon(Icon icon) {

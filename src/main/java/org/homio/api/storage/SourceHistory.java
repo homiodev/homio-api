@@ -1,17 +1,17 @@
 package org.homio.api.storage;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.model.Icon;
 
-import java.util.List;
-
 @Getter
 @Accessors(chain = true)
 @AllArgsConstructor
 public class SourceHistory {
+
     private final int count;
     private Float min;
     private Float max;

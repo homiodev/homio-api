@@ -20,6 +20,7 @@ public interface ConsolePluginFrame extends ConsolePlugin<ConsolePluginFrame.Fra
     @Getter
     @RequiredArgsConstructor
     class FrameConfiguration {
+
         private final String host;
     }
 }

@@ -6,6 +6,7 @@ import org.homio.api.model.JSON;
 
 @Converter(autoApply = true)
 public class JSONConverter implements AttributeConverter<JSON, String> {
+
     @Override
     public String convertToDatabaseColumn(JSON jsonData) {
         String json;

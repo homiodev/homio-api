@@ -5,14 +5,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.converter.ConditionalGenericConverter;
-import org.springframework.util.NumberUtils;
-import org.springframework.util.SystemPropertyUtils;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -24,6 +16,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.util.NumberUtils;
+import org.springframework.util.SystemPropertyUtils;
 
 /**
  * Represent object with ability to change it's value and notify observable classes
@@ -61,31 +60,6 @@ public class UpdatableValue<T> {
         updatableValue.name = name;
         updatableValue.stringConverter = findStringConverter(valueType);
         return updatableValue;
-    }
-
-    private static <T> Function<String, T> findStringConverter(Class<?> genericClass) {
-        if (genericClass.isEnum()) {
-            return s -> (T) Enum.valueOf((Class<Enum>) genericClass, s);
-        } else if (Number.class.isAssignableFrom(genericClass)) {
-            return s -> (T) NumberUtils.parseNumber(s, ((Class<? extends Number>) genericClass));
-        }
-        return s -> (T) s;
-
-    }
-
-    // fetch field name either from @Field or from @Value or from defaultValueSupplier
-    private static String getNameFromAnnotation(/*Column field,*/ Value value, Supplier<String> defaultValueSupplier) {
-        /*if (field != null) {
-            return field.name();
-        } else*/
-        if (value != null) {
-            String v = value.value();
-            return v.substring(
-                    v.indexOf(SystemPropertyUtils.PLACEHOLDER_PREFIX) + SystemPropertyUtils.PLACEHOLDER_PREFIX.length(),
-                    v.contains(SystemPropertyUtils.VALUE_SEPARATOR) ? v.indexOf(SystemPropertyUtils.VALUE_SEPARATOR)
-                            : v.indexOf(SystemPropertyUtils.PLACEHOLDER_SUFFIX));
-        }
-        return defaultValueSupplier.get();
     }
 
     public T getValue() {
@@ -138,7 +112,33 @@ public class UpdatableValue<T> {
         return updatableValueWithExtra;
     }
 
+    private static <T> Function<String, T> findStringConverter(Class<?> genericClass) {
+        if (genericClass.isEnum()) {
+            return s -> (T) Enum.valueOf((Class<Enum>) genericClass, s);
+        } else if (Number.class.isAssignableFrom(genericClass)) {
+            return s -> (T) NumberUtils.parseNumber(s, ((Class<? extends Number>) genericClass));
+        }
+        return s -> (T) s;
+
+    }
+
+    // fetch field name either from @Field or from @Value or from defaultValueSupplier
+    private static String getNameFromAnnotation(/*Column field,*/ Value value, Supplier<String> defaultValueSupplier) {
+        /*if (field != null) {
+            return field.name();
+        } else*/
+        if (value != null) {
+            String v = value.value();
+            return v.substring(
+                v.indexOf(SystemPropertyUtils.PLACEHOLDER_PREFIX) + SystemPropertyUtils.PLACEHOLDER_PREFIX.length(),
+                v.contains(SystemPropertyUtils.VALUE_SEPARATOR) ? v.indexOf(SystemPropertyUtils.VALUE_SEPARATOR)
+                    : v.indexOf(SystemPropertyUtils.PLACEHOLDER_SUFFIX));
+        }
+        return defaultValueSupplier.get();
+    }
+
     private interface Validator {
+
         void validate(Object value);
     }
 
@@ -183,10 +183,10 @@ public class UpdatableValue<T> {
                 }
                 UpdatableValue updatableValue = new UpdatableValue();
                 updatableValue.name = getNameFromAnnotation(/*targetType.getAnnotation(Column.class),*/
-                        targetType.getAnnotation(Value.class), () -> {
-                            // must never through as UpdatableValueConverter uses by spring only with @Value annotation
-                            throw new RuntimeException("Can not fetch UpdatableValue name from " + targetType.getSource());
-                        });
+                    targetType.getAnnotation(Value.class), () -> {
+                        // must never through as UpdatableValueConverter uses by spring only with @Value annotation
+                        throw new RuntimeException("Can not fetch UpdatableValue name from " + targetType.getSource());
+                    });
                 updatableValue.stringConverter = findStringConverter(genericClass);
 
                 updatableValue.validators = collectValidators(targetType, a -> {
@@ -210,16 +210,18 @@ public class UpdatableValue<T> {
 
         private Set<Validator> collectValidators(TypeDescriptor targetType, Function<Annotation, Long> exceedConverter) {
             return Stream.of(targetType.getAnnotations())
-                    .filter(a -> exceedConverter.apply(a) != null) // ensures that only known annotations uses
-                    .map(a -> (Validator) value -> {
-                        Long exceedValue = exceedConverter.apply(a);
-                        Long actualValue = ((Number) value).longValue();
-                        if ((actualValue < exceedValue && a.annotationType().isAssignableFrom(Min.class)) ||
-                                (actualValue > exceedValue && a.annotationType().isAssignableFrom(Max.class))) {
-                            throw new IllegalArgumentException(String.format("Validation fails for value <%s>. %s value is <%d>", value, a.annotationType().getSimpleName(), exceedValue));
-                        }
-                    })
-                    .collect(Collectors.toSet());
+                         .filter(a -> exceedConverter.apply(a) != null) // ensures that only known annotations uses
+                         .map(a -> (Validator) value -> {
+                             Long exceedValue = exceedConverter.apply(a);
+                             Long actualValue = ((Number) value).longValue();
+                             if ((actualValue < exceedValue && a.annotationType().isAssignableFrom(Min.class)) ||
+                                 (actualValue > exceedValue && a.annotationType().isAssignableFrom(Max.class))) {
+                                 throw new IllegalArgumentException(
+                                     String.format("Validation fails for value <%s>. %s value is <%d>", value, a.annotationType().getSimpleName(),
+                                         exceedValue));
+                             }
+                         })
+                         .collect(Collectors.toSet());
         }
     }
 }

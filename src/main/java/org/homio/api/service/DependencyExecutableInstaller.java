@@ -1,5 +1,10 @@
 package org.homio.api.service;
 
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.homio.api.EntityContext;
@@ -7,12 +12,6 @@ import org.homio.api.util.CommonUtils;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -22,11 +21,6 @@ public abstract class DependencyExecutableInstaller {
     private String installedVersion;
 
     public abstract String getName();
-
-    /**
-     * @return installed version or null
-     */
-    protected abstract @Nullable String getInstalledVersion();
 
     public @Nullable String getExecutablePath(@NotNull String execName) {
         if (getVersion() == null) {
@@ -42,8 +36,6 @@ public abstract class DependencyExecutableInstaller {
         return execName;
     }
 
-    protected abstract @Nullable Path installDependencyInternal(@NotNull ProgressBar progressBar, String version) throws Exception;
-
     public final @Nullable String getVersion() {
         if (installedVersion == null) {
             try {
@@ -53,10 +45,6 @@ public abstract class DependencyExecutableInstaller {
             }
         }
         return installedVersion;
-    }
-
-    protected void afterDependencyInstalled(@Nullable Path path) {
-
     }
 
     public void installDependency(@NotNull ProgressBar progressBar, @Nullable String version) throws Exception {
@@ -69,5 +57,16 @@ public abstract class DependencyExecutableInstaller {
         progressBar.progress(99, "Installing finished");
         afterDependencyInstalled(path);
         entityContext.event().fireEvent(getName() + "-dependency-installed", true);
+    }
+
+    /**
+     * @return installed version or null
+     */
+    protected abstract @Nullable String getInstalledVersion();
+
+    protected abstract @Nullable Path installDependencyInternal(@NotNull ProgressBar progressBar, String version) throws Exception;
+
+    protected void afterDependencyInstalled(@Nullable Path path) {
+
     }
 }

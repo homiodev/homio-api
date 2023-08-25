@@ -1,6 +1,7 @@
 package org.homio.api.entity.widget.ability;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.homio.api.EntityContext;
@@ -10,8 +11,6 @@ import org.homio.api.storage.SourceHistoryItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import java.util.List;
 
 /**
  * For widget dataSource to fetch simple entity status

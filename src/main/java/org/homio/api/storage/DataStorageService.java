@@ -1,15 +1,14 @@
 package org.homio.api.storage;
 
 import com.mongodb.client.model.Filters;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.homio.api.entity.widget.AggregationType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 public interface DataStorageService<T extends DataStorageEntity> {
 
@@ -19,10 +18,10 @@ public interface DataStorageService<T extends DataStorageEntity> {
 
     default SourceHistory getSourceHistory(@Nullable String field, @Nullable String value) {
         return new SourceHistory(
-                ((Number) aggregate(null, null, field, value, AggregationType.Count, false)).intValue(),
-                ((Number) aggregate(null, null, field, value, AggregationType.Min, false)).floatValue(),
-                ((Number) aggregate(null, null, field, value, AggregationType.Max, false)).floatValue(),
-                ((Number) aggregate(null, null, field, value, AggregationType.Median, false)).floatValue()
+            ((Number) aggregate(null, null, field, value, AggregationType.Count, false)).intValue(),
+            ((Number) aggregate(null, null, field, value, AggregationType.Min, false)).floatValue(),
+            ((Number) aggregate(null, null, field, value, AggregationType.Max, false)).floatValue(),
+            ((Number) aggregate(null, null, field, value, AggregationType.Median, false)).floatValue()
         );
     }
 
@@ -49,7 +48,7 @@ public interface DataStorageService<T extends DataStorageEntity> {
     long deleteAll();
 
     default @NotNull List<T> findAllBy(@NotNull String field, @NotNull String value, @Nullable SortBy sort,
-                                       @Nullable Integer limit) {
+        @Nullable Integer limit) {
         return queryListWithSort(Filters.eq(field, value), sort, limit);
     }
 
@@ -84,7 +83,7 @@ public interface DataStorageService<T extends DataStorageEntity> {
     }
 
     default @NotNull List<T> findByPattern(@NotNull String field, @NotNull String pattern, @Nullable SortBy sort,
-                                           @Nullable Integer limit) {
+        @Nullable Integer limit) {
         return queryListWithSort(Filters.eq(field, Pattern.compile(pattern)), sort, limit);
     }
 
@@ -103,21 +102,21 @@ public interface DataStorageService<T extends DataStorageEntity> {
     long getUsed();
 
     default @NotNull List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field,
-                                                  @Nullable String value) {
+        @Nullable String value) {
         return getTimeSeries(from, to, field, value, "value");
     }
 
     @NotNull List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                                          @NotNull String aggregateField);
+        @NotNull String aggregateField);
 
     default @NotNull Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                                      @NotNull AggregationType aggregationType, boolean filterOnlyNumbers) {
+        @NotNull AggregationType aggregationType, boolean filterOnlyNumbers) {
         return aggregate(from, to, field, value, aggregationType, filterOnlyNumbers, "value");
     }
 
     @NotNull Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-                              @NotNull AggregationType aggregationType, boolean filterOnlyNumbers,
-                              @NotNull String aggregateField);
+        @NotNull AggregationType aggregationType, boolean filterOnlyNumbers,
+        @NotNull String aggregateField);
 
     @NotNull DataStorageService<T> addSaveListener(@NotNull String discriminator, @NotNull Consumer<T> listener);
 }

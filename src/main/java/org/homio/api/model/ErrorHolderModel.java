@@ -7,6 +7,7 @@ import org.homio.api.util.Lang;
 
 @Getter
 public class ErrorHolderModel {
+
     private final String title;
     private final String message;
     private final String cause;

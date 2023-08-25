@@ -36,8 +36,7 @@ public interface BroadcastLockManager {
     BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
 
     /**
-     * Creates BroadcastLock and attach it to thread that check supplier once per second
-     * If supplier return true - signal broadcast lock
+     * Creates BroadcastLock and attach it to thread that check supplier once per second If supplier return true - signal broadcast lock
      *
      * @param workspaceBlock -
      * @param supplier       -

@@ -1,10 +1,9 @@
 package org.homio.api;
 
+import java.net.URL;
 import lombok.SneakyThrows;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
-
-import java.net.URL;
 
 public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
 

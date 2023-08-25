@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorPicker {
+
     /**
      * @return Allow user to use threshold functionality for showing different icon depend on 'value'
      */

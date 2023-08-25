@@ -3,6 +3,7 @@ package org.homio.api.audio;
 import java.util.Set;
 
 public interface AudioSource {
+
     /**
      * Returns a simple string that uniquely identifies this service
      *

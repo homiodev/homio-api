@@ -1,11 +1,10 @@
 package org.homio.api;
 
+import java.util.ArrayList;
 import org.homio.hquery.ProgressBar;
 import org.homio.hquery.api.HQueryMaxWaitTimeout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
 
 public interface EntityContextHardware {
 
@@ -14,24 +13,24 @@ public interface EntityContextHardware {
     @NotNull String execute(@NotNull String command);
 
     @NotNull String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
-                                        @Nullable ProgressBar progressBar);
+        @Nullable ProgressBar progressBar);
 
     @NotNull ArrayList<String> executeNoErrorThrowList(@NotNull String command, int maxSecondsTimeout,
-                                                       @Nullable ProgressBar progressBar);
+        @Nullable ProgressBar progressBar);
 
     @NotNull String execute(@NotNull String command, @Nullable ProgressBar progressBar);
 
     @NotNull String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
     @NotNull String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-                            @Nullable ProgressBar progressBar);
+        @Nullable ProgressBar progressBar);
 
     boolean isSoftwareInstalled(@NotNull String soft);
 
     @NotNull EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
     @NotNull EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-                                                   @Nullable ProgressBar progressBar);
+        @Nullable ProgressBar progressBar);
 
     @NotNull EntityContextHardware enableSystemCtl(@NotNull String soft);
 

@@ -1,8 +1,20 @@
 package org.homio.api.widget.template.impl;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
-import org.homio.api.EntityContextWidget.*;
+import org.homio.api.EntityContextWidget.DisplayWidgetBuilder;
+import org.homio.api.EntityContextWidget.DisplayWidgetSeriesBuilder;
+import org.homio.api.EntityContextWidget.HasChartDataSource;
+import org.homio.api.EntityContextWidget.HasLineChartBehaviour;
+import org.homio.api.EntityContextWidget.VerticalAlign;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.ui.UI;
@@ -12,15 +24,6 @@ import org.homio.api.widget.template.WidgetDefinition.ItemDefinition;
 import org.homio.api.widget.template.WidgetDefinition.Options;
 import org.homio.api.widget.template.WidgetDefinition.Options.Chart;
 import org.homio.api.widget.template.WidgetDefinition.Options.Source;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class DisplayTemplateWidget implements TemplateWidgetBuilder {
 
@@ -53,15 +56,15 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
 
         String layoutID = "lt-dsp-" + entity.getIeeeAddress();
         Map<String, DeviceEndpoint> endpoints = entity.getDeviceEndpoints().entrySet().stream()
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+                                                      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
         entityContext.widget().createLayoutWidget(layoutID, builder -> {
             TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
             builder.setBlockSize(wd.getBlockWidth(1), wd.getBlockHeight(1))
-                    .setLayoutDimension(endpointCount + 1, 3);
+                   .setLayoutDimension(endpointCount + 1, 3);
         });
         var request = new MainWidgetRequest(widgetRequest, wd, 3,
-                endpointCount + 1, builder -> builder.attachToLayout(layoutID, 0, 0));
+            endpointCount + 1, builder -> builder.attachToLayout(layoutID, 0, 0));
         buildMainWidget(request);
 
         ComposeTemplateWidget.addBottomRow(entityContext, wd, layoutID, endpointCount, endpoints);
@@ -91,15 +94,15 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
                 builder.setLayout(layout);
             }
             builder.setBlockSize(
-                    wd.getBlockWidth(request.getLayoutColumnNum()),
-                    wd.getBlockHeight(request.getLayoutRowNum()));
+                wd.getBlockWidth(request.getLayoutColumnNum()),
+                wd.getBlockHeight(request.getLayoutRowNum()));
 
             request.getAttachToLayoutHandler().accept(builder);
 
             for (DeviceEndpoint endpoint : includeEndpoints) {
                 addEndpoint(widgetRequest, request.getItem(), builder, endpoint, seriesBuilder ->
-                        Optional.ofNullable(ICON_ANIMATE_ENDPOINTS.get(endpoint.getEndpointEntityID()))
-                                .ifPresent(ib -> ib.build(seriesBuilder)));
+                    Optional.ofNullable(ICON_ANIMATE_ENDPOINTS.get(endpoint.getEndpointEntityID()))
+                            .ifPresent(ib -> ib.build(seriesBuilder)));
             }
 
             Chart chart = wd.getOptions().getChart();
@@ -131,14 +134,14 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
     }
 
     private void addEndpoint(WidgetRequest widgetRequest, WidgetDefinition wb, DisplayWidgetBuilder builder,
-                             DeviceEndpoint endpoint, Consumer<DisplayWidgetSeriesBuilder> handler) {
+        DeviceEndpoint endpoint, Consumer<DisplayWidgetSeriesBuilder> handler) {
         builder.addSeries(endpoint.getName(true), seriesBuilder -> {
             seriesBuilder
-                    .setValueDataSource(TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), endpoint, false))
-                    .setValueTemplate(null, endpoint.getUnit())
-                    .setValueSuffixFontSize(0.6)
-                    .setValueSuffixColor("#777777")
-                    .setValueSuffixVerticalAlign(VerticalAlign.bottom);
+                .setValueDataSource(TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), endpoint, false))
+                .setValueTemplate(null, endpoint.getUnit())
+                .setValueSuffixFontSize(0.6)
+                .setValueSuffixColor("#777777")
+                .setValueSuffixVerticalAlign(VerticalAlign.bottom);
             handler.accept(seriesBuilder);
             ItemDefinition itemDefinition = wb.getEndpoint(endpoint.getEndpointEntityID());
             if (itemDefinition != null) {

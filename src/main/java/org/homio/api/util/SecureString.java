@@ -44,8 +44,7 @@ public class SecureString implements CharSequence {
     }
 
     /**
-     * @return Convert array back to String but not using toString(). See toString() docs
-     * below.
+     * @return Convert array back to String but not using toString(). See toString() docs below.
      */
     public String asString() {
         final char[] value = new char[chars.length];
@@ -73,22 +72,6 @@ public class SecureString implements CharSequence {
         return this.length() == 0 ? "" : "Secure:XXXXX";
     }
 
-    /**
-     * Randomly pad the characters to not store the real character in memory.
-     *
-     * @param start      start of the {@code CharSequence}
-     * @param length     length of the {@code CharSequence}
-     * @param characters the {@code CharSequence} to scramble
-     */
-    private void scramble(final int start, final int length, final CharSequence characters) {
-        final SecureRandom random = new SecureRandom();
-        for (int i = start; i < length; i++) {
-            final char charAt = characters.charAt(i);
-            pad[i] = random.nextInt();
-            chars[i] = pad[i] ^ charAt;
-        }
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -104,5 +87,21 @@ public class SecureString implements CharSequence {
     @Override
     public int hashCode() {
         return Objects.hashCode(this.asString());
+    }
+
+    /**
+     * Randomly pad the characters to not store the real character in memory.
+     *
+     * @param start      start of the {@code CharSequence}
+     * @param length     length of the {@code CharSequence}
+     * @param characters the {@code CharSequence} to scramble
+     */
+    private void scramble(final int start, final int length, final CharSequence characters) {
+        final SecureRandom random = new SecureRandom();
+        for (int i = start; i < length; i++) {
+            final char charAt = characters.charAt(i);
+            pad[i] = random.nextInt();
+            chars[i] = pad[i] ^ charAt;
+        }
     }
 }

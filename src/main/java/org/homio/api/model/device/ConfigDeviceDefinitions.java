@@ -1,12 +1,12 @@
 package org.homio.api.model.device;
 
-import lombok.Getter;
-
 import java.util.List;
 import java.util.Set;
+import lombok.Getter;
 
 @Getter
 public class ConfigDeviceDefinitions {
+
     // not uses for now
     private int version;
     private List<ConfigDeviceDefinition> devices;

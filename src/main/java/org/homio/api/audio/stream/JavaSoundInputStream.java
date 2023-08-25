@@ -1,10 +1,9 @@
 package org.homio.api.audio.stream;
 
+import javax.sound.sampled.TargetDataLine;
 import org.homio.api.audio.AudioFormat;
 import org.homio.api.audio.AudioStream;
 import org.jetbrains.annotations.Nullable;
-
-import javax.sound.sampled.TargetDataLine;
 
 public class JavaSoundInputStream extends AudioStream {
 

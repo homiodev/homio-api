@@ -2,6 +2,11 @@ package org.homio.api.ui.dialog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingConsumer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -12,11 +17,10 @@ import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.ActionInputParameter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-
 @Getter
 @RequiredArgsConstructor
 public class DialogModel {
+
     private final String entityID;
     private final String title;
     @JsonIgnore
@@ -80,15 +84,6 @@ public class DialogModel {
         });
     }
 
-    @SneakyThrows
-    private DialogModel button(String entityID, String title, DialogButton.ButtonType buttonType,
-                               ThrowingConsumer<DialogButton, Exception> consumer) {
-        DialogButton dialogButton = new DialogButton(entityID, title, buttonType);
-        consumer.accept(dialogButton);
-        buttons.add(dialogButton);
-        return this;
-    }
-
     public DialogModel maxTimeoutInSec(int maxTimeoutInSec) {
         this.maxTimeoutInSec = maxTimeoutInSec > 0 && maxTimeoutInSec < 3600 ? maxTimeoutInSec : 0;
         return this;
@@ -107,8 +102,8 @@ public class DialogModel {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
         DialogModel that = (DialogModel) o;
         return entityID.equals(that.entityID);
     }
@@ -118,11 +113,21 @@ public class DialogModel {
         return Objects.hash(entityID);
     }
 
+    @SneakyThrows
+    private DialogModel button(String entityID, String title, DialogButton.ButtonType buttonType,
+        ThrowingConsumer<DialogButton, Exception> consumer) {
+        DialogButton dialogButton = new DialogButton(entityID, title, buttonType);
+        consumer.accept(dialogButton);
+        buttons.add(dialogButton);
+        return this;
+    }
+
     @Getter
     @Setter
     @Accessors(chain = true)
     @RequiredArgsConstructor
     public static class DialogButton {
+
         private final String entityID;
         private final String title;
         private final ButtonType type;

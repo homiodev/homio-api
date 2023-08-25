@@ -1,6 +1,19 @@
 package org.homio.api.model.endpoint;
 
+import static java.util.Objects.requireNonNull;
+import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -18,15 +31,6 @@ import org.homio.api.state.State;
 import org.homio.api.state.StringType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-
-import static java.util.Objects.requireNonNull;
-import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 
 @Getter
 @RequiredArgsConstructor
@@ -122,15 +126,15 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     }
 
     public void init(
-            @NotNull ConfigDeviceDefinitionService configService,
-            @Nullable String endpointEntityID,
-            @NotNull D device,
-            @NotNull EntityContext entityContext,
-            @Nullable String unit,
-            boolean readable,
-            boolean writable,
-            @Nullable String endpointName,
-            @NotNull EndpointType endpointType) {
+        @NotNull ConfigDeviceDefinitionService configService,
+        @Nullable String endpointEntityID,
+        @NotNull D device,
+        @NotNull EntityContext entityContext,
+        @Nullable String unit,
+        boolean readable,
+        boolean writable,
+        @Nullable String endpointName,
+        @NotNull EndpointType endpointType) {
 
         this.configService = configService;
         configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
@@ -212,6 +216,15 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         changeListeners.remove(id);
     }
 
+    @Override
+    public String toString() {
+        return "Entity: " + getEntityID() + ". Order: " + getOrder();
+    }
+
+    public boolean writeValue(Object rawValue, boolean externalUpdate) {
+        return writeHandler.write(rawValue, externalUpdate);
+    }
+
     protected void pushVariable() {
         if (variableID != null) {
             entityContext.var().set(variableID, value, dbValue -> this.dbValue = dbValue);
@@ -223,7 +236,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
      */
     protected void updateUI() {
         entityContext.ui().updateInnerSetItem(device, "endpoints",
-                endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
+            endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
     }
 
     protected void getOrCreateVariable() {
@@ -246,10 +259,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             };
             if (variableType == VariableType.Enum) {
                 variableID = entityContext.var().createEnumVariable(getDeviceID(),
-                        getEntityID(), getName(false), getVariableEnumValues(), variableMetaBuilder);
+                    getEntityID(), getName(false), getVariableEnumValues(), variableMetaBuilder);
             } else {
                 variableID = entityContext.var().createVariable(getDeviceID(),
-                        getEntityID(), getName(false), variableType, variableMetaBuilder);
+                    getEntityID(), getName(false), variableType, variableMetaBuilder);
             }
 
             if (isWritable()) {
@@ -276,8 +289,8 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     protected @Nullable Consumer<VariableMetaBuilder> getVariableMetaBuilder() {
         return builder -> {
             builder.setDescription(getVariableDescription())
-                    .setReadOnly(!isWritable())
-                    .setColor(getIcon().getColor());
+                   .setReadOnly(!isWritable())
+                   .setColor(getIcon().getColor());
             List<String> attributes = new ArrayList<>();
             if (min != null) {
                 attributes.add("min:" + min);
@@ -322,15 +335,6 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
                 return VariableType.Any;
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Entity: " + getEntityID() + ". Order: " + getOrder();
-    }
-
-    public boolean writeValue(Object rawValue, boolean externalUpdate) {
-        return writeHandler.write(rawValue, externalUpdate);
     }
 
     protected WriteHandler createExternalWriteHandler() {

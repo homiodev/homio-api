@@ -1,7 +1,26 @@
 package org.homio.api.fs;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -9,14 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @Getter
 @Setter
@@ -42,7 +53,7 @@ public class TreeNode implements Comparable<TreeNode> {
     private FileSystemProvider fileSystem;
 
     public TreeNode(boolean dir, boolean empty, String name, String id, Long size, Long lastModifiedTime,
-                    FileSystemProvider fileSystem, String contentType) {
+        FileSystemProvider fileSystem, String contentType) {
         this.id = id;
         this.name = name;
         this.fileSystem = fileSystem;
@@ -59,19 +70,19 @@ public class TreeNode implements Comparable<TreeNode> {
     public static TreeNode of(@NotNull MultipartFile file) {
         String name = StringUtils.defaultIfEmpty(file.getOriginalFilename(), file.getName());
         return new TreeNode(false, false, name, name, file.getSize(), null, null, file.getContentType()).setInputStream(
-                file.getInputStream());
+            file.getInputStream());
     }
 
     public static TreeNode of(@NotNull String name, byte[] content) {
         return new TreeNode(false, false, name, name, (long) content.length, null, null, null).setInputStream(
-                new ByteArrayInputStream(content));
+            new ByteArrayInputStream(content));
     }
 
     @SneakyThrows
     public static TreeNode of(@NotNull String id, @NotNull Path path, @NotNull FileSystemProvider fileSystem) {
 
         return new TreeNode(false, false, path.getFileName().toString(), id, Files.size(path),
-                Files.getLastModifiedTime(path).toMillis(), fileSystem, null);
+            Files.getLastModifiedTime(path).toMillis(), fileSystem, null);
     }
 
     /**
@@ -111,16 +122,6 @@ public class TreeNode implements Comparable<TreeNode> {
         return paths;
     }
 
-    private void toPath(Path basePath, List<Path> paths) {
-        Path newBasePath = basePath.resolve(id);
-        paths.add(basePath.resolve(id));
-        if (childrenMap != null) {
-            for (TreeNode value : childrenMap.values()) {
-                value.toPath(newBasePath, paths);
-            }
-        }
-    }
-
     public Set<TreeNode> getChildren() {
         return childrenMap == null ? null : new HashSet<>(childrenMap.values());
     }
@@ -136,7 +137,7 @@ public class TreeNode implements Comparable<TreeNode> {
 
     public TreeNode clone(boolean includeRelations) {
         return new TreeNode(this.name, this.id, attributes, includeRelations ? this.parent : null,
-                includeRelations ? childrenMap : null, inputStream, fileSystem);
+            includeRelations ? childrenMap : null, inputStream, fileSystem);
     }
 
     public TreeNode addChild(@NotNull String id, boolean appendParentId, @NotNull Supplier<TreeNode> supplier) {
@@ -168,7 +169,7 @@ public class TreeNode implements Comparable<TreeNode> {
         for (Path child : path) {
             Set<TreeNode> children = cursor.getChildren(true);
             cursor = children == null ? null :
-                    children.stream().filter(c -> c.name.equals(child.getFileName().toString())).findAny().orElse(null);
+                children.stream().filter(c -> c.name.equals(child.getFileName().toString())).findAny().orElse(null);
             if (cursor == null) {
                 return null;
             }
@@ -188,7 +189,7 @@ public class TreeNode implements Comparable<TreeNode> {
     }
 
     public TreeNode addChildIfNotFound(@NotNull String id, @NotNull Supplier<TreeNode> childSupplier,
-                                       boolean appendParentId) {
+        boolean appendParentId) {
         TreeNode treeNode = appendParentId && this.id != null ? this.getChild(this.id + "/" + id) : this.getChild(id);
         if (treeNode == null) {
             return this.addChild(childSupplier.get(), appendParentId);
@@ -234,6 +235,16 @@ public class TreeNode implements Comparable<TreeNode> {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    private void toPath(Path basePath, List<Path> paths) {
+        Path newBasePath = basePath.resolve(id);
+        paths.add(basePath.resolve(id));
+        if (childrenMap != null) {
+            for (TreeNode value : childrenMap.values()) {
+                value.toPath(newBasePath, paths);
+            }
+        }
     }
 
     @Getter

@@ -5,7 +5,7 @@ import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
 import org.jetbrains.annotations.NotNull;
 
 public interface UIMultiButtonItemBuilder
-        extends UIEntityItemBuilder<UIMultiButtonItemBuilder, String> {
+    extends UIEntityItemBuilder<UIMultiButtonItemBuilder, String> {
 
     @NotNull UIMultiButtonItemBuilder addButton(@NotNull String title);
 

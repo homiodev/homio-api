@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface EntityContextMedia {
 
-    String CHANNEL_FFMPEG_MOTION_ALARM = "ffmpegMotionAlarm";
+    String FFMPEG_MOTION_ALARM = "motion_alarm";
 
     @NotNull EntityContext getEntityContext();
 
@@ -26,17 +26,17 @@ public interface EntityContextMedia {
     Set<String> getAudioDevices();
 
     @NotNull FFMPEG buildFFMPEG(@NotNull String entityID,
-                                @NotNull String description,
-                                @NotNull FFMPEGHandler handler,
-                                @NotNull Logger log,
-                                @NotNull FFMPEGFormat format,
-                                @NotNull String inputArguments,
-                                @NotNull String input,
-                                @NotNull String outArguments,
-                                @NotNull String output,
-                                @NotNull String username,
-                                @NotNull String password,
-                                @Nullable Runnable destroyListener);
+        @NotNull String description,
+        @NotNull FFMPEGHandler handler,
+        @NotNull Logger log,
+        @NotNull FFMPEGFormat format,
+        @NotNull String inputArguments,
+        @NotNull String input,
+        @NotNull String outArguments,
+        @NotNull String output,
+        @NotNull String username,
+        @NotNull String password,
+        @Nullable Runnable destroyListener);
 
     enum FFMPEGFormat {
         HLS,

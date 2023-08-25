@@ -16,6 +16,7 @@ import org.json.JSONObject;
 @Setter
 @Accessors(chain = true)
 public class ActionResponseModel {
+
     private final Object value;
     private ResponseAction responseAction = ResponseAction.info;
 

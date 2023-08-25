@@ -1,20 +1,27 @@
 package org.homio.api;
 
-import com.pivovarit.function.*;
+import com.pivovarit.function.ThrowingBiConsumer;
+import com.pivovarit.function.ThrowingBiFunction;
+import com.pivovarit.function.ThrowingConsumer;
+import com.pivovarit.function.ThrowingFunction;
+import com.pivovarit.function.ThrowingRunnable;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchEvent.Kind;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchEvent.Kind;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public interface EntityContextBGP {
@@ -22,6 +29,14 @@ public interface EntityContextBGP {
     static boolean cancel(ThreadContext<?> threadContext) {
         if (threadContext != null) {
             threadContext.cancel();
+            return true;
+        }
+        return false;
+    }
+
+    static boolean cancel(ProcessContext processContext) {
+        if (processContext != null) {
+            processContext.cancel(true);
             return true;
         }
         return false;
@@ -63,9 +78,9 @@ public interface EntityContextBGP {
      * @return this
      */
     default @NotNull <T> ThreadContext<Map<String, T>> awaitProcesses(@NotNull String name, Duration maxTimeToWait,
-                                                                      @NotNull List<ThreadContext<T>> processes,
-                                                                      @NotNull Logger logger,
-                                                                      @Nullable Consumer<Map<String, T>> finallyBlock) {
+        @NotNull List<ThreadContext<T>> processes,
+        @NotNull Logger logger,
+        @Nullable Consumer<Map<String, T>> finallyBlock) {
         ScheduleBuilder<Map<String, T>> builder = builder(name);
         return builder.execute(arg -> {
             Map<String, T> result = new HashMap<>();
@@ -95,7 +110,7 @@ public interface EntityContextBGP {
      * @throws IllegalArgumentException if file not readable
      */
     @NotNull ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
-            throws IllegalArgumentException;
+        throws IllegalArgumentException;
 
     /**
      * Run directory watchdog for specific events.
@@ -107,7 +122,7 @@ public interface EntityContextBGP {
      * @throws IllegalArgumentException if directory not exists or dir already under watching
      */
     @NotNull ThreadContext<Void> runDirectoryWatchdog(@NotNull Path dir, @NotNull ThrowingConsumer<WatchEvent<Path>, Exception> onUpdateCommand,
-                                                      Kind<?>... eventsToListen);
+        Kind<?>... eventsToListen);
 
     /**
      * Create builder that consume progress bar. Every progress bar update reflects on UI.
@@ -122,8 +137,8 @@ public interface EntityContextBGP {
     void cancelThread(@NotNull String name);
 
     /**
-     * Register 'external' threads in context. 'External' mean thread that wasn't created by bgp().builder(...) but eny
-     * other new Thread(...) or even java.lang.Process
+     * Register 'external' threads in context. 'External' mean thread that wasn't created by bgp().builder(...) but eny other new Thread(...) or even
+     * java.lang.Process
      *
      * @param id                   - distinguish id
      * @param threadPullerConsumer - thread object consumer
@@ -131,17 +146,17 @@ public interface EntityContextBGP {
     void registerThreadsPuller(@NotNull String id, @NotNull Consumer<ThreadPuller> threadPullerConsumer);
 
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
-                                                       @Nullable Duration maxTerminateTimeout,
-                                                       @NotNull Collection<P> taskItems,
-                                                       @NotNull Function<P, Callable<T>> callableProducer,
-                                                       @NotNull Consumer<Integer> progressConsumer,
-                                                       @NotNull Consumer<List<T>> finallyProcessBlockHandler);
+        @Nullable Duration maxTerminateTimeout,
+        @NotNull Collection<P> taskItems,
+        @NotNull Function<P, Callable<T>> callableProducer,
+        @NotNull Consumer<Integer> progressConsumer,
+        @NotNull Consumer<List<T>> finallyProcessBlockHandler);
 
     @NotNull <T> List<T> runInBatchAndGet(@NotNull String batchName,
-                                          @Nullable Duration maxTerminateTimeout,
-                                          int threadsCount,
-                                          @NotNull Map<String, Callable<T>> runnableTasks,
-                                          @NotNull Consumer<Integer> progressConsumer);
+        @Nullable Duration maxTerminateTimeout,
+        int threadsCount,
+        @NotNull Map<String, Callable<T>> runnableTasks,
+        @NotNull Consumer<Integer> progressConsumer);
 
     void executeOnExit(ThrowingRunnable<Exception> runnable);
 
@@ -288,12 +303,12 @@ public interface EntityContextBGP {
     interface ThreadPuller {
 
         @NotNull ThreadPuller addThread(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-                                        @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
+            @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
 
         @NotNull ThreadPuller addScheduler(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-                                           @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
-                                           int runCount,
-                                           @Nullable String bigDescription);
+            @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
+            int runCount,
+            @Nullable String bigDescription);
     }
 
     interface ProcessContext {

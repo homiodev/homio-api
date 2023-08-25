@@ -1,10 +1,27 @@
 package org.homio.api.model;
 
+import static java.lang.String.format;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,17 +33,6 @@ import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.fs.TreeNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 @Accessors(chain = true)
 @NoArgsConstructor
@@ -99,7 +105,7 @@ public class OptionModel implements Comparable<OptionModel> {
 
     public static OptionModel of(@NotNull TreeNode item) {
         OptionModel model = OptionModel.of(item.getId(), item.getName()).json(
-                json -> json.put("dir", item.getAttributes().isDir())
+            json -> json.put("dir", item.getAttributes().isDir())
                         .put("size", item.getAttributes().getSize())
                         .put("empty", item.getAttributes().isEmpty())
                         .put("lastUpdated", item.getAttributes().getLastUpdated()));
@@ -114,23 +120,24 @@ public class OptionModel implements Comparable<OptionModel> {
 
     public static List<OptionModel> listOfPorts(boolean withEmpty) {
         List<OptionModel> optionModels = Arrays.stream(SerialPort.getCommPorts()).map(p ->
-                        new OptionModel(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName()))
-                .collect(Collectors.toList());
+                                                   new OptionModel(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName()))
+                                               .collect(Collectors.toList());
         return withEmpty ? withEmpty(optionModels) : optionModels;
     }
 
     public static List<OptionModel> enumList(@NotNull Class<? extends Enum> enumClass) {
         if (HasDescription.class.isAssignableFrom(enumClass)) {
             return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString())
-                    .setDescription(((HasDescription) n).getDescription())).collect(Collectors.toList());
+                                                                               .setDescription(((HasDescription) n).getDescription()))
+                         .collect(Collectors.toList());
         }
         return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString()))
-                .collect(Collectors.toList());
+                     .collect(Collectors.toList());
     }
 
     public static List<OptionModel> list(@NotNull Class<? extends KeyValueEnum> enumClass) {
         return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.getKey(), n.getValue()))
-                .collect(Collectors.toList());
+                     .collect(Collectors.toList());
     }
 
     public static List<OptionModel> list(@NotNull String... values) {
@@ -178,7 +185,7 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static <T> List<OptionModel> list(@NotNull Collection<T> list, @NotNull Function<T, String> keyFn,
-                                             @NotNull Function<T, String> valueFn) {
+        @NotNull Function<T, String> valueFn) {
         return list.stream().map(e -> OptionModel.of(keyFn.apply(e), valueFn.apply(e))).collect(Collectors.toList());
     }
 
@@ -191,20 +198,20 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static List<OptionModel> entityList(
-            @NotNull Collection<? extends BaseEntity> list,
-            @Nullable BiConsumer<BaseEntity, OptionModel> configurator) {
+        @NotNull Collection<? extends BaseEntity> list,
+        @Nullable BiConsumer<BaseEntity, OptionModel> configurator) {
         return list.stream().map(entity -> {
-                    OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
-                    if (entity instanceof HasStatusAndMsg status) {
-                        model.setStatus(status);
-                    }
-                    entity.configureOptionModel(model);
-                    if (configurator != null) {
-                        configurator.accept(entity, model);
-                    }
-                    return model;
-                })
-                .sorted().collect(Collectors.toList());
+                       OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
+                       if (entity instanceof HasStatusAndMsg status) {
+                           model.setStatus(status);
+                       }
+                       entity.configureOptionModel(model);
+                       if (configurator != null) {
+                           configurator.accept(entity, model);
+                       }
+                       return model;
+                   })
+                   .sorted().collect(Collectors.toList());
     }
 
     public static @NotNull List<OptionModel> simpleNamelist(@NotNull Collection list) {

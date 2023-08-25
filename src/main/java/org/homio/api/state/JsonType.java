@@ -1,17 +1,16 @@
 package org.homio.api.state;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.function.BiConsumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
-
-import java.util.function.BiConsumer;
-
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 @Getter
 @Log4j2
@@ -111,8 +110,8 @@ public class JsonType implements State, Comparable<JsonType> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         JsonType jsonType = (JsonType) o;
 

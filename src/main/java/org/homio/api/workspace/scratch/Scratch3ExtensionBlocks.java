@@ -1,5 +1,17 @@
 package org.homio.api.workspace.scratch;
 
+import static org.apache.commons.lang3.StringUtils.defaultString;
+
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -10,14 +22,6 @@ import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
-import static org.apache.commons.lang3.StringUtils.defaultString;
 
 @Getter
 public abstract class Scratch3ExtensionBlocks {
@@ -49,7 +53,7 @@ public abstract class Scratch3ExtensionBlocks {
 
     @SneakyThrows
     public Scratch3ExtensionBlocks(String color, EntityContext entityContext, AddonEntrypoint addonEntryPoint,
-                                   String idSuffix) {
+        String idSuffix) {
         this.id = addonEntryPoint == null ? idSuffix : addonEntryPoint.getAddonID() + (idSuffix == null ? "" : "-" + idSuffix);
         this.parent = addonEntryPoint == null ? null : addonEntryPoint.getAddonID();
         this.entityContext = entityContext;
@@ -59,14 +63,14 @@ public abstract class Scratch3ExtensionBlocks {
                 throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
             }
             this.blockIconURI = "data:image/png;base64," +
-                    Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
+                Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
             this.scratch3Color = new Scratch3Color(color);
         }
     }
 
     @SneakyThrows
     public Scratch3ExtensionBlocks(@NotNull String color, @NotNull EntityContext entityContext, @NotNull String id,
-                                   @NotNull String name, @NotNull URL imageResource) {
+        @NotNull String name, @NotNull URL imageResource) {
         this.id = id;
         this.entityContext = entityContext;
         this.blockIconURI = "data:image/png;base64," + Base64.getEncoder().encodeToString(IOUtils.toByteArray(imageResource));
@@ -78,8 +82,11 @@ public abstract class Scratch3ExtensionBlocks {
         this(null, entityContext, null, id);
     }
 
+    public void init() {
+    }
+
     protected Scratch3Block blockHat(int order, String opcode, String text, Scratch3Block.Scratch3BlockHandler handler,
-                                     Consumer<Scratch3Block> configureHandler) {
+        Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.hat, text, handler, null), configureHandler);
     }
 
@@ -92,25 +99,25 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     protected Scratch3ConditionalBlock blockCondition(int order, String opcode, String text,
-                                                      Scratch3Block.Scratch3BlockHandler handler,
-                                                      Consumer<Scratch3ConditionalBlock> configureHandler) {
+        Scratch3Block.Scratch3BlockHandler handler,
+        Consumer<Scratch3ConditionalBlock> configureHandler) {
         return addBlock(new Scratch3ConditionalBlock(order, opcode, BlockType.conditional, text, handler, null),
-                configureHandler);
+            configureHandler);
     }
 
     protected Scratch3ConditionalBlock blockCondition(int order, String opcode, String text,
-                                                      Scratch3Block.Scratch3BlockHandler handler) {
+        Scratch3Block.Scratch3BlockHandler handler) {
         return blockCondition(order, opcode, text, handler, null);
     }
 
     protected Scratch3Block blockCommand(int order, String opcode, String text, Scratch3Block.Scratch3BlockHandler handler,
-                                         Consumer<Scratch3Block> configureHandler) {
+        Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.command, text, handler, null),
-                configureHandler);
+            configureHandler);
     }
 
     protected Scratch3Block blockCommand(int order, String opcode, String text,
-                                         Scratch3Block.Scratch3BlockHandler handler) {
+        Scratch3Block.Scratch3BlockHandler handler) {
         return blockCommand(order, opcode, text, handler, null);
     }
 
@@ -119,18 +126,14 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     protected Scratch3Block blockReporter(int order, String opcode, String text,
-                                          Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
-                                          Consumer<Scratch3Block> configureHandler) {
+        Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
+        Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.reporter, text, null, evalHandler), configureHandler);
     }
 
     protected Scratch3Block blockReporter(int order, String opcode, String text,
-                                          Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
+        Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
         return blockReporter(order, opcode, text, evalHandler, null);
-    }
-
-    protected Scratch3Block blockReporter(String opcode, Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
-        return blockReporter(0, opcode, null, evalHandler, null);
     }
 
     /*@SneakyThrows
@@ -141,40 +144,44 @@ public abstract class Scratch3ExtensionBlocks {
     }
 */
 
+    protected Scratch3Block blockReporter(String opcode, Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
+        return blockReporter(0, opcode, null, evalHandler, null);
+    }
+
     @SneakyThrows
     protected <T extends Scratch3Block> T blockTargetReporter(int order, String opcode, String text,
-                                                              Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
-                                                              Class<T> targetClass, Consumer<T> configureHandler) {
+        Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
+        Class<T> targetClass, Consumer<T> configureHandler) {
         Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class,
-                Scratch3Block.Scratch3BlockHandler.class, Scratch3Block.Scratch3BlockEvaluateHandler.class);
+            Scratch3Block.Scratch3BlockHandler.class, Scratch3Block.Scratch3BlockEvaluateHandler.class);
         T instance = constructor.newInstance(order, opcode, BlockType.reporter, text, null, evalHandler);
         return addBlock(instance, configureHandler);
     }
 
     protected Scratch3Block blockBoolean(int order, String opcode, String text,
-                                         Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
-                                         Consumer<Scratch3Block> configureHandler) {
+        Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
+        Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.Boolean, text, null, evalHandler), configureHandler);
     }
 
     protected Scratch3Block blockBoolean(int order, String opcode, String text,
-                                         Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
+        Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
         return blockBoolean(order, opcode, text, evalHandler, null);
     }
 
     protected <T extends Enum> MenuBlock.StaticMenuBlock<T> menuStatic(String name, Class<T> enumClass, T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnum(enumClass)
-                .setDefaultValue(defaultValue));
+                                                                           .setDefaultValue(defaultValue));
     }
 
     protected <T extends Enum> MenuBlock.StaticMenuBlock<T> menuStatic(String name, Class<T> enumClass, T defaultValue,
-                                                                       Predicate<T> filter) {
+        Predicate<T> filter) {
         return addMenu(
-                new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnum(enumClass, filter).setDefaultValue(defaultValue));
+            new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnum(enumClass, filter).setDefaultValue(defaultValue));
     }
 
     protected MenuBlock.ServerMenuBlock menuServer(String name, String url, String firstKey, String firstValue,
-                                                   Integer... clusters) {
+        Integer... clusters) {
         return addMenu(new MenuBlock.ServerMenuBlock(name, url, firstKey, firstValue, clusters, true));
     }
 
@@ -188,7 +195,7 @@ public abstract class Scratch3ExtensionBlocks {
 
     protected MenuBlock.ServerMenuBlock menuServerServiceItems(String name, Class<?> entityServiceClass, String firstKey) {
         return addMenu(new MenuBlock.ServerMenuBlock(name, "rest/item/service/" + entityServiceClass.getSimpleName(), firstKey,
-                "-", null, true));
+            "-", null, true));
     }
 
     protected MenuBlock.ServerMenuBlock menuServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey) {
@@ -196,14 +203,14 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     protected MenuBlock.ServerMenuBlock menuServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey,
-                                                        String firstValue) {
+        String firstValue) {
         return addMenu(
-                new MenuBlock.ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), firstKey, firstValue, null,
-                        true));
+            new MenuBlock.ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), firstKey, firstValue, null,
+                true));
     }
 
     protected <T extends KeyValueEnum> MenuBlock.StaticMenuBlock<T> menuStaticKV(@NotNull String name, @NotNull Class<T> enumClass,
-                                                                                 T defaultValue) {
+        T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnumKVE(enumClass).setDefaultValue(defaultValue));
     }
 
@@ -247,9 +254,6 @@ public abstract class Scratch3ExtensionBlocks {
             }
         }
         return resource;
-    }
-
-    public void init() {
     }
 
     private <T extends MenuBlock> T addMenu(T menuBlock) {

@@ -2,6 +2,9 @@ package org.homio.api;
 
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPlugin;
@@ -10,10 +13,6 @@ import org.homio.api.setting.console.header.dynamic.DynamicConsoleHeaderContaine
 import org.homio.api.setting.console.header.dynamic.DynamicConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 public interface EntityContextSetting {
 
@@ -37,7 +36,7 @@ public interface EntityContextSetting {
      * @param <T>            -
      */
     static <T> void setMemValue(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title,
-                                @Nullable T value) {
+        @Nullable T value) {
         MEM_HANDLER.get().setValue(entity, distinguishKey, title, value);
     }
 
@@ -50,7 +49,7 @@ public interface EntityContextSetting {
     }
 
     static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title, @Nullable Status status,
-                          String message) {
+        String message) {
         setMemValue(entity, distinguishKey + "Message", "", message);
         setMemValue(entity, distinguishKey, title, status);
     }
@@ -84,7 +83,7 @@ public interface EntityContextSetting {
      * @param dynamicSettings           -
      */
     void reloadSettings(@NotNull Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass,
-                        @NotNull List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
+        @NotNull List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
 
     /**
      * Get setting value by class name
@@ -118,13 +117,12 @@ public interface EntityContextSetting {
     }
 
     default <T> void listenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                                 @NotNull ThrowingRunnable<Exception> listener) {
+        @NotNull ThrowingRunnable<Exception> listener) {
         listenValue(settingClass, key, p -> listener.run());
     }
 
     /**
-     * Usually listeners executes in separate thread but in some cases we need access to user who updating value and we need
-     * run listener inside http request
+     * Usually listeners executes in separate thread but in some cases we need access to user who updating value and we need run listener inside http request
      *
      * @param listener     -
      * @param key          -
@@ -132,15 +130,15 @@ public interface EntityContextSetting {
      * @param <T>          -
      */
     <T> void listenValueInRequest(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                                  @NotNull ThrowingConsumer<T, Exception> listener);
+        @NotNull ThrowingConsumer<T, Exception> listener);
 
     <T> void listenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                         @NotNull ThrowingConsumer<T, Exception> listener);
+        @NotNull ThrowingConsumer<T, Exception> listener);
 
     <T> void unListenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key);
 
     default <T> void listenValueAndGet(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-                                       @NotNull ThrowingConsumer<T, Exception> listener) throws Exception {
+        @NotNull ThrowingConsumer<T, Exception> listener) throws Exception {
         listenValue(settingClass, key, listener);
         listener.accept(getValue(settingClass));
     }

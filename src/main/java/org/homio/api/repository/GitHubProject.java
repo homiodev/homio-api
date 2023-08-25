@@ -53,50 +53,47 @@ import org.springframework.http.HttpStatus;
 
 @SuppressWarnings("unused")
 @Log4j2
-@Getter
 @Accessors(chain = true)
 @RequiredArgsConstructor
 public class GitHubProject {
 
     private static final SimpleDateFormat PUBLISHED_AT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
-    private final @NotNull String repo;
-    private final @NotNull String project;
-    private final @NotNull String api;
-    private final @NotNull Map<String, String> httpHeaders = new HashMap<>();
-    private final @NotNull Path localProjectPath;
+    private final @NotNull @Getter String repo;
+    private final @NotNull @Getter String project;
+    private final @NotNull @Getter String api;
+    private final @NotNull @Getter Map<String, String> httpHeaders = new HashMap<>();
+    private final @NotNull @Getter Path localProjectPath;
     // releases sorted by published_at
     private final CachedValue<List<JsonNode>, GitHubProject> releasesCache =
-            new CachedValue<>(Duration.ofHours(24), gitHubProject ->
-                    Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "releases", httpHeaders), JsonNode.class, (jsonNode, status) -> {
-                        List<JsonNode> releases = new ArrayList<>();
-                        try {
-                            if (status != HttpStatus.OK.value()) {
-                                throw new IllegalStateException(jsonNode.toString());
-                            }
-                            for (JsonNode node : jsonNode) {
-                                if (!node.get("prerelease").asBoolean(true)) {
-                                    releases.add(node);
-                                }
-                            }
-                            releases.sort((o1, o2) -> {
-                                try {
-                                    return Long.compare(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()).getTime(),
-                                            PUBLISHED_AT_DATE_FORMAT.parse(o2.get("published_at").asText()).getTime());
-                                } catch (ParseException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
-                        } catch (Exception ex) {
-                            log.error("Unable to fetch releases from GitHub api: {}releases. Error: {}", gitHubProject.api, CommonUtils.getErrorMessage(ex));
+        new CachedValue<>(Duration.ofHours(24), gitHubProject ->
+            Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "releases", httpHeaders), JsonNode.class, (jsonNode, status) -> {
+                List<JsonNode> releases = new ArrayList<>();
+                try {
+                    if (status != HttpStatus.OK.value()) {
+                        throw new IllegalStateException(jsonNode.toString());
+                    }
+                    for (JsonNode node : jsonNode) {
+                        if (!node.get("prerelease").asBoolean(true)) {
+                            releases.add(node);
                         }
-                        return releases;
-                    }));
-    @Setter
-    private @Nullable String installedVersion;
-    private boolean updating;
-    @Setter
-    private @Nullable ThrowingBiFunction<EntityContext, GitHubProject, String, Exception> installedVersionResolver;
+                    }
+                    releases.sort((o1, o2) -> {
+                        try {
+                            return Long.compare(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()).getTime(),
+                                PUBLISHED_AT_DATE_FORMAT.parse(o2.get("published_at").asText()).getTime());
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                } catch (Exception ex) {
+                    log.error("Unable to fetch releases from GitHub api: {}releases. Error: {}", gitHubProject.api, CommonUtils.getErrorMessage(ex));
+                }
+                return releases;
+            }));
+    private @Nullable @Setter String installedVersion;
+    private @Getter boolean updating;
+    private @Nullable @Setter ThrowingBiFunction<EntityContext, GitHubProject, String, Exception> installedVersionResolver;
 
     private GitHubProject(@NotNull String project, @NotNull String repo, @Nullable Path localProjectPath) {
         this.project = project;
@@ -135,6 +132,21 @@ public class GitHubProject {
             return versions.subList(versionIndex + 1, versions.size());
         }
         return versions;
+    }
+
+    @SneakyThrows
+    public boolean backup(Path src, Path target) {
+        Path srcPath = getLocalProjectPath().resolve(src);
+        Path targetPath = getLocalProjectPath().resolve(target);
+        if (Files.exists(targetPath)) {
+            return false;
+        }
+        if (Files.isDirectory(srcPath)) {
+            FileUtils.copyDirectory(srcPath.toFile(), targetPath.toFile());
+        } else {
+            Files.copy(srcPath, targetPath);
+        }
+        return true;
     }
 
     public void installLatestRelease(EntityContext entityContext) {
@@ -238,9 +250,9 @@ public class GitHubProject {
 
     public @NotNull List<String> getReleasesSince(String version, boolean includeCurrent) {
         List<String> versions = releasesCache.getValue(this)
-                .stream()
-                .map(r -> r.get("tag_name").asText())
-                .collect(Collectors.toList());
+                                             .stream()
+                                             .map(r -> r.get("tag_name").asText())
+                                             .collect(Collectors.toList());
         return getReleasesSince(version, versions, includeCurrent);
     }
 
@@ -257,7 +269,7 @@ public class GitHubProject {
             replace);
         Files.delete(tmpPath);
         Files.move(CommonUtils.getTmpPath().resolve(name + "-" + version),
-                targetPath, StandardCopyOption.REPLACE_EXISTING);
+            targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     @SneakyThrows
@@ -286,11 +298,11 @@ public class GitHubProject {
 
     // Helper method to execute some process i.e. download from GitHub, backup, etc...
     public @NotNull ActionResponseModel updateProject(
-            @NotNull String name,
-            @NotNull ProgressBar progressBar,
-            boolean backupProject,
-            @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler,
-            @Nullable ThrowingConsumer<Exception, Exception> onFinally) {
+        @NotNull String name,
+        @NotNull ProgressBar progressBar,
+        boolean backupProject,
+        @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler,
+        @Nullable ThrowingConsumer<Exception, Exception> onFinally) {
         if (this.updating) {
             return ActionResponseModel.showError("W.ERROR.UPDATE_IN_PROGRESS");
         }
@@ -375,7 +387,7 @@ public class GitHubProject {
             // remove target node if exists
             FileUtils.deleteDirectory(targetFileOrDirectory);
             FileUtils.moveDirectory(CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile(),
-                    targetFileOrDirectory);
+                targetFileOrDirectory);
             return this;
         }
 

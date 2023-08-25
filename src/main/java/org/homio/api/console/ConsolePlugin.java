@@ -1,5 +1,7 @@
 package org.homio.api.console;
 
+import java.util.Map;
+import java.util.Objects;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;
@@ -7,9 +9,6 @@ import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Uses for implementing page for console tab
@@ -71,7 +70,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     default @Nullable ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata)
-            throws Exception {
+        throws Exception {
         return null;
     }
 

@@ -171,11 +171,11 @@ public interface SettingPlugin<T> {
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
                 throw new IllegalArgumentException(
-                        "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+                    "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
             }
             if (parameters.has("max") && parseValue > parameters.getInt("max")) {
                 throw new IllegalArgumentException(
-                        "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+                    "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
             }
         }
         return (T) parseValue;

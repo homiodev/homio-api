@@ -37,28 +37,28 @@ public interface UIInputBuilder extends UILayoutBuilder {
     }
 
     @NotNull UIButtonItemBuilder addSelectableButton(@NotNull String name, @Nullable Icon icon,
-                                                     @Nullable UIActionHandler action, int order);
+        @Nullable UIActionHandler action, int order);
 
     @NotNull
     default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Icon icon,
-                                                                            @Nullable Integer dialogWidth,
-                                                                            @NotNull UIActionHandler action) {
+        @Nullable Integer dialogWidth,
+        @NotNull UIActionHandler action) {
         return addOpenDialogSelectableButton(name, icon, dialogWidth, action, getNextOrder());
     }
 
     @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Icon icon,
-                                                                             @Nullable Integer dialogWidth,
-                                                                             @NotNull UIActionHandler action, int order);
+        @Nullable Integer dialogWidth,
+        @NotNull UIActionHandler action, int order);
 
     @NotNull
     default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
-                                                                            @NotNull UIActionHandler action) {
+        @NotNull UIActionHandler action) {
         return addOpenDialogSelectableButton(name, null, dialogWidth, action);
     }
 
     @NotNull
     default DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
-                                                                            @NotNull UIActionHandler action, int order) {
+        @NotNull UIActionHandler action, int order) {
         return addOpenDialogSelectableButton(name, null, dialogWidth, action, order);
     }
 

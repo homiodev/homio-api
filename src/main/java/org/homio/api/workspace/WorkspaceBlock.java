@@ -1,8 +1,25 @@
 package org.homio.api.workspace;
 
+import static org.apache.commons.lang3.StringUtils.defaultString;
+
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
@@ -19,23 +36,13 @@ import org.homio.hquery.Curl;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import static org.apache.commons.lang3.StringUtils.defaultString;
-
 public interface WorkspaceBlock {
+
     Set<String> MEDIA_EXTENSIONS = new HashSet<>(
-            Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
-                    ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
-                    ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
-                    ".js", ".mp3"));
+        Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
+            ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
+            ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
+            ".js", ".mp3"));
 
     @SneakyThrows
     static String evalStringWithContext(String value, Function<String, String> valueSupplier) {
@@ -203,7 +210,7 @@ public interface WorkspaceBlock {
     }
 
     default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
-                                 Runnable runnable) {
+        Runnable runnable) {
         while (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit) && checkFn.apply(lock.getValue())) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {

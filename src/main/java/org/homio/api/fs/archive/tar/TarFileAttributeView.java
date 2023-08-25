@@ -8,12 +8,29 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class TarFileAttributeView implements BasicFileAttributeView {
+
     private final TarPath path;
     private final boolean isZipView;
 
     private TarFileAttributeView(TarPath path, boolean isZipView) {
         this.path = path;
         this.isZipView = isZipView;
+    }
+
+    @Override
+    public String name() {
+        return isZipView ? "zip" : "basic";
+    }
+
+    @Override
+    public TarFileAttributes readAttributes() throws IOException {
+        return path.getAttributes();
+    }
+
+    @Override
+    public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime,
+        FileTime createTime) throws IOException {
+        path.setTimes(lastModifiedTime, lastAccessTime, createTime);
     }
 
     @SuppressWarnings("unchecked")
@@ -43,22 +60,6 @@ public class TarFileAttributeView implements BasicFileAttributeView {
         return null;
     }
 
-    @Override
-    public String name() {
-        return isZipView ? "zip" : "basic";
-    }
-
-    @Override
-    public TarFileAttributes readAttributes() throws IOException {
-        return path.getAttributes();
-    }
-
-    @Override
-    public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime,
-                         FileTime createTime) throws IOException {
-        path.setTimes(lastModifiedTime, lastAccessTime, createTime);
-    }
-
     void setAttribute(String attribute, Object value) throws IOException {
         try {
             if (AttrID.valueOf(attribute) == AttrID.lastModifiedTime) {
@@ -69,7 +70,7 @@ public class TarFileAttributeView implements BasicFileAttributeView {
             e.printStackTrace();
         }
         throw new UnsupportedOperationException("'" + attribute
-                + "' is unknown or read-only attribute");
+            + "' is unknown or read-only attribute");
     }
 
     Map<String, Object> readAttributes(String attributes) throws IOException {

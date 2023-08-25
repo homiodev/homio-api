@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldClassSelection {
+
     Class<?> value();
 
     Class<? extends Predicate<Class<?>>> filter() default Identity.class;

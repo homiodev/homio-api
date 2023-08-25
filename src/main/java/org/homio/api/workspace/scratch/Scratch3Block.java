@@ -1,6 +1,12 @@
 package org.homio.api.workspace.scratch;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -13,15 +19,9 @@ import org.homio.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Predicate;
-
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
+
     public static final String CONDITION = "CONDITION";
     @JsonIgnore
     private final int order;
@@ -39,9 +39,9 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     private Scratch3Color scratch3Color;
 
     protected Scratch3Block(int order, @NotNull String opcode, @NotNull BlockType blockType,
-                            @NotNull Object text,
-                            @Nullable Scratch3BlockHandler handler,
-                            @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
+        @NotNull Object text,
+        @Nullable Scratch3BlockHandler handler,
+        @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
         this.opcode = opcode;
         this.blockType = blockType;
@@ -139,8 +139,8 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
         Scratch3Block that = (Scratch3Block) o;
         return opcode.equals(that.opcode);
     }

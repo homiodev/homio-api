@@ -49,6 +49,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     @NoArgsConstructor
     @AllArgsConstructor
     class PackageContext {
+
         String error;
         Collection<PackageModel> packages;
     }
@@ -88,6 +89,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     @Data
     @Accessors(chain = true)
     class PackageRequest {
+
         private String name;
         private String url;
         private String version;

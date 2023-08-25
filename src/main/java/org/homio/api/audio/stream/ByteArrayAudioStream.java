@@ -1,10 +1,9 @@
 package org.homio.api.audio.stream;
 
-import org.homio.api.audio.AudioFormat;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.homio.api.audio.AudioFormat;
 
 public class ByteArrayAudioStream extends FixedLengthAudioStream {
 

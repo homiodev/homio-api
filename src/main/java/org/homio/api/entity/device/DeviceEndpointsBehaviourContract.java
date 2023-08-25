@@ -87,8 +87,8 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
         ConfigDeviceDefinitionService service = getConfigDeviceDefinitionService();
         List<ConfigDeviceDefinition> matchDevices = findMatchDeviceConfigurations();
         return new Icon(
-                service.getDeviceIcon(matchDevices, "fas fa-server"),
-                service.getDeviceIconColor(matchDevices, UI.Color.random())
+            service.getDeviceIcon(matchDevices, "fas fa-server"),
+            service.getDeviceIconColor(matchDevices, UI.Color.random())
         );
     }
 

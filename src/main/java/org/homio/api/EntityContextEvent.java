@@ -1,19 +1,17 @@
 package org.homio.api;
 
 import com.pivovarit.function.ThrowingRunnable;
+import java.net.DatagramPacket;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import org.homio.api.entity.BaseEntityIdentifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.DatagramPacket;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
 public interface EntityContextEvent {
 
     /**
-     * Listen upd on host/port. default host is wildcard
-     * listener accept DatagramPacket and string value
+     * Listen upd on host/port. default host is wildcard listener accept DatagramPacket and string value
      *
      * @param listener -
      * @param host     -
@@ -95,14 +93,13 @@ public interface EntityContextEvent {
     EntityContextEvent fireEventIfNotSame(@NotNull String key, @Nullable Object value);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
-            (String entityID, String key, Consumer<T> listener);
+        (String entityID, String key, Consumer<T> listener);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
-            (String entityID, String key, EntityUpdateListener<T> listener);
+        (String entityID, String key, EntityUpdateListener<T> listener);
 
     /**
-     * t
-     * Listen any changes fot BaseEntity of concrete type.
+     * t Listen any changes fot BaseEntity of concrete type.
      *
      * @param entityClass type to listen
      * @param listener    handler invoke when entity update
@@ -126,13 +123,13 @@ public interface EntityContextEvent {
     (Class<T> entityClass, String key, EntityUpdateListener<T> listener);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityCreateListener
-            (Class<T> entityClass, String key, Consumer<T> listener);
+        (Class<T> entityClass, String key, Consumer<T> listener);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityRemovedListener
-            (Class<T> entityClass, String key, Consumer<T> listener);
+        (Class<T> entityClass, String key, Consumer<T> listener);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityRemovedListener
-            (String entityID, String key, Consumer<T> listener);
+        (String entityID, String key, Consumer<T> listener);
 
     EntityContextEvent removeEntityUpdateListener(String entityID, String key);
 

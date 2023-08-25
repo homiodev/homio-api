@@ -3,6 +3,7 @@ package org.homio.api.service;
 import org.homio.api.model.StylePosition;
 
 public interface ImageProviderService {
+
     byte[] setBrightness(byte[] image, float brightnessPercentage, String formatType);
 
     byte[] flipImage(byte[] image, boolean flipVertically, String formatType);

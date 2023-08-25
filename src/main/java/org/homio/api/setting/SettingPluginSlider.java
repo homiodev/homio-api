@@ -1,10 +1,10 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.putOpt;
+
 import org.homio.api.EntityContext;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-
-import static org.homio.api.util.JsonUtils.putOpt;
 
 public interface SettingPluginSlider extends SettingPluginInteger {
 

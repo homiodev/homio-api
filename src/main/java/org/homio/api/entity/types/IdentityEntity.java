@@ -13,7 +13,7 @@ import org.homio.api.ui.field.UIFieldIgnore;
  */
 @Entity
 @UISidebarMenu(icon = "fas fa-address-card", parent = TopSidebarMenu.ITEMS, bg = "#9BA127",
-        overridePath = "identity", allowCreateNewItems = true)
+               overridePath = "identity", allowCreateNewItems = true)
 public abstract class IdentityEntity extends DeviceBaseEntity {
 
     @Override

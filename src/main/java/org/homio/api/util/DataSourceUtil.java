@@ -1,5 +1,9 @@
 package org.homio.api.util;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -9,11 +13,6 @@ import org.homio.api.entity.widget.ability.HasSetStatusValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 public class DataSourceUtil {
 
@@ -71,14 +70,6 @@ public class DataSourceUtil {
         return dataSourceContext;
     }
 
-    private static @Nullable Object evaluateDataSource(String dsb, String source, EntityContext entityContext) {
-        return switch (dsb) {
-            case "bean" -> entityContext.getBean(source, Object.class);
-            case "entityByClass" -> entityContext.getEntity(source);
-            default -> null;
-        };
-    }
-
     /**
      * Build data source string
      *
@@ -92,6 +83,14 @@ public class DataSourceUtil {
 
     public static String buildBeanSource(Class<?> beanClass) {
         return StringUtils.uncapitalize(beanClass.getSimpleName()) + "~~~" + beanClass.getInterfaces()[0].getSimpleName() + "~~~bean";
+    }
+
+    private static @Nullable Object evaluateDataSource(String dsb, String source, EntityContext entityContext) {
+        return switch (dsb) {
+            case "bean" -> entityContext.getBean(source, Object.class);
+            case "entityByClass" -> entityContext.getEntity(source);
+            default -> null;
+        };
     }
 
     @Getter

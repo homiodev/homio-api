@@ -18,8 +18,8 @@ public interface HasAggregateValueFromSeries extends HasEntityIdentifier, HasUpd
      * @return -
      */
     @Nullable Object getAggregateValueFromSeries(@NotNull PeriodRequest request,
-                                                 @NotNull AggregationType aggregationType,
-                                                 boolean exactNumber);
+        @NotNull AggregationType aggregationType,
+        boolean exactNumber);
 
     /**
      * @return Uses for UI to determine class type description

@@ -1,5 +1,8 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.putOpt;
+
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.model.Icon;
@@ -8,10 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.List;
-
-import static org.homio.api.util.JsonUtils.putOpt;
 
 public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
@@ -34,6 +33,10 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
     default @Nullable String getText() {
         return null;
+    }
+
+    default @Nullable String getText(EntityContext entityContext) {
+        return getText();
     }
 
     /**
