@@ -1,4 +1,4 @@
-package org.homio.api.ui.action;
+package org.homio.api.ui;
 
 import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;

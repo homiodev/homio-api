@@ -1,6 +1,7 @@
 package org.homio.api.model.endpoint;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -56,7 +57,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     protected int order;
 
     protected EntityContext entityContext;
-    protected ConfigDeviceDefinitionService configService;
+    protected @Nullable ConfigDeviceDefinitionService configService;
     protected @Nullable Float min;
     protected @Nullable Float max;
     protected @Nullable Set<String> range;
@@ -180,20 +181,22 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     @Override
     public boolean isVisible() {
-        if (configService.isHideEndpoint(getEndpointEntityID())) {
+        if (configService != null && configService.isHideEndpoint(getEndpointEntityID())) {
             return false;
         }
         return !getHiddenEndpoints().contains(getEndpointEntityID());
     }
 
-    public abstract @NotNull Set<String> getHiddenEndpoints();
+    public @NotNull Set<String> getHiddenEndpoints() {
+        return Set.of();
+    }
 
     public @NotNull String getDeviceEntityID() {
         return device.getEntityID();
     }
 
     public @NotNull String getDeviceID() {
-        return requireNonNull(device.getIeeeAddress());
+        return requireNonNull(defaultIfEmpty(device.getIeeeAddress(), device.getEntityID()));
     }
 
     @Override

@@ -1,10 +1,19 @@
 package org.homio.api.exception;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
 
 public class ServerException extends RuntimeException {
+
+    @Getter
+    @Setter
+    @Accessors(chain = true)
+    private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
     public ServerException(@NotNull String message) {
         super(Lang.getServerMessage(message));

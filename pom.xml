@@ -71,6 +71,10 @@
   </build>
   <dependencies>
     <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
+    <dependency>
       <artifactId>thymeleaf</artifactId>
       <groupId>org.thymeleaf</groupId>
     </dependency>

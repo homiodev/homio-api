@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 
 public interface FileSystemProvider {
 
@@ -22,7 +24,18 @@ public interface FileSystemProvider {
 
     void setEntity(Object entity);
 
-    InputStream getEntryInputStream(@NotNull String id);
+    boolean exists(@NotNull String id);
+
+    default long size(@NotNull String id) {
+        Long size = toTreeNode(id).getAttributes().getSize();
+        return size == null ? 0 : size;
+    }
+
+    @NotNull InputStream getEntryInputStream(@NotNull String id);
+
+    default @NotNull Resource getEntryResource(@NotNull String id) {
+        return new InputStreamResource(getEntryInputStream(id));
+    }
 
     // to unarchive we need download full file to avoid problem with memory
     default Path getArchiveAsLocalPath(@NotNull String id) {

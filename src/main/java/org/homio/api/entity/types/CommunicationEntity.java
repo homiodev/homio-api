@@ -2,8 +2,8 @@ package org.homio.api.entity.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
+import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.entity.device.DeviceBaseEntity;
-import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIFieldIgnore;
 
@@ -18,6 +18,6 @@ public abstract class CommunicationEntity extends DeviceBaseEntity {
     @JsonIgnore
     @UIFieldIgnore
     public String getPlace() {
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 }

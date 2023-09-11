@@ -14,8 +14,7 @@ import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldSlider;
 import org.homio.api.ui.field.selection.UIFieldDevicePortSelection;
-import org.homio.api.ui.field.selection.UIFieldSelectNoValue;
-import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
+import org.homio.api.ui.field.selection.UIFieldSelectConfig;
 import org.homio.api.util.HardwareUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,8 +35,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
 
     @UIField(order = 3, required = true)
     @UIFieldDevicePortSelection
-    @UIFieldSelectValueOnEmpty(label = "SELECTION.SELECT_PORT", icon = "fas fa-door-open")
-    @UIFieldSelectNoValue("W.ERROR.NO_PORT")
+    @UIFieldSelectConfig(selectNoValue = "W.ERROR.NO_PORT", selectOnEmptyLabel = "PLACEHOLDER.SELECT_PORT", selectOnEmptyIcon = "fas fa-door-open")
     @UIFieldGroup(value = "PORT", order = 5, borderColor = "#29A397")
     default String getPort() {
         return getJsonData("port", "");

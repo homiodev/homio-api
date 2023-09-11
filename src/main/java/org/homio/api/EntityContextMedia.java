@@ -1,15 +1,28 @@
 package org.homio.api;
 
+import com.pivovarit.function.ThrowingConsumer;
+import com.pivovarit.function.ThrowingFunction;
+import com.pivovarit.function.ThrowingRunnable;
 import java.awt.Dimension;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import org.apache.logging.log4j.Logger;
+import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
+import org.apache.logging.log4j.Level;
 import org.homio.api.state.DecimalType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 
 public interface EntityContextMedia {
 
@@ -19,70 +32,96 @@ public interface EntityContextMedia {
 
     void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
 
-    VideoInputDevice createVideoInputDevice(@NotNull String vfile);
+    void registerMediaMTXSource(@NotNull String path, @NotNull MediaMTXSource source);
 
-    Set<String> getVideoDevices();
+    void unRegisterMediaMTXSource(@NotNull String path);
 
-    Set<String> getAudioDevices();
+    @NotNull VideoInputDevice createVideoInputDevice(@NotNull String vfile);
+
+    /**
+     * @return - Get usb camera
+     */
+    @NotNull Set<String> getVideoDevices();
+
+    /**
+     * @return - Get audio devices
+     */
+    @NotNull Set<String> getAudioDevices();
 
     @NotNull FFMPEG buildFFMPEG(@NotNull String entityID,
         @NotNull String description,
         @NotNull FFMPEGHandler handler,
-        @NotNull Logger log,
         @NotNull FFMPEGFormat format,
         @NotNull String inputArguments,
         @NotNull String input,
         @NotNull String outArguments,
         @NotNull String output,
         @NotNull String username,
-        @NotNull String password,
-        @Nullable Runnable destroyListener);
+        @NotNull String password);
 
+    @Getter
+    @RequiredArgsConstructor
     enum FFMPEGFormat {
-        HLS,
-        GIF,
-        RECORD,
-        RTSP_ALARMS,
-        MJPEG,
-        SNAPSHOT,
-        MUXER
+        HLS("fas fa-square-rss", "#A62D79"),
+        GIF("fas fa-images", "#3B8C8B"),
+        RECORD("fas fa-microphone", "#B04B3E"),
+        RTSP_ALARMS("fas fa-bell", "#8A29AB"),
+        MJPEG("fas fa-photo-film", "#7FAEAA"),
+        SNAPSHOT("fas fa-camera", "#A2D154"),
+        RE("fas fa-kip-sign", "#3AB2BA"),
+        DASH("fas fa-panorama", "#91A63C"),
+        CUSTOM("fas fa-tower-cell", "#57A4D1");
+
+        private final String icon;
+        private final String color;
     }
 
     interface VideoInputDevice {
 
-        String getName();
+        @NotNull String getName();
 
-        VideoInputDevice setName(String value);
+        @NotNull VideoInputDevice setName(@NotNull String value);
 
-        Dimension getResolution();
+        @NotNull Dimension[] getResolutions();
 
-        Dimension[] getResolutions();
-
-        default String getResolutionString() {
-            Dimension d = getResolution();
-            return String.format("%dx%d", d.width, d.height);
+        default @NotNull Set<String> getResolutionSet() {
+            Dimension[] resolutions = getResolutions();
+            return Arrays.stream(resolutions).sorted(Comparator.comparingInt(o -> o.width + o.height))
+                         .map(r -> String.format("%dx%d", r.width, r.height)).collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 
     interface FFMPEG {
 
-        static void run(@Nullable FFMPEG ffmpeg, @NotNull Consumer<FFMPEG> handler) {
+        @SneakyThrows
+        static void run(@Nullable FFMPEG ffmpeg, @NotNull ThrowingConsumer<FFMPEG, Exception> handler) {
             if (ffmpeg != null) {
                 handler.accept(ffmpeg);
             }
         }
 
-        static <T> T execute(@Nullable FFMPEG ffmpeg, @NotNull Function<FFMPEG, T> handler) {
+        @SneakyThrows
+        static <T> T execute(@Nullable FFMPEG ffmpeg, @NotNull ThrowingFunction<FFMPEG, T, Exception> handler) {
             if (ffmpeg != null) {
                 return handler.apply(ffmpeg);
             }
             return null;
         }
 
+        @SneakyThrows
+        static <T> T check(@Nullable FFMPEG ffmpeg, @NotNull ThrowingFunction<FFMPEG, T, Exception> checkHandler, @Nullable T defaultValue) {
+            if (ffmpeg != null) {
+                return checkHandler.apply(ffmpeg);
+            }
+            return defaultValue;
+        }
+
         /**
          * @return if ffmpeg was started. return true even if thread is dead and getIsAlive() return false
          */
         boolean isRunning();
+
+        @NotNull FFMPEGFormat getFormat();
 
         default void restartIfRequire() {
             if (isRunning() && !getIsAlive()) {
@@ -93,31 +132,80 @@ public interface EntityContextMedia {
 
         void setKeepAlive(int value);
 
+        // just keep key-value metadata for i.e. keep output path
+        @NotNull JSONObject getMetadata();
+
         boolean startConverting();
 
         boolean getIsAlive();
 
-        void stopConverting();
+        Path getLogPath();
 
+        /**
+         * @return true if process was alive and fired stop command, false if process wasn't alive already
+         */
+        default boolean stopConverting() {
+            return stopConverting(null);
+        }
+
+        boolean stopConverting(@Nullable Duration waitTimeout);
+
+        /**
+         * @return true if process was running, alive and fired stop command, false if process wasn't alive already
+         */
         boolean stopProcessIfNoKeepAlive();
 
-        List<String> getCommandArrayList();
+        @NotNull List<String> getCommandArrayList();
 
         @NotNull Date getCreationDate();
 
-        String getDescription();
+        @NotNull String getDescription();
+
+        @NotNull String getOutput();
+
+        @NotNull Path getOutputFile();
+
+        FFMPEG setWorkingDirectory(@NotNull Path workingDirectory);
+
+        FFMPEG addDestroyListener(@NotNull String key, @NotNull ThrowingRunnable<Exception> destroyListener);
     }
 
     interface FFMPEGHandler {
 
-        String getEntityID();
+        default void motionDetected(boolean on, @NotNull String key) {
 
-        void motionDetected(boolean on, String key);
+        }
 
-        void audioDetected(boolean on);
+        default void audioDetected(boolean on) {
 
-        void ffmpegError(String error);
+        }
 
-        DecimalType getMotionThreshold();
+        default void ffmpegError(@NotNull String error) {
+
+        }
+
+        default @NotNull DecimalType getMotionThreshold() {
+            return new DecimalType(40);
+        }
+
+        default void ffmpegLog(@NotNull Level level, @NotNull String message) {
+
+        }
+    }
+
+    @Getter
+    @Setter
+    @Accessors(chain = true)
+    @RequiredArgsConstructor
+    class MediaMTXSource {
+
+        private final String source;
+        private boolean sourceOnDemand = true;
+        private boolean sourceAnyPortEnable = false;
+        private SourceProtocol sourceProtocol = SourceProtocol.automatic;
+
+        public enum SourceProtocol {
+            automatic, udp, multicast, tcp
+        }
     }
 }

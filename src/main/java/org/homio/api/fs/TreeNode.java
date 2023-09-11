@@ -1,5 +1,7 @@
 package org.homio.api.fs;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -12,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,24 +39,25 @@ import org.springframework.web.multipart.MultipartFile;
 @Accessors(chain = true)
 public class TreeNode implements Comparable<TreeNode> {
 
-    private String name;
-    private String id;
-    private TreeNodeAttributes attributes = new TreeNodeAttributes();
+    private @NotNull String name;
+    private @Nullable String id;
+    private @NotNull TreeNodeAttributes attributes = new TreeNodeAttributes();
 
     @JsonIgnore
-    private TreeNode parent;
+    private @Nullable TreeNode parent;
 
     @JsonIgnore
-    private Map<String, TreeNode> childrenMap;
+    private @Nullable Map<String, TreeNode> childrenMap;
 
     @JsonIgnore
-    private InputStream inputStream;
+    private @Nullable InputStream inputStream;
 
     @JsonIgnore
-    private FileSystemProvider fileSystem;
+    private @Nullable FileSystemProvider fileSystem;
 
-    public TreeNode(boolean dir, boolean empty, String name, String id, Long size, Long lastModifiedTime,
-        FileSystemProvider fileSystem, String contentType) {
+    public TreeNode(boolean dir, boolean empty, @NotNull String name, @Nullable String id,
+        @Nullable Long size, @Nullable Long lastModifiedTime,
+        @Nullable FileSystemProvider fileSystem, @Nullable String contentType) {
         this.id = id;
         this.name = name;
         this.fileSystem = fileSystem;
@@ -79,8 +83,7 @@ public class TreeNode implements Comparable<TreeNode> {
     }
 
     @SneakyThrows
-    public static TreeNode of(@NotNull String id, @NotNull Path path, @NotNull FileSystemProvider fileSystem) {
-
+    public static TreeNode of(@Nullable String id, @NotNull Path path, @NotNull FileSystemProvider fileSystem) {
         return new TreeNode(false, false, path.getFileName().toString(), id, Files.size(path),
             Files.getLastModifiedTime(path).toMillis(), fileSystem, null);
     }
@@ -91,7 +94,7 @@ public class TreeNode implements Comparable<TreeNode> {
      * @param treePath - example: aaa/bbb. 2 level tree
      * @return Pair(root, lastChild)
      */
-    public static Pair<TreeNode, TreeNode> buildTree(@NotNull Path treePath) {
+    public static @NotNull Pair<TreeNode, TreeNode> buildTree(@NotNull Path treePath) {
         TreeNode overRoot = new TreeNode();
         TreeNode cursor = overRoot;
         for (Path path : treePath) {
@@ -106,7 +109,7 @@ public class TreeNode implements Comparable<TreeNode> {
         return id;
     }
 
-    public void visitTree(Consumer<TreeNode> supplier) {
+    public void visitTree(@NotNull Consumer<TreeNode> supplier) {
         supplier.accept(this);
         if (childrenMap != null) {
             for (TreeNode child : childrenMap.values()) {
@@ -116,17 +119,17 @@ public class TreeNode implements Comparable<TreeNode> {
     }
 
     // Convert TreeNode tree to plan Path list
-    public List<Path> toPath(Path basePath) {
+    public @NotNull List<Path> toPath(@NotNull Path basePath) {
         List<Path> paths = new ArrayList<>();
         this.toPath(basePath, paths);
         return paths;
     }
 
-    public Set<TreeNode> getChildren() {
+    public @Nullable Set<TreeNode> getChildren() {
         return childrenMap == null ? null : new HashSet<>(childrenMap.values());
     }
 
-    public Set<TreeNode> getChildren(boolean loadFromFileSystem) {
+    public @Nullable Set<TreeNode> getChildren(boolean loadFromFileSystem) {
         if (loadFromFileSystem && childrenMap == null && fileSystem != null) {
             for (TreeNode child : fileSystem.getChildren(this.getId())) {
                 addChild(child);
@@ -135,12 +138,12 @@ public class TreeNode implements Comparable<TreeNode> {
         return childrenMap == null ? null : new HashSet<>(childrenMap.values());
     }
 
-    public TreeNode clone(boolean includeRelations) {
+    public @Nullable TreeNode clone(boolean includeRelations) {
         return new TreeNode(this.name, this.id, attributes, includeRelations ? this.parent : null,
             includeRelations ? childrenMap : null, inputStream, fileSystem);
     }
 
-    public TreeNode addChild(@NotNull String id, boolean appendParentId, @NotNull Supplier<TreeNode> supplier) {
+    public @NotNull TreeNode addChild(@NotNull String id, boolean appendParentId, @NotNull Supplier<TreeNode> supplier) {
         if (this.childrenMap == null) {
             childrenMap = new HashMap<>();
         }
@@ -160,11 +163,11 @@ public class TreeNode implements Comparable<TreeNode> {
         return childrenMap.get(id);
     }
 
-    public TreeNode getChild(String id) {
+    public @Nullable TreeNode getChild(@NotNull String id) {
         return childrenMap == null ? null : childrenMap.get(id);
     }
 
-    public TreeNode getChild(Path path) {
+    public @Nullable TreeNode getChild(@NotNull Path path) {
         TreeNode cursor = this;
         for (Path child : path) {
             Set<TreeNode> children = cursor.getChildren(true);
@@ -177,18 +180,18 @@ public class TreeNode implements Comparable<TreeNode> {
         return cursor;
     }
 
-    public TreeNode addChild(@Nullable TreeNode child) {
+    public @Nullable TreeNode addChild(@Nullable TreeNode child) {
         return addChild(child, false);
     }
 
-    public TreeNode addChild(@Nullable TreeNode child, boolean appendParentId) {
+    public @Nullable TreeNode addChild(@Nullable TreeNode child, boolean appendParentId) {
         if (child != null) {
-            return addChild(child.id, appendParentId, () -> child);
+            return addChild(requireNonNull(child.id), appendParentId, () -> child);
         }
         return null;
     }
 
-    public TreeNode addChildIfNotFound(@NotNull String id, @NotNull Supplier<TreeNode> childSupplier,
+    public @Nullable TreeNode addChildIfNotFound(@NotNull String id, @NotNull Supplier<TreeNode> childSupplier,
         boolean appendParentId) {
         TreeNode treeNode = appendParentId && this.id != null ? this.getChild(this.id + "/" + id) : this.getChild(id);
         if (treeNode == null) {
@@ -197,7 +200,7 @@ public class TreeNode implements Comparable<TreeNode> {
         return treeNode;
     }
 
-    public TreeNode addChildren(@NotNull Collection<TreeNode> children) {
+    public @NotNull TreeNode addChildren(@NotNull Collection<TreeNode> children) {
         for (TreeNode child : children) {
             addChild(child);
         }
@@ -205,19 +208,22 @@ public class TreeNode implements Comparable<TreeNode> {
     }
 
     public void remove() {
-        if (parent != null) {
+        if (parent != null && parent.childrenMap != null) {
             parent.childrenMap.remove(getId());
         }
     }
 
     @Override
     public int compareTo(@NotNull TreeNode o) {
-        return this.id.compareTo(o.id);
+        return requireNonNull(this.id).compareTo(requireNonNull(o.id));
     }
 
     @JsonIgnore
-    public InputStream getInputStream() {
-        return inputStream == null ? fileSystem.getEntryInputStream(this.id) : inputStream;
+    public @NotNull InputStream getInputStream() {
+        if (inputStream == null) {
+            inputStream = requireNonNull(fileSystem).getEntryInputStream(requireNonNull(this.id));
+        }
+        return inputStream;
     }
 
     @Override
@@ -229,16 +235,16 @@ public class TreeNode implements Comparable<TreeNode> {
             return false;
         }
         TreeNode that = (TreeNode) o;
-        return id.equals(that.id);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return requireNonNull(id).hashCode();
     }
 
-    private void toPath(Path basePath, List<Path> paths) {
-        Path newBasePath = basePath.resolve(id);
+    private void toPath(@NotNull Path basePath, @NotNull List<Path> paths) {
+        Path newBasePath = basePath.resolve(requireNonNull(id));
         paths.add(basePath.resolve(id));
         if (childrenMap != null) {
             for (TreeNode value : childrenMap.values()) {
@@ -254,27 +260,27 @@ public class TreeNode implements Comparable<TreeNode> {
     public static class TreeNodeAttributes {
 
         private boolean dir;
-        private Long size;
-        private Long lastUpdated;
+        private @Nullable Long size;
+        private @Nullable Long lastUpdated;
         private boolean empty;
-        private String contentType;
-        private JSONObject meta;
+        private @Nullable String contentType;
+        private @Nullable JSONObject meta;
 
         // for UI
-        private String icon;
-        private String color;
-        private List<Text> texts; // text array next to name!
-        private List<TreeNodeChip> chips;
+        private @Nullable String icon;
+        private @Nullable String color;
+        private @Nullable List<Text> texts; // text array next to name!
+        private @Nullable List<TreeNodeChip> chips;
         private boolean removed; // for server -> client updates marking that node has to be removed
 
-        public void addChip(TreeNodeChip treeNodeChip) {
+        public void addChip(@NotNull TreeNodeChip treeNodeChip) {
             if (chips == null) {
                 chips = new ArrayList<>();
             }
             chips.add(treeNodeChip);
         }
 
-        public void setChips(TreeNodeChip... chips) {
+        public void setChips(@NotNull TreeNodeChip... chips) {
             if (this.chips == null) {
                 this.chips = new ArrayList<>();
             }
@@ -282,7 +288,7 @@ public class TreeNode implements Comparable<TreeNode> {
             Collections.addAll(this.chips, chips);
         }
 
-        public TextBuilder textsBuilder() {
+        public @NotNull TextBuilder textsBuilder() {
             texts = new ArrayList<>();
             return new TextBuilder(texts);
         }
@@ -291,18 +297,14 @@ public class TreeNode implements Comparable<TreeNode> {
     @RequiredArgsConstructor
     public static class TextBuilder {
 
-        private final List<Text> texts;
+        private final @NotNull List<Text> texts;
 
-        public void addText(String text, String color) {
+        public void addText(@NotNull String text, @Nullable String color) {
             this.texts.add(new Text(text, color));
         }
     }
 
-    @Getter
-    @RequiredArgsConstructor
-    public static class Text {
+    public record Text(@NotNull String text, @Nullable String color) {
 
-        private final String text;
-        private final String color;
     }
 }

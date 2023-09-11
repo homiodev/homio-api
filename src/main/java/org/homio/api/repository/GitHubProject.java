@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -149,15 +150,42 @@ public class GitHubProject {
         return true;
     }
 
+    public boolean isLocalProjectInstalled() {
+        return Files.isDirectory(localProjectPath);
+    }
+
     public void installLatestRelease(EntityContext entityContext) {
-        if (!Files.isDirectory(localProjectPath)) {
-            entityContext.event().runOnceOnInternetUp("download-" + repo, () -> {
-                String version = getLastReleaseVersion();
-                if (version != null) {
-                    downloadReleaseAndInstall(entityContext, version, (progress, message, error) ->
-                        log.info(message));
-                }
-            });
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        if (isLocalProjectInstalled()) {
+            throw new IllegalStateException("Already installed");
+        } else {
+            installLatestReleaseInternally(entityContext, future);
+        }
+    }
+
+    public CompletableFuture<Void> installLatestReleaseAsync(EntityContext entityContext) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        if (isLocalProjectInstalled()) {
+            future.completeExceptionally(new IllegalStateException("Already installed"));
+        } else {
+            entityContext.event().runOnceOnInternetUp("wait-download-" + repo, () ->
+                installLatestReleaseInternally(entityContext, future));
+        }
+        return future;
+    }
+
+    private void installLatestReleaseInternally(EntityContext entityContext, CompletableFuture<Void> future) {
+        try {
+            String version = getLastReleaseVersion();
+            if (version == null) {
+                future.completeExceptionally(new RuntimeException("Unable to find release version from: " + repo + "/" + project));
+            } else {
+                downloadReleaseAndInstall(entityContext, version, (progress, message, error) ->
+                    log.info(message));
+                future.complete(null);
+            }
+        } catch (Exception ex) {
+            future.completeExceptionally(ex);
         }
     }
 
@@ -249,11 +277,16 @@ public class GitHubProject {
     }
 
     public @NotNull List<String> getReleasesSince(String version, boolean includeCurrent) {
-        List<String> versions = releasesCache.getValue(this)
-                                             .stream()
-                                             .map(r -> r.get("tag_name").asText())
-                                             .collect(Collectors.toList());
-        return getReleasesSince(version, versions, includeCurrent);
+        try {
+            List<String> versions = releasesCache.getValue(this)
+                                                 .stream()
+                                                 .map(r -> r.get("tag_name").asText())
+                                                 .collect(Collectors.toList());
+            return getReleasesSince(version, versions, includeCurrent);
+        } catch (Exception ex) {
+            log.error("Unable to fetch release since: {}. Error: {}", version, CommonUtils.getErrorMessage(ex));
+            return List.of();
+        }
     }
 
     public @Nullable JsonNode getLastRelease() {

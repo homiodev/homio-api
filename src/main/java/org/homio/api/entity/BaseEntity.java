@@ -5,18 +5,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
 import org.homio.api.model.ActionResponseModel;
@@ -38,6 +38,7 @@ public abstract class BaseEntity implements
 
     @JsonIgnore
     @Transient
+    @Setter
     private EntityContext entityContext;
 
     @Id
@@ -59,10 +60,12 @@ public abstract class BaseEntity implements
 
     @JsonIgnore
     @Column(nullable = false)
+    @CreationTimestamp
     private Date creationTime;
 
     @JsonIgnore
     @Column(nullable = false)
+    @UpdateTimestamp
     private Date updateTime;
 
     /**
@@ -118,10 +121,6 @@ public abstract class BaseEntity implements
      */
     public boolean isDisableDelete() {
         return false;
-    }
-
-    public void beforeDelete() {
-
     }
 
     public String setEntityID(@NotNull String entityID) {
@@ -196,43 +195,5 @@ public abstract class BaseEntity implements
             + " if calls by UI. Field: " + field + ". Meta: " + metadata);
     }
 
-    @Override
-    public void afterFetch(@NotNull EntityContext entityContext) {
-        this.entityContext = entityContext;
-    }
-
-    // fires before persist/update
-    protected void validate() {
-
-    }
-
-    protected void beforePersist() {
-
-    }
-
-    protected void beforeUpdate() {
-
-    }
-
     protected abstract long getChildEntityHashCode();
-
-    @PrePersist
-    private void prePersist() {
-        if (this.creationTime == null) {
-            this.creationTime = new Date();
-        }
-        this.updateTime = new Date();
-        if (StringUtils.isEmpty(getName())) {
-            setName(refreshName());
-        }
-        this.beforePersist();
-        this.validate();
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        this.updateTime = new Date();
-        this.beforeUpdate();
-        this.validate();
-    }
 }

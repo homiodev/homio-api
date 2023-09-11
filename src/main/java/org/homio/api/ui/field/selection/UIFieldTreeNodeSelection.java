@@ -12,11 +12,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldTreeNodeSelection {
 
+    // is allowed to edit with keyboard
+    boolean rawInput() default true;
+
+    // prefix to show on UI and distinguish if multiple select inputs available
+    String prefix() default "";
+
+    String icon() default "fas fa-folder-open";
+
+    String iconColor() default "";
+
     String IMAGE_PATTERN = ".*(jpg|jpeg|png|gif)";
 
     String LOCAL_FS = "LOCAL_FS";
-
-    boolean allowInputRawText() default true;
 
     /**
      * @return If set - uses only local file system, otherwise uses all possible file systems
@@ -30,10 +38,6 @@ public @interface UIFieldTreeNodeSelection {
     boolean allowSelectFiles() default true;
 
     String pattern() default ".*";
-
-    String icon() default "fas fa-folder-open";
-
-    String iconColor() default "";
 
     /**
      * Specify select file/folder dialog title

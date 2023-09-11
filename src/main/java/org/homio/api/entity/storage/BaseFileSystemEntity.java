@@ -80,7 +80,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     @Override
-    default void afterDelete(@NotNull EntityContext entityContext) {
+    default void afterDelete() {
         FileSystemProvider provider = fileSystemMap.remove(getEntityID());
         if (provider != null) {
             provider.dispose();
@@ -88,8 +88,8 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     @Override
-    default void afterUpdate(@NotNull EntityContext entityContext, boolean persist) {
-        this.getFileSystem(entityContext).setEntity(this);
+    default void afterUpdate() {
+        this.getFileSystem(getEntityContext()).setEntity(this);
     }
 
     boolean isShowHiddenFiles();

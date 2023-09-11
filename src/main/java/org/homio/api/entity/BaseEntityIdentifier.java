@@ -14,24 +14,13 @@ public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable 
     @JsonIgnore
     String getDefaultName();
 
+    EntityContext getEntityContext();
+
     default @NotNull String getTitle() {
         return defaultIfBlank(getName(), defaultIfBlank(getDefaultName(), getEntityID()));
     }
 
     @Nullable String getName();
-
-    default void afterDelete(@NotNull EntityContext entityContext) {
-
-    }
-
-    default void afterUpdate(@NotNull EntityContext entityContext, boolean persis) {
-
-    }
-
-    // fires after fetch from db/cache
-    default void afterFetch(@NotNull EntityContext entityContext) {
-
-    }
 
     @JsonIgnore
     default @Nullable String refreshName() {
@@ -55,5 +44,42 @@ public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable 
      */
     default @NotNull String getDynamicUpdateType() {
         return getType();
+    }
+
+    default void afterFetch() {
+
+    }
+
+    default void beforeDelete() {
+
+    }
+
+    default void afterDelete() {
+
+    }
+
+    // fires before persist/update
+    default void validate() {
+
+    }
+
+    // calls before entity inserted into db
+    default void beforePersist() {
+
+    }
+
+    // calls after entity inserted into db
+    default void afterPersist() {
+
+    }
+
+    // calls before update updated into db
+    default void beforeUpdate() {
+
+    }
+
+    // calls after update updated into db
+    default void afterUpdate() {
+
     }
 }

@@ -24,8 +24,8 @@ import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.color.UIFieldColorBgRef;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
-import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
-import org.homio.api.ui.field.selection.UIFieldSelection;
+import org.homio.api.ui.field.selection.UIFieldSelectConfig;
+import org.homio.api.ui.field.selection.dynamic.UIFieldDynamicSelection;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,8 +47,8 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @Column(length = 64)
     @UIField(order = 30, type = UIFieldType.SelectBox, color = "#538744")
     @UIFieldGroup(value = "GENERAL", order = 10)
-    @UIFieldSelection(SelectPlaceOptionLoader.class)
-    @UIFieldSelectValueOnEmpty(label = "PLACEHOLDER.SELECT_PLACE")
+    @UIFieldSelectConfig(selectOnEmptyLabel = "PLACEHOLDER.SELECT_PLACE")
+    @UIFieldDynamicSelection(SelectPlaceOptionLoader.class)
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     private @Nullable String place;
 

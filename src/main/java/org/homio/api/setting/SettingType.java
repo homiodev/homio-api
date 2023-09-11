@@ -25,8 +25,7 @@ public enum SettingType {
     Chips,
 
     SelectBox,
-    // Input text with additional button that able to fetch values from server
-    TextSelectBoxDynamic, // text input type with ability to select values from server
+    SelectBoxAdvanced,
 
     // Slider with min/max/step parameters
     Slider,

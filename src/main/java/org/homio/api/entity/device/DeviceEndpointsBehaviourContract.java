@@ -14,7 +14,7 @@ import org.homio.api.model.device.ConfigDeviceDefinitionService;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.model.endpoint.DeviceEndpointUI;
 import org.homio.api.ui.UI;
-import org.homio.api.ui.action.UIActionHandler;
+import org.homio.api.ui.UIActionHandler;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
@@ -30,7 +30,7 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
     @NotNull String getDeviceFullName();
 
     @UIFieldGroup(value = "GENERAL", order = 10)
-    default @NotNull Date getUpdateTime() {
+    default Date getUpdateTime() {
         return DeviceEndpoint.getLastUpdated(getDeviceEndpoints().values());
     }
 
@@ -87,13 +87,13 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
         ConfigDeviceDefinitionService service = getConfigDeviceDefinitionService();
         List<ConfigDeviceDefinition> matchDevices = findMatchDeviceConfigurations();
         return new Icon(
-            service.getDeviceIcon(matchDevices, "fas fa-server"),
-            service.getDeviceIconColor(matchDevices, UI.Color.random())
+            service == null ? "fas fa-server" : service.getDeviceIcon(matchDevices, "fas fa-server"),
+            service == null ? UI.Color.random() : service.getDeviceIconColor(matchDevices, UI.Color.random())
         );
     }
 
     @JsonIgnore
-    @NotNull ConfigDeviceDefinitionService getConfigDeviceDefinitionService();
+    @Nullable ConfigDeviceDefinitionService getConfigDeviceDefinitionService();
 
     @JsonIgnore
     @NotNull List<ConfigDeviceDefinition> findMatchDeviceConfigurations();

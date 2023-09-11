@@ -33,8 +33,7 @@ public enum UIFieldType {
     Password, // shows *** for users without admin rights
 
     SelectBox,
-    // Input text with additional button that able to fetch values from server
-    TextSelectBoxDynamic, // text input type with ability to select values from server
+    SelectBoxAdvanced,
 
     Duration,
     StaticDate,

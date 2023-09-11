@@ -187,8 +187,6 @@ public interface EntityContext {
         return null;
     }
 
-    void registerResource(String resource);
-
     @NotNull <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
     @NotNull <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);

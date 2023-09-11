@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingRunnable;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import lombok.Getter;
@@ -27,7 +25,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
-    Map<String, Object> entityToService = new ConcurrentHashMap<>();
+    EntityContext getEntityContext();
 
     @JsonIgnore
     long getEntityServiceHashCode();
@@ -37,7 +35,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
      */
     @JsonIgnore
     default @NotNull S getService() throws NotFoundException {
-        Object service = entityToService.get(getEntityID());
+        Object service = getEntityContext().service().getEntityService(getEntityID());
         if (service == null) {
             throw new NotFoundException("Service for entity: " + getEntityID() + " not found");
         }
@@ -46,7 +44,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
     @JsonIgnore
     default @NotNull Optional<S> optService() {
-        return Optional.ofNullable((S) entityToService.get(getEntityID()));
+        return Optional.ofNullable((S) getEntityContext().service().getEntityService(getEntityID()));
     }
 
     @JsonIgnore
@@ -56,18 +54,18 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     default @NotNull Optional<S> getOrCreateService(@NotNull EntityContext entityContext) {
         serviceAccessLock.lock();
         try {
-            if (entityToService.containsKey(getEntityID())) {
-                return Optional.of((S) entityToService.get(getEntityID()));
+            if (getEntityContext().service().isHasEntityService(getEntityID())) {
+                return Optional.of((S) getEntityContext().service().getEntityService(getEntityID()));
             }
             try {
                 S service = createService(entityContext);
                 if (service != null) {
-                    entityToService.put(getEntityID(), service);
+                    getEntityContext().service().addEntityService(getEntityID(), service);
                 }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-            return Optional.ofNullable((S) entityToService.get(getEntityID()));
+            return Optional.ofNullable((S) getEntityContext().service().getEntityService(getEntityID()));
         } finally {
             serviceAccessLock.unlock();
         }
@@ -84,14 +82,14 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     String getEntityID();
 
     default void destroyService() throws Exception {
-        S service = (S) entityToService.remove(getEntityID());
+        S service = (S) getEntityContext().service().removeEntityService(getEntityID());
         if (service != null) {
             service.destroy();
         }
     }
 
     @Getter
-    abstract class ServiceInstance<E extends EntityService<?, ?>> {
+    abstract class ServiceInstance<E extends EntityService<?, ?>> implements WatchdogService {
 
         protected final @NotNull EntityContext entityContext;
         protected final String entityID;
@@ -106,6 +104,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             this.entityHashCode = getEntityHashCode(entity);
 
             if (fireFirstInitialize) {
+                entity.setStatus(Status.INITIALIZE);
                 initializing.set(true);
                 entityContext.bgp().execute(Duration.ofSeconds(1), () -> {
                     fireWithSetStatus(this::firstInitialize);
@@ -150,6 +149,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
                     while (!initializing.compareAndSet(false, true)) {
                         Thread.yield();
                     }
+                    entity.setStatus(Status.INITIALIZE);
                     fireWithSetStatus(this::initialize);
                     initializing.set(false);
                 });
@@ -160,6 +160,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
          * Async restarting service fired by watchdog service if isRequireRestartService return not null. Restart service in interval 1..2 minutes Service
          * should be as fast as possible. Use inner async if possible Method calls in ForkJoin pool at same time with other services if need
          */
+        @Override
         public void restartService() {
             if (initializing.compareAndSet(false, true)) {
                 fireWithSetStatus(this::initialize);
@@ -171,6 +172,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
          * Executes +- every minute
          * @return Check if need restart service before call restartService().. Return restart reason or null if not require
          */
+        @Override
         public String isRequireRestartService() {
             return null;
         }
@@ -195,18 +197,23 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
         protected abstract void initialize();
 
+        public abstract void destroy() throws Exception;
+
         protected long getEntityHashCode(E entity) {
             return entity.getEntityServiceHashCode();
-        }
-
-        protected void destroy() throws Exception {
-
         }
 
         public interface BackupContext {
 
             Path getBackupPath();
         }
+    }
+
+    interface WatchdogService {
+
+        void restartService();
+
+        String isRequireRestartService();
     }
 }
 

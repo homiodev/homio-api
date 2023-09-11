@@ -145,6 +145,12 @@ public interface EntityContextEvent {
 
     boolean isInternetUp();
 
+    default void ensureInternetUp(String message) {
+        if (!isInternetUp()) {
+            throw new IllegalStateException(message);
+        }
+    }
+
     /**
      * Listen for any port changes with key. Replace listener if key already exists
      *

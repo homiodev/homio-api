@@ -5,9 +5,9 @@ import static org.homio.api.ui.field.UIFieldLayout.HorizontalAlign.right;
 
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
-import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.ui.UI;
 import org.homio.api.ui.field.UIFieldLayout;
@@ -20,7 +20,7 @@ public class ToggleTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildWidget(WidgetRequest widgetRequest) {
         // Use Compose Widget instead
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 
     @Override

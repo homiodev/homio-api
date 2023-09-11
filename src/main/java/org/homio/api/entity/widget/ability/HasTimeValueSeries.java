@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
+import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.entity.widget.PeriodRequest;
-import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.HasEntityIdentifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +44,7 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
     }
 
     default @NotNull List<Object[]> getTimeValueSeries(@NotNull PeriodRequest request) {
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 
     @Getter

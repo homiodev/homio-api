@@ -8,10 +8,4 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldDevicePortSelection {
-
-    boolean allowInputRawText() default true;
-
-    String icon() default "fas fa-shuffle";
-
-    String iconColor() default "";
 }

@@ -15,9 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import lombok.SneakyThrows;
 import org.apache.logging.log4j.Logger;
+import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
@@ -194,6 +197,17 @@ public interface EntityContextBGP {
             });
         }
 
+        @SneakyThrows
+        default CompletableFuture<Void> executeSync(@NotNull ThrowingConsumer<ProgressBar, Exception> command) {
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            execute(progressBar -> {
+                command.accept(progressBar);
+                future.complete(null);
+                return null;
+            });
+            return future;
+        }
+
         @NotNull <R> ThreadContext<R> execute(@NotNull ThrowingFunction<ProgressBar, R, Exception> command);
     }
 
@@ -211,6 +225,10 @@ public interface EntityContextBGP {
 
         // finish handler on error or on regular finish process. finishHandler get ex
         @NotNull ProcessBuilder onFinished(@NotNull ThrowingBiConsumer<@Nullable Exception, @NotNull Integer, Exception> finishHandler);
+
+        @NotNull ProcessBuilder attachLogger(@NotNull Logger log);
+
+        @NotNull ProcessBuilder attachEntityStatus(@NotNull HasStatusAndMsg entity);
 
         @NotNull ProcessContext execute(@NotNull String command);
     }

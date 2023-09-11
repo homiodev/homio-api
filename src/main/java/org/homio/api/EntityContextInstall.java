@@ -1,5 +1,6 @@
 package org.homio.api;
 
+import java.util.function.Consumer;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,20 +12,16 @@ public interface EntityContextInstall {
 
     @NotNull InstallContext nodejs();
 
-    @NotNull InstallContext mosquitto();
-
-    @NotNull InstallContext ffmpeg();
-
     interface InstallContext {
 
         /**
-         * Install nodeJS if require
+         * Install software if require
          *
          * @param version       - specify version or null to install latest
          * @param finishHandler - action firest after finish
          * @throws Exception - exception during installation
          */
-        void requireAsync(@Nullable String version, Runnable finishHandler) throws Exception;
+        void requireAsync(@Nullable String version, Consumer<Boolean> finishHandler) throws Exception;
 
         /**
          * Install program.

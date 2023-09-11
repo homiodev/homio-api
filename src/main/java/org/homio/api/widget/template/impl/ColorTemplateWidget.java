@@ -3,11 +3,11 @@ package org.homio.api.widget.template.impl;
 import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_SIGNAL;
 
 import java.util.Map;
+import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextWidget.HorizontalAlign;
 import org.homio.api.EntityContextWidget.VerticalAlign;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
-import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
 import org.homio.api.widget.template.WidgetDefinition;
@@ -70,11 +70,11 @@ public class ColorTemplateWidget implements TemplateWidgetBuilder {
 
     @Override
     public int getWidgetHeight(MainWidgetRequest request) {
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 }

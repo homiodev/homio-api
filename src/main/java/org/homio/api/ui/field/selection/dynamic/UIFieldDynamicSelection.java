@@ -1,16 +1,26 @@
-package org.homio.api.ui.field.selection;
+package org.homio.api.ui.field.selection.dynamic;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.homio.api.model.Icon;
-import org.homio.api.ui.action.DynamicOptionLoader;
+import org.homio.api.ui.field.selection.dynamic.UIFieldDynamicSelection.UIFieldDynamicListSelection;
 import org.jetbrains.annotations.NotNull;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIFieldSelection {
+@Repeatable(UIFieldDynamicListSelection.class)
+public @interface UIFieldDynamicSelection {
+
+    boolean rawInput() default false;
+
+    // UI select order UIFieldDynamicSelection.icon or UIFieldSelectConfig.icon or 'fas fa-caret-down'
+    String icon() default "";
+
+    // override UIFieldSelectConfig color
+    String iconColor() default "";
 
     /**
      * @return Target class for selection(for enums). see: ItemController.loadSelectOptions
@@ -23,18 +33,9 @@ public @interface UIFieldSelection {
     String[] staticParameters() default {};
 
     /**
-     * @return Set ui as textInout with select button if 'allowInputRawText' is true, and pure select box if false
-     */
-    boolean allowInputRawText() default false;
-
-    /**
      * @return List of dependency fields that should be passed to DynamicOptionLoader from UI
      */
     String[] dependencyFields() default {};
-
-    boolean lazyLoading() default false;
-
-    @NotNull String parentChildJoiner() default "/";
 
     /**
      * Interface to configure selection for IU
@@ -42,5 +43,15 @@ public @interface UIFieldSelection {
     interface SelectionConfiguration {
 
         @NotNull Icon selectionIcon();
+    }
+
+    /**
+     * Just for able to have many 'UIFieldDynamicSelection(...)'
+     */
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface UIFieldDynamicListSelection {
+
+        UIFieldDynamicSelection[] value();
     }
 }

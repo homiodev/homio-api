@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.EntityContext;
-import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
@@ -110,7 +109,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         if (isReadable()) {
             throw new IllegalStateException("Method must be implemented by readable property");
         }
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 
     /**
@@ -118,7 +117,9 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
      *
      * @param state - value to set. May be need convert value to correct format
      */
-    void writeValue(@NotNull State state);
+    default void writeValue(@NotNull State state) {
+        throw new IllegalStateException("Must be implemented for endpoint that has write ability");
+    }
 
     /**
      * @return If visible on UI

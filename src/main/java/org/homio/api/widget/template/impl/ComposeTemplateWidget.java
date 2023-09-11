@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.val;
+import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextWidget.HorizontalAlign;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
-import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
 import org.homio.api.widget.template.WidgetDefinition;
@@ -99,12 +99,12 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
 
     @Override
     public int getWidgetHeight(MainWidgetRequest request) {
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 
     private static @Nullable DeviceEndpoint findCellEndpoint(

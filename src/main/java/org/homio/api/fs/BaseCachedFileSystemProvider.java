@@ -89,6 +89,23 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     }
 
     @Override
+    @SneakyThrows
+    public boolean exists(@NotNull String id) {
+        return getFSFile(id) != null;
+    }
+
+    @Override
+    @SneakyThrows
+    public long size(@NotNull String id) {
+        FSFile fsFile = getFSFile(id);
+        if (fsFile != null) {
+            Long size = fsFile.getSize();
+            return size == null ? 0 : size;
+        }
+        return 0;
+    }
+
+    @Override
     public boolean restart(boolean force) {
         try {
             if (!force && connectionHashCode == entity.getConnectionHashCode()) {
@@ -113,7 +130,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
     @Override
     @SneakyThrows
-    public InputStream getEntryInputStream(@NotNull String id) {
+    public @NotNull InputStream getEntryInputStream(@NotNull String id) {
         try (InputStream stream = service.getInputStream(id)) {
             return new ByteArrayInputStream(IOUtils.toByteArray(stream));
         }
@@ -137,7 +154,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     public TreeNode delete(@NotNull Set<String> ids) {
         List<FSFile> files = new ArrayList<>();
         for (String id : ids) {
-            if (id.equals("")) {
+            if (id.isEmpty()) {
                 throw new IllegalStateException("Path must be specified");
             }
             FSFile fsFile = getFSFile(id);
@@ -220,13 +237,14 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         }
         Set<TreeNode> rootChildren = getChildren(entity.getFileSystemRoot());
         Set<TreeNode> currentChildren = rootChildren;
-        List<String> items = StreamSupport.stream(Paths.get(file.getAbsolutePathWithoutRoot()).spliterator(), false).map(Path::toString)
-                                          .collect(Collectors.toList());
+        List<String> items = StreamSupport.stream(Paths.get(file.getAbsolutePathWithoutRoot()).spliterator(), false)
+                                          .map(Path::toString).toList();
         for (int i = 0; i < items.size() - 1; i++) {
             String pathItem = items.get(i);
-            TreeNode foundedObject = currentChildren.stream().filter(c -> {
-                return c.getName().equals(pathItem);
-            }).findAny().orElseThrow(() -> new IllegalStateException("Unable find object: " + pathItem));
+            TreeNode foundedObject = currentChildren
+                .stream()
+                .filter(c -> c.getName().equals(pathItem)).findAny()
+                .orElseThrow(() -> new IllegalStateException("Unable find object: " + pathItem));
             currentChildren = getChildren(pathItem);
             foundedObject.addChildren(currentChildren);
         }
@@ -347,8 +365,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         }
     }
 
-    @Nullable
-    private FSFile getFSFile(String id) {
+    private @Nullable FSFile getFSFile(String id) {
         FSFile fsFile = null;
         try {
             String fileId = appendSlash(appendRoot(id));

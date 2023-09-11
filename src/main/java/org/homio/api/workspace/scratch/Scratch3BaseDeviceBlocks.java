@@ -5,13 +5,13 @@ import static java.lang.String.format;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextBGP.ThreadContext;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
-import org.homio.api.exception.ProhibitedExecution;
 import org.homio.api.model.Status;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.state.DecimalType;
@@ -233,7 +233,7 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
         }
 
         workspaceBlock.logErrorAndThrow("Unable to find endpoint: {}/{}", ieeeAddress, endpointID);
-        throw new ProhibitedExecution();
+        throw new NotImplementedException();
     }
 
     private @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String ieeeAddress, @NotNull String endpointID) {
