@@ -44,6 +44,8 @@ public interface EntityContextHardware {
 
     void reboot();
 
+    @NotNull ProcessStat getProcessStat(long pid);
+
     /**
      * Enable and start soft
      *
@@ -54,11 +56,21 @@ public interface EntityContextHardware {
         enableSystemCtl(soft);
         startSystemCtl(soft);
         return this;
-
     }
 
     default EntityContextHardware update() {
         execute("$PM update");
         return this;
+    }
+
+    interface ProcessStat {
+        // get cpu usage in % by process
+        double getCpuUsage();
+
+        // get memory usage in % by process
+        double getMemUsage();
+
+        // get memory used in bytes
+        long getMem();
     }
 }

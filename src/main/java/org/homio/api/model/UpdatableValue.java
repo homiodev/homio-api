@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.TypeDescriptor;
@@ -31,39 +33,72 @@ public class UpdatableValue<T> {
 
     // any class which uses this UpdatableValue may listen it's changes
     private final List<Consumer<T>> updateListeners = new ArrayList<>();
-    protected T value;
+    private T value;
     // when we create UpdatableValue which base on another UpdatableValue we must reflect base changes.
-    List<Consumer<T>> reflectListeners = new ArrayList<>();
-    @Getter private String name;
+    private @Getter @NotNull final List<Consumer<T>> reflectListeners = new ArrayList<>();
+    private @Getter @NotNull final String name;
     private Function<String, T> stringConverter;
     private Function<T, T> extraFunc;
     private Set<Validator> validators = new HashSet<>();
-    @Getter private int updateCount;
+    private @Getter int updateCount;
+    private @Getter long lastRefreshTime;
+    private boolean fetchFreshValueStarted;
 
-    private UpdatableValue() {
+    private UpdatableValue(@NotNull String name) {
+        this.name = name;
     }
 
-    public static <T> UpdatableValue<T> wrap(T value, String name) {
-        if (value == null) {
-            throw new IllegalArgumentException("Unable to evaluate type for null value");
-        }
-        UpdatableValue<T> updatableValue = new UpdatableValue<>();
+    /**
+     * Create UpdatableValue with null initial.
+     *
+     * @param name      value name
+     * @param classType value type
+     * @param <T>       - value type
+     * @return UpdatableValue
+     */
+    public static <T> UpdatableValue<T> deferred(@NotNull String name, @NotNull Class<T> classType) {
+        UpdatableValue<T> updatableValue = new UpdatableValue<>(name);
+        updatableValue.stringConverter = findStringConverter(classType);
+        return updatableValue;
+    }
+
+    public static <T> @NotNull UpdatableValue<T> wrap(@NotNull T value, @NotNull String name) {
+        UpdatableValue<T> updatableValue = new UpdatableValue<>(name);
         updatableValue.value = value;
-        updatableValue.name = name;
+        updatableValue.lastRefreshTime = System.currentTimeMillis();
         updatableValue.stringConverter = findStringConverter(value.getClass());
         return updatableValue;
     }
 
-    public static <T> UpdatableValue<T> ofNullable(@Nullable T value, String name, Class<?> valueType) {
-        UpdatableValue<T> updatableValue = new UpdatableValue<>();
-        updatableValue.value = value;
-        updatableValue.name = name;
-        updatableValue.stringConverter = findStringConverter(valueType);
-        return updatableValue;
+    public static <T> UpdatableValue<T> ofNullable(@Nullable T value, @NotNull String name, @NotNull Class<T> valueType) {
+        if (value == null) {
+            return deferred(name, valueType);
+        }
+        return wrap(value, name);
     }
 
     public T getValue() {
         return extraFunc == null ? value : extraFunc.apply(value);
+    }
+
+    /**
+     * Function get value and check if value is older that Duration and fire update handler
+     *
+     * @param duration - duration during which value will be 'fresh'
+     * @return value
+     */
+    public T getFreshValue(Duration duration, Runnable updateHandler) {
+        if (!fetchFreshValueStarted && System.currentTimeMillis() - lastRefreshTime > duration.toMillis()) {
+            fetchFreshValueStarted = true;
+            updateHandler.run();
+        }
+        return getValue();
+    }
+
+    public T getFreshValue(Duration duration, Supplier<T> updateSupplier) {
+        return getFreshValue(duration, () -> {
+            update(updateSupplier.get());
+        });
     }
 
     public void validate(T value) {
@@ -81,11 +116,13 @@ public class UpdatableValue<T> {
     }
 
     public T update(T updatedValue) {
-        T prevValue = this.value;
-        if (!this.value.equals(updatedValue)) {
+        T prevValue = value;
+        lastRefreshTime = System.currentTimeMillis();
+        fetchFreshValueStarted = false;
+        if (value == null || !value.equals(updatedValue)) {
             validate(updatedValue);
-            this.value = updatedValue;
-            this.updateCount++;
+            value = updatedValue;
+            updateCount++;
 
             // invoke all listeners
             updateListeners.forEach(consumer -> consumer.accept(getValue()));
@@ -119,7 +156,6 @@ public class UpdatableValue<T> {
             return s -> (T) NumberUtils.parseNumber(s, ((Class<? extends Number>) genericClass));
         }
         return s -> (T) s;
-
     }
 
     // fetch field name either from @Field or from @Value or from defaultValueSupplier
@@ -181,12 +217,12 @@ public class UpdatableValue<T> {
                 if (genericClass == null) {
                     throw new RuntimeException("UpdatableValue has no generic type specified in " + targetType.getSource());
                 }
-                UpdatableValue updatableValue = new UpdatableValue();
-                updatableValue.name = getNameFromAnnotation(/*targetType.getAnnotation(Column.class),*/
+                String name = getNameFromAnnotation(/*targetType.getAnnotation(Column.class),*/
                     targetType.getAnnotation(Value.class), () -> {
                         // must never through as UpdatableValueConverter uses by spring only with @Value annotation
                         throw new RuntimeException("Can not fetch UpdatableValue name from " + targetType.getSource());
                     });
+                UpdatableValue updatableValue = new UpdatableValue<>(name);
                 updatableValue.stringConverter = findStringConverter(genericClass);
 
                 updatableValue.validators = collectValidators(targetType, a -> {

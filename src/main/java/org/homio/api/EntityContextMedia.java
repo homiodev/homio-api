@@ -26,8 +26,6 @@ import org.json.JSONObject;
 
 public interface EntityContextMedia {
 
-    String FFMPEG_MOTION_ALARM = "motion_alarm";
-
     @NotNull EntityContext getEntityContext();
 
     void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
@@ -172,7 +170,7 @@ public interface EntityContextMedia {
 
     interface FFMPEGHandler {
 
-        default void motionDetected(boolean on, @NotNull String key) {
+        default void motionDetected(boolean on) {
 
         }
 

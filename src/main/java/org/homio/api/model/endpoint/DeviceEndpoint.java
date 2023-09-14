@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -20,7 +21,11 @@ import org.homio.api.state.OnOffType;
 import org.homio.api.state.State;
 import org.homio.api.state.StringType;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
+import org.homio.api.ui.field.action.v1.item.UICheckboxItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder.InfoType;
+import org.homio.api.ui.field.action.v1.item.UISelectBoxItemBuilder;
+import org.homio.api.ui.field.action.v1.item.UISliderItemBuilder;
+import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -137,6 +142,10 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         throw new IllegalStateException("Must be implemented for 'select' type");
     }
 
+    default @Nullable Object getDefaultValue() {
+        return null;
+    }
+
     default @NotNull Float getMin() {
         throw new IllegalStateException("Must be implemented for 'slider' type");
     }
@@ -166,7 +175,8 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
                 case dimmer -> actionBuilder = createDimmerActionBuilder(uiInputBuilder);
                 case color -> actionBuilder = createColorActionBuilder(uiInputBuilder);
                 case bool -> actionBuilder = createBoolActionBuilder(uiInputBuilder);
-                case number -> actionBuilder = createNumberActionBuilder(uiInputBuilder);
+                case number -> actionBuilder = createSliderActionBuilder(uiInputBuilder);
+                case trigger -> actionBuilder = createTriggerActionBuilder(uiInputBuilder);
                 case select -> actionBuilder = createSelectActionBuilder(uiInputBuilder);
                 case string -> actionBuilder = createStringActionBuilder(uiInputBuilder);
             }
@@ -201,32 +211,75 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     }
 
     default UIInputBuilder createSelectActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
-        uiInputBuilder
+        List<OptionModel> options = createSelectActionOptions();
+        Object defaultValue = getDefaultValue();
+        if (defaultValue != null) {
+            for (OptionModel option : options) {
+                if (option.getKey().equals(defaultValue)) {
+                    String defString = Lang.getServerMessage("OPTION_DEFAULT", defaultValue.toString());
+                    option.setTitle(option.getTitle() + defString);
+                }
+            }
+        }
+
+        postConfigureSelectBoxAction(uiInputBuilder
             .addSelectBox(getEntityID(), (entityContext, params) -> {
                 setValue(new StringType(params.getString("value")), false);
                 return onExternalUpdated();
             })
-            .addOptions(OptionModel.list(getSelectValues()))
+            .addOptions(options)
             .setPlaceholder("-----------")
+            .setHighlightSelected(true)
             .setSelected(getValue().toString())
-            .setDisabled(isDisabled());
+            .setDisabled(isDisabled()));
         return uiInputBuilder;
     }
 
-    default UIInputBuilder createNumberActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
-        uiInputBuilder.addSlider(getEntityID(), getValue().floatValue(0), getMin(), getMax(),
-            (entityContext, params) -> {
-                setValue(new DecimalType(params.getInt("value")), false);
-                return onExternalUpdated();
-            }).setDisabled(isDisabled());
+    default void postConfigureSelectBoxAction(UISelectBoxItemBuilder value) {
+
+    }
+
+    default void postConfigureBoolAction(UICheckboxItemBuilder value) {
+
+    }
+
+    default void postConfigureSliderAction(UISliderItemBuilder value) {
+
+    }
+
+    /**
+     * Able to override to customize options for selectBox
+     *
+     * @return selectBox options
+     */
+    default @NotNull List<OptionModel> createSelectActionOptions() {
+        return OptionModel.list(getSelectValues());
+    }
+
+    default UIInputBuilder createSliderActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        float value = getValue().floatValue(0);
+        UISliderItemBuilder sliderItemBuilder =
+            uiInputBuilder.addSlider(getEntityID(), value, getMin(), getMax(),
+                              (entityContext, params) -> {
+                                  setValue(new DecimalType(params.getInt("value")), false);
+                                  return onExternalUpdated();
+                              })
+                          .setDefaultValue((Float) getDefaultValue())
+                          .setThumbLabel(getUnit())
+                          .setDisabled(isDisabled());
+        postConfigureSliderAction(sliderItemBuilder);
         return uiInputBuilder;
+    }
+
+    default UIInputBuilder createTriggerActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
+        throw new IllegalStateException("Must be implemented in child device endpoint to configure action button");
     }
 
     default UIInputBuilder createBoolActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
-        uiInputBuilder.addCheckbox(getEntityID(), getValue().boolValue(), (entityContext, params) -> {
+        postConfigureBoolAction(uiInputBuilder.addCheckbox(getEntityID(), getValue().boolValue(), (entityContext, params) -> {
             setValue(OnOffType.of(params.getBoolean("value")), false);
             return onExternalUpdated();
-        }).setDisabled(isDisabled());
+        }).setDisabled(isDisabled()));
         return uiInputBuilder;
     }
 
@@ -249,10 +302,10 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         return null;
     }
 
-
     @Getter
     @RequiredArgsConstructor
     enum EndpointType {
+        trigger((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue),
         bool((jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s)), State::boolValue),
         number((jsonObject, s) -> new DecimalType(jsonObject.getInt(s)), State::floatValue),
         dimmer((jsonObject, s) -> new DecimalType(jsonObject.getInt(s)), State::intValue),

@@ -15,6 +15,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.OptionModel.KeyValueEnum;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @RequiredArgsConstructor
@@ -104,7 +105,7 @@ public abstract class MenuBlock {
         private final Class<T> typeClass;
         private Map<String, List> subMenu;
         @Setter
-        private Object defaultValue;
+        private @Nullable Object defaultValue;
 
         StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
             super(name);

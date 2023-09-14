@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 
+@SuppressWarnings({"unused", "unchecked", "rawtypes"})
 @Getter
 public class Scratch3ConditionalBlock extends Scratch3Block {
 

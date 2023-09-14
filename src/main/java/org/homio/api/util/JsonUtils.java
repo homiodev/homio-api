@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
@@ -20,6 +21,7 @@ import java.util.function.Predicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,11 +60,12 @@ public class JsonUtils {
         return list;
     }
 
-    public static boolean hasJsonPath(@NotNull JsonNode node, @NotNull String path) {
-        return !getJsonPath(node, path).isMissingNode();
+    public static boolean hasJsonPath(@Nullable JsonNode node, @NotNull String path) {
+        return node != null && !getJsonPath(node, path).isMissingNode();
     }
 
-    public static @NotNull JsonNode getJsonPath(@NotNull JsonNode node, @NotNull String path) {
+    public static @NotNull JsonNode getJsonPath(@Nullable JsonNode node, @NotNull String path) {
+        if (node == null) {return MissingNode.getInstance();}
         JsonNode cursor = node;
         for (String item : path.split("/")) {
             cursor = cursor.path(item);

@@ -33,39 +33,37 @@ import org.homio.api.state.StringType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
 @RequiredArgsConstructor
 public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContract> implements DeviceEndpoint {
 
     private final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
     private final @NotNull String group;
 
-    protected Icon icon;
-    protected String endpointEntityID;
+    private Icon icon;
+    private String endpointEntityID;
 
-    protected D device;
+    private D device;
 
-    protected @Nullable String unit;
-    protected long updated;
-    protected @NotNull State value = new StringType("N/A");
-    protected @Nullable Object dbValue;
-    protected @Nullable String variableID;
-    protected boolean readable = true;
-    protected boolean writable = true;
-    protected String endpointName;
-    protected EndpointType endpointType;
-    protected int order;
+    private @Getter @Nullable String unit;
+    private long updated;
+    private @NotNull State value = new StringType("N/A");
+    private @Nullable Object dbValue;
+    private @Nullable String variableID;
+    private @Getter boolean readable = true;
+    private @Getter boolean writable = true;
+    private @Getter String endpointName;
+    private @Getter EndpointType endpointType;
+    private @Getter int order;
 
-    protected EntityContext entityContext;
-    protected @Nullable ConfigDeviceDefinitionService configService;
-    protected @Nullable Float min;
-    protected @Nullable Float max;
-    protected @Nullable Set<String> range;
-    protected WriteHandler writeHandler;
-    private @JsonIgnore
-    @Nullable Set<String> alternateEndpoints;
-    private @Setter
-    @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
+    private EntityContext entityContext;
+    private @Nullable ConfigDeviceDefinitionService configService;
+    private @Getter @Setter @Nullable Float min;
+    private @Getter @Setter @Nullable Float max;
+    private @Getter @Setter @Nullable Set<String> range;
+    private @Getter @Setter @Nullable Object defaultValue;
+    private WriteHandler writeHandler;
+    private @JsonIgnore @Nullable Set<String> alternateEndpoints;
+    private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
 
     public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group) {
         this(group);
@@ -136,6 +134,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         boolean writable,
         @Nullable String endpointName,
         @NotNull EndpointType endpointType) {
+
+        if (endpointType == EndpointType.trigger) {
+            readable = false;
+        }
 
         this.configService = configService;
         configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
@@ -322,7 +324,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     protected @NotNull VariableType getVariableType() {
         switch (endpointType) {
-            case bool -> {
+            case bool, trigger -> {
                 return VariableType.Bool;
             }
             case number, dimmer -> {
@@ -386,7 +388,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
                 };
             }
             default -> {
-                // select, string
+                // select, string, trigger
                 return (rawValue, eu) -> {
                     if (rawValue instanceof String) {
                         setValue(new StringType((String) rawValue), eu);

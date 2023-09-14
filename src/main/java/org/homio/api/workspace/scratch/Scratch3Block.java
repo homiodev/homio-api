@@ -19,6 +19,7 @@ import org.homio.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("ALL")
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
 
@@ -32,13 +33,15 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     private final Scratch3BlockHandler handler;
     @JsonIgnore
     private final Scratch3BlockEvaluateHandler evaluateHandler;
-    Object text;
+    @NotNull Object text;
     @JsonIgnore
     private int spaceCount = 0;
 
     private Scratch3Color scratch3Color;
 
-    protected Scratch3Block(int order, @NotNull String opcode, @NotNull BlockType blockType,
+    protected Scratch3Block(int order,
+        @NotNull String opcode,
+        @NotNull BlockType blockType,
         @NotNull Object text,
         @Nullable Scratch3BlockHandler handler,
         @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {

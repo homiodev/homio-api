@@ -50,7 +50,7 @@ public abstract class BaseEntity implements
 
     @Version
     @JsonIgnore
-    private Integer version;
+    private int version;
 
     @Getter
     @UIField(order = 10, inlineEdit = true)

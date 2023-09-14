@@ -211,13 +211,13 @@ public class CommonUtils {
         return IOUtils.toString(getResource(addonId, resource), Charset.defaultCharset());
     }
 
-    public static void addToListSafe(List<String> list, String value) {
-        if (!value.isEmpty()) {
+    public static void addToListSafe(@NotNull List<String> list, @Nullable String value) {
+        if (StringUtils.isNotEmpty(value)) {
             list.add(value);
         }
     }
 
-    public static Path createDirectoriesIfNotExists(Path path) {
+    public static @NotNull Path createDirectoriesIfNotExists(@NotNull Path path) {
         if (Files.notExists(path)) {
             try {
                 Files.createDirectories(path);
@@ -228,18 +228,18 @@ public class CommonUtils {
         return path;
     }
 
-    public static Map<String, String> readPropertiesMerge(String path) {
+    public static @NotNull Map<String, String> readPropertiesMerge(@NotNull String path) {
         Map<String, String> map = new HashMap<>();
         readProperties(path).forEach(map::putAll);
         return map;
     }
 
-    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+    public static @NotNull <T> Predicate<T> distinctByKey(@NotNull Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
     }
 
-    public static List<String> readFile(String fileName) {
+    public static @NotNull List<String> readFile(@NotNull String fileName) {
         try {
             try (InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
                 return IOUtils.readLines(Objects.requireNonNull(resource), Charset.defaultCharset());
@@ -252,7 +252,7 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static FileSystem getOrCreateNewFileSystem(String fileSystemPath) {
+    public static @NotNull FileSystem getOrCreateNewFileSystem(@Nullable String fileSystemPath) {
         if (fileSystemPath == null) {
             return FileSystems.getDefault();
         }
@@ -264,7 +264,7 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static URL getResource(String addonID, String resource) {
+    public static @Nullable URL getResource(@Nullable String addonID, @NotNull String resource) {
         URL resourceURL = null;
         ArrayList<URL> urls = Collections.list(Thread.currentThread().getContextClassLoader().getResources(resource));
         if (urls.size() == 1) {
@@ -276,7 +276,7 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static <T> T newInstance(Class<T> clazz) {
+    public static <T> @NotNull T newInstance(@NotNull Class<T> clazz) {
         Constructor<T> constructor = findObjectConstructor(clazz);
         if (constructor != null) {
             constructor.setAccessible(true);
@@ -286,7 +286,7 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static <T> Constructor<T> findObjectConstructor(Class<T> clazz, Class<?>... parameterTypes) {
+    public static <T> @Nullable Constructor<T> findObjectConstructor(@NotNull Class<T> clazz, Class<?>... parameterTypes) {
         if (parameterTypes.length > 0) {
             return clazz.getConstructor(parameterTypes);
         }
@@ -300,12 +300,12 @@ public class CommonUtils {
     }
 
     // consume file name with thymeleaf...
-    public static TemplateBuilder templateBuilder(String templateName) {
+    public static @NotNull TemplateBuilder templateBuilder(@NotNull String templateName) {
         return new TemplateBuilder(templateName);
     }
 
     @SneakyThrows
-    public static String toString(Document document) {
+    public static @NotNull String toString(@NotNull Document document) {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer = tf.newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
@@ -319,7 +319,7 @@ public class CommonUtils {
         return out.toString();
     }
 
-    public static void unzipAndMove(@NotNull ProgressBar progressBar, Path archive, Path targetPath) throws IOException {
+    public static void unzipAndMove(@NotNull ProgressBar progressBar, @NotNull Path archive, @NotNull Path targetPath) throws IOException {
         progressBar.progress(70, format("Unzip %s sources", archive));
         Path workingPath = archive.getParent();
         List<Path> files = ArchiveUtil.unzip(archive, workingPath, null, false, progressBar, replace);
@@ -344,7 +344,7 @@ public class CommonUtils {
         FileUtils.deleteDirectory(workingPath.toFile());
     }
 
-    public static boolean deletePath(Path path) {
+    public static boolean deletePath(@NotNull Path path) {
         try {
             if (Files.exists(path)) {
                 if (Files.isDirectory(path)) {
@@ -360,18 +360,18 @@ public class CommonUtils {
         return false;
     }
 
-    public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-        BiFunction<Path, TreeNode, Path> pathResolver) {
+    public static void addFiles(@NotNull Path tmpPath, @NotNull Collection<TreeNode> files,
+        @NotNull BiFunction<Path, TreeNode, Path> pathResolver) {
         addFiles(tmpPath, files, pathResolver,
             (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
             (treeNode, path) -> Files.createDirectories(path));
     }
 
     @SneakyThrows
-    public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-        BiFunction<Path, TreeNode, Path> pathResolver,
-        ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
-        ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
+    public static void addFiles(@NotNull Path tmpPath, @Nullable Collection<TreeNode> files,
+        @NotNull BiFunction<Path, TreeNode, Path> pathResolver,
+        @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
+        @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
         if (files != null) {
             for (TreeNode treeNode : files) {
                 Path filePath = pathResolver.apply(tmpPath, treeNode);

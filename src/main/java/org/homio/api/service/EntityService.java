@@ -106,7 +106,8 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             if (fireFirstInitialize) {
                 entity.setStatus(Status.INITIALIZE);
                 initializing.set(true);
-                entityContext.bgp().execute(Duration.ofSeconds(1), () -> {
+                // deffer initialize to register service in map and avoid blocking
+                entityContext.bgp().execute(Duration.ofSeconds(5), () -> {
                     fireWithSetStatus(this::firstInitialize);
                     initializing.set(false);
                 });
