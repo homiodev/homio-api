@@ -158,6 +158,11 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     @NotNull State getValue();
 
+    /**
+     * Update endpoint value
+     * @param value - new value
+     * @param externalUpdate - if need update state on UI
+     */
     void setValue(State value, boolean externalUpdate);
 
     /**
@@ -216,8 +221,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         if (defaultValue != null) {
             for (OptionModel option : options) {
                 if (option.getKey().equals(defaultValue)) {
-                    String defString = Lang.getServerMessage("OPTION_DEFAULT", defaultValue.toString());
-                    option.setTitle(option.getTitle() + defString);
+                    option.setTitle(option.getTitleOrKey() + Lang.getServerMessage("OPTION_DEFAULT"));
                 }
             }
         }

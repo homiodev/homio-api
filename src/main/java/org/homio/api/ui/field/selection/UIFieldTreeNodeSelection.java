@@ -15,9 +15,6 @@ public @interface UIFieldTreeNodeSelection {
     // is allowed to edit with keyboard
     boolean rawInput() default true;
 
-    // prefix to show on UI and distinguish if multiple select inputs available
-    String prefix() default "";
-
     String icon() default "fas fa-folder-open";
 
     String iconColor() default "";

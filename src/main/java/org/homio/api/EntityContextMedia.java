@@ -19,6 +19,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.logging.log4j.Level;
+import org.homio.api.model.Icon;
 import org.homio.api.state.DecimalType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +34,8 @@ public interface EntityContextMedia {
     void registerMediaMTXSource(@NotNull String path, @NotNull MediaMTXSource source);
 
     void unRegisterMediaMTXSource(@NotNull String path);
+
+    @NotNull MediaMTXInfo getMediaMTXInfo(@NotNull String path);
 
     @NotNull VideoInputDevice createVideoInputDevice(@NotNull String vfile);
 
@@ -72,6 +75,10 @@ public interface EntityContextMedia {
 
         private final String icon;
         private final String color;
+
+        public Icon getIconModel() {
+            return new Icon(icon, color);
+        }
     }
 
     interface VideoInputDevice {
@@ -205,5 +212,14 @@ public interface EntityContextMedia {
         public enum SourceProtocol {
             automatic, udp, multicast, tcp
         }
+    }
+
+    interface MediaMTXInfo {
+
+        String getPath();
+
+        boolean isReady();
+
+        boolean isExists();
     }
 }

@@ -55,6 +55,7 @@ import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("unused")
 @Log4j2
 public final class ArchiveUtil {
 
@@ -239,36 +240,35 @@ public final class ArchiveUtil {
     @Getter
     @RequiredArgsConstructor
     public enum ArchiveFormat {
-        tar("tar", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(Files.newOutputStream(file));
-        }),
+        tar("tar", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(Files.newInputStream(archive)),
+            (file, level, password) ->
+                new TarArchiveOutputStream(Files.newOutputStream(file))),
         // tar bz2
-        tarGZ2("tar.gz2", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(new BZip2CompressorInputStream(Files.newInputStream(archive)));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(new BZip2CompressorOutputStream(Files.newOutputStream(file)));
-        }),
+        tarGZ2("tar.gz2", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(new BZip2CompressorInputStream(Files.newInputStream(archive))),
+            (file, level, password) ->
+                new TarArchiveOutputStream(new BZip2CompressorOutputStream(Files.newOutputStream(file)))),
         // tar bz2
-        tarXZ("tar.xz", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(new XZCompressorInputStream(Files.newInputStream(archive)));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(new XZCompressorOutputStream(Files.newOutputStream(file)));
-        }),
+        tarXZ("tar.xz", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(new XZCompressorInputStream(Files.newInputStream(archive))),
+            (file, level, password) ->
+                new TarArchiveOutputStream(new XZCompressorOutputStream(Files.newOutputStream(file)))),
         // tar gz
-        tarGZ("tar.gz", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(new GzipCompressorInputStream(Files.newInputStream(archive)));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(new GzipCompressorOutputStream(Files.newOutputStream(file)));
-        }),
+        tarGZ("tar.gz", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(new GzipCompressorInputStream(Files.newInputStream(archive))),
+            (file, level, password) ->
+                new TarArchiveOutputStream(new GzipCompressorOutputStream(Files.newOutputStream(file)))),
         // jar
         jar("jar", true, path -> {
             new ZipFile(path.toFile()).close();
             return true;
-        }, (archive, password) -> {
-            return new JarArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
+        }, (archive, password) ->
+            new JarArchiveInputStream(Files.newInputStream(archive)), (file, level, password) -> {
             JarArchiveOutputStream out = new JarArchiveOutputStream(new BufferedOutputStream(Files.newOutputStream(file)));
             out.setLevel("low".equals(level) ? Deflater.BEST_SPEED :
                 "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
@@ -278,9 +278,7 @@ public final class ArchiveUtil {
         war("war", true, path -> {
             new ZipFile(path.toFile()).close();
             return true;
-        }, (archive, password) -> {
-            return new JarArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
+        }, (archive, password) -> new JarArchiveInputStream(Files.newInputStream(archive)), (file, level, password) -> {
             JarArchiveOutputStream out = new JarArchiveOutputStream(new BufferedOutputStream(Files.newOutputStream(file)));
             out.setLevel("low".equals(level) ? Deflater.BEST_SPEED :
                 "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
@@ -290,9 +288,7 @@ public final class ArchiveUtil {
         zip("zip", true, path -> {
             new ZipFile(path.toFile()).close();
             return true;
-        }, (archive, password) -> {
-            return new ZipArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
+        }, (archive, password) -> new ZipArchiveInputStream(Files.newInputStream(archive)), (file, level, password) -> {
             ZipArchiveOutputStream out = new ZipArchiveOutputStream(new BufferedOutputStream(Files.newOutputStream(file)));
             out.setLevel("low".equals(level) ? Deflater.BEST_SPEED :
                 "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
@@ -302,10 +298,8 @@ public final class ArchiveUtil {
         sevenZ("7z", false, path -> {
             new SevenZFile(path.toFile()).close();
             return true;
-        }, (path, password) -> {
-            return ApacheCompress.createSeven7InputStream(path, password);
-        }, (file, level, password) -> {
-            return new ArchiveOutputStream() {
+        }, ApacheCompress::createSeven7InputStream,
+            (file, level, password) -> new ArchiveOutputStream() {
                 final SevenZOutputFile target = new SevenZOutputFile(file.toFile());
 
                 @Override
@@ -347,7 +341,6 @@ public final class ArchiveUtil {
                 public ArchiveEntry createArchiveEntry(File inputFile, String entryNames) {
                     return target.createArchiveEntry(inputFile, entryNames);
                 }
-            };
         });
 
         private final String name;

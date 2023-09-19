@@ -37,25 +37,25 @@ import org.jetbrains.annotations.Nullable;
 public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContract> implements DeviceEndpoint {
 
     private final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
-    private final @NotNull String group;
+    private final @NotNull @Getter String group;
+    private final @Getter @NotNull EntityContext entityContext;
 
-    private Icon icon;
-    private String endpointEntityID;
+    private @Getter @Setter Icon icon;
+    private @Getter @Setter String endpointEntityID;
 
-    private D device;
+    private @Getter D device;
 
     private @Getter @Nullable String unit;
-    private long updated;
-    private @NotNull State value = new StringType("N/A");
+    private @Getter long updated;
+    private @Getter @NotNull State value = new StringType("N/A");
     private @Nullable Object dbValue;
-    private @Nullable String variableID;
-    private @Getter boolean readable = true;
-    private @Getter boolean writable = true;
-    private @Getter String endpointName;
-    private @Getter EndpointType endpointType;
+    private @Nullable @Getter String variableID;
+    private @Getter @Setter boolean readable = true;
+    private @Getter @Setter boolean writable = true;
+    private @Getter @Setter String endpointName;
+    private @Getter @Setter EndpointType endpointType;
     private @Getter int order;
 
-    private EntityContext entityContext;
     private @Nullable ConfigDeviceDefinitionService configService;
     private @Getter @Setter @Nullable Float min;
     private @Getter @Setter @Nullable Float max;
@@ -64,10 +64,34 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     private WriteHandler writeHandler;
     private @JsonIgnore @Nullable Set<String> alternateEndpoints;
     private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
+    private @Getter @Setter boolean visibleEndpoint = true;
 
-    public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group) {
-        this(group);
+    public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group, @NotNull EntityContext entityContext) {
+        this(group, entityContext);
         this.icon = icon;
+    }
+
+    public BaseDeviceEndpoint(
+        @NotNull Icon icon,
+        @NotNull String group,
+        @NotNull EntityContext entityContext,
+        @NotNull D device,
+        @NotNull String endpointEntityID,
+        boolean writable,
+        @NotNull EndpointType endpointType) {
+        this(icon, group, entityContext);
+        setInitial(device, endpointEntityID, writable, endpointType);
+    }
+
+    private void setInitial(D device, String endpointEntityID, boolean writable, EndpointType endpointType) {
+        this.device = device;
+        this.endpointEntityID = endpointEntityID;
+        this.writable = writable;
+        this.endpointType = endpointType;
+        if (endpointType == EndpointType.trigger) {
+            this.readable = false;
+            this.writable = true;
+        }
     }
 
     @Override
@@ -108,13 +132,13 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     public void setValue(@Nullable State value, boolean externalUpdate) {
         if (value != null && !this.value.equals(value)) {
             this.value = value;
+            this.updated = System.currentTimeMillis();
+            for (Consumer<State> changeListener : changeListeners.values()) {
+                changeListener.accept(getValue());
+            }
+            pushVariable();
             if (externalUpdate) {
-                this.updated = System.currentTimeMillis();
-                for (Consumer<State> changeListener : changeListeners.values()) {
-                    changeListener.accept(getValue());
-                }
                 updateUI();
-                pushVariable();
             }
         }
     }
@@ -128,16 +152,11 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         @NotNull ConfigDeviceDefinitionService configService,
         @Nullable String endpointEntityID,
         @NotNull D device,
-        @NotNull EntityContext entityContext,
         @Nullable String unit,
         boolean readable,
         boolean writable,
         @Nullable String endpointName,
         @NotNull EndpointType endpointType) {
-
-        if (endpointType == EndpointType.trigger) {
-            readable = false;
-        }
 
         this.configService = configService;
         configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
@@ -158,15 +177,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         if (endpointEntityID == null) {
             throw new IllegalStateException("Unable to create device endpoint without endpoint id. " + endpointName);
         }
-
-        this.device = device;
         this.endpointName = endpointName;
-        this.endpointEntityID = endpointEntityID;
-        this.entityContext = entityContext;
         this.unit = StringUtils.isEmpty(unit) ? configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit() : unit;
         this.readable = readable;
-        this.writable = writable;
-        this.endpointType = endpointType;
+        setInitial(device, endpointEntityID, writable, endpointType);
 
         order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
         if (order == 0) {
@@ -184,6 +198,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     @Override
     public boolean isVisible() {
         if (configService != null && configService.isHideEndpoint(getEndpointEntityID())) {
+            return false;
+        }
+        if (!visibleEndpoint) {
             return false;
         }
         return !getHiddenEndpoints().contains(getEndpointEntityID());
@@ -244,7 +261,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
     }
 
-    protected void getOrCreateVariable() {
+    public @Nullable String getOrCreateVariable() {
         if (variableID == null) {
             VariableType variableType = getVariableType();
             boolean persistent = configDeviceEndpoint != null && configDeviceEndpoint.isPersistent();
@@ -282,6 +299,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
                 });
             }
         }
+        return variableID;
     }
 
     protected @NotNull Set<String> getVariableEnumValues() {
@@ -407,5 +425,18 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     private interface WriteHandler {
 
         boolean write(Object value, boolean externalUpdate);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        BaseDeviceEndpoint<?> that = (BaseDeviceEndpoint<?>) o;
+        return Objects.equals(endpointEntityID, that.endpointEntityID);
+    }
+
+    @Override
+    public int hashCode() {
+        return endpointEntityID != null ? endpointEntityID.hashCode() : 0;
     }
 }

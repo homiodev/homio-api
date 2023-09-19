@@ -386,19 +386,11 @@ public interface EntityContextWidget {
         @NotNull T setValueConverterRefreshInterval(int value);
     }
 
-    interface HasSingleValueAggregatedDataSource<T> extends HasSingleValueDataSource<T> {
-
-        @NotNull T setValueAggregationType(@NotNull AggregationType value);
-
-        @NotNull T setValueAggregationPeriod(int value);
-    }
-
     interface DisplayWidgetSeriesBuilder extends
         HasIcon<DisplayWidgetSeriesBuilder>,
         HasValueTemplate<DisplayWidgetSeriesBuilder>,
         HasName<DisplayWidgetSeriesBuilder>,
-        HasValueConverter<DisplayWidgetSeriesBuilder>,
-        HasSingleValueAggregatedDataSource<DisplayWidgetSeriesBuilder> {
+        HasValueConverter<DisplayWidgetSeriesBuilder> {
 
         @NotNull DisplayWidgetSeriesBuilder setStyle(@NotNull String... styles);
     }

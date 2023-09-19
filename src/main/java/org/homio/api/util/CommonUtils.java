@@ -63,6 +63,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.fs.archive.ArchiveUtil;
@@ -276,27 +277,44 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static <T> @NotNull T newInstance(@NotNull Class<T> clazz) {
-        Constructor<T> constructor = findObjectConstructor(clazz);
+    public static <T> @NotNull T newInstance(@NotNull Class<T> clazz, Object... parameters) {
+        Constructor<T> constructor = findObjectConstructor(clazz, ClassUtils.toClass(parameters));
         if (constructor != null) {
-            constructor.setAccessible(true);
-            return constructor.newInstance();
+            return constructor.newInstance(parameters);
         }
         throw new IllegalArgumentException("Class " + clazz.getSimpleName() + " has to have empty constructor");
     }
 
+    /**
+     * Find constructor. Not well implemented because not find fine-grain constructor. But satisfy app requirements
+     *
+     * @param clazz          class
+     * @param parameterTypes - types
+     * @param <T>            - object type
+     * @return constructor or null
+     */
     @SneakyThrows
     public static <T> @Nullable Constructor<T> findObjectConstructor(@NotNull Class<T> clazz, Class<?>... parameterTypes) {
-        if (parameterTypes.length > 0) {
-            return clazz.getConstructor(parameterTypes);
-        }
         for (Constructor<?> constructor : clazz.getConstructors()) {
-            if (constructor.getParameterCount() == 0) {
+            if (isMatchConstructor(constructor, parameterTypes)) {
                 constructor.setAccessible(true);
                 return (Constructor<T>) constructor;
             }
         }
         return null;
+    }
+
+    public static boolean isMatchConstructor(Constructor<?> constructor, Class<?>[] parameterTypes) {
+        if (parameterTypes.length != constructor.getParameterCount()) {
+            return false;
+        }
+        for (int i = 0; i < constructor.getParameterCount(); i++) {
+            Class<?> constructorParameterType = constructor.getParameterTypes()[i];
+            if (!constructor.getParameters()[i].getType().isAssignableFrom(parameterTypes[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // consume file name with thymeleaf...

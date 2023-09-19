@@ -43,7 +43,7 @@ public @interface UIField {
     // uses in case to show on UI field with * but don't mandatory to fill
     boolean semiRequired() default false;
 
-    // able to edit field directly from view mode (now works only in console)
+    // able to edit field directly from view mode
     boolean inlineEdit() default false;
 
     boolean copyButton() default false;

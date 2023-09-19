@@ -1,5 +1,9 @@
 package org.homio.api.util;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +19,11 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 public class DataSourceUtil {
+
+    public static SelectionSource getSelection(String value) {
+        String[] items = value.split("###");
+        return new SelectionSource(items[0], items.length > 1 ? items[1] : null);
+    }
 
     /**
      * Try update target data source value
@@ -57,6 +66,7 @@ public class DataSourceUtil {
     public static @NotNull DataSourceContext getSource(@NotNull EntityContext entityContext, @Nullable String dataSource) {
         DataSourceContext dataSourceContext = new DataSourceContext(dataSource);
         if (StringUtils.isNotEmpty(dataSource)) {
+            dataSource = dataSource.split("###")[0];
             List<String> vds = Arrays.asList(dataSource.split("~~~"));
             Collections.reverse(vds);
             if (vds.size() > 2) {
@@ -111,6 +121,22 @@ public class DataSourceUtil {
         @Nullable
         public String getSourceEntityID() {
             return Optional.ofNullable(getSource(BaseEntity.class, null)).map(BaseEntity::getEntityID).orElse(null);
+        }
+    }
+
+    @Getter
+    public static class SelectionSource {
+
+        private final String value;
+        private JsonNode metadata;
+
+        public SelectionSource(String value, String metadata) {
+            this.value = value;
+            try {
+                this.metadata = OBJECT_MAPPER.readValue(metadata, JsonNode.class);
+            } catch (Exception e) {
+                this.metadata = OBJECT_MAPPER.createObjectNode();
+            }
         }
     }
 }

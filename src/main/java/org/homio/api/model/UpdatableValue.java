@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.SystemPropertyUtils;
 
@@ -31,46 +32,45 @@ import org.springframework.util.SystemPropertyUtils;
  */
 public class UpdatableValue<T> {
 
+    private static final DefaultConversionService CONVERSION_SERVICE = new DefaultConversionService();
     // any class which uses this UpdatableValue may listen it's changes
-    private final List<Consumer<T>> updateListeners = new ArrayList<>();
+    private @NotNull final List<Consumer<T>> updateListeners = new ArrayList<>();
     private T value;
     // when we create UpdatableValue which base on another UpdatableValue we must reflect base changes.
     private @Getter @NotNull final List<Consumer<T>> reflectListeners = new ArrayList<>();
     private @Getter @NotNull final String name;
-    private Function<String, T> stringConverter;
+    private @Getter @NotNull final Class type;
     private Function<T, T> extraFunc;
-    private Set<Validator> validators = new HashSet<>();
+    private @NotNull Set<Validator> validators = new HashSet<>();
     private @Getter int updateCount;
     private @Getter long lastRefreshTime;
     private boolean fetchFreshValueStarted;
 
-    private UpdatableValue(@NotNull String name) {
+    private UpdatableValue(@NotNull String name, @NotNull Class type) {
         this.name = name;
+        this.type = type;
     }
 
     /**
      * Create UpdatableValue with null initial.
      *
-     * @param name      value name
-     * @param classType value type
+     * @param name      - value name
+     * @param type      - value class type
      * @param <T>       - value type
      * @return UpdatableValue
      */
-    public static <T> UpdatableValue<T> deferred(@NotNull String name, @NotNull Class<T> classType) {
-        UpdatableValue<T> updatableValue = new UpdatableValue<>(name);
-        updatableValue.stringConverter = findStringConverter(classType);
-        return updatableValue;
+    public static <T> @NotNull UpdatableValue<T> deferred(@NotNull String name, @NotNull Class<T> type) {
+        return new UpdatableValue<>(name, type);
     }
 
     public static <T> @NotNull UpdatableValue<T> wrap(@NotNull T value, @NotNull String name) {
-        UpdatableValue<T> updatableValue = new UpdatableValue<>(name);
+        UpdatableValue<T> updatableValue = new UpdatableValue<>(name, value.getClass());
         updatableValue.value = value;
         updatableValue.lastRefreshTime = System.currentTimeMillis();
-        updatableValue.stringConverter = findStringConverter(value.getClass());
         return updatableValue;
     }
 
-    public static <T> UpdatableValue<T> ofNullable(@Nullable T value, @NotNull String name, @NotNull Class<T> valueType) {
+    public static <T> @NotNull UpdatableValue<T> ofNullable(@Nullable T value, @NotNull String name, @NotNull Class<T> valueType) {
         if (value == null) {
             return deferred(name, valueType);
         }
@@ -101,21 +101,21 @@ public class UpdatableValue<T> {
         });
     }
 
-    public void validate(T value) {
+    public void validate(@NotNull T value) {
         for (Validator validator : validators) {
             validator.validate(value);
         }
     }
 
-    public T parse(String value) {
-        return stringConverter.apply(value);
+    public @NotNull T parse(@NotNull String value) {
+        return (T) CONVERSION_SERVICE.convert(value, type);
     }
 
-    public Object parseAndUpdate(String updatedValue) {
-        return update(stringConverter.apply(updatedValue));
+    public Object parseAndUpdate(@NotNull String updatedValue) {
+        return update(parse(updatedValue));
     }
 
-    public T update(T updatedValue) {
+    public T update(@NotNull T updatedValue) {
         T prevValue = value;
         lastRefreshTime = System.currentTimeMillis();
         fetchFreshValueStarted = false;
@@ -137,29 +137,19 @@ public class UpdatableValue<T> {
         return String.valueOf(value);
     }
 
-    public void addListener(Consumer<T> listener) {
+    public void addListener(@NotNull Consumer<T> listener) {
         this.updateListeners.add(listener);
     }
 
-    public UpdatableValue<T> andExtra(Function<T, T> extraFunc) {
+    public @NotNull UpdatableValue<T> andExtra(@NotNull Function<T, T> extraFunc) {
         UpdatableValue<T> updatableValueWithExtra = UpdatableValue.wrap(this.value, this.name);
         updatableValueWithExtra.extraFunc = extraFunc;
-        updatableValueWithExtra.stringConverter = this.stringConverter;
         this.reflectListeners.add(updatableValueWithExtra::update);
         return updatableValueWithExtra;
     }
 
-    private static <T> Function<String, T> findStringConverter(Class<?> genericClass) {
-        if (genericClass.isEnum()) {
-            return s -> (T) Enum.valueOf((Class<Enum>) genericClass, s);
-        } else if (Number.class.isAssignableFrom(genericClass)) {
-            return s -> (T) NumberUtils.parseNumber(s, ((Class<? extends Number>) genericClass));
-        }
-        return s -> (T) s;
-    }
-
     // fetch field name either from @Field or from @Value or from defaultValueSupplier
-    private static String getNameFromAnnotation(/*Column field,*/ Value value, Supplier<String> defaultValueSupplier) {
+    private static @NotNull String getNameFromAnnotation(@Nullable Value value, @NotNull Supplier<String> defaultValueSupplier) {
         /*if (field != null) {
             return field.name();
         } else*/
@@ -175,7 +165,7 @@ public class UpdatableValue<T> {
 
     private interface Validator {
 
-        void validate(Object value);
+        void validate(@NotNull Object value);
     }
 
     /**
@@ -184,7 +174,10 @@ public class UpdatableValue<T> {
     public static final class UpdatableValueSerializer extends JsonSerializer<UpdatableValue> {
 
         @Override
-        public void serialize(UpdatableValue updatableValue, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        public void serialize(
+            @NotNull UpdatableValue updatableValue,
+            @NotNull JsonGenerator gen,
+            @NotNull SerializerProvider provider) throws IOException {
             gen.writeObject(updatableValue.value);
         }
     }
@@ -195,7 +188,7 @@ public class UpdatableValue<T> {
     public static final class UpdatableValueConverter implements ConditionalGenericConverter {
 
         @Override
-        public Set<ConvertiblePair> getConvertibleTypes() {
+        public @NotNull Set<ConvertiblePair> getConvertibleTypes() {
             Set<ConvertiblePair> convertiblePairs = new HashSet<>();
             convertiblePairs.add(new ConvertiblePair(String.class, UpdatableValue.class));
 
@@ -203,7 +196,7 @@ public class UpdatableValue<T> {
         }
 
         @Override
-        public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+        public boolean matches(@NotNull TypeDescriptor sourceType, @NotNull TypeDescriptor targetType) {
             return UpdatableValue.class.isAssignableFrom(targetType.getType());
         }
 
@@ -214,16 +207,12 @@ public class UpdatableValue<T> {
                 if (!UpdatableValue.class.isAssignableFrom(targetType.getType())) {
                     throw new RuntimeException("Failed cast targetType <" + targetType.getType() + "> to UpdatableValue in " + targetType.getSource());
                 }
-                if (genericClass == null) {
-                    throw new RuntimeException("UpdatableValue has no generic type specified in " + targetType.getSource());
-                }
                 String name = getNameFromAnnotation(/*targetType.getAnnotation(Column.class),*/
                     targetType.getAnnotation(Value.class), () -> {
                         // must never through as UpdatableValueConverter uses by spring only with @Value annotation
                         throw new RuntimeException("Can not fetch UpdatableValue name from " + targetType.getSource());
                     });
-                UpdatableValue updatableValue = new UpdatableValue<>(name);
-                updatableValue.stringConverter = findStringConverter(genericClass);
+                UpdatableValue updatableValue = new UpdatableValue<>(name, genericClass);
 
                 updatableValue.validators = collectValidators(targetType, a -> {
                     if (a.annotationType().isAssignableFrom(Min.class)) {
@@ -235,7 +224,7 @@ public class UpdatableValue<T> {
                     return null;
                 });
 
-                updatableValue.value = updatableValue.stringConverter.apply(source.toString());
+                updatableValue.value = CONVERSION_SERVICE.convert(source.toString(), genericClass);
                 updatableValue.validate(updatableValue.value);
 
                 return updatableValue;
@@ -244,7 +233,9 @@ public class UpdatableValue<T> {
             }
         }
 
-        private Set<Validator> collectValidators(TypeDescriptor targetType, Function<Annotation, Long> exceedConverter) {
+        private @NotNull Set<Validator> collectValidators(
+            @NotNull TypeDescriptor targetType,
+            @NotNull Function<Annotation, Long> exceedConverter) {
             return Stream.of(targetType.getAnnotations())
                          .filter(a -> exceedConverter.apply(a) != null) // ensures that only known annotations uses
                          .map(a -> (Validator) value -> {
