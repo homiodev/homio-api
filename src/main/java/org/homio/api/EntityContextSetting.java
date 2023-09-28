@@ -5,6 +5,8 @@ import com.pivovarit.function.ThrowingRunnable;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import org.homio.api.entity.BaseEntity;
+import org.homio.api.entity.HasJsonData;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPlugin;
@@ -143,6 +145,19 @@ public interface EntityContextSetting {
         listener.accept(getValue(settingClass));
     }
 
+    /**
+     * Listen for changes inside BaseEntity and fire listener every update
+     *
+     * @param entity    - source entity
+     * @param jsonKey   - json key
+     * @param typeClass - target type
+     * @param listener  - listener
+     * @param <T>       - entity type
+     * @param <P>       - target type
+     */
+    <T extends BaseEntity & HasJsonData, P> void listenEntityValueAndGet(@NotNull T entity, @NotNull String key,
+        @Nullable String jsonKey, @NotNull Class<P> typeClass, @NotNull ThrowingConsumer<P, Exception> listener);
+
     <T> void setValueRaw(@NotNull Class<? extends SettingPlugin<T>> settingPluginClazz, @Nullable String value);
 
     <T> void setValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @Nullable T value);
@@ -163,8 +178,7 @@ public interface EntityContextSetting {
         return Objects.requireNonNull(getEnv(key));
     }
 
-    @Nullable
-    default String getEnv(@NotNull String key) {
+    default @Nullable String getEnv(@NotNull String key) {
         return getEnv(key, String.class, null, false);
     }
 

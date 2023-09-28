@@ -169,7 +169,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     protected long getChildEntityHashCode() {
         long result = ieeeAddress != null ? ieeeAddress.hashCode() : 0;
         result = 31 * result + (place != null ? place.hashCode() : 0);
-        result = 31 * result + jsonData.hashCode();
+        result = 31 * result + jsonData.toString().hashCode();
         return result;
     }
 

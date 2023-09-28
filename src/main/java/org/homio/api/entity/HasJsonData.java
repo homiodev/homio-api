@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +21,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface HasJsonData {
+
+    String LIST_DELIMITER = "~~~";
+    String LEVEL_DELIMITER = "-->";
 
     @JsonIgnore
     @NotNull
@@ -135,7 +139,11 @@ public interface HasJsonData {
     }
 
     default @NotNull List<String> getJsonDataList(@NotNull String key) {
-        return getJsonDataList(key, "~~~");
+        return getJsonDataList(key, LIST_DELIMITER);
+    }
+
+    default void setJsonDataList(@NotNull String key, @Nullable Collection<String> values) {
+        setJsonData(key, values == null ? "" : String.join(LIST_DELIMITER, values));
     }
 
     default @NotNull List<String> getJsonDataList(@NotNull String key, @NotNull String delimiter) {
@@ -143,7 +151,7 @@ public interface HasJsonData {
     }
 
     default @NotNull Set<String> getJsonDataSet(@NotNull String key) {
-        return getJsonDataSet(key, "~~~");
+        return getJsonDataSet(key, LIST_DELIMITER);
     }
 
     default @NotNull Set<String> getJsonDataSet(@NotNull String key, @NotNull String delimiter) {
@@ -168,7 +176,7 @@ public interface HasJsonData {
         if (isNotEmpty(value)) {
             BaseEntity entity = entityContext.getEntity(value);
             if (entity != null) {
-                return entity.getEntityID() + "~~~" + entity.getTitle();
+                return entity.getEntityID() + LIST_DELIMITER + entity.getTitle();
             }
         }
         return value;

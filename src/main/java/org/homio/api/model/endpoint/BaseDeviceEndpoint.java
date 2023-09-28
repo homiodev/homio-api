@@ -180,6 +180,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         this.endpointName = endpointName;
         this.unit = StringUtils.isEmpty(unit) ? configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit() : unit;
         this.readable = readable;
+        if (configDeviceEndpoint != null) {
+            this.min = this.min == null ? configDeviceEndpoint.getMin() : this.min;
+            this.max = this.max == null ? configDeviceEndpoint.getMax() : this.max;
+        }
         setInitial(device, endpointEntityID, writable, endpointType);
 
         order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
@@ -249,7 +253,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     protected void pushVariable() {
         if (variableID != null) {
-            entityContext.var().set(variableID, value, dbValue -> this.dbValue = dbValue);
+            this.dbValue = entityContext.var().set(variableID, value);
         }
     }
 
@@ -267,7 +271,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             boolean persistent = configDeviceEndpoint != null && configDeviceEndpoint.isPersistent();
             Consumer<VariableMetaBuilder> customVariableMetaBuilder = getVariableMetaBuilder();
             Consumer<VariableMetaBuilder> variableMetaBuilder = builder -> {
-                builder.setIcon(icon);
+                builder.setIcon(icon).setLocked(true);
                 Integer quota = configDeviceEndpoint == null ? null : configDeviceEndpoint.getQuota();
                 if (quota != null) {
                     builder.setQuota(quota);
@@ -311,15 +315,12 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     protected @Nullable Consumer<VariableMetaBuilder> getVariableMetaBuilder() {
         return builder -> {
-            builder.setDescription(getVariableDescription())
-                   .setReadOnly(!isWritable())
+            builder.setWritable(isWritable())
+                   .setDescription(getVariableDescription())
                    .setColor(getIcon().getColor());
             List<String> attributes = new ArrayList<>();
-            if (min != null) {
-                attributes.add("min:" + min);
-            }
-            if (max != null) {
-                attributes.add("max:" + max);
+            if (min != null || max != null) {
+                builder.setNumberRange(min == null ? 0 : min, max == null ? Integer.MAX_VALUE : max);
             }
             if (range != null && !range.isEmpty()) {
                 attributes.add("range:" + String.join(";", range));

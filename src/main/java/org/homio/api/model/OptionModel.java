@@ -1,6 +1,7 @@
 package org.homio.api.model;
 
 import static java.lang.String.format;
+import static org.homio.api.entity.HasJsonData.LEVEL_DELIMITER;
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
@@ -35,7 +35,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Accessors(chain = true)
-@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OptionModel implements Comparable<OptionModel> {
 
@@ -51,27 +50,30 @@ public class OptionModel implements Comparable<OptionModel> {
     };
 
     private final ObjectNode json = OBJECT_MAPPER.createObjectNode();
-    @Getter
-    private @NotNull String key;
-    @Setter
-    private @Nullable String title;
-    @Getter
-    private @Nullable String icon;
-    @Setter
-    @Getter
-    private @Nullable String color;
-    @Getter
-    private @Nullable List<OptionModel> children;
-    @Getter
-    private @Nullable Status status;
-    @Getter
-    @Setter
+
+    private @Getter @NotNull String key;
+
+    private @Setter @Nullable String title;
+
+    private @Getter @Nullable String icon;
+
+    private @Setter @Getter @Nullable String color;
+
+    private @Getter @Nullable List<OptionModel> children;
+
+    private @Getter @Nullable Status status;
+
     // disabled option is shown but not clickable
-    private boolean disabled;
+    private @Getter Boolean disabled;
 
     private OptionModel(@NotNull Object key, @Nullable Object title) {
         this.key = key.toString();
         this.title = title == null ? null : title.toString();
+    }
+
+    public OptionModel setDisabled(Boolean disabled) {
+        this.disabled = Boolean.TRUE.equals(disabled) ? true : null;
+        return this;
     }
 
     public static OptionModel key(@NotNull String key) {
@@ -104,7 +106,8 @@ public class OptionModel implements Comparable<OptionModel> {
     }
 
     public static OptionModel of(@NotNull TreeNode item) {
-        OptionModel model = OptionModel.of(item.getId(), item.getName()).json(
+        OptionModel model = OptionModel.of(StringUtils.defaultString(item.getId(), item.toString()),
+            item.getName()).json(
             json -> json.put("dir", item.getAttributes().isDir())
                         .put("size", item.getAttributes().getSize())
                         .put("empty", item.getAttributes().isEmpty())
@@ -325,7 +328,7 @@ public class OptionModel implements Comparable<OptionModel> {
             if (this.children == null) {
                 children = new ArrayList<>();
             }
-            child.key = this.key.isEmpty() ? child.key : this.key + "~~~" + child.key;
+            child.key = this.key.isEmpty() ? child.key : this.key + LEVEL_DELIMITER + child.key;
             children.add(child);
 
             modifyChildrenKeys(this.key, child);
@@ -336,7 +339,7 @@ public class OptionModel implements Comparable<OptionModel> {
     public void modifyChildrenKeys(@NotNull String key, @NotNull OptionModel child) {
         if (child.children != null) {
             for (OptionModel optionModel : child.children) {
-                optionModel.key = key + "~~~" + optionModel.key;
+                optionModel.key = key + LEVEL_DELIMITER + optionModel.key;
                 modifyChildrenKeys(key, optionModel);
             }
         }

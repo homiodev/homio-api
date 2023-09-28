@@ -22,5 +22,7 @@ public class ConfigDeviceEndpoint {
     private boolean stateless;
     private boolean persistent;
     private Integer quota;
+    private Float min;
+    private Float max;
     private List<String> alias;
 }

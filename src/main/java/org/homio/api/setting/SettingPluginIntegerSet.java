@@ -1,5 +1,7 @@
 package org.homio.api.setting;
 
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +25,7 @@ public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
         for (int value : defaultValue()) {
             values.add(String.valueOf(value));
         }
-        return String.join("~~~", values);
+        return String.join(LIST_DELIMITER, values);
     }
 
     @Override
@@ -31,12 +33,12 @@ public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
         if (value == null) {
             return Collections.emptySet();
         }
-        return Stream.of(value.split("~~~")).map(Integer::parseInt).collect(Collectors.toSet());
+        return Stream.of(value.split(LIST_DELIMITER)).map(Integer::parseInt).collect(Collectors.toSet());
     }
 
     @Override
     default @NotNull String writeValue(Set<Integer> value) {
-        return value.stream().map(Object::toString).collect(Collectors.joining("~~~"));
+        return value.stream().map(Object::toString).collect(Collectors.joining(LIST_DELIMITER));
     }
 
     @Override

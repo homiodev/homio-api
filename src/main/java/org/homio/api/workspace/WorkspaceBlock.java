@@ -1,6 +1,7 @@
 package org.homio.api.workspace;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.pivovarit.function.ThrowingConsumer;
@@ -102,7 +103,7 @@ public interface WorkspaceBlock {
     Path getFile(String key, MenuBlock menuBlock, boolean required);
 
     default <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type) {
-        return getMenuValues(key, menuBlock, type, "~~~");
+        return getMenuValues(key, menuBlock, type, LIST_DELIMITER);
     }
 
     <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type, String delimiter);

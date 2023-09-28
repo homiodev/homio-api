@@ -1,5 +1,7 @@
 package org.homio.api.converter.json;
 
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -19,7 +21,7 @@ public class ListToStringDeserializer extends JsonDeserializer<String> {
         JsonNode node = jp.getCodec().readTree(jp);
         if (node instanceof ArrayNode) {
             return StreamSupport.stream(node.spliterator(), false)
-                                .map(JsonNode::asText).collect(Collectors.joining("~~~"));
+                                .map(JsonNode::asText).collect(Collectors.joining(LIST_DELIMITER));
         }
         return node.asText();
     }

@@ -70,7 +70,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
         return requireConfigure() ? Lang.getServerMessage(prefix.substring(0, prefix.length() - 1) + ".description") : null;
     }
 
-    @UIContextMenuAction(value = "RESTART", icon = "fas fa-power-off")
+    @UIContextMenuAction(value = "RESTART_FS", icon = "fas fa-file-invoice", iconColor = "#418121")
     default ActionResponseModel restart(EntityContext entityContext) {
         if (this.getFileSystem(entityContext).restart(true)) {
             return ActionResponseModel.showSuccess("Success restarted");

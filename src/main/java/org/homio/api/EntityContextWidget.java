@@ -390,7 +390,8 @@ public interface EntityContextWidget {
         HasIcon<DisplayWidgetSeriesBuilder>,
         HasValueTemplate<DisplayWidgetSeriesBuilder>,
         HasName<DisplayWidgetSeriesBuilder>,
-        HasValueConverter<DisplayWidgetSeriesBuilder> {
+        HasValueConverter<DisplayWidgetSeriesBuilder>,
+        HasSingleValueDataSource<DisplayWidgetSeriesBuilder> {
 
         @NotNull DisplayWidgetSeriesBuilder setStyle(@NotNull String... styles);
     }

@@ -141,6 +141,15 @@ public class DecimalType implements State, Comparable<DecimalType> {
         return toFullString();
     }
 
+    public String toString(int maxPrecision) {
+        int precision = value.precision();
+        if(precision <= maxPrecision) {
+            return toFullString();
+        }
+        String formatString = "%." + maxPrecision + "f";
+        return String.format(formatString, value);
+    }
+
     public String toFullString() {
         return value.toPlainString();
     }

@@ -1,5 +1,7 @@
 package org.homio.api.converter;
 
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.Arrays;
@@ -13,11 +15,11 @@ public class StringSetConverter implements AttributeConverter<Set<String>, Strin
 
     @Override
     public String convertToDatabaseColumn(Set<String> set) {
-        return set == null ? "" : set.stream().collect(Collectors.joining("~~~"));
+        return set == null ? "" : String.join(LIST_DELIMITER, set);
     }
 
     @Override
     public Set<String> convertToEntityAttribute(String data) {
-        return StringUtils.isEmpty(data) ? new HashSet<>() : new HashSet<>(Arrays.asList(data.split("~~~")));
+        return StringUtils.isEmpty(data) ? new HashSet<>() : new HashSet<>(Arrays.asList(data.split(LIST_DELIMITER)));
     }
 }

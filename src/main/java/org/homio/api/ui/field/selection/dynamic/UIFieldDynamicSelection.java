@@ -1,5 +1,6 @@
 package org.homio.api.ui.field.selection.dynamic;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -42,6 +43,7 @@ public @interface UIFieldDynamicSelection {
      */
     interface SelectionConfiguration {
 
+        @JsonIgnore
         @NotNull Icon selectionIcon();
     }
 

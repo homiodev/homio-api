@@ -195,5 +195,6 @@ public abstract class BaseEntity implements
             + " if calls by UI. Field: " + field + ". Meta: " + metadata);
     }
 
+    @JsonIgnore
     protected abstract long getChildEntityHashCode();
 }

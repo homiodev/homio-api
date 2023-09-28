@@ -1,5 +1,7 @@
 package org.homio.api;
 
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
@@ -45,19 +47,16 @@ public interface EntityContext {
 
     @NotNull EntityContextStorage storage();
 
-    @Nullable
-    default <T extends BaseEntity> T getEntity(@NotNull String entityID) {
+    default @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID) {
         return getEntity(entityID, true);
     }
 
-    @Nullable
-    default <T extends BaseEntity> T getEntity(Class<T> entityClass, @NotNull String entityID) {
+    default @Nullable <T extends BaseEntity> T getEntity(Class<T> entityClass, @NotNull String entityID) {
         T entity = CommonUtils.newInstance(entityClass);
         return getEntity(entity.setEntityID(entityID), true);
     }
 
-    @NotNull
-    default <T extends BaseEntity> T getEntityRequire(@NotNull String entityID) {
+    default @NotNull <T extends BaseEntity> T getEntityRequire(@NotNull String entityID) {
         T entity = getEntity(entityID, true);
         if (entity == null) {
             throw new NotFoundException("Unable to find entity: " + entityID);
@@ -65,14 +64,12 @@ public interface EntityContext {
         return entity;
     }
 
-    @NotNull
-    default <T extends BaseEntity> T getEntityRequire(Class<T> entityClass, @NotNull String entityID) {
+    default @NotNull <T extends BaseEntity> T getEntityRequire(Class<T> entityClass, @NotNull String entityID) {
         T entity = CommonUtils.newInstance(entityClass);
         return getEntityRequire(entity.setEntityID(entityID));
     }
 
-    @Nullable
-    default <T extends BaseEntity> T getEntityOrDefault(@NotNull String entityID, @Nullable T defEntity) {
+    default @Nullable <T extends BaseEntity> T getEntityOrDefault(@NotNull String entityID, @Nullable T defEntity) {
         T entity = getEntity(entityID, true);
         return entity == null ? defEntity : entity;
     }
@@ -87,8 +84,7 @@ public interface EntityContext {
      */
     @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID, boolean useCache);
 
-    @Nullable
-    default <T extends BaseEntity> T getEntity(@NotNull T entity) {
+    default @Nullable <T extends BaseEntity> T getEntity(@NotNull T entity) {
         return getEntity(entity.getEntityID());
     }
 
@@ -96,20 +92,17 @@ public interface EntityContext {
 
     <T extends BaseEntity> void updateDelayed(@NotNull T entity, @NotNull Consumer<T> fieldUpdateConsumer);
 
-    @NotNull
-    default <T extends BaseEntity> T save(@NotNull T entity) {
+    default @NotNull <T extends BaseEntity> T save(@NotNull T entity) {
         return save(entity, true);
     }
 
     @NotNull <T extends BaseEntity> T save(@NotNull T entity, boolean fireNotifyListeners);
 
-    @Nullable
-    default <T extends BaseEntity> T delete(@NotNull T entity) {
+    default @Nullable <T extends BaseEntity> T delete(@NotNull T entity) {
         return (T) delete(entity.getEntityID());
     }
 
-    @Nullable
-    default <T extends BaseEntity> T findAny(@NotNull Class<T> clazz) {
+    default @Nullable <T extends BaseEntity> T findAny(@NotNull Class<T> clazz) {
         List<T> list = findAll(clazz);
         return list.isEmpty() ? null : list.iterator().next();
     }
@@ -118,8 +111,7 @@ public interface EntityContext {
 
     @NotNull <T extends BaseEntity> List<T> findAllByPrefix(@NotNull String prefix);
 
-    @NotNull
-    default <T extends BaseEntity> List<T> findAll(@NotNull T entity) {
+    default @NotNull <T extends BaseEntity> List<T> findAll(@NotNull T entity) {
         return (List<T>) findAll(entity.getClass());
     }
 
@@ -155,8 +147,7 @@ public interface EntityContext {
         }
     }
 
-    @NotNull
-    default UserEntity getUserRequire() {
+    default @NotNull UserEntity getUserRequire() {
         UserEntity user = getUser();
         if (user == null) {
             throw new NotFoundException("Unable to find authenticated user");
@@ -176,12 +167,11 @@ public interface EntityContext {
         return user.isAllowResource(resource);
     }
 
-    @Nullable
-    default UserEntity getUser() {
+    default @Nullable UserEntity getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             User user = (User) authentication.getPrincipal();
-            String userEntityID = user.getUsername().split("~~~")[0];
+            String userEntityID = user.getUsername().split(LIST_DELIMITER)[0];
             return getEntity(userEntityID);
         }
         return null;

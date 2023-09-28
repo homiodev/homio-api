@@ -5,6 +5,7 @@ import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.UISidebarMenu.TopSidebarMenu;
+import org.homio.api.ui.field.UIFieldLinkToEntity.FieldLinkToEntityTitleProvider;
 import org.homio.api.ui.field.model.HrefModel;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +24,18 @@ import org.jetbrains.annotations.Nullable;
          "place~#9C27B0:fas fa-location-dot:fas fa-location-dot fa-rotate-180"
      })
 public abstract class ZigBeeDeviceBaseEntity extends DeviceBaseEntity
-    implements DeviceEndpointsBehaviourContract {
+    implements
+    DeviceEndpointsBehaviourContract,
+    FieldLinkToEntityTitleProvider {
+
+    @Override
+    public String getLinkTitle() {
+        String ieeeAddress = getIeeeAddress();
+        if (ieeeAddress == null) {
+            return getTitle();
+        }
+        return ieeeAddress.toUpperCase().substring(2); // cut 0X;
+    }
 
     public abstract @Nullable HrefModel getManufacturer();
 }

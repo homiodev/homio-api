@@ -4,7 +4,6 @@ import com.pivovarit.function.ThrowingConsumer;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.Getter;
@@ -40,37 +39,29 @@ public interface EntityContextVar {
      * @return converted value that has been stored into queue
      * @throws IllegalArgumentException if value doesn't validatet agains VariableType restriction
      */
-    default @Nullable Object set(@NotNull String variableId, @Nullable Object value) throws IllegalArgumentException {
-        AtomicReference<Object> ref = new AtomicReference<>();
-        set(variableId, value, ref::set);
-        return ref.get();
+    @Nullable Object set(@NotNull String variableId, @Nullable Object value) throws IllegalArgumentException;
+
+    default @Nullable Object setIfNotMatch(@NotNull String variableId, @Nullable Object value) {
+        if (!Objects.equals(get(variableId), value)) {
+            return set(variableId, value);
+        }
+        return value;
     }
 
-    /**
-     * Push new value in queue.
-     *
-     * @param convertedValue - supplier calls before store value to queue and before fire events
-     * @param value          -
-     * @param variableId     -
-     */
-    void set(@NotNull String variableId, @Nullable Object value, @NotNull Consumer<Object> convertedValue) throws IllegalArgumentException;
-
-    default void setIfNotMatch(@NotNull String variableId, @Nullable Object value) {
-        if (!Objects.equals(get(variableId), value)) {
-            set(variableId, value);
+    default @Nullable Object setIfNotMatch(@NotNull String variableId, boolean value) {
+        Object oldValue = get(variableId);
+        if (!Objects.equals(oldValue, value)) {
+            return set(variableId, value);
         }
+        return oldValue;
     }
 
-    default void setIfNotMatch(@NotNull String variableId, boolean value) {
-        if (!Objects.equals(get(variableId), value)) {
-            set(variableId, value);
+    default @Nullable Object setIfNotMatch(@NotNull String variableId, float value) {
+        Object oldValue = get(variableId);
+        if (!Objects.equals(oldValue, value)) {
+            return set(variableId, value);
         }
-    }
-
-    default void setIfNotMatch(@NotNull String variableId, float value) {
-        if (!Objects.equals(get(variableId), value)) {
-            set(variableId, value);
-        }
+        return oldValue;
     }
 
     default void inc(@NotNull String variableId, float value) {
@@ -119,6 +110,12 @@ public interface EntityContextVar {
         @NotNull VariableType variableType,
         @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
+    @NotNull String createTransformVariable(@NotNull String groupId,
+        @Nullable String variableId,
+        @NotNull String variableName,
+        @NotNull VariableType variableType,
+        @Nullable Consumer<TransformVariableMetaBuilder> metaBuilder);
+
     default @NotNull String createEnumVariable(@NotNull String groupId,
         @Nullable String variableId,
         @NotNull String variableName,
@@ -132,24 +129,7 @@ public interface EntityContextVar {
         });
     }
 
-    default boolean createGroup(@NotNull String groupId, @NotNull String groupName) {
-        return createGroup(groupId, groupName, false, new Icon("fas fa-layer-group", "#18C0DB"), null);
-    }
-
-    /**
-     * @param groupId     -
-     * @param groupName   -
-     * @param icon        -
-     * @param description -
-     * @param locked      - locked group and related variables unable to remove from UI
-     * @return false if group already exists
-     */
-    boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull Icon icon,
-        @Nullable String description);
-
-    default boolean createGroup(@NotNull String groupId, @NotNull String groupName, boolean locked, @NotNull Icon icon) {
-        return createGroup(groupId, groupName, locked, icon, null);
-    }
+    boolean createGroup(@NotNull String groupId, @NotNull String groupName, @NotNull Consumer<GroupMetaBuilder> groupBuilder);
 
     /**
      * Create group and attach it to parent group
@@ -157,13 +137,10 @@ public interface EntityContextVar {
      * @param parentGroupId -
      * @param groupId       -
      * @param groupName     -
-     * @param locked        -
-     * @param icon          -
-     * @param description   -
+     * @param groupBuilder  -
      * @return if group was create ot already exists
      */
-    boolean createGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, boolean locked,
-        @NotNull Icon icon, @Nullable String description);
+    boolean createSubGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, @NotNull Consumer<GroupMetaBuilder> groupBuilder);
 
     /**
      * Remove group and all associated variables
@@ -209,23 +186,15 @@ public interface EntityContextVar {
         private final Object defaultValue;
     }
 
-    interface VariableMetaBuilder {
+    interface VariableMetaBuilder extends GeneralVariableMetaBuilder {
 
-        @NotNull VariableMetaBuilder setQuota(int value);
-
-        @NotNull VariableMetaBuilder setReadOnly(boolean value);
-
-        @NotNull VariableMetaBuilder setColor(@Nullable String value);
-
-        @NotNull VariableMetaBuilder setPersistent(boolean value);
-
-        @NotNull VariableMetaBuilder setDescription(@Nullable String value);
-
-        @NotNull VariableMetaBuilder setUnit(@Nullable String value);
-
-        @NotNull VariableMetaBuilder setIcon(@Nullable Icon icon);
-
-        @NotNull VariableMetaBuilder setAttributes(@Nullable List<String> attributes);
+        /**
+         * Is it possible to write to variable from UI. Default: false
+         *
+         * @param value writable or not
+         * @return this
+         */
+        @NotNull VariableMetaBuilder setWritable(boolean value);
 
         /**
          * Set enum values. Useful only for Enum variable type
@@ -233,5 +202,50 @@ public interface EntityContextVar {
          * @param values list of available options
          */
         @NotNull VariableMetaBuilder setValues(Set<String> values);
+    }
+
+    interface TransformVariableMetaBuilder extends GeneralVariableMetaBuilder {
+
+        @NotNull TransformVariableMetaBuilder setSourceVariables(@NotNull List<String> sources);
+
+        @NotNull TransformVariableMetaBuilder setTransformCode(@NotNull String code);
+    }
+
+    interface GeneralVariableMetaBuilder {
+
+        /**
+         * Is it variable store to db
+         *
+         * @param value store or not
+         * @return this
+         */
+        @NotNull GeneralVariableMetaBuilder setPersistent(boolean value);
+
+        @NotNull GeneralVariableMetaBuilder setQuota(int value);
+
+        // is disable to delete entity
+        @NotNull GeneralVariableMetaBuilder setLocked(boolean locked);
+
+        @NotNull GeneralVariableMetaBuilder setColor(@Nullable String value);
+
+        @NotNull GeneralVariableMetaBuilder setDescription(@Nullable String value);
+
+        @NotNull GeneralVariableMetaBuilder setUnit(@Nullable String value);
+
+        @NotNull GeneralVariableMetaBuilder setNumberRange(float min, float max);
+
+        @NotNull GeneralVariableMetaBuilder setIcon(@Nullable Icon icon);
+
+        @NotNull GeneralVariableMetaBuilder setAttributes(@Nullable List<String> attributes);
+    }
+
+    interface GroupMetaBuilder {
+
+        // is disable to delete entity
+        @NotNull GroupMetaBuilder setLocked(boolean locked);
+
+        @NotNull GroupMetaBuilder setDescription(@Nullable String value);
+
+        @NotNull GroupMetaBuilder setIcon(@Nullable Icon icon);
     }
 }

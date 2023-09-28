@@ -36,7 +36,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     @UIField(order = 3, required = true)
     @UIFieldDevicePortSelection
     @UIFieldSelectConfig(selectNoValue = "W.ERROR.NO_PORT", selectOnEmptyLabel = "PLACEHOLDER.SELECT_PORT", selectOnEmptyIcon = "fas fa-door-open")
-    @UIFieldGroup(value = "PORT", order = 5, borderColor = "#29A397")
+    @UIFieldGroup(value = "CONNECTION", order = 5, borderColor = "#29A397")
     default String getPort() {
         return getJsonData("port", "");
     }
@@ -60,9 +60,9 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
         return (T) this;
     }
 
-    @UIField(order = 1)
+    @UIField(order = 5)
     @UIFieldSlider(min = 60, max = 254)
-    @UIFieldGroup(value = "DISCOVERY", order = 15, borderColor = "#663453")
+    @UIFieldGroup("CONNECTION")
     default int getDiscoveryDuration() {
         return getJsonData("dd", 254);
     }

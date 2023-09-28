@@ -42,6 +42,7 @@ public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable 
      *
      * @return - dynamic widget type
      */
+    @JsonIgnore
     default @NotNull String getDynamicUpdateType() {
         return getType();
     }

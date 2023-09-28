@@ -18,6 +18,7 @@ public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     /**
      * @return Some entites that implement HasSetStatusValue may be 'readOnly', thus this entities must be skipped
      */
+    @JsonIgnore
     default boolean isAbleToSetValue() {
         return true;
     }
