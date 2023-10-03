@@ -46,7 +46,7 @@ public class LineTemplateWidget implements TemplateWidgetBuilder {
 
             for (DeviceEndpoint series : barSeries) {
                 builder.addSeries(series.getName(false), seriesBuilder -> {
-                    seriesBuilder.setChartDataSource(TemplateWidgetBuilder.getSource(entityContext, series, false));
+                    seriesBuilder.setChartDataSource(TemplateWidgetBuilder.getSource(entityContext, series));
                     ItemDefinition itemDefinition = wd.getEndpoint(series.getEndpointEntityID());
                     if (itemDefinition != null) {
                         Chart chart = itemDefinition.getChart();

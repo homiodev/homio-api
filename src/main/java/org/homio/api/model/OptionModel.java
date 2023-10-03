@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.fs.TreeNode;
+import org.homio.api.ui.field.selection.dynamic.UIFieldDynamicSelection.SelectionConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -207,6 +208,9 @@ public class OptionModel implements Comparable<OptionModel> {
                        OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
                        if (entity instanceof HasStatusAndMsg status) {
                            model.setStatus(status);
+                       }
+                       if (entity instanceof SelectionConfiguration sc) {
+                           model.setIcon(sc.selectionIcon());
                        }
                        entity.configureOptionModel(model);
                        if (configurator != null) {

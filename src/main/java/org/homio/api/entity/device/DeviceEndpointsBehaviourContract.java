@@ -29,7 +29,7 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
     @JsonIgnore
     @NotNull String getDeviceFullName();
 
-    @UIFieldGroup(value = "GENERAL", order = 10)
+    @UIFieldGroup("GENERAL")
     default Date getUpdateTime() {
         return DeviceEndpoint.getLastUpdated(getDeviceEndpoints().values());
     }

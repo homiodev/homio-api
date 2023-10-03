@@ -276,12 +276,20 @@ public class GitHubProject {
         return Optional.ofNullable(getLastRelease()).map(b -> b.path("tag_name").asText()).orElse(null);
     }
 
-    public @NotNull List<String> getReleasesSince(String version, boolean includeCurrent) {
+    public @Nullable String getVersionReadme(@NotNull String version) {
+        JsonNode release = getRelease(version);
+        return release.path("body").asText();
+    }
+
+    public @NotNull List<String> getReleasesSince(@Nullable String version, boolean includeCurrent) {
         try {
             List<String> versions = releasesCache.getValue(this)
                                                  .stream()
                                                  .map(r -> r.get("tag_name").asText())
                                                  .collect(Collectors.toList());
+            if (version == null) {
+                return versions;
+            }
             return getReleasesSince(version, versions, includeCurrent);
         } catch (Exception ex) {
             log.error("Unable to fetch release since: {}. Error: {}", version, CommonUtils.getErrorMessage(ex));
@@ -317,9 +325,7 @@ public class GitHubProject {
         @NotNull EntityContext entityContext,
         @NotNull String version,
         @NotNull ProgressBar progressBar) {
-        List<JsonNode> releases = releasesCache.getValue(this);
-        JsonNode release = releases.stream().filter(r -> r.path("tag_name").asText("").equals(version))
-                                   .findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find release: " + version));
+        JsonNode release = getRelease(version);
         JsonNode asset = findAssertByArchitecture(entityContext, release);
         String downloadUrl = asset.get("browser_download_url").asText();
         Path archive = CommonUtils.getTmpPath()
@@ -327,6 +333,12 @@ public class GitHubProject {
                                   .resolve(project + "." + CommonUtils.getExtension(downloadUrl));
         Curl.downloadWithProgress(downloadUrl, archive, progressBar);
         CommonUtils.unzipAndMove(progressBar, archive, localProjectPath);
+    }
+
+    private JsonNode getRelease(@NotNull String version) {
+        List<JsonNode> releases = releasesCache.getValue(this);
+        return releases.stream().filter(r -> r.path("tag_name").asText("").equals(version))
+                       .findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find release: " + version));
     }
 
     // Helper method to execute some process i.e. download from GitHub, backup, etc...
@@ -458,7 +470,6 @@ public class GitHubProject {
                     CommonUtils.deletePath(localProjectPath);
                 }
                 ArchiveUtil.unzip(backup, localProjectPath, null, false, progressBar, replace);
-                backup = null;
             }
         }
     }

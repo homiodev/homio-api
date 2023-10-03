@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.homio.api.EntityContext;
+import org.homio.api.state.OnOffType;
 import org.homio.api.util.CommonUtils;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +60,7 @@ public abstract class DependencyExecutableInstaller {
         }
         progressBar.progress(99, "Installing finished");
         afterDependencyInstalled();
-        entityContext.event().fireEvent(getName() + "-dependency-installed", true);
+        entityContext.event().fireEvent(getName() + "-dependency-installed", OnOffType.of(true));
     }
 
     public String installLatest() throws ExecutionException, InterruptedException {

@@ -47,4 +47,19 @@ public @interface UIFieldTreeNodeSelection {
      * @return Specify file systems ids. All available if not specified
      */
     String[] fileSystemIds() default {UIFieldTreeNodeSelection.LOCAL_FS};
+
+    /**
+     * @return detect if need attach metadata to selected file value###{type: file, fs: fileSystem}
+     */
+    boolean isAttachMetadata() default true;
+
+    /**
+     * @return uses on UI to select prefix
+     */
+    String prefix() default "file";
+
+    /**
+     * @return uses on UI to select prefix as backgroundColor
+     */
+    String prefixColor() default "#707D31";
 }

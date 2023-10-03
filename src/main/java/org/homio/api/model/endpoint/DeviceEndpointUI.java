@@ -24,7 +24,7 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
     public DeviceEndpointUI(@NotNull DeviceEndpoint endpoint) {
         this.endpoint = endpoint;
         this.varSource = endpoint.getVariableID() == null ? null :
-            endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID(), false);
+            endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID());
     }
 
     public static @NotNull List<DeviceEndpointUI> buildEndpoints(@NotNull Collection<? extends DeviceEndpoint> entities) {

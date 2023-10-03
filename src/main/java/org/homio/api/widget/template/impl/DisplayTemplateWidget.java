@@ -137,7 +137,7 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
         DeviceEndpoint endpoint, Consumer<DisplayWidgetSeriesBuilder> handler) {
         builder.addSeries(endpoint.getName(true), seriesBuilder -> {
             seriesBuilder
-                .setValueDataSource(TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), endpoint, false))
+                .setValueDataSource(TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), endpoint))
                 .setValueTemplate(null, endpoint.getUnit())
                 .setValueSuffixFontSize(0.6)
                 .setValueSuffixColor("#777777")

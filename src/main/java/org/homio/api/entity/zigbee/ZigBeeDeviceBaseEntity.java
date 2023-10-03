@@ -3,6 +3,7 @@ package org.homio.api.entity.zigbee;
 import lombok.extern.log4j.Log4j2;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
+import org.homio.api.entity.version.HasFirmwareVersion;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.UISidebarMenu.TopSidebarMenu;
 import org.homio.api.ui.field.UIFieldLinkToEntity.FieldLinkToEntityTitleProvider;
@@ -25,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
      })
 public abstract class ZigBeeDeviceBaseEntity extends DeviceBaseEntity
     implements
+    HasFirmwareVersion,
     DeviceEndpointsBehaviourContract,
     FieldLinkToEntityTitleProvider {
 

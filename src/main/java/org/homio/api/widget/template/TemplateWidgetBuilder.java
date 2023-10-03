@@ -92,14 +92,14 @@ public interface TemplateWidgetBuilder {
         }
     }
 
-    static String getSource(EntityContext entityContext, DeviceEndpoint endpoint, boolean forSet) {
-        return entityContext.var().buildDataSource(Objects.requireNonNull(endpoint.getVariableID()), forSet);
+    static String getSource(EntityContext entityContext, DeviceEndpoint endpoint) {
+        return entityContext.var().buildDataSource(Objects.requireNonNull(endpoint.getVariableID()));
     }
 
     static <T extends HasSingleValueDataSource<?> & HasSetSingleValueDataSource<?>> T
     setValueDataSource(T builder, EntityContext entityContext, DeviceEndpoint endpoint) {
-        builder.setValueDataSource(TemplateWidgetBuilder.getSource(entityContext, endpoint, false));
-        builder.setSetValueDataSource(TemplateWidgetBuilder.getSource(entityContext, endpoint, true));
+        builder.setValueDataSource(TemplateWidgetBuilder.getSource(entityContext, endpoint));
+        builder.setSetValueDataSource(TemplateWidgetBuilder.getSource(entityContext, endpoint));
         return builder;
     }
 
@@ -130,13 +130,13 @@ public interface TemplateWidgetBuilder {
             case variable -> {
                 String variable = entityContext.var().createVariable(entity.getEntityID(),
                     source.getValue(), source.getValue(), source.getVariableType(), null);
-                return entityContext.var().buildDataSource(variable, true);
+                return entityContext.var().buildDataSource(variable);
             }
             case broadcasts -> {
                 String id = source.getValue() + "_" + entity.getIeeeAddress();
                 String name = source.getValue() + " " + entity.getIeeeAddress();
                 String variableID = entityContext.var().createVariable("broadcasts", id, name, VariableType.Any, null);
-                return entityContext.var().buildDataSource(variableID, true);
+                return entityContext.var().buildDataSource(variableID);
             }
             case property -> {
                 DeviceEndpoint endpoint = entity.getDeviceEndpoint(source.getValue());
@@ -144,7 +144,7 @@ public interface TemplateWidgetBuilder {
                     throw new IllegalArgumentException("Unable to find device endpoint: " + source.getValue() +
                         " for device: " + entity);
                 }
-                return TemplateWidgetBuilder.getSource(entityContext, endpoint, true);
+                return TemplateWidgetBuilder.getSource(entityContext, endpoint);
             }
             default -> throw new IllegalArgumentException("Unable to find handler for type: " + source.getKind());
         }
@@ -227,7 +227,7 @@ public interface TemplateWidgetBuilder {
         boolean addUnit) {
         entityContext.widget().createSimpleValueWidget(endpoint.getEntityID(), builder -> {
             builder.setIcon(endpoint.getIcon())
-                   .setValueDataSource(getSource(entityContext, endpoint, false))
+                   .setValueDataSource(getSource(entityContext, endpoint))
                    .setAlign(horizontalAlign, VerticalAlign.bottom)
                    .setValueFontSize(0.8);
             if (addUnit) {

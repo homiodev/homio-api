@@ -8,7 +8,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.homio.api.model.Icon;
+import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -17,7 +19,7 @@ public interface EntityContextVar {
 
     @NotNull EntityContext getEntityContext();
 
-    default void listen(@NotNull String key, @NotNull String variableId, @NotNull Consumer<Object> listener) {
+    default void listen(@NotNull String key, @NotNull String variableId, @NotNull Consumer<State> listener) {
         getEntityContext().event().addEventListener(variableId, key, listener);
     }
 
@@ -153,11 +155,10 @@ public interface EntityContextVar {
     /**
      * Build full data source path to variable
      *
-     * @param forSet     - build data source for getting or setting value
      * @param variableId - id
      * @return result
      */
-    @NotNull String buildDataSource(@NotNull String variableId, boolean forSet);
+    @NotNull String buildDataSource(@NotNull String variableId);
 
     @Getter
     @RequiredArgsConstructor
@@ -206,7 +207,7 @@ public interface EntityContextVar {
 
     interface TransformVariableMetaBuilder extends GeneralVariableMetaBuilder {
 
-        @NotNull TransformVariableMetaBuilder setSourceVariables(@NotNull List<String> sources);
+        @NotNull TransformVariableMetaBuilder setSourceVariables(@NotNull List<TransformVariableSource> sources);
 
         @NotNull TransformVariableMetaBuilder setTransformCode(@NotNull String code);
     }
@@ -247,5 +248,13 @@ public interface EntityContextVar {
         @NotNull GroupMetaBuilder setDescription(@Nullable String value);
 
         @NotNull GroupMetaBuilder setIcon(@Nullable Icon icon);
+    }
+
+    @Getter
+    @Setter
+    class TransformVariableSource {
+        private @NotNull String type;
+        private @Nullable String value;
+        private @Nullable String meta;
     }
 }

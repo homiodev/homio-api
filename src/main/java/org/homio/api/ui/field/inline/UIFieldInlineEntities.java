@@ -17,5 +17,5 @@ public @interface UIFieldInlineEntities {
      */
     String bg();
 
-    String noContentTitle() default "NO_CONTENT";
+    String noContentTitle() default "W.ERROR.NO_CONTENT";
 }

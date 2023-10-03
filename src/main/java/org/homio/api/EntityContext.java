@@ -4,6 +4,7 @@ import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -52,7 +53,7 @@ public interface EntityContext {
     }
 
     default @Nullable <T extends BaseEntity> T getEntity(Class<T> entityClass, @NotNull String entityID) {
-        T entity = CommonUtils.newInstance(entityClass);
+        BaseEntity entity = ENTITY_CLASS_TO_POJO.computeIfAbsent(entityClass, CommonUtils::newInstance);
         return getEntity(entity.setEntityID(entityID), true);
     }
 
@@ -180,4 +181,6 @@ public interface EntityContext {
     @NotNull <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
     @NotNull <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);
+
+    Map<Class<? extends BaseEntity>, BaseEntity> ENTITY_CLASS_TO_POJO = new HashMap<>();
 }

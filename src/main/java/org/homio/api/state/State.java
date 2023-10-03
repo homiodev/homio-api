@@ -19,7 +19,9 @@ public interface State {
             return new JsonType(OBJECT_MAPPER.convertValue(value, JsonNode.class));
         }
         if (Number.class.isAssignableFrom(value.getClass())) {
-            if (value instanceof Double) {
+            if (value instanceof Float) {
+                return new DecimalType((float) value);
+            } else if (value instanceof Double) {
                 return new DecimalType((double) value);
             } else if (value instanceof Integer) {
                 return new DecimalType((int) value);

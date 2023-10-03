@@ -38,7 +38,7 @@ public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
             for (DeviceEndpoint series : barSeries) {
                 builder.addSeries(series.getName(false), seriesBuilder ->
                     seriesBuilder.setChartDataSource(
-                        TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), series, false)));
+                        TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), series)));
             }
         });
     }

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.entity.log.HasEntityLog;
+import org.homio.api.entity.version.HasFirmwareVersion;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.service.EntityService;
@@ -20,10 +21,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEntity, S extends EntityService.ServiceInstance>
-    extends HasJsonData, HasEntityLog, HasEntityIdentifier, HasStatusAndMsg, EntityService<S, T> {
+    extends
+    HasJsonData,
+    HasEntityLog,
+    HasEntityIdentifier,
+    HasFirmwareVersion,
+    HasStatusAndMsg,
+    EntityService<S, T> {
 
     @UIField(order = 1, inlineEdit = true)
-    @UIFieldGroup(value = "GENERAL", order = 10)
+    @UIFieldGroup("GENERAL")
     default boolean isStart() {
         return getJsonData("start", true);
     }

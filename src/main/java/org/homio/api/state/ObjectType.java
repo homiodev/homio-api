@@ -30,12 +30,18 @@ public class ObjectType implements State {
 
     @Override
     public float floatValue() {
-        throw new IllegalStateException("Unable to fetch float value from string");
+        if (value instanceof Number num) {
+            return num.floatValue();
+        }
+        throw new IllegalStateException("Unable to fetch float value from " + value.getClass());
     }
 
     @Override
     public int intValue() {
-        throw new IllegalStateException("Unable to fetch float value from string");
+        if (value instanceof Number num) {
+            return num.intValue();
+        }
+        throw new IllegalStateException("Unable to fetch int value from " + value.getClass());
     }
 
     @Override
@@ -55,7 +61,10 @@ public class ObjectType implements State {
 
     @Override
     public boolean boolValue() {
-        throw new IllegalStateException("Unable to fetch float value from string");
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        throw new IllegalStateException("Unable to fetch boolean value from " + value.getClass());
     }
 
     @Override

@@ -48,7 +48,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @Getter
     @Column(length = 64)
     @UIField(order = 30, type = UIFieldType.SelectBox, color = "#538744")
-    @UIFieldGroup(value = "GENERAL", order = 10)
+    @UIFieldGroup("GENERAL")
     @UIFieldSelectConfig(selectOnEmptyLabel = "PLACEHOLDER.SELECT_PLACE")
     @UIFieldDynamicSelection(SelectPlaceOptionLoader.class)
     @UIFieldShowOnCondition("return !context.get('compactMode')")

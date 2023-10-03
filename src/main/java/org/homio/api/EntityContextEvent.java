@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.homio.api.entity.BaseEntityIdentifier;
+import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +40,7 @@ public interface EntityContextEvent {
      * @param listener - listener
      * @return this
      */
-    default EntityContextEvent addEventListener(String key, Consumer<Object> listener) {
+    default EntityContextEvent addEventListener(String key, Consumer<State> listener) {
         return addEventListener(key, "", listener);
     }
 
@@ -51,7 +52,7 @@ public interface EntityContextEvent {
      * @param listener      - listener
      * @return EntityContextEvent
      */
-    EntityContextEvent addEventListener(String key, String discriminator, Consumer<Object> listener);
+    EntityContextEvent addEventListener(String key, String discriminator, Consumer<State> listener);
 
     /**
      * Listen for event with key. Fires listener immediately if value was saved before
@@ -60,7 +61,7 @@ public interface EntityContextEvent {
      * @param listener - listener
      * @return EntityContextEvent
      */
-    default EntityContextEvent addEventBehaviourListener(String key, Consumer<Object> listener) {
+    default EntityContextEvent addEventBehaviourListener(String key, Consumer<State> listener) {
         return addEventBehaviourListener(key, "", listener);
     }
 
@@ -72,7 +73,7 @@ public interface EntityContextEvent {
      * @param listener      - listener
      * @return EntityContextEvent
      */
-    EntityContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<Object> listener);
+    EntityContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<State> listener);
 
     /**
      * Fire event with key and value.
@@ -81,7 +82,7 @@ public interface EntityContextEvent {
      * @param key   - unique key
      * @return EntityContextEvent
      */
-    EntityContextEvent fireEvent(@NotNull String key, @Nullable Object value);
+    EntityContextEvent fireEvent(@NotNull String key, @Nullable State value);
 
     /**
      * Fire event with key and value only if previous saved value is null or value != previousValue
@@ -90,7 +91,10 @@ public interface EntityContextEvent {
      * @param value - value to fire
      * @return EntityContextEvent
      */
-    EntityContextEvent fireEventIfNotSame(@NotNull String key, @Nullable Object value);
+    EntityContextEvent fireEventIfNotSame(@NotNull String key, @Nullable State value);
+
+    // go through all discriminators and count if key exists
+    int getEventCount(@NotNull String key);
 
     <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
         (String entityID, String key, Consumer<T> listener);
@@ -157,7 +161,7 @@ public interface EntityContextEvent {
      * @param key      - key
      * @param listener - listener
      */
-    default void addPortChangeStatusListener(String key, Consumer<Object> listener) {
+    default void addPortChangeStatusListener(String key, Consumer<State> listener) {
         addEventListener("any-port-changed", key, listener);
     }
 

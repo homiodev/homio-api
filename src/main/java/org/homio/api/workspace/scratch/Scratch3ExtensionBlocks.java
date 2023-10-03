@@ -203,7 +203,7 @@ public abstract class Scratch3ExtensionBlocks {
     protected @NotNull MenuBlock.ServerMenuBlock menuServerItems(@NotNull String name, @NotNull Class<? extends BaseEntity> itemClass, @NotNull String firstKey,
         @NotNull String firstValue) {
         return addMenu(
-            new MenuBlock.ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), firstKey, firstValue, null,
+            new MenuBlock.ServerMenuBlock(name, "rest/item/type/%s/options".formatted(itemClass.getSimpleName()), firstKey, firstValue, null,
                 true));
     }
 

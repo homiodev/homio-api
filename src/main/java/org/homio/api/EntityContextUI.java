@@ -3,11 +3,11 @@ package org.homio.api;
 import static org.homio.api.util.CommonUtils.getErrorMessage;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -21,9 +21,11 @@ import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
+import org.homio.api.entity.version.HasFirmwareVersion;
 import org.homio.api.exception.ServerException;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
+import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPluginButton;
 import org.homio.api.ui.UI.Color;
@@ -151,13 +153,7 @@ public interface EntityContextUI {
     void updateInnerSetItem(@NotNull BaseEntityIdentifier parentEntity, @NotNull String parentFieldName, @NotNull String innerEntityID,
         @NotNull String updateField, @NotNull Object value);
 
-    /**
-     * Fire update to ui that entity was changed.
-     *
-     * @param entity -
-     * @param <T>    -
-     */
-    <T extends BaseEntity> void sendEntityUpdated(@NotNull T entity);
+    void sendDynamicUpdate(@NotNull String dynamicUpdateID, @NotNull Object value);
 
     void progress(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
 
@@ -540,8 +536,18 @@ public interface EntityContextUI {
          * @param versions      - list of versions to be able to select from UI select box
          * @return builder
          */
-        @NotNull NotificationBlockBuilder setUpdatable(@NotNull BiFunction<ProgressBar, String, ActionResponseModel> updateHandler,
-            @NotNull List<String> versions);
+        @NotNull NotificationBlockBuilder setUpdatable(@NotNull ThrowingBiFunction<ProgressBar, String, ActionResponseModel, Exception> updateHandler,
+            @NotNull List<OptionModel> versions);
+
+        default @NotNull NotificationBlockBuilder setUpdatable(@NotNull HasFirmwareVersion firmwareEntity) {
+            List<OptionModel> versions = firmwareEntity.getNewAvailableVersion();
+            if (versions != null) {
+                setUpdatable(firmwareEntity::update, versions);
+            }
+            setVersion(firmwareEntity.getFirmwareVersion());
+            setUpdating(firmwareEntity.isFirmwareUpdating());
+            return this;
+        }
 
         default @NotNull NotificationInfoLineBuilder addInfo(@NotNull String info, @Nullable Icon icon) {
             return addInfo(String.valueOf(info.hashCode()), icon, info);
