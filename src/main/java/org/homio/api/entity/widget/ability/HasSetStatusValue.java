@@ -23,13 +23,6 @@ public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
         return true;
     }
 
-    /**
-     * @return Uses for UI to determine class type description
-     */
-    @JsonIgnore
-    @SelectDataSourceDescription
-    String getSetStatusDescription();
-
     @Getter
     @AllArgsConstructor
     class SetStatusValueRequest {

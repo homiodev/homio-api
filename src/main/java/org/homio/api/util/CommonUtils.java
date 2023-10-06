@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -65,6 +66,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.tika.Tika;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
@@ -102,6 +105,7 @@ public class CommonUtils {
     private static final @Getter Path imagePath = getOrCreatePath("media/image");
     private static final @Getter Path sshPath = getOrCreatePath("ssh");
     private static final @Getter Path tmpPath = getOrCreatePath("tmp");
+    public static final Tika TIKA = new Tika();
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -495,6 +499,19 @@ public class CommonUtils {
     public static String splitNameToReadableFormat(@NotNull String name) {
         String[] items = name.split("_");
         return StringUtils.capitalize(String.join(" ", items));
+    }
+
+    public static Method findMethodByName(Class clz, String name) {
+        String capitalizeName = StringUtils.capitalize(name);
+        Method method = MethodUtils.getAccessibleMethod(clz, "get" + capitalizeName);
+        if (method == null) {
+            method = MethodUtils.getAccessibleMethod(clz, "is" + capitalizeName);
+        }
+        return method;
+    }
+
+    public static String getMethodShortName(Method method) {
+        return StringUtils.uncapitalize(method.getName().substring(method.getName().startsWith("is") ? 2 : 3));
     }
 
     @SneakyThrows

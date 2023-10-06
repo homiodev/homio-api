@@ -84,6 +84,10 @@ public interface State {
         return value.equals("1") || value.equalsIgnoreCase("true");
     }
 
+    default String boolValue(String onValue, String offValue) {
+        return boolValue() ? onValue : offValue;
+    }
+
     default byte[] byteArrayValue() {
         return toString().getBytes(Charset.defaultCharset());
     }

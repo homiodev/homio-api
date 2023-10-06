@@ -1,9 +1,10 @@
-package org.homio.api.service.scan;
+package org.homio.api.service.camera;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import org.homio.api.EntityContext;
+import org.homio.api.service.scan.ItemDiscoverySupport;
 import org.homio.api.util.Lang;
 
 public interface VideoStreamScanner extends ItemDiscoverySupport {

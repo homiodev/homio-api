@@ -1,6 +1,5 @@
 package org.homio.api.entity.widget.ability;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,13 +19,6 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
     // we extend HasGetStatusValue for time-series values to be able to fetch last value in case
     // if no data found in time range, but we need fill chart with empty values
     HasGetStatusValue {
-
-    /**
-     * @return Uses for UI to determine class type description
-     */
-    @JsonIgnore
-    @SelectDataSourceDescription
-    String getTimeValueSeriesDescription();
 
     /**
      * Return line chart series.

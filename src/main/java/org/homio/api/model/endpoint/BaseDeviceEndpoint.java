@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -65,6 +66,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     private @JsonIgnore @Nullable Set<String> alternateEndpoints;
     private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
     private @Getter @Setter boolean visibleEndpoint = true;
+    private @Getter @Setter Supplier<Boolean> visibleEndpointHandler;
 
     public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group, @NotNull EntityContext entityContext) {
         this(group, entityContext);
@@ -206,6 +208,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
         if (!visibleEndpoint) {
             return false;
+        }
+        if (visibleEndpointHandler != null) {
+            return visibleEndpointHandler.get();
         }
         return !getHiddenEndpoints().contains(getEndpointEntityID());
     }

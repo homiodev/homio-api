@@ -39,15 +39,6 @@ public @interface UIFieldDynamicSelection {
     String[] dependencyFields() default {};
 
     /**
-     * Interface to configure selection for IU
-     */
-    interface SelectionConfiguration {
-
-        @JsonIgnore
-        @NotNull Icon selectionIcon();
-    }
-
-    /**
      * Just for able to have many 'UIFieldDynamicSelection(...)'
      */
     @Target({ElementType.FIELD, ElementType.METHOD})
