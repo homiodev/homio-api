@@ -24,7 +24,7 @@ public interface SettingPluginTextInput extends SettingPlugin<String> {
     }
 
     @Override
-    default JSONObject getParameters(EntityContext entityContext, String value) {
+    default @NotNull JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
         putOpt(parameters, "pattern", getPattern());
         Pair<Integer, Integer> validateLength = getValidateLength();

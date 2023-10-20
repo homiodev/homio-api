@@ -34,7 +34,7 @@ public interface SettingPluginInteger extends SettingPlugin<Integer> {
     }
 
     @Override
-    default JSONObject getParameters(EntityContext entityContext, String value) {
+    default @NotNull JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
         putOpt(parameters, "min", getMin());
         putOpt(parameters, "max", getMax());

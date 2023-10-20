@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -217,9 +218,10 @@ public class ConfigDeviceDefinitionService {
 
         endpointDeviceDefinitions = endpointDefinitions;
         deviceDefinitions = definitions;
-        deviceEndpoints = deviceConfigurations.getEndpoints().stream()
-                                              .collect(Collectors.toMap(
-                                                  ConfigDeviceEndpoint::getName, Function.identity()));
+        deviceEndpoints = deviceConfigurations
+            .getEndpoints()
+            .stream()
+            .collect(Collectors.toMap(ConfigDeviceEndpoint::getName, Function.identity()));
         deviceAliasEndpoints = aliasEndpoints;
     }
 

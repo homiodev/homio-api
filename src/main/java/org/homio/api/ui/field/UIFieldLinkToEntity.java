@@ -21,4 +21,8 @@ public @interface UIFieldLinkToEntity {
     interface FieldLinkToEntityTitleProvider {
         String getLinkTitle();
     }
+
+    record NavEntityTitle(String entityID, String title) {
+
+    }
 }

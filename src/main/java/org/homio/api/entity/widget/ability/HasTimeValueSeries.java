@@ -35,9 +35,7 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
             getTimeValueSeries(request)));
     }
 
-    default @NotNull List<Object[]> getTimeValueSeries(@NotNull PeriodRequest request) {
-        throw new NotImplementedException();
-    }
+    @NotNull List<Object[]> getTimeValueSeries(@NotNull PeriodRequest request);
 
     @Getter
     class TimeValueDatasetDescription {

@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -42,6 +43,7 @@ import org.homio.api.cache.CachedValue;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.ArchiveFormat;
 import org.homio.api.model.ActionResponseModel;
+import org.homio.api.model.OptionModel;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.util.HardwareUtils;
 import org.homio.api.util.HardwareUtils.Architecture;
@@ -75,9 +77,7 @@ public class GitHubProject {
                         throw new IllegalStateException(jsonNode.toString());
                     }
                     for (JsonNode node : jsonNode) {
-                        if (!node.get("prerelease").asBoolean(true)) {
-                            releases.add(node);
-                        }
+                        releases.add(node);
                     }
                     releases.sort((o1, o2) -> {
                         try {
@@ -92,6 +92,24 @@ public class GitHubProject {
                 }
                 return releases;
             }));
+
+    private final CachedValue<List<JsonNode>, GitHubProject> contentCache =
+        new CachedValue<>(Duration.ofHours(24), gitHubProject ->
+            Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "contents", httpHeaders), JsonNode.class, (jsonNode, status) -> {
+                List<JsonNode> contents = new ArrayList<>();
+                try {
+                    if (status != HttpStatus.OK.value()) {
+                        throw new IllegalStateException(jsonNode.toString());
+                    }
+                    for (JsonNode node : jsonNode) {
+                        contents.add(node);
+                    }
+                } catch (Exception ex) {
+                    log.error("Unable to fetch releases from GitHub api: {}releases. Error: {}", gitHubProject.api, CommonUtils.getErrorMessage(ex));
+                }
+                return contents;
+            }));
+
     private @Nullable @Setter String installedVersion;
     private @Getter boolean updating;
     private @Nullable @Setter ThrowingBiFunction<EntityContext, GitHubProject, String, Exception> installedVersionResolver;
@@ -124,8 +142,10 @@ public class GitHubProject {
         return new GitHubProject(project, repo, localProjectPath);
     }
 
-    public static @NotNull List<String> getReleasesSince(@NotNull String version, @NotNull List<String> versions, boolean includeCurrent) {
-        int versionIndex = versions.indexOf(version);
+    public static @NotNull List<OptionModel> getReleasesSince(@NotNull String version, @NotNull List<OptionModel> versions, boolean includeCurrent) {
+        int versionIndex = IntStream.range(0, versions.size())
+                                    .filter(i -> versions.get(i).equals(version))
+                                    .findFirst().orElse(-1);
         if (versionIndex >= 0) {
             if (includeCurrent) {
                 return versions.subList(versionIndex, versions.size());
@@ -281,11 +301,19 @@ public class GitHubProject {
         return release.path("body").asText();
     }
 
-    public @NotNull List<String> getReleasesSince(@Nullable String version, boolean includeCurrent) {
+    public @NotNull List<OptionModel> getReleasesSince(@Nullable String version, boolean includeCurrent) {
         try {
-            List<String> versions = releasesCache.getValue(this)
-                                                 .stream()
-                                                 .map(r -> r.get("tag_name").asText())
+            List<OptionModel> versions = releasesCache
+                .getValue(this)
+                .stream()
+                .map(r -> {
+                    OptionModel model = OptionModel.key(r.get("tag_name").asText());
+                    String description = r.get("published_at").asText();
+                    if (r.get("prerelease").asBoolean(false)) {
+                        description += " [pre-release]";
+                    }
+                    return model.setDescription(description);
+                })
                                                  .collect(Collectors.toList());
             if (version == null) {
                 return versions;
@@ -300,6 +328,28 @@ public class GitHubProject {
     public @Nullable JsonNode getLastRelease() {
         List<JsonNode> releases = releasesCache.getValue(this);
         return releases.isEmpty() ? null : releases.get(releases.size() - 1);
+    }
+
+    public @NotNull List<JsonNode> getContent() {
+        return contentCache.getValue(this);
+    }
+
+    public @NotNull Optional<VersionedFile> getContentFile(String filePrefix) {
+        JsonNode jsonNode = getContent().stream()
+                                        .filter(s -> s.get("name").asText().startsWith(filePrefix))
+                                        .findAny().orElse(null);
+        if (jsonNode != null) {
+            String name = jsonNode.get("name").asText();
+            VersionedFile versionedFile = new VersionedFile(name, jsonNode.get("download_url").asText(), jsonNode);
+            int startIndex = name.indexOf("-");
+            int endIndex = name.lastIndexOf(".");
+
+            if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+                versionedFile.version = name.substring(startIndex + 1, endIndex);
+            }
+            return Optional.of(versionedFile);
+        }
+        return Optional.empty();
     }
 
     @SneakyThrows
@@ -472,5 +522,15 @@ public class GitHubProject {
                 ArchiveUtil.unzip(backup, localProjectPath, null, false, progressBar, replace);
             }
         }
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public class VersionedFile {
+
+        private final String name;
+        private final String downloadUrl;
+        private final JsonNode rawNode;
+        private String version;
     }
 }

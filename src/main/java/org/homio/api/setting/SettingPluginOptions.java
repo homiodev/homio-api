@@ -16,6 +16,10 @@ public interface SettingPluginOptions<T> extends SettingPlugin<T> {
 
     @Override
     default @NotNull SettingType getSettingType() {
-        return SettingType.SelectBox;
+        return viewAsButton() ? SettingType.SelectBoxButton : SettingType.SelectBox;
+    }
+
+    default boolean viewAsButton() {
+        return false;
     }
 }

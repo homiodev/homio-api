@@ -13,8 +13,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.homio.api.console.ConsolePlugin;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.BaseEntityIdentifier;
@@ -45,82 +43,19 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public interface EntityContextUI {
 
-    Logger log = LogManager.getLogger("asd");
+    @NotNull EntityContextUIToastr toastr();
 
     @NotNull EntityContext getEntityContext();
 
     @NotNull UIInputBuilder inputBuilder();
 
-    @SneakyThrows
-    default <T> T runWithProgressAndGet(@NotNull String progressKey, boolean cancellable,
-        @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
-        @Nullable Consumer<Exception> finallyBlock) {
-        ProgressBar progressBar = (progress, message, error) -> progress(progressKey, progress, message, cancellable);
-        Exception exception = null;
-        try {
-            progressBar.progress(0, progressKey);
-            return process.apply(progressBar);
-        } catch (Exception ex) {
-            exception = ex;
-            throw ex;
-        } finally {
-            progressBar.done();
-            if (finallyBlock != null) {
-                try {
-                    finallyBlock.accept(exception);
-                } catch (Exception ex) {
-                    log.error("Error has been occurred in thread finally block", ex);
-                }
-            }
-        }
-    }
+    @NotNull EntityContextUINotification notification();
 
-    @SneakyThrows
-    default void runWithProgress(
-        @NotNull String progressKey,
-        boolean cancellable,
-        @NotNull ThrowingConsumer<ProgressBar, Exception> process,
-        @Nullable Consumer<Exception> finallyBlock) {
-        runWithProgressAndGet(progressKey, cancellable, progressBar -> {
-            process.accept(progressBar);
-            return null;
-        }, finallyBlock);
-    }
+    @NotNull EntityContextUIConsole console();
 
-    /**
-     * Register console plugin name. In case if console plugin available only if some entity is created or not enabled by some case we may show disabled console
-     * name on UI
-     *
-     * @param name     - plugin name
-     * @param resource - resource name requires if you need restrict access for users with roles
-     */
-    void registerConsolePluginName(@NotNull String name, @Nullable String resource);
+    @NotNull EntityContextUIDialog dialog();
 
-    <T extends ConsolePlugin> void registerConsolePlugin(@NotNull String name, @NotNull T plugin);
-
-    @Nullable <T extends ConsolePlugin> T getRegisteredConsolePlugin(@NotNull String name);
-
-    boolean unRegisterConsolePlugin(@NotNull String name);
-
-    /**
-     * Fire open console window to UI
-     *
-     * @param consolePlugin -
-     * @param <T>           -
-     */
-    <T extends ConsolePlugin<?>> void openConsole(@NotNull T consolePlugin);
-
-    /**
-     * Request to reload window to UI
-     *
-     * @param reason          -
-     * @param timeoutToReload - timeout to reload. Range 5..60 seconds
-     */
-    void reloadWindow(@NotNull String reason, int timeoutToReload);
-
-    default void reloadWindow(@NotNull String reason) {
-        reloadWindow(reason, 5);
-    }
+    @NotNull EntityContextUIProgress progress();
 
     void removeItem(@NotNull BaseEntity baseEntity);
 
@@ -155,102 +90,9 @@ public interface EntityContextUI {
 
     void sendDynamicUpdate(@NotNull String dynamicUpdateID, @NotNull Object value);
 
-    void progress(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
+    void sendRawData(@NotNull String destination, @NotNull String param);
 
-    /**
-     * Remove progress bar from UI
-     *
-     * @param key - progress id
-     */
-    default void progressDone(@NotNull String key) {
-        progress(key, 100D, null, false);
-    }
-
-    default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
-        @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
-        sendConfirmation(key, title, responseType -> {
-            if (responseType == DialogResponseType.Accepted) {
-                confirmHandler.run();
-            }
-        }, messages, 0, headerButtonAttachTo);
-    }
-
-    /**
-     * * Send confirmation message to ui with back handler
-     *
-     * @param headerButtonAttachTo - if set - attach confirm message to header button
-     * @param key                  -
-     * @param title                -
-     * @param confirmHandler       -
-     * @param messages             -
-     * @param maxTimeoutInSec      -
-     */
-    default void sendConfirmation(@NotNull String key, @NotNull String title,
-        @NotNull Consumer<DialogResponseType> confirmHandler, @NotNull Collection<String> messages,
-        int maxTimeoutInSec, @Nullable String headerButtonAttachTo) {
-        sendDialogRequest(key, title, (responseType, pressedButton, parameters) -> confirmHandler.accept(responseType),
-            dialogModel -> {
-                List<ActionInputParameter> inputs =
-                    messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
-                dialogModel.headerButtonAttachTo(headerButtonAttachTo).submitButton("Confirm", button -> {
-                }).group("General", inputs);
-            });
-    }
-
-    /**
-     * Send request dialog to ui
-     *
-     * @param dialogModel -
-     */
-    void sendDialogRequest(@NotNull DialogModel dialogModel);
-
-    default void sendDialogRequest(@NotNull String key, @NotNull String title, @NotNull DialogRequestHandler actionHandler,
-        @NotNull Consumer<DialogModel> dialogBuilderSupplier) {
-        DialogModel dialogModel = new DialogModel(key, title, actionHandler);
-        dialogBuilderSupplier.accept(dialogModel);
-        sendDialogRequest(dialogModel);
-    }
-
-    /**
-     * Remove notification block if it has no rows anymore
-     *
-     * @param key - block id
-     */
-    void removeEmptyNotificationBlock(@NotNull String key);
-
-    void addNotificationBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
-        @Nullable Consumer<NotificationBlockBuilder> builder);
-
-    default void addOrUpdateNotificationBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
-        @NotNull Consumer<NotificationBlockBuilder> builder) {
-        if (isHasNotificationBlock(key)) {
-            updateNotificationBlock(key, builder);
-        } else {
-            addNotificationBlock(key, name, icon, builder);
-        }
-    }
-
-    default void addNotificationBlockOptional(@NotNull String key, @NotNull String name, @Nullable Icon icon) {
-        if (!isHasNotificationBlock(key)) {
-            addNotificationBlock(key, name, icon, null);
-        }
-    }
-
-    default void updateNotificationBlock(@NotNull String key, @NotNull BaseEntity entity) {
-        updateNotificationBlock(key, builder -> builder.addEntityInfo(entity));
-    }
-
-    void updateNotificationBlock(@NotNull String key, @NotNull Consumer<NotificationBlockBuilder> builder);
-
-    boolean isHasNotificationBlock(@NotNull String key);
-
-    void removeNotificationBlock(@NotNull String key);
-
-    // raw
-    void sendNotification(@NotNull String destination, @NotNull String param);
-
-    // raw
-    void sendNotification(@NotNull String destination, @NotNull ObjectNode param);
+    void sendRawData(@NotNull String destination, @NotNull ObjectNode param);
 
     // Add button to ui header
     HeaderButtonBuilder headerButtonBuilder(@NotNull String key);
@@ -273,133 +115,11 @@ public interface EntityContextUI {
      */
     void removeHeaderButton(@NotNull String key, @Nullable String icon, boolean forceRemove);
 
-    /**
-     * Show error toastr message to ui
-     *
-     * @param message -
-     */
-    default void sendErrorMessage(@NotNull String message) {
-        sendErrorMessage(null, message, null, null);
-    }
-
-    /**
-     * Show error toastr message to ui
-     *
-     * @param ex -
-     */
-    default void sendErrorMessage(@NotNull Exception ex) {
-        sendErrorMessage(null, null, null, ex);
-    }
-
-    /**
-     * Show error toastr message to ui
-     *
-     * @param ex      -
-     * @param message -
-     */
-    default void sendErrorMessage(@NotNull String message, @NotNull Exception ex) {
-        sendErrorMessage(null, message, null, ex);
-    }
-
-    /**
-     * Show error toastr message to ui
-     *
-     * @param message -
-     * @param title   -
-     */
-    default void sendErrorMessage(@NotNull String title, @NotNull String message) {
-        sendErrorMessage(title, message, null, null);
-    }
-
-    default void sendErrorMessage(@NotNull String title, @NotNull String message, @NotNull Exception ex) {
-        sendErrorMessage(title, message, null, ex);
-    }
-
-    default void sendErrorMessage(@NotNull String message, @NotNull FlowMap messageParam, @NotNull Exception ex) {
-        sendErrorMessage(null, message, messageParam, ex);
-    }
-
-    default void sendErrorMessage(@NotNull String message, @NotNull FlowMap messageParam) {
-        sendErrorMessage(null, message, messageParam, null);
-    }
-
-    default void sendErrorMessage(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam,
-        @Nullable Exception ex) {
-        sendMessage(title, message, NotificationLevel.error, messageParam, ex);
-    }
-
-    default void sendInfoMessage(@NotNull String message) {
-        sendInfoMessage(null, message, null);
-    }
-
-    default void sendInfoMessage(@NotNull String title, @NotNull String message) {
-        sendInfoMessage(title, message, null);
-    }
-
-    default void sendInfoMessage(@NotNull String message, @NotNull FlowMap messageParam) {
-        sendInfoMessage(null, message, messageParam);
-    }
-
-    default void sendInfoMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
-        sendMessage(title, message, NotificationLevel.info, messageParam, null);
-    }
-
-    default void sendSuccessMessage(@NotNull String message) {
-        sendSuccessMessage(null, message, null);
-    }
-
-    default void sendSuccessMessage(@NotNull String title, @NotNull String message) {
-        sendSuccessMessage(title, message, null);
-    }
-
-    default void sendSuccessMessage(@NotNull String message, @NotNull FlowMap messageParam) {
-        sendSuccessMessage(null, message, messageParam);
-    }
-
-    default void sendSuccessMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
-        sendMessage(title, message, NotificationLevel.success, messageParam, null);
-    }
-
-    default void sendWarningMessage(@NotNull String message) {
-        sendWarningMessage(null, message, null);
-    }
-
-    default void sendWarningMessage(@NotNull String title, @NotNull String message) {
-        sendWarningMessage(title, message, null);
-    }
-
-    default void sendWarningMessage(@NotNull String message, @NotNull FlowMap messageParam) {
-        sendWarningMessage(null, message, messageParam);
-    }
-
-    default void sendWarningMessage(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
-        sendMessage(title, message, NotificationLevel.warning, messageParam, null);
-    }
-
     default void sendJsonMessage(@NotNull String title, @NotNull Object json) {
         sendJsonMessage(title, json, null);
     }
 
     void sendJsonMessage(@Nullable String title, @NotNull Object json, @Nullable FlowMap messageParam);
-
-    default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level,
-        @Nullable FlowMap messageParam, @Nullable Exception ex) {
-        title = title == null ? null : Lang.getServerMessage(title, messageParam);
-        String text;
-        if (ex instanceof ServerException) {
-            text = ex.getMessage();
-        } else {
-            text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
-            if (text == null) {
-                text = getErrorMessage(ex);
-            }
-            // try cast text to lang
-            text = Lang.getServerMessage(text, messageParam);
-        }
-        sendMessage(title, text, level);
-    }
-
-    void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level);
 
     enum DialogResponseType {
         Cancelled, Timeout, Accepted
@@ -609,5 +329,341 @@ public interface EntityContextUI {
         }
 
         @NotNull NotificationInfoLineBuilder setAsLink(@NotNull BaseEntity entity);
+    }
+
+    interface EntityContextUIProgress {
+
+        default ProgressBar createProgressBar(@NotNull String key, boolean dummy) {
+            return createProgressBar(key, dummy, null);
+        }
+
+        /**
+         * Create simple progress bar
+         *
+         * @param key      - progress bar unique key
+         * @param dummy    - is submitted progress on UI
+         * @param onCancel - create cancellable progress bar if not null
+         * @return progress bar
+         */
+        ProgressBar createProgressBar(@NotNull String key, boolean dummy, @Nullable Runnable onCancel);
+
+        void update(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
+
+        /**
+         * Remove progress bar from UI
+         *
+         * @param key - progress id
+         */
+        default void done(@NotNull String key) {
+            update(key, 100D, null, false);
+        }
+
+        @SneakyThrows
+        default <T> T runAndGet(
+            @NotNull String progressKey,
+            boolean cancellable,
+            @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
+            @Nullable Consumer<Exception> finallyBlock) {
+
+            ProgressBar progressBar = (progress, message, error) -> update(progressKey, progress, message, cancellable);
+            Exception exception = null;
+            try {
+                progressBar.progress(0, progressKey);
+                return process.apply(progressBar);
+            } catch (Exception ex) {
+                exception = ex;
+                throw ex;
+            } finally {
+                progressBar.done();
+                if (finallyBlock != null) {
+                    try {
+                        finallyBlock.accept(exception);
+                    } catch (Exception ignore) {
+                    }
+                }
+            }
+        }
+
+        @SneakyThrows
+        default void run(
+            @NotNull String progressKey,
+            boolean cancellable,
+            @NotNull ThrowingConsumer<ProgressBar, Exception> process,
+            @Nullable Consumer<Exception> finallyBlock) {
+
+            runAndGet(progressKey, cancellable, progressBar -> {
+                process.accept(progressBar);
+                return null;
+            }, finallyBlock);
+        }
+    }
+
+    interface EntityContextUIDialog {
+
+        default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
+            @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
+            sendConfirmation(key, title, responseType -> {
+                if (responseType == DialogResponseType.Accepted) {
+                    confirmHandler.run();
+                }
+            }, messages, 0, headerButtonAttachTo);
+        }
+
+        /**
+         * * Send confirmation message to ui with back handler
+         *
+         * @param headerButtonAttachTo - if set - attach confirm message to header button
+         * @param key                  -
+         * @param title                -
+         * @param confirmHandler       -
+         * @param messages             -
+         * @param maxTimeoutInSec      -
+         */
+        default void sendConfirmation(@NotNull String key, @NotNull String title,
+            @NotNull Consumer<DialogResponseType> confirmHandler, @NotNull Collection<String> messages,
+            int maxTimeoutInSec, @Nullable String headerButtonAttachTo) {
+            sendDialogRequest(key, title, (responseType, pressedButton, parameters) -> confirmHandler.accept(responseType),
+                dialogModel -> {
+                    List<ActionInputParameter> inputs =
+                        messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
+                    dialogModel.headerButtonAttachTo(headerButtonAttachTo).submitButton("Confirm", button -> {
+                    }).group("General", inputs);
+                });
+        }
+
+        /**
+         * Send request dialog to ui
+         *
+         * @param dialogModel -
+         */
+        void sendDialogRequest(@NotNull DialogModel dialogModel);
+
+        default void sendDialogRequest(@NotNull String key, @NotNull String title, @NotNull DialogRequestHandler actionHandler,
+            @NotNull Consumer<DialogModel> dialogBuilderSupplier) {
+            DialogModel dialogModel = new DialogModel(key, title, actionHandler);
+            dialogBuilderSupplier.accept(dialogModel);
+            sendDialogRequest(dialogModel);
+        }
+
+        /**
+         * Request to reload window to UI
+         *
+         * @param reason          -
+         * @param timeoutToReload - timeout to reload. Range 5..60 seconds
+         */
+        void reloadWindow(@NotNull String reason, int timeoutToReload);
+
+        default void reloadWindow(@NotNull String reason) {
+            reloadWindow(reason, 5);
+        }
+    }
+
+    interface EntityContextUINotification {
+
+        /**
+         * Remove notification block if it has no rows anymore
+         *
+         * @param key - block id
+         */
+        void removeEmptyBlock(@NotNull String key);
+
+        void addBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
+            @Nullable Consumer<NotificationBlockBuilder> builder);
+
+        default void addOrUpdateBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
+            @NotNull Consumer<NotificationBlockBuilder> builder) {
+            if (isHasBlock(key)) {
+                updateBlock(key, builder);
+            } else {
+                addBlock(key, name, icon, builder);
+            }
+        }
+
+        default void addBlockOptional(@NotNull String key, @NotNull String name, @Nullable Icon icon) {
+            if (!isHasBlock(key)) {
+                addBlock(key, name, icon, null);
+            }
+        }
+
+        default void updateBlock(@NotNull String key, @NotNull BaseEntity entity) {
+            updateBlock(key, builder -> builder.addEntityInfo(entity));
+        }
+
+        void updateBlock(@NotNull String key, @NotNull Consumer<NotificationBlockBuilder> builder);
+
+        boolean isHasBlock(@NotNull String key);
+
+        void removeBlock(@NotNull String key);
+
+    }
+
+    interface EntityContextUIToastr {
+
+        /**
+         * Show error toastr message to ui
+         *
+         * @param message -
+         */
+        default void error(@NotNull String message) {
+            error(null, message, null, null);
+        }
+
+        /**
+         * Show error toastr message to ui
+         *
+         * @param ex -
+         */
+        default void error(@NotNull Exception ex) {
+            error(null, null, null, ex);
+        }
+
+        /**
+         * Show error toastr message to ui
+         *
+         * @param ex      -
+         * @param message -
+         */
+        default void error(@NotNull String message, @NotNull Exception ex) {
+            error(null, message, null, ex);
+        }
+
+        /**
+         * Show error toastr message to ui
+         *
+         * @param message -
+         * @param title   -
+         */
+        default void error(@NotNull String title, @NotNull String message) {
+            error(title, message, null, null);
+        }
+
+        default void error(@NotNull String title, @NotNull String message, @NotNull Exception ex) {
+            error(title, message, null, ex);
+        }
+
+        default void error(@NotNull String message, @NotNull FlowMap messageParam, @NotNull Exception ex) {
+            error(null, message, messageParam, ex);
+        }
+
+        default void error(@NotNull String message, @NotNull FlowMap messageParam) {
+            error(null, message, messageParam, null);
+        }
+
+        default void error(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam,
+            @Nullable Exception ex) {
+            sendMessage(title, message, NotificationLevel.error, messageParam, ex);
+        }
+
+        default void info(@NotNull String message) {
+            info(null, message, null);
+        }
+
+        default void info(@NotNull String title, @NotNull String message) {
+            info(title, message, null);
+        }
+
+        default void info(@NotNull String message, @NotNull FlowMap messageParam) {
+            info(null, message, messageParam);
+        }
+
+        default void info(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
+            sendMessage(title, message, NotificationLevel.info, messageParam, null);
+        }
+
+        default void success(@NotNull String message) {
+            success(null, message, null);
+        }
+
+        default void success(@NotNull String title, @NotNull String message) {
+            success(title, message, null);
+        }
+
+        default void success(@NotNull String message, @NotNull FlowMap messageParam) {
+            success(null, message, messageParam);
+        }
+
+        default void success(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
+            sendMessage(title, message, NotificationLevel.success, messageParam, null);
+        }
+
+        default void warn(@NotNull String message) {
+            warn(null, message, null);
+        }
+
+        default void warn(@NotNull String title, @NotNull String message) {
+            warn(title, message, null);
+        }
+
+        default void warn(@NotNull String message, @NotNull FlowMap messageParam) {
+            warn(null, message, messageParam);
+        }
+
+        default void warn(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
+            sendMessage(title, message, NotificationLevel.warning, messageParam, null);
+        }
+
+        default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level,
+            @Nullable FlowMap messageParam, @Nullable Exception ex) {
+            title = title == null ? null : Lang.getServerMessage(title, messageParam);
+            String text;
+            if (ex instanceof ServerException) {
+                text = ex.getMessage();
+            } else {
+                text = StringUtils.isEmpty(message) ? ex == null ? "Unknown error" : ex.getMessage() : message;
+                if (text == null) {
+                    text = getErrorMessage(ex);
+                }
+                // try cast text to lang
+                text = Lang.getServerMessage(text, messageParam);
+            }
+            sendMessage(title, text, level);
+        }
+
+        void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level);
+    }
+
+    interface EntityContextUIConsole {
+
+        /**
+         * Register console plugin name. In case if console plugin available only if some entity is created or not enabled by some case we may show disabled
+         * console name on UI
+         *
+         * @param name     - plugin name
+         * @param resource - resource name requires if you need restrict access for users with roles
+         */
+        void registerPluginName(@NotNull String name, @Nullable String resource);
+
+        <T extends ConsolePlugin> void registerPlugin(@NotNull String name, @NotNull T plugin);
+
+        default <T extends ConsolePlugin> void registerPlugin(@NotNull T plugin) {
+            registerPlugin(plugin.getEntityID(), plugin);
+        }
+
+        @Nullable <T extends ConsolePlugin> T getRegisteredPlugin(@NotNull String name);
+
+        boolean unRegisterPlugin(@NotNull String name);
+
+        default <T extends ConsolePlugin> boolean unRegisterPlugin(@NotNull T plugin) {
+            return unRegisterPlugin(plugin.getEntityID());
+        }
+
+        <T extends ConsolePlugin<?>> void openConsole(@NotNull String name);
+
+        /**
+         * Instruct ui to fire reload() function to fetch data from server or send value from plugin
+         *
+         * @param name - plugin name
+         */
+        default void refreshPluginContent(@NotNull String name) {
+
+        }
+
+        /**
+         * Fires UI console plugin to update it's content from 'value'
+         *
+         * @param name  - plugin name
+         * @param value - new value for UI
+         */
+        void refreshPluginContent(@NotNull String name, Object value);
     }
 }

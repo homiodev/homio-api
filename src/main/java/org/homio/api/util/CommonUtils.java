@@ -71,6 +71,7 @@ import org.apache.tika.Tika;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
+import org.homio.api.repository.GitHubProject;
 import org.homio.hquery.Curl;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
@@ -106,6 +107,7 @@ public class CommonUtils {
     private static final @Getter Path sshPath = getOrCreatePath("ssh");
     private static final @Getter Path tmpPath = getOrCreatePath("tmp");
     public static final Tika TIKA = new Tika();
+    public static GitHubProject STATIC_FILES = GitHubProject.of("homiodev", "static-files");
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -498,6 +500,16 @@ public class CommonUtils {
 
     public static String splitNameToReadableFormat(@NotNull String name) {
         String[] items = name.split("_");
+        if(items.length == 1) {
+            name = name.replaceAll(
+                format("%s|%s|%s",
+                    "(?<=[A-Z])(?=[A-Z][a-z])",
+                    "(?<=[a-z])(?=[A-Z])",
+                    "(?<=[A-Za-z])(?=[0-9])"
+                ), "_"
+            ).toLowerCase();
+        }
+        items = name.split("_");
         return StringUtils.capitalize(String.join(" ", items));
     }
 

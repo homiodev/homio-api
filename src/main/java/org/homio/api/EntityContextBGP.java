@@ -168,6 +168,9 @@ public interface EntityContextBGP {
         // default - false
         @NotNull ProgressBuilder setCancellable(boolean cancellable);
 
+        // default - true
+        @NotNull ProgressBuilder setLogToConsole(boolean value);
+
         /**
          * Throw error if process already exists
          *

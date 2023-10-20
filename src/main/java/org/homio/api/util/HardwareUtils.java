@@ -2,6 +2,11 @@ package org.homio.api.util;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingFunction;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -13,6 +18,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.homio.api.EntityContext;
@@ -23,7 +29,36 @@ import org.jetbrains.annotations.NotNull;
 @Log4j2
 public class HardwareUtils {
 
-    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
+    public static String MACHINE_IP_ADDRESS = "127.0.0.1";	/**
+     * Loads native library from the jar file (storing it in the temp dir)
+     * @param library JNI library name
+     */
+    public static void loadLibrary(String library) {
+        String filename = System.mapLibraryName(library);
+        String fullFilename = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + filename;
+        try {
+            // try to load from the temp dir (in case it is already there)
+            System.load(fullFilename);
+        }
+        catch (UnsatisfiedLinkError err2) {
+            try {
+                // try to extract from the jar
+                File targetFile;
+                try (InputStream is = HardwareUtils.class.getClassLoader().getResourceAsStream(filename)) {
+                    if (is == null) {
+                        throw new IOException(filename + " not found in the jar file (classpath)");
+                    }
+                    targetFile = new File(fullFilename);
+                    FileUtils.copyToFile(is, targetFile);
+                }
+                targetFile.setExecutable(true, false);
+                System.load(fullFilename);
+            }
+            catch (IOException ioe) {
+                throw new RuntimeException("Unable to extract native library: " + library, ioe);
+            }
+        }
+    }
 
     public static SerialPort getSerialPort(String value) {
         return StringUtils.isEmpty(value) ? null :
@@ -70,7 +105,7 @@ public class HardwareUtils {
                     messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", deviceName));
                     messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
                     messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
-                    entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
+                    entityContext.ui().dialog().sendConfirmation("Confirm-" + deviceName + "-" + ip,
                         Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
                             createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
                 }

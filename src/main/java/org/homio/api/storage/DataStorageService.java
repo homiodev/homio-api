@@ -103,11 +103,12 @@ public interface DataStorageService<T extends DataStorageEntity> {
 
     default @NotNull List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field,
         @Nullable String value) {
-        return getTimeSeries(from, to, field, value, "value");
+        return getTimeSeries(from, to, field, value, "value", null, true);
     }
 
     @NotNull List<Object[]> getTimeSeries(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
-        @NotNull String aggregateField);
+        @NotNull String aggregateField, @Nullable Integer limit, boolean sortAsc);
+
 
     default @NotNull Object aggregate(@Nullable Long from, @Nullable Long to, @Nullable String field, @Nullable String value,
         @NotNull AggregationType aggregationType, boolean filterOnlyNumbers) {

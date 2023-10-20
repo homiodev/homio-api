@@ -1,7 +1,7 @@
 package org.homio.api.workspace.scratch;
 
-import java.awt.Color;
 import lombok.Getter;
+import org.homio.api.ui.UI;
 
 @Getter
 public class Scratch3Color {
@@ -12,9 +12,7 @@ public class Scratch3Color {
 
     public Scratch3Color(String color) {
         this.color1 = color;
-        Color darkerColor = Color.decode(color).darker();
-        this.color2 = String.format("#%02x%02x%02x", darkerColor.getRed(), darkerColor.getGreen(), darkerColor.getBlue());
-        darkerColor = darkerColor.darker();
-        this.color3 = String.format("#%02x%02x%02x", darkerColor.getRed(), darkerColor.getGreen(), darkerColor.getBlue());
+        this.color2 = UI.Color.darker(color, 0.7f);
+        this.color3 = UI.Color.darker(color, 0.9f);
     }
 }

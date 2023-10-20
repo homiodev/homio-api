@@ -2,6 +2,7 @@ package org.homio.api.entity.widget;
 
 import java.util.Date;
 import lombok.Getter;
+import lombok.Setter;
 import org.homio.api.EntityContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +17,10 @@ public class PeriodRequest {
     private final Date from;
     @Nullable
     private final Date to;
+
+    private @Setter int minItemsCount = -1;
+    private @Setter boolean forward = true;
+    private @Setter boolean sortAsc = true;
 
     private JSONObject parameters = new JSONObject();
 

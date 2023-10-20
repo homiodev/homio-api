@@ -34,6 +34,7 @@ import org.homio.api.util.CommonUtils;
 import org.homio.api.util.SpringUtils;
 import org.homio.api.workspace.scratch.MenuBlock;
 import org.homio.hquery.Curl;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -198,19 +199,19 @@ public interface WorkspaceBlock {
         onRelease(releaseHandler);
     }
 
-    default <T> void subscribeToLock(BroadcastLock lock, Runnable handler) {
+    default <T> void subscribeToLock(Lock lock, Runnable handler) {
         subscribeToLock(lock, o -> true, 0, null, handler);
     }
 
-    default <T> void subscribeToLock(BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
+    default <T> void subscribeToLock(Lock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
         subscribeToLock(lock, o -> true, timeout, timeUnit, handler);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, Runnable handler) {
+    default void subscribeToLock(Lock lock, Function<Object, Boolean> checkFn, Runnable handler) {
         subscribeToLock(lock, checkFn, 0, null, handler);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
+    default void subscribeToLock(Lock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
         Runnable runnable) {
         while (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit) && checkFn.apply(lock.getValue())) {
@@ -225,11 +226,11 @@ public interface WorkspaceBlock {
         }
     }
 
-    default <T> void waitForLock(BroadcastLock lock, Runnable handler) {
+    default <T> void waitForLock(Lock lock, Runnable handler) {
         waitForLock(lock, 0, null, handler);
     }
 
-    default <T> void waitForLock(BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
+    default <T> void waitForLock(Lock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
         if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit)) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
@@ -342,6 +343,9 @@ public interface WorkspaceBlock {
         return getExtensionId() + "_" + getOpcode();
     }
 
+    /**
+     * @return next block
+     */
     WorkspaceBlock getNext();
 
     WorkspaceBlock getParent();
@@ -352,7 +356,11 @@ public interface WorkspaceBlock {
 
     String getDescription();
 
-    BroadcastLockManager getBroadcastLockManager();
+    /**
+     * Get Lock manager that wait when event occurs
+     * @return lock manager
+     */
+    LockManager getLockManager();
 
     boolean isDestroyed();
 
@@ -360,19 +368,29 @@ public interface WorkspaceBlock {
 
     EntityContext getEntityContext();
 
+    /**
+     * Fires when current thread is released (i.e. when whole block scope is destroyed)
+     * @param listener - listener that fires on thread release
+     */
     void onRelease(ThrowingRunnable<Exception> listener);
 
-    default WorkspaceBlock getNextOrThrow() {
+    /**
+     * Get next block or throw error
+     * @return next block
+     */
+    default @NotNull WorkspaceBlock getNextOrThrow() {
         WorkspaceBlock next = getNext();
         if (next == null) {
             logErrorAndThrow("No next block found");
+            throw new ServerException("No next block found");
         }
         return next;
     }
 
-    default WorkspaceBlock getChildOrThrow() {
+    default @NotNull WorkspaceBlock getChildOrThrow() {
         if (!hasChild()) {
             logErrorAndThrow("No child block found");
+            throw new ServerException("No child block found");
         }
         return getChild();
     }

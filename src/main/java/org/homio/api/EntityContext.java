@@ -2,6 +2,7 @@ package org.homio.api;
 
 import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import lombok.SneakyThrows;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.exception.NotFoundException;
+import org.homio.api.model.OptionModel;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,9 +50,20 @@ public interface EntityContext {
 
     @NotNull EntityContextStorage storage();
 
+    /**
+     * Get or create new file logger for entity
+     *
+     * @param baseEntity - log file name owner. File will be created at logs/entities/entityType/entityID_key.log
+     * @param suffix     - file name suffix
+     * @return file logger
+     */
+    @NotNull FileLogger getFileLogger(@NotNull BaseEntity baseEntity, @NotNull String suffix);
+
     default @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID) {
         return getEntity(entityID, true);
     }
+
+    Map<Class<? extends BaseEntity>, BaseEntity> ENTITY_CLASS_TO_POJO = new HashMap<>();
 
     default @Nullable <T extends BaseEntity> T getEntity(Class<T> entityClass, @NotNull String entityID) {
         BaseEntity entity = ENTITY_CLASS_TO_POJO.computeIfAbsent(entityClass, CommonUtils::newInstance);
@@ -115,6 +128,8 @@ public interface EntityContext {
     default @NotNull <T extends BaseEntity> List<T> findAll(@NotNull T entity) {
         return (List<T>) findAll(entity.getClass());
     }
+
+    @NotNull List<OptionModel> toOptionModels(@Nullable Collection<? extends BaseEntity> entities);
 
     @Nullable BaseEntity delete(@NotNull String entityId);
 
@@ -182,5 +197,22 @@ public interface EntityContext {
 
     @NotNull <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);
 
-    Map<Class<? extends BaseEntity>, BaseEntity> ENTITY_CLASS_TO_POJO = new HashMap<>();
+    interface FileLogger {
+
+        void logDebug(@Nullable String message);
+
+        void logInfo(@Nullable String message);
+
+        void logWarn(@Nullable String message);
+
+        void logError(@Nullable String message);
+
+        default void logError(@NotNull Exception ex) {
+            logError(CommonUtils.getErrorMessage(ex));
+        }
+
+        @NotNull InputStream getFileInputStream();
+
+        @NotNull String getName();
+    }
 }

@@ -25,7 +25,7 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
     ActionResponseModel save(FileModel content);
 
     default void sendValueToConsoleEditor(EntityContext entityContext) {
-        entityContext.ui().sendNotification("-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
+        entityContext.ui().sendRawData("-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
     }
 
     default MonacoGlyphAction getGlyphAction() {

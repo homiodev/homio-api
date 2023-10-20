@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.homio.api.EntityContextVar.VariableType;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.action.v1.UIInputEntity;
@@ -19,12 +20,8 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
     @JsonIgnore
     private DeviceEndpoint endpoint;
 
-    private @Nullable String varSource;
-
     public DeviceEndpointUI(@NotNull DeviceEndpoint endpoint) {
         this.endpoint = endpoint;
-        this.varSource = endpoint.getVariableID() == null ? null :
-            endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID());
     }
 
     public static @NotNull List<DeviceEndpointUI> buildEndpoints(@NotNull Collection<? extends DeviceEndpoint> entities) {
@@ -35,12 +32,28 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
                        .collect(Collectors.toList());
     }
 
+    public @Nullable String getVarSource() {
+        if (endpoint.isStateless()) {
+            return null;
+        }
+        try {
+            return endpoint.getVariableID() == null ? null :
+                endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID());
+        } catch (Exception ignore) { // in case if we deleted entity and variables but still send updates to ui
+            return null;
+        }
+    }
+
     public @NotNull String getEntityID() {
         return endpoint.getEntityID();
     }
 
     public @NotNull Icon getIcon() {
         return endpoint.getIcon();
+    }
+
+    public @Nullable VariableType getVarType() {
+        return endpoint.getVariableType();
     }
 
     public @NotNull String getTitle() {

@@ -104,7 +104,6 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             this.entityHashCode = getEntityHashCode(entity);
 
             if (fireFirstInitialize) {
-                entity.setStatus(Status.INITIALIZE);
                 initializing.set(true);
                 // deffer initialize to register service in map and avoid blocking
                 entityContext.bgp().execute(Duration.ofSeconds(5), () -> {
@@ -150,7 +149,6 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
                     while (!initializing.compareAndSet(false, true)) {
                         Thread.yield();
                     }
-                    entity.setStatus(Status.INITIALIZE);
                     fireWithSetStatus(this::initialize);
                     initializing.set(false);
                 });

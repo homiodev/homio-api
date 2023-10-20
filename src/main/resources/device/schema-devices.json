@@ -81,6 +81,11 @@
             "title": "Device endpoint icon color",
             "type": "string"
           },
+          "ignoreDuplicates": {
+            "title": "Ignore duplicate event/values when call setValue on endpoint",
+            "type": "boolean",
+            "default": true
+          },
           "stateless": {
             "title": "Device endpoint should not create variable",
             "type": "boolean",

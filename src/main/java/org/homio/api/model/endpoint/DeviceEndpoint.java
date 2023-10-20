@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -13,9 +12,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.EntityContext;
+import org.homio.api.EntityContextVar;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
+import org.homio.api.model.Status;
 import org.homio.api.state.DecimalType;
 import org.homio.api.state.OnOffType;
 import org.homio.api.state.State;
@@ -69,6 +70,13 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     @Nullable String getVariableID();
 
+    @Nullable EntityContextVar.VariableType getVariableType();
+
+    /**
+     * It's unique device id. it should be same even if user recreate camera from scratch
+     *
+     * @return device id
+     */
     @NotNull String getDeviceID();
 
     @NotNull String getEndpointEntityID();
@@ -138,7 +146,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         return Integer.compare(this.getOrder(), o.getOrder());
     }
 
-    default @NotNull Set<String> getSelectValues() {
+    default @NotNull List<OptionModel> getSelectValues() {
         throw new IllegalStateException("Must be implemented for 'select' type");
     }
 
@@ -257,7 +265,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
      * @return selectBox options
      */
     default @NotNull List<OptionModel> createSelectActionOptions() {
-        return OptionModel.list(getSelectValues());
+        return getSelectValues();
     }
 
     default UIInputBuilder createSliderActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
@@ -293,8 +301,15 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     boolean isDisabled();
 
+    boolean isStateless();
+
     default void assembleUIAction(@NotNull UIInputBuilder uiInputBuilder) {
-        uiInputBuilder.addInfo(getValue().toString(), InfoType.Text);
+        if(getEndpointEntityID().equals(ENDPOINT_DEVICE_STATUS)) {
+            Status status = Status.valueOf(getValue().stringValue());
+            uiInputBuilder.addInfo(status.name(), InfoType.Text).setColor(status.getColor());
+        } else {
+            uiInputBuilder.addInfo(getValue().toString(), InfoType.Text);
+        }
     }
 
     /**

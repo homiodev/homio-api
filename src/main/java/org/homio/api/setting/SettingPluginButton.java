@@ -74,7 +74,7 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     }
 
     @Override
-    default JSONObject getParameters(EntityContext entityContext, String value) {
+    default @NotNull JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
         putOpt(parameters, "confirm", getConfirmMsg());
         putOpt(parameters, "dialogColor", getDialogColor());

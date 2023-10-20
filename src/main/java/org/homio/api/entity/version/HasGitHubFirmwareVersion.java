@@ -23,7 +23,11 @@ public interface HasGitHubFirmwareVersion extends HasFirmwareVersion {
      * @return last available version
      */
     default @Nullable String getLastFirmwareVersion() {
-        return getGitHubProject().getLastReleaseVersion();
+        try {
+            return getGitHubProject().getLastReleaseVersion();
+        } catch (Exception ignore) {
+            return null;
+        }
     }
 
     default @Nullable String getFirmwareVersionReadme(@NotNull String version) {
@@ -33,8 +37,7 @@ public interface HasGitHubFirmwareVersion extends HasFirmwareVersion {
     default @Nullable List<OptionModel> getNewAvailableVersion() {
         GitHubProject gitHubProject = getGitHubProject();
         String installedVersion = gitHubProject.getInstalledVersion(getEntityContext());
-        List<String> releases = gitHubProject.getReleasesSince(installedVersion, false);
-        return OptionModel.list(releases);
+        return gitHubProject.getReleasesSince(installedVersion, false);
     }
 
     default boolean isFirmwareUpdating() {

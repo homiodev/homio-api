@@ -1,7 +1,6 @@
 package org.homio.api.model.endpoint;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -23,8 +23,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.homio.api.EntityContext;
 import org.homio.api.EntityContextVar.VariableMetaBuilder;
 import org.homio.api.EntityContextVar.VariableType;
+import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
+import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
+import org.homio.api.model.OptionModel;
+import org.homio.api.model.Status;
 import org.homio.api.model.device.ConfigDeviceDefinitionService;
 import org.homio.api.model.device.ConfigDeviceEndpoint;
 import org.homio.api.state.DecimalType;
@@ -46,7 +50,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     private @Getter D device;
 
-    private @Getter @Nullable String unit;
+    private @Getter @Setter @Nullable String unit;
     private @Getter long updated;
     private @Getter @NotNull State value = new StringType("N/A");
     private @Nullable Object dbValue;
@@ -55,18 +59,21 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     private @Getter @Setter boolean writable = true;
     private @Getter @Setter String endpointName;
     private @Getter @Setter EndpointType endpointType;
-    private @Getter int order;
+    private @Getter @Setter int order = -1;
 
     private @Nullable ConfigDeviceDefinitionService configService;
     private @Getter @Setter @Nullable Float min;
     private @Getter @Setter @Nullable Float max;
-    private @Getter @Setter @Nullable Set<String> range;
+    private @Getter @Setter @Nullable List<OptionModel> range;
     private @Getter @Setter @Nullable Object defaultValue;
-    private WriteHandler writeHandler;
     private @JsonIgnore @Nullable Set<String> alternateEndpoints;
     private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
     private @Getter @Setter boolean visibleEndpoint = true;
     private @Getter @Setter Supplier<Boolean> visibleEndpointHandler;
+    private @Setter boolean ignoreDuplicates = true;
+    private @Getter @Setter boolean stateless;
+    private @Nullable Consumer<State> updateHandler;
+    private @Setter boolean dbValueStorable;
 
     public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group, @NotNull EntityContext entityContext) {
         this(group, entityContext);
@@ -96,6 +103,50 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
     }
 
+    public void setUpdateHandler(Consumer<State> updateHandler) {
+        this.updateHandler = updateHandler;
+        if (updateHandler != null && endpointType != EndpointType.trigger) {
+            this.writable = true;
+        }
+    }
+
+    @Override
+    public void writeValue(@NotNull State state) {
+        State targetState;
+        Object targetValue;
+        switch (getEndpointType()) {
+            case bool -> {
+                targetState = state instanceof OnOffType ? state : OnOffType.of(state.boolValue());
+                targetValue = targetState.boolValue();
+            }
+            case number, dimmer -> {
+                targetState = state instanceof DecimalType ? state : new DecimalType(state.intValue());
+                targetValue = state.floatValue();
+            }
+            default -> {
+                targetState = state;
+                targetValue = state.stringValue();
+            }
+        }
+        setValue(targetState, true);
+        if (dbValueStorable) {
+            getDevice().setJsonData(getEndpointEntityID(), targetValue);
+            getEntityContext().save((BaseEntity) getDevice());
+        }
+        if (updateHandler != null) {
+            updateHandler.accept(targetState);
+        }
+    }
+
+    @Override
+    public @Nullable ActionResponseModel onExternalUpdated() {
+        if (updateHandler == null) {
+            throw new IllegalStateException("No update handler set for write handler: " + getEntityID());
+        }
+        updateHandler.accept(getValue());
+        return null;
+    }
+
     @Override
     public @NotNull String getName(boolean shortFormat) {
         String l1Name = getEndpointEntityID();
@@ -109,7 +160,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     }
 
     @Override
-    public @NotNull Set<String> getSelectValues() {
+    public @NotNull List<OptionModel> getSelectValues() {
         if (range != null) {
             return range;
         }
@@ -131,17 +182,27 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
     }
 
+    public void setInitialValue(State value) {
+        this.value = value;
+    }
+
     public void setValue(@Nullable State value, boolean externalUpdate) {
-        if (value != null && !this.value.equals(value)) {
-            this.value = value;
-            this.updated = System.currentTimeMillis();
-            for (Consumer<State> changeListener : changeListeners.values()) {
-                changeListener.accept(getValue());
-            }
-            pushVariable();
-            if (externalUpdate) {
-                updateUI();
-            }
+        if (value == null) {return;}
+        if (this.value.equals(value) && ignoreDuplicates) {return;}
+
+        this.value = value;
+        this.updated = System.currentTimeMillis();
+        for (Consumer<State> changeListener : changeListeners.values()) {
+            changeListener.accept(getValue());
+        }
+        pushVariable();
+        if (ignoreDuplicates) {
+            entityContext.event().fireEvent(getEntityID(), value);
+        } else {
+            entityContext.event().fireEventIfNotSame(getEntityID(), value);
+        }
+        if (externalUpdate) {
+            updateUI();
         }
     }
 
@@ -154,7 +215,6 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         @NotNull ConfigDeviceDefinitionService configService,
         @Nullable String endpointEntityID,
         @NotNull D device,
-        @Nullable String unit,
         boolean readable,
         boolean writable,
         @Nullable String endpointName,
@@ -179,26 +239,34 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         if (endpointEntityID == null) {
             throw new IllegalStateException("Unable to create device endpoint without endpoint id. " + endpointName);
         }
+        if (endpointEntityID.equals(ENDPOINT_DEVICE_STATUS)) {
+            icon = new Icon("fa fa-globe", "#42B52D");
+            order = 10;
+            ignoreDuplicates = true;
+            setInitialValue(new StringType(Status.UNKNOWN.name()));
+        }
         this.endpointName = endpointName;
-        this.unit = StringUtils.isEmpty(unit) ? configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit() : unit;
-        this.readable = readable;
+        if (this.unit == null) {
+            this.unit = configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit();
+        }
+        if (configDeviceEndpoint != null && configDeviceEndpoint.getIgnoreDuplicates() != null) {
+            ignoreDuplicates = configDeviceEndpoint.getIgnoreDuplicates();
+        }
         if (configDeviceEndpoint != null) {
             this.min = this.min == null ? configDeviceEndpoint.getMin() : this.min;
             this.max = this.max == null ? configDeviceEndpoint.getMax() : this.max;
         }
+        this.readable = readable;
         setInitial(device, endpointEntityID, writable, endpointType);
 
-        order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
-        if (order == 0) {
-            order = endpointName.charAt(0) * 10 + endpointName.charAt(1);
+        if (order == -1) {
+            order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
+            if (order == 0) {
+                order = endpointName.charAt(0) * 10 + endpointName.charAt(1);
+            }
         }
 
-        boolean createVariable = configDeviceEndpoint == null || !configDeviceEndpoint.isStateless();
-        if (createVariable) {
-            getOrCreateVariable();
-        }
-
-        this.writeHandler = createExternalWriteHandler();
+        stateless = configDeviceEndpoint != null && configDeviceEndpoint.isStateless();
     }
 
     @Override
@@ -223,8 +291,13 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         return device.getEntityID();
     }
 
-    public @NotNull String getDeviceID() {
-        return requireNonNull(defaultIfEmpty(device.getIeeeAddress(), device.getEntityID()));
+    /**
+     * IeeeAddress may be empty when we create item from scratch
+     *
+     * @return device unique entity ID. Good to be same entity even on recreate item
+     */
+    public final @NotNull String getDeviceID() {
+        return requireNonNull(StringUtils.defaultIfEmpty(device.getIeeeAddress(), device.getEntityID()));
     }
 
     @Override
@@ -252,13 +325,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         return "Entity: " + getEntityID() + ". Order: " + getOrder();
     }
 
-    public boolean writeValue(Object rawValue, boolean externalUpdate) {
-        return writeHandler.write(rawValue, externalUpdate);
-    }
-
     protected void pushVariable() {
         if (variableID != null) {
-            this.dbValue = entityContext.var().set(variableID, value);
+            // we shouldn't fire link listener because it's fire writeValue to same endpoint infinite
+            this.dbValue = entityContext.var().set(variableID, value, false);
         }
     }
 
@@ -271,6 +341,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     }
 
     public @Nullable String getOrCreateVariable() {
+        if (stateless) {
+            return null;
+        }
         if (variableID == null) {
             VariableType variableType = getVariableType();
             boolean persistent = configDeviceEndpoint != null && configDeviceEndpoint.isPersistent();
@@ -289,10 +362,11 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
                 }
             };
             if (variableType == VariableType.Enum) {
-                variableID = entityContext.var().createEnumVariable(getDeviceID(),
-                    getEntityID(), getName(false), getVariableEnumValues(), variableMetaBuilder);
+                Set<String> range = getVariableEnumValues().stream().map(OptionModel::getKey).collect(Collectors.toSet());
+                variableID = entityContext.var().createEnumVariable(getVariableGroupID(),
+                    getEntityID(), getName(false), range, variableMetaBuilder);
             } else {
-                variableID = entityContext.var().createVariable(getDeviceID(),
+                variableID = entityContext.var().createVariable(getVariableGroupID(),
                     getEntityID(), getName(false), variableType, variableMetaBuilder);
             }
 
@@ -311,7 +385,11 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         return variableID;
     }
 
-    protected @NotNull Set<String> getVariableEnumValues() {
+    public String getVariableGroupID() {
+        throw new IllegalStateException("Variable group id must be implemented in sub class if create variable");
+    }
+
+    protected @NotNull List<OptionModel> getVariableEnumValues() {
         if (range == null) {
             throw new IllegalStateException("Property with enum variable must override this method");
         }
@@ -328,7 +406,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
                 builder.setNumberRange(min == null ? 0 : min, max == null ? Integer.MAX_VALUE : max);
             }
             if (range != null && !range.isEmpty()) {
-                attributes.add("range:" + String.join(";", range));
+                attributes.add("range:" + range.stream().map(OptionModel::getTitleOrKey).collect(Collectors.joining(";")));
             }
             builder.setAttributes(attributes);
         };
@@ -338,7 +416,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         List<String> description = new ArrayList<>();
         description.add(getDescription());
         if (range != null && !range.isEmpty()) {
-            description.add("(range:%s)".formatted(String.join(";", range)));
+            description.add("(range:%s)".formatted(range.stream().map(OptionModel::getTitleOrKey).collect(Collectors.joining(";"))));
         }
         if (min != null && max != null) {
             description.add("(min-max:%S...%s)".formatted(min, max));
@@ -346,7 +424,8 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         return String.join(" ", description);
     }
 
-    protected @NotNull VariableType getVariableType() {
+    @Override
+    public @NotNull VariableType getVariableType() {
         switch (endpointType) {
             case bool, trigger -> {
                 return VariableType.Bool;
@@ -366,71 +445,45 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
     }
 
-    protected WriteHandler createExternalWriteHandler() {
+    // helper method in case if we got external update of unknown type
+    public @Nullable State rawValueToState(Object rawValue) {
         switch (endpointType) {
             case bool -> {
-                return (rawValue, eu) -> {
-                    if (Boolean.class.isAssignableFrom(rawValue.getClass())) {
-                        setValue(OnOffType.of((boolean) rawValue), eu);
-                        return true;
-                    }
-                    return false;
-                };
+                if (Boolean.class.isAssignableFrom(rawValue.getClass())) {
+                    return OnOffType.of((boolean) rawValue);
+                }
             }
             case number -> {
-                return (rawValue, eu) -> {
-                    if (Number.class.isAssignableFrom(rawValue.getClass())) {
-                        setValue(new DecimalType((Number) rawValue), eu);
-                        return true;
-                    }
-                    return false;
-                };
+                if (Number.class.isAssignableFrom(rawValue.getClass())) {
+                    return new DecimalType((Number) rawValue);
+                }
             }
             case color -> {
-                return (rawValue, eu) -> {
-                    if (rawValue instanceof String) {
-                        setValue(new StringType(decodeColor((String) rawValue)), eu);
-                        return true;
-                    }
-                    return false;
-                };
+                return new StringType(decodeColor((String) rawValue));
             }
             case dimmer -> {
-                return (rawValue, eu) -> {
-                    if (Double.class.isAssignableFrom(rawValue.getClass())) {
-                        double value = (double) rawValue;
-                        if (value <= getMin()) {
-                            setValue(new DecimalType(getMin()), eu);
-                        } else if (value >= getMax()) {
-                            setValue(new DecimalType(getMax()), eu);
-                        } else {
-                            setValue(new DecimalType(new BigDecimal(100.0 * value / (getMax() - 0))), eu);
-                        }
-                        return true;
+                if (Double.class.isAssignableFrom(rawValue.getClass())) {
+                    double value = (double) rawValue;
+                    if (getMin() != null && value <= getMin()) {
+                        return new DecimalType(getMin());
+                    } else if (getMax() != null && value >= getMax()) {
+                        return new DecimalType(getMax());
+                    } else {
+                        float max = getMax() == null ? 1 : getMax();
+                        return new DecimalType(new BigDecimal(100.0 * value / (max - 0)));
                     }
-                    return false;
-                };
+                }
             }
             default -> {
                 // select, string, trigger
-                return (rawValue, eu) -> {
-                    if (rawValue instanceof String) {
-                        setValue(new StringType((String) rawValue), eu);
-                        return true;
-                    }
-                    return false;
-                };
+                return new StringType((String) rawValue);
             }
         }
+        return null;
     }
 
     protected String decodeColor(String value) {
         return value;
-    }
-
-    private interface WriteHandler {
-
-        boolean write(Object value, boolean externalUpdate);
     }
 
     @Override

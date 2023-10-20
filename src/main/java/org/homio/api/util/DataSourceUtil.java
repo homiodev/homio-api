@@ -40,6 +40,10 @@ public class DataSourceUtil {
             return items[items.length - 1];
         }
 
+        public String getEntityID() {
+            return this.value.split("-->")[0];
+        }
+
         public <T extends BaseEntity> T getValue(EntityContext entityContext) {
             String[] items = value.split(LEVEL_DELIMITER);
             return entityContext.getEntity(items[items.length - 1]);

@@ -35,14 +35,14 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
     public void clear() {
         this.values.clear();
-        entityContext.ui().sendNotification("-lines-icl", "CLEAR");
+        entityContext.ui().sendRawData("-lines-icl", "CLEAR");
     }
 
     public void add(String value, boolean error) {
         ComplexString complexString =
             ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
         values.add(complexString);
-        entityContext.ui().sendNotification("-lines-icl", complexString.toString());
+        entityContext.ui().sendRawData("-lines-icl", complexString.toString());
     }
 
     @SneakyThrows

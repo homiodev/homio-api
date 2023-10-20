@@ -2,7 +2,7 @@ package org.homio.api.workspace;
 
 import java.util.concurrent.TimeUnit;
 
-public interface BroadcastLock {
+public interface Lock {
 
     Object getValue();
 
@@ -18,12 +18,12 @@ public interface BroadcastLock {
 
     boolean await(WorkspaceBlock workspaceBlock, int timeout, TimeUnit timeUnit);
 
-    // signal all broadcast locks with no value
+    // signal to all locks with no value
     default void signalAll() {
         signalAll(null);
     }
 
-    // signal all broadcast locks with specified value
+    // signal to all locks with specified value
     void signalAll(Object value);
 
     void addReleaseListener(String key, Runnable listener);

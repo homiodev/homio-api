@@ -58,7 +58,7 @@ public interface SettingPlugin<T> {
     }
 
     // min/max/step (Slider)
-    default JSONObject getParameters(EntityContext entityContext, String value) {
+    default @NotNull JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = new JSONObject();
         putOpt(parameters, "maxWidth", getMaxWidth());
         return parameters;

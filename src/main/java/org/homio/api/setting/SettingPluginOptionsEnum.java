@@ -20,4 +20,8 @@ public interface SettingPluginOptionsEnum<T extends Enum<T>> extends SettingPlug
     default boolean allowEmpty() {
         return false;
     }
+
+    default boolean multiSelect() {
+        return false;
+    }
 }

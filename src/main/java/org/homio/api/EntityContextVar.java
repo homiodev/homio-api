@@ -41,7 +41,11 @@ public interface EntityContextVar {
      * @return converted value that has been stored into queue
      * @throws IllegalArgumentException if value doesn't validatet agains VariableType restriction
      */
-    @Nullable Object set(@NotNull String variableId, @Nullable Object value) throws IllegalArgumentException;
+    default @Nullable Object set(@NotNull String variableId, @Nullable Object value) throws IllegalArgumentException {
+        return set(variableId, value, true);
+    }
+
+    @Nullable Object set(@NotNull String variableId, @Nullable Object value, boolean fireLinkListener) throws IllegalArgumentException;
 
     default @Nullable Object setIfNotMatch(@NotNull String variableId, @Nullable Object value) {
         if (!Objects.equals(get(variableId), value)) {

@@ -22,7 +22,7 @@ public interface SettingPluginSlider extends SettingPluginInteger {
     }
 
     @Override
-    default JSONObject getParameters(EntityContext entityContext, String value) {
+    default @NotNull JSONObject getParameters(EntityContext entityContext, String value) {
         JSONObject parameters = SettingPluginInteger.super.getParameters(entityContext, value);
         putOpt(parameters, "step", getStep());
         putOpt(parameters, "header", getHeader());

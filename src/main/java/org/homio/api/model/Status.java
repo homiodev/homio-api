@@ -25,7 +25,8 @@ public enum Status {
     REQUIRE_AUTH("#8C3581", "fas fa-triangle-exclamation"),
     ERROR("#B22020", "fas fa-circle-exclamation"),
     OFFLINE("#969696", "fab fa-hashnode"),
-    DISABLED("#9E9E9E", "fas fa-ban");
+    DISABLED("#9E9E9E", "fas fa-ban"),
+    SLEEPING("#33474F", "fas fa-bed");
 
     private final String color;
 

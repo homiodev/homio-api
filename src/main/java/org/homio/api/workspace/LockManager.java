@@ -2,7 +2,7 @@ package org.homio.api.workspace;
 
 import java.util.function.Supplier;
 
-public interface BroadcastLockManager {
+public interface LockManager {
 
     /**
      * Signal to all broadcast locks with specified key and value
@@ -21,9 +21,9 @@ public interface BroadcastLockManager {
         signalAll(key, null);
     }
 
-    BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock);
+    Lock getLock(WorkspaceBlock workspaceBlock);
 
-    BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock, String key);
+    Lock getLock(WorkspaceBlock workspaceBlock, String key);
 
     /**
      * Create lock.
@@ -33,7 +33,7 @@ public interface BroadcastLockManager {
      * @param expectedValue  - any value. If Pattern - than checks if value match pattern
      * @return -
      */
-    BroadcastLock getOrCreateLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
+    Lock getLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
 
     /**
      * Creates BroadcastLock and attach it to thread that check supplier once per second If supplier return true - signal broadcast lock
@@ -42,5 +42,5 @@ public interface BroadcastLockManager {
      * @param supplier       -
      * @return - BroadcastLock
      */
-    BroadcastLock listenEvent(WorkspaceBlock workspaceBlock, Supplier<Boolean> supplier);
+    Lock listenEvent(WorkspaceBlock workspaceBlock, Supplier<Boolean> supplier);
 }

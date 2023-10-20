@@ -1,10 +1,9 @@
-package org.homio.api.service.camera;
+package org.homio.api.service.discovery;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import org.homio.api.EntityContext;
-import org.homio.api.service.scan.ItemDiscoverySupport;
 import org.homio.api.util.Lang;
 
 public interface VideoStreamScanner extends ItemDiscoverySupport {
@@ -14,7 +13,7 @@ public interface VideoStreamScanner extends ItemDiscoverySupport {
         List<String> messages = new ArrayList<>();
         messages.add(Lang.getServerMessage("VIDEO_STREAM.NEW_DEVICE_QUESTION"));
         messageConsumer.accept(messages);
-        entityContext.ui().sendConfirmation("Confirm-Video-" + key,
+        entityContext.ui().dialog().sendConfirmation("Confirm-Video-" + key,
             Lang.getServerMessage("NEW_DEVICE.TITLE", name),
             saveHandler, messages, headerConfirmButtonKey);
     }

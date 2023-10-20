@@ -17,7 +17,7 @@ import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.state.DecimalType;
 import org.homio.api.state.OnOffType;
 import org.homio.api.state.State;
-import org.homio.api.workspace.BroadcastLock;
+import org.homio.api.workspace.Lock;
 import org.homio.api.workspace.WorkspaceBlock;
 import org.homio.api.workspace.scratch.MenuBlock.ServerMenuBlock;
 import org.homio.api.workspace.scratch.MenuBlock.StaticMenuBlock;
@@ -154,7 +154,7 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
             if (StringUtils.isEmpty(value)) {
                 workspaceBlock.logErrorAndThrow("Value must be not empty");
             }
-            BroadcastLock lock = workspaceBlock.getBroadcastLockManager().getOrCreateLock(workspaceBlock);
+            Lock lock = workspaceBlock.getLockManager().getLock(workspaceBlock);
 
             endpoint.addChangeListener(workspaceBlock.getId(), state -> {
                 if (state.stringValue().equals(value)) {
@@ -176,7 +176,7 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
                 workspaceBlock.logErrorAndThrow("Duration must be greater than 1 seconds. Value: {}", secondsToWait);
             }
             DeviceEndpoint endpoint = getDeviceEndpoint(workspaceBlock);
-            BroadcastLock eventOccurredLock = workspaceBlock.getBroadcastLockManager().getOrCreateLock(workspaceBlock);
+            Lock eventOccurredLock = workspaceBlock.getLockManager().getLock(workspaceBlock);
 
             // add listener on target endpoint for any changes and wake up lock
             endpoint.addChangeListener(workspaceBlock.getId(), state -> eventOccurredLock.signalAll());
@@ -197,7 +197,7 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
     private void whenValueChange(@NotNull WorkspaceBlock workspaceBlock) {
         workspaceBlock.handleNext(next -> {
             DeviceEndpoint endpoint = getDeviceEndpoint(workspaceBlock);
-            BroadcastLock lock = workspaceBlock.getBroadcastLockManager().getOrCreateLock(workspaceBlock);
+            Lock lock = workspaceBlock.getLockManager().getLock(workspaceBlock);
 
             endpoint.addChangeListener(workspaceBlock.getId(), state -> lock.signalAll());
             workspaceBlock.onRelease(() -> endpoint.removeChangeListener(workspaceBlock.getId()));
@@ -222,7 +222,7 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
 
         if (endpoint == null) {
             // wait for endpoint to be online at most 10 minutes
-            BroadcastLock onlineStatus = workspaceBlock.getBroadcastLockManager().getOrCreateLock(workspaceBlock,
+            Lock onlineStatus = workspaceBlock.getLockManager().getLock(workspaceBlock,
                 format("endpoint-%s-%s", ieeeAddress, endpointID), Status.ONLINE);
             if (onlineStatus.await(workspaceBlock, 10, TimeUnit.MINUTES)) {
                 endpoint = getDeviceEndpoint(ieeeAddress, endpointID);

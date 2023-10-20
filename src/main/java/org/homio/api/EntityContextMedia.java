@@ -20,7 +20,6 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.logging.log4j.Level;
 import org.homio.api.model.Icon;
-import org.homio.api.state.DecimalType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -76,7 +75,7 @@ public interface EntityContextMedia {
         private final String icon;
         private final String color;
 
-        public Icon getIconModel() {
+        public @NotNull Icon getIconModel() {
             return new Icon(icon, color);
         }
     }
@@ -114,7 +113,10 @@ public interface EntityContextMedia {
         }
 
         @SneakyThrows
-        static <T> T check(@Nullable FFMPEG ffmpeg, @NotNull ThrowingFunction<FFMPEG, T, Exception> checkHandler, @Nullable T defaultValue) {
+        static <T> T check(
+            @Nullable FFMPEG ffmpeg,
+            @NotNull ThrowingFunction<FFMPEG, T, Exception> checkHandler,
+            @Nullable T defaultValue) {
             if (ffmpeg != null) {
                 return checkHandler.apply(ffmpeg);
             }
@@ -144,7 +146,7 @@ public interface EntityContextMedia {
 
         boolean getIsAlive();
 
-        Path getLogPath();
+        @NotNull EntityContext.FileLogger getFileLogger();
 
         /**
          * @return true if process was alive and fired stop command, false if process wasn't alive already
@@ -177,20 +179,8 @@ public interface EntityContextMedia {
 
     interface FFMPEGHandler {
 
-        default void motionDetected(boolean on) {
-
-        }
-
-        default void audioDetected(boolean on) {
-
-        }
-
         default void ffmpegError(@NotNull String error) {
 
-        }
-
-        default @NotNull DecimalType getMotionThreshold() {
-            return new DecimalType(40);
         }
 
         default void ffmpegLog(@NotNull Level level, @NotNull String message) {
@@ -204,10 +194,10 @@ public interface EntityContextMedia {
     @RequiredArgsConstructor
     class MediaMTXSource {
 
-        private final String source;
+        private final @NotNull String source;
         private boolean sourceOnDemand = true;
         private boolean sourceAnyPortEnable = false;
-        private SourceProtocol sourceProtocol = SourceProtocol.automatic;
+        private @NotNull SourceProtocol sourceProtocol = SourceProtocol.automatic;
 
         public enum SourceProtocol {
             automatic, udp, multicast, tcp
@@ -216,7 +206,7 @@ public interface EntityContextMedia {
 
     interface MediaMTXInfo {
 
-        String getPath();
+        @NotNull String getPath();
 
         boolean isReady();
 

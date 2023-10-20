@@ -306,6 +306,10 @@ public class OptionModel implements Comparable<OptionModel> {
         return this;
     }
 
+    public static @Nullable OptionModel getByKey(@NotNull Collection<OptionModel> optionModels, @NotNull String key) {
+        return optionModels.stream().filter(o -> o.getKey().equals(key)).findAny().orElse(null);
+    }
+
     public @Nullable OptionModel findByKey(@NotNull String key) {
         if (this.key.equals(key)) {
             return this;
