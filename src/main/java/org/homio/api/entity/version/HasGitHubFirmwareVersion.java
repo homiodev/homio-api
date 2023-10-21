@@ -2,7 +2,7 @@ package org.homio.api.entity.version;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.OptionModel;
 import org.homio.api.repository.GitHubProject;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 public interface HasGitHubFirmwareVersion extends HasFirmwareVersion {
 
     default @Nullable String getFirmwareVersion() {
-        return getGitHubProject().getInstalledVersion(getEntityContext());
+        return getGitHubProject().getInstalledVersion(context());
     }
 
     /**
@@ -36,7 +36,7 @@ public interface HasGitHubFirmwareVersion extends HasFirmwareVersion {
 
     default @Nullable List<OptionModel> getNewAvailableVersion() {
         GitHubProject gitHubProject = getGitHubProject();
-        String installedVersion = gitHubProject.getInstalledVersion(getEntityContext());
+        String installedVersion = gitHubProject.getInstalledVersion(context());
         return gitHubProject.getReleasesSince(installedVersion, false);
     }
 
@@ -48,5 +48,5 @@ public interface HasGitHubFirmwareVersion extends HasFirmwareVersion {
     @NotNull GitHubProject getGitHubProject();
 
     @JsonIgnore
-    EntityContext getEntityContext();
+    Context context();
 }

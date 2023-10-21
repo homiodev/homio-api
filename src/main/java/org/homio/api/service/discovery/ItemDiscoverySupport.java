@@ -3,14 +3,14 @@ package org.homio.api.service.discovery;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.hquery.ProgressBar;
 
 public interface ItemDiscoverySupport {
 
     String getName();
 
-    DeviceScannerResult scan(EntityContext entityContext, ProgressBar progressBar,
+    DeviceScannerResult scan(Context context, ProgressBar progressBar,
         String headerConfirmButtonKey);
 
     @Getter

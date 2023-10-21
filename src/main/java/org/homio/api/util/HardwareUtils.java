@@ -3,10 +3,8 @@ package org.homio.api.util;
 import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingFunction;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -21,7 +19,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.hquery.hardware.network.NetworkHardwareRepository;
 import org.homio.hquery.hardware.other.MachineHardwareRepository;
 import org.jetbrains.annotations.NotNull;
@@ -75,11 +73,11 @@ public class HardwareUtils {
         throw new ConnectException("Host %s:%s not reachable".formatted(host, port));
     }
 
-    public static @NotNull Architecture getArchitecture(@NotNull EntityContext entityContext) {
+    public static @NotNull Architecture getArchitecture(@NotNull Context context) {
         if (SystemUtils.IS_OS_WINDOWS) {
             return Architecture.win64;
         }
-        String architecture = entityContext.getBean(MachineHardwareRepository.class).getMachineInfo().getArchitecture();
+        String architecture = context.getBean(MachineHardwareRepository.class).getMachineInfo().getArchitecture();
         if (architecture.startsWith("armv6")) {
             return Architecture.arm32v6;
         } else if (architecture.startsWith("armv7")) {
@@ -95,7 +93,7 @@ public class HardwareUtils {
     }
 
     // Simple utility for scan for ip range
-    public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
+    public static void scanForDevice(Context context, int devicePort, String deviceName,
         ThrowingFunction<String, Boolean, Exception> testDevice,
         Consumer<String> createDeviceHandler) {
         Consumer<String> deviceHandler = (ip) -> {
@@ -105,7 +103,7 @@ public class HardwareUtils {
                     messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", deviceName));
                     messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
                     messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
-                    entityContext.ui().dialog().sendConfirmation("Confirm-" + deviceName + "-" + ip,
+                    context.ui().dialog().sendConfirmation("Confirm-" + deviceName + "-" + ip,
                         Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
                             createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
                 }
@@ -113,7 +111,7 @@ public class HardwareUtils {
             }
         };
 
-        NetworkHardwareRepository networkHardwareRepository = entityContext.getBean(NetworkHardwareRepository.class);
+        NetworkHardwareRepository networkHardwareRepository = context.getBean(NetworkHardwareRepository.class);
         String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
         deviceHandler.accept("127.0.0.1");
         networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log::info, Collections.singleton(devicePort), 500,

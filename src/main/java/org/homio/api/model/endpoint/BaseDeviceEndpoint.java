@@ -19,10 +19,11 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
-import org.homio.api.EntityContextVar.VariableMetaBuilder;
-import org.homio.api.EntityContextVar.VariableType;
+import org.homio.api.Context;
+import org.homio.api.ContextVar.VariableMetaBuilder;
+import org.homio.api.ContextVar.VariableType;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.ActionResponseModel;
@@ -43,7 +44,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     private final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
     private final @NotNull @Getter String group;
-    private final @Getter @NotNull EntityContext entityContext;
+    private final @Getter @Accessors(fluent = true) @NotNull Context context;
 
     private @Getter @Setter Icon icon;
     private @Getter @Setter String endpointEntityID;
@@ -75,20 +76,20 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     private @Nullable Consumer<State> updateHandler;
     private @Setter boolean dbValueStorable;
 
-    public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group, @NotNull EntityContext entityContext) {
-        this(group, entityContext);
+    public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group, @NotNull Context context) {
+        this(group, context);
         this.icon = icon;
     }
 
     public BaseDeviceEndpoint(
         @NotNull Icon icon,
         @NotNull String group,
-        @NotNull EntityContext entityContext,
+        @NotNull Context context,
         @NotNull D device,
         @NotNull String endpointEntityID,
         boolean writable,
         @NotNull EndpointType endpointType) {
-        this(icon, group, entityContext);
+        this(icon, group, context);
         setInitial(device, endpointEntityID, writable, endpointType);
     }
 
@@ -131,7 +132,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         setValue(targetState, true);
         if (dbValueStorable) {
             getDevice().setJsonData(getEndpointEntityID(), targetValue);
-            getEntityContext().save((BaseEntity) getDevice());
+            context().db().save((BaseEntity) getDevice());
         }
         if (updateHandler != null) {
             updateHandler.accept(targetState);
@@ -197,9 +198,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
         pushVariable();
         if (ignoreDuplicates) {
-            entityContext.event().fireEvent(getEntityID(), value);
+            context.event().fireEvent(getEntityID(), value);
         } else {
-            entityContext.event().fireEventIfNotSame(getEntityID(), value);
+            context.event().fireEventIfNotSame(getEntityID(), value);
         }
         if (externalUpdate) {
             updateUI();
@@ -325,21 +326,6 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         return "Entity: " + getEntityID() + ". Order: " + getOrder();
     }
 
-    protected void pushVariable() {
-        if (variableID != null) {
-            // we shouldn't fire link listener because it's fire writeValue to same endpoint infinite
-            this.dbValue = entityContext.var().set(variableID, value, false);
-        }
-    }
-
-    /**
-     * Fire ui updated when endpoint value changed
-     */
-    protected void updateUI() {
-        entityContext.ui().updateInnerSetItem(device, "endpoints",
-            endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
-    }
-
     public @Nullable String getOrCreateVariable() {
         if (stateless) {
             return null;
@@ -363,15 +349,15 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             };
             if (variableType == VariableType.Enum) {
                 Set<String> range = getVariableEnumValues().stream().map(OptionModel::getKey).collect(Collectors.toSet());
-                variableID = entityContext.var().createEnumVariable(getVariableGroupID(),
+                variableID = context.var().createEnumVariable(getVariableGroupID(),
                     getEntityID(), getName(false), range, variableMetaBuilder);
             } else {
-                variableID = entityContext.var().createVariable(getVariableGroupID(),
+                variableID = context.var().createVariable(getVariableGroupID(),
                     getEntityID(), getName(false), variableType, variableMetaBuilder);
             }
 
             if (isWritable()) {
-                entityContext.var().setLinkListener(requireNonNull(variableID), varValue -> {
+                context.var().setLinkListener(requireNonNull(variableID), varValue -> {
                     if (!this.device.getStatus().isOnline()) {
                         throw new RuntimeException("Unable to handle property " + getVariableID() + " actio. Device noy online");
                     }
@@ -383,6 +369,21 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             }
         }
         return variableID;
+    }
+
+    protected void pushVariable() {
+        if (variableID != null) {
+            // we shouldn't fire link listener because it's fire writeValue to same endpoint infinite
+            this.dbValue = context.var().set(variableID, value, false);
+        }
+    }
+
+    /**
+     * Fire ui updated when endpoint value changed
+     */
+    protected void updateUI() {
+        context.ui().updateInnerSetItem(device, "endpoints",
+            endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
     }
 
     public String getVariableGroupID() {

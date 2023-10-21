@@ -15,19 +15,19 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.homio.api.EntityContext;
-import org.homio.api.EntityContextVar.VariableType;
-import org.homio.api.EntityContextWidget;
-import org.homio.api.EntityContextWidget.HasIcon;
-import org.homio.api.EntityContextWidget.HasName;
-import org.homio.api.EntityContextWidget.HasPadding;
-import org.homio.api.EntityContextWidget.HasSetSingleValueDataSource;
-import org.homio.api.EntityContextWidget.HasSingleValueDataSource;
-import org.homio.api.EntityContextWidget.PulseBuilder;
-import org.homio.api.EntityContextWidget.SimpleValueWidgetBuilder;
-import org.homio.api.EntityContextWidget.ThresholdBuilder;
-import org.homio.api.EntityContextWidget.VerticalAlign;
-import org.homio.api.EntityContextWidget.WidgetBaseBuilder;
+import org.homio.api.Context;
+import org.homio.api.ContextVar.VariableType;
+import org.homio.api.ContextWidget;
+import org.homio.api.ContextWidget.HasIcon;
+import org.homio.api.ContextWidget.HasName;
+import org.homio.api.ContextWidget.HasPadding;
+import org.homio.api.ContextWidget.HasSetSingleValueDataSource;
+import org.homio.api.ContextWidget.HasSingleValueDataSource;
+import org.homio.api.ContextWidget.PulseBuilder;
+import org.homio.api.ContextWidget.SimpleValueWidgetBuilder;
+import org.homio.api.ContextWidget.ThresholdBuilder;
+import org.homio.api.ContextWidget.VerticalAlign;
+import org.homio.api.ContextWidget.WidgetBaseBuilder;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.WidgetDefinition.ColorPicker;
@@ -73,33 +73,33 @@ public interface TemplateWidgetBuilder {
     );
 
     static void addEndpoint(
-        @NotNull EntityContext entityContext,
-        @NotNull EntityContextWidget.HorizontalAlign horizontalAlign,
+        @NotNull Context context,
+        @NotNull ContextWidget.HorizontalAlign horizontalAlign,
         @Nullable DeviceEndpoint endpoint,
         boolean addUnit,
         @NotNull Consumer<SimpleValueWidgetBuilder> attachHandler) {
         if (endpoint != null) {
             if (ENDPOINT_LAST_SEEN.equals(endpoint.getEndpointEntityID())) {
-                createSimpleEndpoint(entityContext, horizontalAlign, endpoint, builder -> {
+                createSimpleEndpoint(context, horizontalAlign, endpoint, builder -> {
                     builder.setValueConverter("return Math.floor((new Date().getTime() - value) / 60000);");
                     builder.setValueConverterRefreshInterval(60);
                     buildValueSuffix(builder, "m");
                     attachHandler.accept(builder);
                 }, false);
             } else {
-                createSimpleEndpoint(entityContext, horizontalAlign, endpoint, attachHandler, addUnit);
+                createSimpleEndpoint(context, horizontalAlign, endpoint, attachHandler, addUnit);
             }
         }
     }
 
-    static String getSource(EntityContext entityContext, DeviceEndpoint endpoint) {
-        return entityContext.var().buildDataSource(Objects.requireNonNull(endpoint.getVariableID()));
+    static String getSource(Context context, DeviceEndpoint endpoint) {
+        return context.var().buildDataSource(Objects.requireNonNull(endpoint.getVariableID()));
     }
 
     static <T extends HasSingleValueDataSource<?> & HasSetSingleValueDataSource<?>> T
-    setValueDataSource(T builder, EntityContext entityContext, DeviceEndpoint endpoint) {
-        builder.setValueDataSource(TemplateWidgetBuilder.getSource(entityContext, endpoint));
-        builder.setSetValueDataSource(TemplateWidgetBuilder.getSource(entityContext, endpoint));
+    setValueDataSource(T builder, Context context, DeviceEndpoint endpoint) {
+        builder.setValueDataSource(TemplateWidgetBuilder.getSource(context, endpoint));
+        builder.setSetValueDataSource(TemplateWidgetBuilder.getSource(context, endpoint));
         return builder;
     }
 
@@ -125,18 +125,18 @@ public interface TemplateWidgetBuilder {
         }
     }
 
-    static String buildDataSource(DeviceEndpointsBehaviourContract entity, EntityContext entityContext, Source source) {
+    static String buildDataSource(DeviceEndpointsBehaviourContract entity, Context context, Source source) {
         switch (source.getKind()) {
             case variable -> {
-                String variable = entityContext.var().createVariable(entity.getEntityID(),
+                String variable = context.var().createVariable(entity.getEntityID(),
                     source.getValue(), source.getValue(), source.getVariableType(), null);
-                return entityContext.var().buildDataSource(variable);
+                return context.var().buildDataSource(variable);
             }
             case broadcasts -> {
                 String id = source.getValue() + "_" + entity.getIeeeAddress();
                 String name = source.getValue() + " " + entity.getIeeeAddress();
-                String variableID = entityContext.var().createVariable("broadcasts", id, name, VariableType.Any, null);
-                return entityContext.var().buildDataSource(variableID);
+                String variableID = context.var().createVariable("broadcasts", id, name, VariableType.Any, null);
+                return context.var().buildDataSource(variableID);
             }
             case property -> {
                 DeviceEndpoint endpoint = entity.getDeviceEndpoint(source.getValue());
@@ -144,7 +144,7 @@ public interface TemplateWidgetBuilder {
                     throw new IllegalArgumentException("Unable to find device endpoint: " + source.getValue() +
                         " for device: " + entity);
                 }
-                return TemplateWidgetBuilder.getSource(entityContext, endpoint);
+                return TemplateWidgetBuilder.getSource(context, endpoint);
             }
             default -> throw new IllegalArgumentException("Unable to find handler for type: " + source.getKind());
         }
@@ -158,7 +158,7 @@ public interface TemplateWidgetBuilder {
         buildBackground(wd.getBackground(), widgetRequest, builder);
         builder.setZIndex(wd.getZIndex(defaultZIndex));
         if (builder instanceof HasName<?> nameBuilder) {
-            nameBuilder.setName(widgetRequest.getEntity().getDescription());
+            nameBuilder.setName(widgetRequest.entity().getDescription());
             nameBuilder.setShowName(false);
         }
         Padding padding = wd.getPadding();
@@ -186,7 +186,7 @@ public interface TemplateWidgetBuilder {
                     threshold.getTarget(),
                     threshold.getValue(),
                     threshold.getOp(),
-                    buildDataSource(widgetRequest.getEntity(), widgetRequest.getEntityContext(), threshold.getSource()));
+                    buildDataSource(widgetRequest.entity(), widgetRequest.context(), threshold.getSource()));
             }
         }
     }
@@ -198,7 +198,7 @@ public interface TemplateWidgetBuilder {
                     pulse.getColor(),
                     pulse.getValue(),
                     pulse.getOp(),
-                    buildDataSource(widgetRequest.getEntity(), widgetRequest.getEntityContext(), pulse.getSource()));
+                    buildDataSource(widgetRequest.entity(), widgetRequest.context(), pulse.getSource()));
             }
         }
     }
@@ -220,14 +220,14 @@ public interface TemplateWidgetBuilder {
     }
 
     private static void createSimpleEndpoint(
-        @NotNull EntityContext entityContext,
-        @NotNull EntityContextWidget.HorizontalAlign horizontalAlign,
+        @NotNull Context context,
+        @NotNull ContextWidget.HorizontalAlign horizontalAlign,
         @NotNull DeviceEndpoint endpoint,
         @NotNull Consumer<SimpleValueWidgetBuilder> attachHandler,
         boolean addUnit) {
-        entityContext.widget().createSimpleValueWidget(endpoint.getEntityID(), builder -> {
+        context.widget().createSimpleValueWidget(endpoint.getEntityID(), builder -> {
             builder.setIcon(endpoint.getIcon())
-                   .setValueDataSource(getSource(entityContext, endpoint))
+                   .setValueDataSource(getSource(context, endpoint))
                    .setAlign(horizontalAlign, VerticalAlign.bottom)
                    .setValueFontSize(0.8);
             if (addUnit) {
@@ -238,15 +238,9 @@ public interface TemplateWidgetBuilder {
         });
     }
 
-    @Getter
-    @AllArgsConstructor
-    class WidgetRequest {
+    record WidgetRequest(@NotNull Context context, @NotNull DeviceEndpointsBehaviourContract entity, @NotNull String tab,
+                         @NotNull WidgetDefinition widgetDefinition, @NotNull List<DeviceEndpoint> includeEndpoints) {
 
-        private final @NotNull EntityContext entityContext;
-        private final @NotNull DeviceEndpointsBehaviourContract entity;
-        private final @NotNull String tab;
-        private final @NotNull WidgetDefinition widgetDefinition;
-        private final @NotNull List<DeviceEndpoint> includeEndpoints;
     }
 
     @Getter

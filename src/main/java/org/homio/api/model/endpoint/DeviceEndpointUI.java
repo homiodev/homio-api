@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.homio.api.EntityContextVar.VariableType;
+import org.homio.api.ContextVar.VariableType;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.action.v1.UIInputEntity;
@@ -38,7 +38,7 @@ public class DeviceEndpointUI implements Comparable<DeviceEndpointUI> {
         }
         try {
             return endpoint.getVariableID() == null ? null :
-                endpoint.getEntityContext().var().buildDataSource(endpoint.getVariableID());
+                endpoint.context().var().buildDataSource(endpoint.getVariableID());
         } catch (Exception ignore) { // in case if we deleted entity and variables but still send updates to ui
             return null;
         }

@@ -13,9 +13,9 @@ import org.homio.api.widget.template.WidgetDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface EntityContextWidget {
+public interface ContextWidget {
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     void createTemplateWidgetActions(
         @NotNull UIInputBuilder uiInputBuilder,

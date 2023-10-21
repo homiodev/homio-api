@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.state.OnOffType;
 import org.homio.api.util.CommonUtils;
 import org.homio.hquery.ProgressBar;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 @RequiredArgsConstructor
 public abstract class DependencyExecutableInstaller {
 
-    protected final EntityContext entityContext;
+    protected final Context context;
     private String installedVersion;
     protected @Getter String executable;
 
@@ -60,7 +60,7 @@ public abstract class DependencyExecutableInstaller {
         }
         progressBar.progress(99, "Installing finished");
         afterDependencyInstalled();
-        entityContext.event().fireEvent(getName() + "-dependency-installed", OnOffType.of(true));
+        context.event().fireEvent(getName() + "-dependency-installed", OnOffType.of(true));
     }
 
     public String installLatest() throws ExecutionException, InterruptedException {
@@ -79,7 +79,7 @@ public abstract class DependencyExecutableInstaller {
             return CompletableFuture.completedFuture(version);
         }
         CompletableFuture<String> future = new CompletableFuture<>();
-        entityContext.event().runOnceOnInternetUp("wait-inet-for-install-" + getName(), () -> {
+        context.event().runOnceOnInternetUp("wait-inet-for-install-" + getName(), () -> {
             installDependency(future);
         });
 
@@ -87,7 +87,7 @@ public abstract class DependencyExecutableInstaller {
     }
 
     private void installDependency(CompletableFuture<String> future) {
-        entityContext.bgp().runWithProgress("install-" + getName()).onFinally(ex -> {
+        context.bgp().runWithProgress("install-" + getName()).onFinally(ex -> {
             if (ex != null) {
                 log.error("Unable to install {}", getName(), ex);
                 future.completeExceptionally(ex);

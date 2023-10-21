@@ -10,7 +10,7 @@ public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
 
     @Override
     public void buildWidget(WidgetRequest widgetRequest) {
-        WidgetDefinition wd = widgetRequest.getWidgetDefinition();
+        WidgetDefinition wd = widgetRequest.widgetDefinition();
 
         var request = new MainWidgetRequest(widgetRequest, wd, 0,
             0, builder -> TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder));
@@ -20,11 +20,11 @@ public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
         WidgetRequest widgetRequest = request.getWidgetRequest();
-        DeviceEndpointsBehaviourContract entity = widgetRequest.getEntity();
+        DeviceEndpointsBehaviourContract entity = widgetRequest.entity();
         WidgetDefinition wd = request.getItem();
 
         List<DeviceEndpoint> barSeries = wd.getIncludeEndpoints(request);
-        widgetRequest.getEntityContext().widget().createBarTimeChartWidget("bt-" + entity.getIeeeAddress(), builder -> {
+        widgetRequest.context().widget().createBarTimeChartWidget("bt-" + entity.getIeeeAddress(), builder -> {
             TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
             builder.setBlockSize(wd.getBlockWidth(3), wd.getBlockHeight(1))
                    .setShowAxisX(wd.getOptions().isShowAxisX())
@@ -38,7 +38,7 @@ public class BarTimeTemplateWidget implements TemplateWidgetBuilder {
             for (DeviceEndpoint series : barSeries) {
                 builder.addSeries(series.getName(false), seriesBuilder ->
                     seriesBuilder.setChartDataSource(
-                        TemplateWidgetBuilder.getSource(widgetRequest.getEntityContext(), series)));
+                        TemplateWidgetBuilder.getSource(widgetRequest.context(), series)));
             }
         });
     }

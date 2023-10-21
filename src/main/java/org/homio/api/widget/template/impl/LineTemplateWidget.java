@@ -3,7 +3,7 @@ package org.homio.api.widget.template.impl;
 import static org.homio.api.widget.template.impl.DisplayTemplateWidget.fillHasLineChartBehaviour;
 
 import java.util.List;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
@@ -15,7 +15,7 @@ public class LineTemplateWidget implements TemplateWidgetBuilder {
 
     @Override
     public void buildWidget(WidgetRequest widgetRequest) {
-        WidgetDefinition widgetDefinition = widgetRequest.getWidgetDefinition();
+        WidgetDefinition widgetDefinition = widgetRequest.widgetDefinition();
 
         var request = new MainWidgetRequest(widgetRequest, widgetDefinition, 0,
             0, builder ->
@@ -25,13 +25,13 @@ public class LineTemplateWidget implements TemplateWidgetBuilder {
 
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
-        EntityContext entityContext = request.getWidgetRequest().getEntityContext();
-        DeviceEndpointsBehaviourContract entity = request.getWidgetRequest().getEntity();
+        Context context = request.getWidgetRequest().context();
+        DeviceEndpointsBehaviourContract entity = request.getWidgetRequest().entity();
 
         WidgetDefinition wd = request.getItem();
         List<DeviceEndpoint> barSeries = wd.getIncludeEndpoints(request);
 
-        entityContext.widget().createLineChartWidget("ln-" + entity.getIeeeAddress(), builder -> {
+        context.widget().createLineChartWidget("ln-" + entity.getIeeeAddress(), builder -> {
             TemplateWidgetBuilder.buildCommon(wd, request.getWidgetRequest(), builder);
             builder.setBlockSize(wd.getBlockWidth(3), wd.getBlockHeight(1))
                    .setShowAxisX(wd.getOptions().isShowAxisX())
@@ -46,7 +46,7 @@ public class LineTemplateWidget implements TemplateWidgetBuilder {
 
             for (DeviceEndpoint series : barSeries) {
                 builder.addSeries(series.getName(false), seriesBuilder -> {
-                    seriesBuilder.setChartDataSource(TemplateWidgetBuilder.getSource(entityContext, series));
+                    seriesBuilder.setChartDataSource(TemplateWidgetBuilder.getSource(context, series));
                     ItemDefinition itemDefinition = wd.getEndpoint(series.getEndpointEntityID());
                     if (itemDefinition != null) {
                         Chart chart = itemDefinition.getChart();

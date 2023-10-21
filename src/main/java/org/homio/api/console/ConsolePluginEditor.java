@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.FileContentType;
 import org.homio.api.model.FileModel;
@@ -24,8 +24,8 @@ public interface ConsolePluginEditor extends ConsolePlugin<FileModel> {
 
     ActionResponseModel save(FileModel content);
 
-    default void sendValueToConsoleEditor(EntityContext entityContext) {
-        entityContext.ui().sendRawData("-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
+    default void sendValueToConsoleEditor(Context context) {
+        context.ui().sendRawData("-editor-" + getEntityID(), OBJECT_MAPPER.valueToTree(getValue()));
     }
 
     default MonacoGlyphAction getGlyphAction() {

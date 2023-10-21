@@ -4,7 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
-import org.homio.api.EntityContext;
+import lombok.experimental.Accessors;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.OptionModel;
 
@@ -19,14 +20,14 @@ public interface DynamicOptionLoader {
     class DynamicOptionLoaderParameters {
 
         private final BaseEntity baseEntity;
-        private final EntityContext entityContext;
+        private final @Accessors(fluent = true) Context context;
         private final String[] staticParameters;
         private final Map<String, String> dependencies;
 
-        public DynamicOptionLoaderParameters(BaseEntity baseEntity, EntityContext entityContext, String[] staticParameters,
+        public DynamicOptionLoaderParameters(BaseEntity baseEntity, Context context, String[] staticParameters,
             Map<String, String> dependencies) {
             this.baseEntity = baseEntity;
-            this.entityContext = entityContext;
+            this.context = context;
             this.staticParameters = staticParameters;
             this.dependencies = dependencies == null ? Collections.emptyMap() : dependencies;
         }

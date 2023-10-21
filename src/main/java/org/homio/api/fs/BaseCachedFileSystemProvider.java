@@ -27,7 +27,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.storage.BaseFileSystemEntity;
 import org.homio.api.fs.BaseCachedFileSystemProvider.BaseFSService;
 import org.homio.api.fs.BaseCachedFileSystemProvider.FsFileEntity;
@@ -39,7 +39,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     FileSystemProvider {
 
     protected @NotNull final Service service;
-    protected @NotNull final EntityContext entityContext;
+    protected @NotNull final Context context;
     protected @NotNull final LoadingCache<String, List<FSFile>> fileCache;
     protected @NotNull final ReentrantLock lock = new ReentrantLock();
     protected @NotNull final Condition condition;
@@ -47,9 +47,9 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     protected @NotNull Entity entity;
     protected long connectionHashCode;
 
-    public BaseCachedFileSystemProvider(@NotNull Entity entity, @NotNull EntityContext entityContext) {
+    public BaseCachedFileSystemProvider(@NotNull Entity entity, @NotNull Context context) {
         this.entity = entity;
-        this.entityContext = entityContext;
+        this.context = context;
         this.condition = lock.newCondition();
 
         this.fileCache = CacheBuilder.newBuilder().

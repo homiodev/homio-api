@@ -3,7 +3,7 @@ package org.homio.api.widget;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.SneakyThrows;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.json.JSONObject;
 
 public interface JavaScriptBuilder {
@@ -93,7 +93,7 @@ public interface JavaScriptBuilder {
 
     interface ProxyEntityContextValue {
 
-        void apply(EntityContext entityContext);
+        void apply(Context context);
     }
 
     interface JSONParameterContext {

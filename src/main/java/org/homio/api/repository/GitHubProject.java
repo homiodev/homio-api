@@ -38,7 +38,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.cache.CachedValue;
 import org.homio.api.fs.archive.ArchiveUtil;
 import org.homio.api.fs.archive.ArchiveUtil.ArchiveFormat;
@@ -112,7 +112,7 @@ public class GitHubProject {
 
     private @Nullable @Setter String installedVersion;
     private @Getter boolean updating;
-    private @Nullable @Setter ThrowingBiFunction<EntityContext, GitHubProject, String, Exception> installedVersionResolver;
+    private @Nullable @Setter ThrowingBiFunction<Context, GitHubProject, String, Exception> installedVersionResolver;
 
     private GitHubProject(@NotNull String project, @NotNull String repo, @Nullable Path localProjectPath) {
         this.project = project;
@@ -174,47 +174,32 @@ public class GitHubProject {
         return Files.isDirectory(localProjectPath);
     }
 
-    public void installLatestRelease(EntityContext entityContext) {
+    public void installLatestRelease(Context context) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         if (isLocalProjectInstalled()) {
             throw new IllegalStateException("Already installed");
         } else {
-            installLatestReleaseInternally(entityContext, future);
+            installLatestReleaseInternally(context, future);
         }
     }
 
-    public CompletableFuture<Void> installLatestReleaseAsync(EntityContext entityContext) {
+    public CompletableFuture<Void> installLatestReleaseAsync(Context context) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         if (isLocalProjectInstalled()) {
             future.completeExceptionally(new IllegalStateException("Already installed"));
         } else {
-            entityContext.event().runOnceOnInternetUp("wait-download-" + repo, () ->
-                installLatestReleaseInternally(entityContext, future));
+            context.event().runOnceOnInternetUp("wait-download-" + repo, () ->
+                installLatestReleaseInternally(context, future));
         }
         return future;
     }
 
-    private void installLatestReleaseInternally(EntityContext entityContext, CompletableFuture<Void> future) {
-        try {
-            String version = getLastReleaseVersion();
-            if (version == null) {
-                future.completeExceptionally(new RuntimeException("Unable to find release version from: " + repo + "/" + project));
-            } else {
-                downloadReleaseAndInstall(entityContext, version, (progress, message, error) ->
-                    log.info(message));
-                future.complete(null);
-            }
-        } catch (Exception ex) {
-            future.completeExceptionally(ex);
-        }
-    }
-
     @SneakyThrows
-    public @Nullable String getInstalledVersion(EntityContext entityContext) {
+    public @Nullable String getInstalledVersion(Context context) {
         if (installedVersion == null) {
             try {
                 if (installedVersionResolver != null) {
-                    installedVersion = installedVersionResolver.apply(entityContext, this);
+                    installedVersion = installedVersionResolver.apply(context, this);
                 } else {
                     Path versionPath = localProjectPath.resolve("package.json");
                     if (Files.exists(versionPath)) {
@@ -227,6 +212,21 @@ public class GitHubProject {
             }
         }
         return installedVersion;
+    }
+
+    @SneakyThrows
+    public void downloadReleaseAndInstall(
+        @NotNull Context context,
+        @NotNull String version,
+        @NotNull ProgressBar progressBar) {
+        JsonNode release = getRelease(version);
+        JsonNode asset = findAssertByArchitecture(context, release);
+        String downloadUrl = asset.get("browser_download_url").asText();
+        Path archive = CommonUtils.getTmpPath()
+                                  .resolve(project)
+                                  .resolve(project + "." + CommonUtils.getExtension(downloadUrl));
+        Curl.downloadWithProgress(downloadUrl, archive, progressBar);
+        CommonUtils.unzipAndMove(progressBar, archive, localProjectPath);
     }
 
     @SneakyThrows
@@ -370,19 +370,19 @@ public class GitHubProject {
         Curl.downloadWithProgress(downloadUrl, archive, progressBar);
     }
 
-    @SneakyThrows
-    public void downloadReleaseAndInstall(
-        @NotNull EntityContext entityContext,
-        @NotNull String version,
-        @NotNull ProgressBar progressBar) {
-        JsonNode release = getRelease(version);
-        JsonNode asset = findAssertByArchitecture(entityContext, release);
-        String downloadUrl = asset.get("browser_download_url").asText();
-        Path archive = CommonUtils.getTmpPath()
-                                  .resolve(project)
-                                  .resolve(project + "." + CommonUtils.getExtension(downloadUrl));
-        Curl.downloadWithProgress(downloadUrl, archive, progressBar);
-        CommonUtils.unzipAndMove(progressBar, archive, localProjectPath);
+    private void installLatestReleaseInternally(Context context, CompletableFuture<Void> future) {
+        try {
+            String version = getLastReleaseVersion();
+            if (version == null) {
+                future.completeExceptionally(new RuntimeException("Unable to find release version from: " + repo + "/" + project));
+            } else {
+                downloadReleaseAndInstall(context, version, (progress, message, error) ->
+                    log.info(message));
+                future.complete(null);
+            }
+        } catch (Exception ex) {
+            future.completeExceptionally(ex);
+        }
     }
 
     private JsonNode getRelease(@NotNull String version) {
@@ -432,8 +432,8 @@ public class GitHubProject {
         }
     }
 
-    private static @NotNull JsonNode findAssertByArchitecture(@NotNull EntityContext entityContext, JsonNode release) {
-        Architecture architecture = HardwareUtils.getArchitecture(entityContext);
+    private static @NotNull JsonNode findAssertByArchitecture(@NotNull Context context, JsonNode release) {
+        Architecture architecture = HardwareUtils.getArchitecture(context);
         List<String> assetNames = new ArrayList<>();
         for (JsonNode asset : release.withArray("assets")) {
             String assetName = asset.get("name").asText();

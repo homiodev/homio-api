@@ -15,12 +15,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-public interface EntityContextVar {
+public interface ContextVar {
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     default void listen(@NotNull String key, @NotNull String variableId, @NotNull Consumer<State> listener) {
-        getEntityContext().event().addEventListener(variableId, key, listener);
+        context().event().addEventListener(variableId, key, listener);
     }
 
     /**

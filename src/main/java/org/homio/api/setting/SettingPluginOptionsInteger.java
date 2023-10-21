@@ -3,7 +3,7 @@ package org.homio.api.setting;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -16,7 +16,7 @@ public interface SettingPluginOptionsInteger extends SettingPluginInteger, Setti
     }
 
     @Override
-    default @NotNull Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
+    default @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params) {
         List<OptionModel> optionModels = new ArrayList<>();
         for (int value : availableValues()) {
             optionModels.add(OptionModel.key(String.valueOf(value)));

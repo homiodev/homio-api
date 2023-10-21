@@ -1,7 +1,7 @@
 package org.homio.api.widget.template.impl.endpoints;
 
-import org.homio.api.EntityContextWidget.HasIcon;
-import org.homio.api.EntityContextWidget.ValueCompare;
+import org.homio.api.ContextWidget.HasIcon;
+import org.homio.api.ContextWidget.ValueCompare;
 import org.homio.api.ui.UI.Color;
 
 public class SignalIconEndpointBuilder implements IconEndpointBuilder {

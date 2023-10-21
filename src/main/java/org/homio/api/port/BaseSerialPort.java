@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Logger;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.springframework.boot.web.server.PortInUseException;
 
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
 
     protected final String coordinator;
     protected final String entityID;
-    protected final EntityContext entityContext;
+    protected final Context context;
     protected final int baudRate;
     protected final PortFlowControl flowControl;
     protected final Runnable portUnavailableListener;

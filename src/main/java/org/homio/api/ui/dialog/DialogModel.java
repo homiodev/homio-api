@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import org.homio.api.EntityContextUI.DialogRequestHandler;
+import org.homio.api.ContextUI.DialogRequestHandler;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.ActionInputParameter;
 import org.jetbrains.annotations.Nullable;

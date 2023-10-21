@@ -6,9 +6,9 @@ import org.homio.hquery.api.HQueryMaxWaitTimeout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface EntityContextHardware {
+public interface ContextHardware {
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     @NotNull String execute(@NotNull String command);
 
@@ -27,14 +27,14 @@ public interface EntityContextHardware {
 
     boolean isSoftwareInstalled(@NotNull String soft);
 
-    @NotNull EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
+    @NotNull ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
-    @NotNull EntityContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+    @NotNull ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
         @Nullable ProgressBar progressBar);
 
-    @NotNull EntityContextHardware enableSystemCtl(@NotNull String soft);
+    @NotNull ContextHardware enableSystemCtl(@NotNull String soft);
 
-    @NotNull EntityContextHardware startSystemCtl(@NotNull String soft);
+    @NotNull ContextHardware startSystemCtl(@NotNull String soft);
 
     void stopSystemCtl(@NotNull String soft);
 
@@ -52,13 +52,13 @@ public interface EntityContextHardware {
      * @param soft - system service
      * @return this
      */
-    default EntityContextHardware enableAndStartSystemCtl(@NotNull String soft) {
+    default ContextHardware enableAndStartSystemCtl(@NotNull String soft) {
         enableSystemCtl(soft);
         startSystemCtl(soft);
         return this;
     }
 
-    default EntityContextHardware update() {
+    default ContextHardware update() {
         execute("$PM update");
         return this;
     }

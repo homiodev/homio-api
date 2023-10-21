@@ -1,7 +1,7 @@
 package org.homio.api.setting;
 
 import java.util.Collection;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
@@ -15,8 +15,8 @@ public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
     }
 
     @Override
-    default @NotNull Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
-        return OptionModel.simpleNamelist(entityContext.getBeansOfType(getType()));
+    default @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params) {
+        return OptionModel.simpleNamelist(context.getBeansOfType(getType()));
     }
 
     @Override
@@ -25,9 +25,9 @@ public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
     }
 
     @Override
-    default T parseValue(EntityContext entityContext, String value) {
-        return entityContext.getBeansOfType(getType()).stream().filter(p -> p.getClass().getSimpleName().equals(value)).findAny()
-                            .orElseThrow(() -> new NotFoundException(
+    default T parseValue(Context context, String value) {
+        return context.getBeansOfType(getType()).stream().filter(p -> p.getClass().getSimpleName().equals(value)).findAny()
+                      .orElseThrow(() -> new NotFoundException(
                                 "Unable to find addon: " + value + " of type: " + getType().getSimpleName()));
     }
 }

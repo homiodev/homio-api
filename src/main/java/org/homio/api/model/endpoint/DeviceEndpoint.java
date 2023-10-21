@@ -11,8 +11,8 @@ import java.util.function.Function;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
-import org.homio.api.EntityContext;
-import org.homio.api.EntityContextVar;
+import org.homio.api.Context;
+import org.homio.api.ContextVar;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
@@ -70,7 +70,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     @Nullable String getVariableID();
 
-    @Nullable EntityContextVar.VariableType getVariableType();
+    @Nullable ContextVar.VariableType getVariableType();
 
     /**
      * It's unique device id. it should be same even if user recreate camera from scratch
@@ -162,7 +162,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         throw new IllegalStateException("Must be implemented for 'slider' type");
     }
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     @NotNull State getValue();
 
@@ -179,7 +179,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
      * @return action builder
      */
     default @Nullable UIInputBuilder createActionBuilder() {
-        UIInputBuilder uiInputBuilder = getEntityContext().ui().inputBuilder();
+        UIInputBuilder uiInputBuilder = context().ui().inputBuilder();
         State value = getValue();
         UIInputBuilder actionBuilder = null;
 
@@ -198,7 +198,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
             return actionBuilder;
         }
         if (getUnit() != null) {
-            uiInputBuilder.addInfo("%s <small class=\"text-muted\">%s</small>"
+            uiInputBuilder.addInfo("%s <small>%s</small>"
                 .formatted(value.stringValue(), getUnit()), InfoType.HTML);
         } else {
             assembleUIAction(uiInputBuilder);
@@ -235,7 +235,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         }
 
         postConfigureSelectBoxAction(uiInputBuilder
-            .addSelectBox(getEntityID(), (entityContext, params) -> {
+            .addSelectBox(getEntityID(), (context, params) -> {
                 setValue(new StringType(params.getString("value")), false);
                 return onExternalUpdated();
             })
@@ -272,7 +272,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         float value = getValue().floatValue(0);
         UISliderItemBuilder sliderItemBuilder =
             uiInputBuilder.addSlider(getEntityID(), value, getMin(), getMax(),
-                              (entityContext, params) -> {
+                              (context, params) -> {
                                   setValue(new DecimalType(params.getInt("value")), false);
                                   return onExternalUpdated();
                               })
@@ -288,7 +288,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     }
 
     default UIInputBuilder createBoolActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
-        postConfigureBoolAction(uiInputBuilder.addCheckbox(getEntityID(), getValue().boolValue(), (entityContext, params) -> {
+        postConfigureBoolAction(uiInputBuilder.addCheckbox(getEntityID(), getValue().boolValue(), (context, params) -> {
             setValue(OnOffType.of(params.getBoolean("value")), false);
             return onExternalUpdated();
         }).setDisabled(isDisabled()));

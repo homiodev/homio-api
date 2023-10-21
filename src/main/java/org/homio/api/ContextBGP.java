@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
-public interface EntityContextBGP {
+public interface ContextBGP {
 
     static boolean cancel(ThreadContext<?> threadContext) {
         if (threadContext != null) {
@@ -45,7 +45,7 @@ public interface EntityContextBGP {
         return false;
     }
 
-    EntityContext getEntityContext();
+    Context context();
 
     /**
      * Simple create new thread and call runnable

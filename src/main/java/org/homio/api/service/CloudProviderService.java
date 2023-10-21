@@ -1,6 +1,6 @@
 package org.homio.api.service;
 
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.model.ActionResponseModel;
@@ -44,6 +44,6 @@ public interface CloudProviderService<T extends SshCloud> {
 
         boolean isRestartOnFailure();
 
-        @Nullable CloudProviderService<T> getCloudProviderService(@NotNull EntityContext entityContext);
+        @Nullable CloudProviderService<T> getCloudProviderService(@NotNull Context context);
     }
 }

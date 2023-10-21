@@ -17,7 +17,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.homio.api.AddonEntrypoint;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +31,7 @@ public abstract class Scratch3ExtensionBlocks {
     public static final String VALUE = "VALUE";
     public static final String ENTITY = "ENTITY";
 
-    protected final @NotNull EntityContext entityContext;
+    protected final @NotNull Context context;
     private final @NotNull String id;
     private final @NotNull Map<String, MenuBlock> menus = new HashMap<>();
     private final @NotNull List<Scratch3Block> blocks = new ArrayList<>();
@@ -48,16 +48,16 @@ public abstract class Scratch3ExtensionBlocks {
     @Setter
     private String parent;
 
-    public Scratch3ExtensionBlocks(@Nullable String color, @NotNull EntityContext entityContext, @Nullable AddonEntrypoint addonEntryPoint) {
-        this(color, entityContext, addonEntryPoint, null);
+    public Scratch3ExtensionBlocks(@Nullable String color, @NotNull Context context, @Nullable AddonEntrypoint addonEntryPoint) {
+        this(color, context, addonEntryPoint, null);
     }
 
     @SneakyThrows
-    public Scratch3ExtensionBlocks(@Nullable String color, @NotNull EntityContext entityContext, @Nullable AddonEntrypoint addonEntryPoint,
+    public Scratch3ExtensionBlocks(@Nullable String color, @NotNull Context context, @Nullable AddonEntrypoint addonEntryPoint,
         @Nullable String idSuffix) {
         this.id = addonEntryPoint == null ? Objects.requireNonNull(idSuffix) : addonEntryPoint.getAddonID() + (idSuffix == null ? "" : "-" + idSuffix);
         this.parent = addonEntryPoint == null ? null : addonEntryPoint.getAddonID();
-        this.entityContext = entityContext;
+        this.context = context;
         if (color != null) {
             URL resource = getImage(addonEntryPoint);
             if (resource == null) {
@@ -70,17 +70,17 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     @SneakyThrows
-    public Scratch3ExtensionBlocks(@NotNull String color, @NotNull EntityContext entityContext, @NotNull String id,
+    public Scratch3ExtensionBlocks(@NotNull String color, @NotNull Context context, @NotNull String id,
         @NotNull String name, @NotNull URL imageResource) {
         this.id = id;
-        this.entityContext = entityContext;
+        this.context = context;
         this.blockIconURI = "data:image/png;base64," + Base64.getEncoder().encodeToString(IOUtils.toByteArray(imageResource));
         this.scratch3Color = new Scratch3Color(color);
     }
 
     // Uses only in app
-    public Scratch3ExtensionBlocks(String id, @NotNull EntityContext entityContext) {
-        this(null, entityContext, null, id);
+    public Scratch3ExtensionBlocks(String id, @NotNull Context context) {
+        this(null, context, null, id);
     }
 
     public void init() {

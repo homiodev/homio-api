@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.JSON;
 import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
@@ -171,10 +171,10 @@ public interface HasJsonData {
         return getJsonData().optString(key);
     }
 
-    default String getJsonDataEntity(String key, EntityContext entityContext) {
+    default String getJsonDataEntity(String key, Context context) {
         String value = getJsonData(key);
         if (isNotEmpty(value)) {
-            BaseEntity entity = entityContext.getEntity(value);
+            BaseEntity entity = context.db().getEntity(value);
             if (entity != null) {
                 return entity.getEntityID() + LIST_DELIMITER + entity.getTitle();
             }

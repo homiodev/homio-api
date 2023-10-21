@@ -2,7 +2,7 @@ package org.homio.api.ui.field.action.v1;
 
 import java.util.Collection;
 import java.util.function.Consumer;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.UIActionHandler;
 import org.homio.api.ui.field.action.v1.item.UIButtonItemBuilder;
@@ -20,7 +20,7 @@ public interface UIInputBuilder extends UILayoutBuilder {
     @NotNull Collection<UIInputEntity> buildAll();
 
     @NotNull
-    EntityContext getEntityContext();
+    Context context();
 
     void fireFetchValues();
 

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.model.device.ConfigDeviceDefinition;
@@ -35,26 +35,26 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
     }
 
     @Override
-    default ActionResponseModel handleAction(EntityContext entityContext, String actionID, JSONObject params) throws Exception {
+    default ActionResponseModel handleAction(Context context, String actionID, JSONObject params) throws Exception {
         for (DeviceEndpointUI endpoint : getEndpoints()) {
             if (actionID.startsWith(endpoint.getEntityID())) {
                 UIInputBuilder actionBuilder = endpoint.getEndpoint().createActionBuilder();
                 if (actionBuilder != null) {
                     UIActionHandler actionHandler = actionBuilder.findActionHandler(actionID);
                     if (actionHandler != null) {
-                        return actionHandler.handleAction(entityContext, params);
+                        return actionHandler.handleAction(context, params);
                     }
                 }
                 UIInputBuilder settingsBuilder = endpoint.getEndpoint().createSettingsBuilder();
                 if (settingsBuilder != null) {
                     UIActionHandler settingHandler = settingsBuilder.findActionHandler(actionID);
                     if (settingHandler != null) {
-                        return settingHandler.handleAction(entityContext, params);
+                        return settingHandler.handleAction(context, params);
                     }
                 }
             }
         }
-        return HasDynamicContextMenuActions.super.handleAction(entityContext, actionID, params);
+        return HasDynamicContextMenuActions.super.handleAction(context, actionID, params);
     }
 
     @JsonIgnore

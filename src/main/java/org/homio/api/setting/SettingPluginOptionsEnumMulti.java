@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +42,7 @@ public interface SettingPluginOptionsEnumMulti<T extends Enum<T>> extends Settin
     }
 
     @Override
-    default Set<T> parseValue(EntityContext entityContext, String value) {
+    default Set<T> parseValue(Context context, String value) {
         if (value == null) {
             return Collections.emptySet();
         }
@@ -57,7 +57,7 @@ public interface SettingPluginOptionsEnumMulti<T extends Enum<T>> extends Settin
     }
 
     @Override
-    default @NotNull Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
+    default @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params) {
         if (KeyValueEnum.class.isAssignableFrom(getType())) {
             return OptionModel.list((Class<? extends KeyValueEnum>) getEnumType());
         }

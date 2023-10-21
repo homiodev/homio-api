@@ -3,7 +3,7 @@ package org.homio.api.setting;
 import static org.homio.api.util.JsonUtils.putOpt;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -24,8 +24,8 @@ public interface SettingPluginTextInput extends SettingPlugin<String> {
     }
 
     @Override
-    default @NotNull JSONObject getParameters(EntityContext entityContext, String value) {
-        JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
+    default @NotNull JSONObject getParameters(Context context, String value) {
+        JSONObject parameters = SettingPlugin.super.getParameters(context, value);
         putOpt(parameters, "pattern", getPattern());
         Pair<Integer, Integer> validateLength = getValidateLength();
         if (validateLength != null) {

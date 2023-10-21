@@ -13,11 +13,11 @@ import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface EntityContextService {
+public interface ContextService {
 
     String MQTT_SERVICE = "MQTT";
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     void registerEntityTypeForSelection(@NotNull Class<? extends HasEntityIdentifier> entityClass, @NotNull String type);
 
@@ -39,7 +39,7 @@ public interface EntityContextService {
 
     @Nullable
     private <T> T getService(String entityID, Class<T> serviceClass) {
-        BaseEntity entity = getEntityContext().getEntity(entityID);
+        BaseEntity entity = context().db().getEntity(entityID);
         if (entity != null && !serviceClass.isAssignableFrom(entity.getClass())) {
             throw new IllegalStateException(format("Entity: '%s' has type: '%s' but require: '%s'", entityID, entity.getType(), serviceClass.getSimpleName()));
         }

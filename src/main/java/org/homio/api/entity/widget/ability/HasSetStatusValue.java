@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.text.NumberFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.homio.api.EntityContext;
+import lombok.experimental.Accessors;
+import org.homio.api.Context;
 import org.homio.api.model.HasEntityIdentifier;
 import org.json.JSONObject;
 
@@ -27,7 +28,7 @@ public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     @AllArgsConstructor
     class SetStatusValueRequest {
 
-        private EntityContext entityContext;
+        private @Accessors(fluent = true) Context context;
         private JSONObject dynamicParameters;
         private Object value;
 

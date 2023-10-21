@@ -5,7 +5,7 @@ import static org.homio.api.util.JsonUtils.putOpt;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fazecast.jSerialComm.SerialPort;
 import java.nio.file.Paths;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.model.Icon;
@@ -58,7 +58,7 @@ public interface SettingPlugin<T> {
     }
 
     // min/max/step (Slider)
-    default @NotNull JSONObject getParameters(EntityContext entityContext, String value) {
+    default @NotNull JSONObject getParameters(Context context, String value) {
         JSONObject parameters = new JSONObject();
         putOpt(parameters, "maxWidth", getMaxWidth());
         return parameters;
@@ -81,12 +81,12 @@ public interface SettingPlugin<T> {
     }
 
     // disabled input/button on ui
-    default boolean isDisabled(EntityContext entityContext) {
+    default boolean isDisabled(Context context) {
         return false;
     }
 
     // visible on ui or not
-    default boolean isVisible(EntityContext entityContext) {
+    default boolean isVisible(Context context) {
         return true;
     }
 
@@ -95,13 +95,13 @@ public interface SettingPlugin<T> {
         return null;
     }
 
-    default @Nullable T parseValue(EntityContext entityContext, String value) {
+    default @Nullable T parseValue(Context context, String value) {
         if (value == null) {
             return null;
         }
         switch (getType().getSimpleName()) {
             case "Integer":
-                return parseInteger(entityContext, value);
+                return parseInteger(context, value);
             case "Path":
                 return (T) Paths.get(value);
         }
@@ -113,7 +113,7 @@ public interface SettingPlugin<T> {
                 return (T) Boolean.valueOf(value);
             case Integer:
             case Slider:
-                return parseInteger(entityContext, value);
+                return parseInteger(context, value);
         }
         if (getType().isEnum()) {
             return (T) Enum.valueOf((Class) getType(), value);
@@ -160,14 +160,14 @@ public interface SettingPlugin<T> {
         return value.toString();
     }
 
-    default @NotNull T parseInteger(@NotNull EntityContext entityContext, @NotNull String value) {
+    default @NotNull T parseInteger(@NotNull Context context, @NotNull String value) {
         Integer parseValue;
         try {
             parseValue = Integer.valueOf(value);
         } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Unable parse setting value <" + value + "> as integer value");
         }
-        JSONObject parameters = getParameters(entityContext, value);
+        JSONObject parameters = getParameters(context, value);
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
                 throw new IllegalArgumentException(
@@ -184,11 +184,11 @@ public interface SettingPlugin<T> {
     /**
      * Assert that user has access to change setting
      *
-     * @param entityContext - entity context
+     * @param context - entity context
      * @param user          - logged in user
      * @throws IllegalAccessException - access denied
      */
-    default void assertUserAccess(@NotNull EntityContext entityContext, @Nullable UserEntity user) throws IllegalAccessException {
+    default void assertUserAccess(@NotNull Context context, @Nullable UserEntity user) throws IllegalAccessException {
         if (user == null || !user.isAdmin()) {
             throw new IllegalAccessException();
         }

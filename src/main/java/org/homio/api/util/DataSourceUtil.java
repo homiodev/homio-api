@@ -6,7 +6,7 @@ import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,9 +44,9 @@ public class DataSourceUtil {
             return this.value.split("-->")[0];
         }
 
-        public <T extends BaseEntity> T getValue(EntityContext entityContext) {
+        public <T extends BaseEntity> T getValue(Context context) {
             String[] items = value.split(LEVEL_DELIMITER);
-            return entityContext.getEntity(items[items.length - 1]);
+            return context.db().getEntity(items[items.length - 1]);
         }
     }
 }

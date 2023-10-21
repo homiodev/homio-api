@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.val;
 import org.apache.commons.lang3.NotImplementedException;
-import org.homio.api.EntityContext;
-import org.homio.api.EntityContextWidget.HorizontalAlign;
+import org.homio.api.Context;
+import org.homio.api.ContextWidget.HorizontalAlign;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.widget.template.TemplateWidgetBuilder;
@@ -26,25 +26,25 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
     public static final String[] CENTER_ENDPOINTS = new String[]{ENDPOINT_LAST_SEEN};
     public static final String[] RIGHT_ENDPOINTS = new String[]{ENDPOINT_SIGNAL};
 
-    public static void addBottomRow(EntityContext entityContext, WidgetDefinition wd, String layoutID, int row,
+    public static void addBottomRow(Context context, WidgetDefinition wd, String layoutID, int row,
         Map<String, ? extends DeviceEndpoint> endpoints) {
         DeviceEndpoint leftEndpoint = findCellEndpoint(wd.getLeftEndpoint(), endpoints, LEFT_ENDPOINTS);
         TemplateWidgetBuilder.addEndpoint(
-            entityContext,
+            context,
             HorizontalAlign.left,
             leftEndpoint,
             true,
             builder -> builder.attachToLayout(layoutID, row, 0));
 
         TemplateWidgetBuilder.addEndpoint(
-            entityContext,
+            context,
             HorizontalAlign.center,
             findCellEndpoint(wd.getCenterEndpoint(), endpoints, CENTER_ENDPOINTS),
             false,
             builder -> builder.attachToLayout(layoutID, row, 1));
 
         TemplateWidgetBuilder.addEndpoint(
-            entityContext,
+            context,
             HorizontalAlign.right,
             findCellEndpoint(wd.getRightEndpoint(), endpoints, RIGHT_ENDPOINTS),
             false,
@@ -53,9 +53,9 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
 
     @Override
     public void buildWidget(WidgetRequest widgetRequest) {
-        EntityContext entityContext = widgetRequest.getEntityContext();
-        DeviceEndpointsBehaviourContract entity = widgetRequest.getEntity();
-        WidgetDefinition wd = widgetRequest.getWidgetDefinition();
+        Context context = widgetRequest.context();
+        DeviceEndpointsBehaviourContract entity = widgetRequest.entity();
+        WidgetDefinition wd = widgetRequest.widgetDefinition();
         List<WidgetDefinition> composeContainer = wd.getCompose();
         if (composeContainer == null || composeContainer.isEmpty()) {
             throw new IllegalArgumentException("Unable to create compose widget without compose endpoints");
@@ -70,7 +70,7 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
         String layoutID = "lt-cmp-" + entity.getIeeeAddress();
         int columns = 3;
 
-        entityContext.widget().createLayoutWidget(layoutID, builder -> {
+        context.widget().createLayoutWidget(layoutID, builder -> {
             TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder, 15);
             builder
                 .setBlockSize(
@@ -92,9 +92,9 @@ public class ComposeTemplateWidget implements TemplateWidgetBuilder {
             currentLayoutRow.addAndGet(sumOfRowHeightsAdjusted);
         }
 
-        Map<String, ? extends DeviceEndpoint> endpoints = widgetRequest.getEntity().getDeviceEndpoints();
+        Map<String, ? extends DeviceEndpoint> endpoints = widgetRequest.entity().getDeviceEndpoints();
 
-        addBottomRow(entityContext, wd, layoutID, currentLayoutRow.get(), endpoints);
+        addBottomRow(context, wd, layoutID, currentLayoutRow.get(), endpoints);
     }
 
     @Override

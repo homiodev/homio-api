@@ -1,10 +1,10 @@
 package org.homio.api.entity.widget.ability;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.homio.api.EntityContext;
+import lombok.experimental.Accessors;
+import org.homio.api.Context;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.storage.SourceHistory;
 import org.homio.api.storage.SourceHistoryItem;
@@ -24,10 +24,10 @@ public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     List<SourceHistoryItem> getSourceHistoryItems(@NotNull GetStatusValueRequest request, int from, int count);
 
     /**
-     * @param entityContext -
+     * @param context -
      * @return Get current value with unit or whatever to show on ui in popup. May contains HTML
      */
-    default String getStatusValueRepresentation(@NotNull EntityContext entityContext) {
+    default String getStatusValueRepresentation(@NotNull Context context) {
         return null;
     }
 
@@ -39,7 +39,7 @@ public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     @AllArgsConstructor
     class GetStatusValueRequest {
 
-        private @NotNull EntityContext entityContext;
+        private @NotNull @Accessors(fluent = true) Context context;
         private @Nullable JSONObject dynamicParameters;
     }
 }

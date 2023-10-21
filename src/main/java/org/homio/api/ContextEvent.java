@@ -9,7 +9,7 @@ import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface EntityContextEvent {
+public interface ContextEvent {
 
     /**
      * Listen upd on host/port. default host is wildcard listener accept DatagramPacket and string value
@@ -40,7 +40,7 @@ public interface EntityContextEvent {
      * @param listener - listener
      * @return this
      */
-    default EntityContextEvent addEventListener(String key, Consumer<State> listener) {
+    default ContextEvent addEventListener(String key, Consumer<State> listener) {
         return addEventListener(key, "", listener);
     }
 
@@ -50,18 +50,18 @@ public interface EntityContextEvent {
      * @param key           - unique key
      * @param discriminator - discriminator
      * @param listener      - listener
-     * @return EntityContextEvent
+     * @return ContextEvent
      */
-    EntityContextEvent addEventListener(String key, String discriminator, Consumer<State> listener);
+    ContextEvent addEventListener(String key, String discriminator, Consumer<State> listener);
 
     /**
      * Listen for event with key. Fires listener immediately if value was saved before
      *
      * @param key      - unique key
      * @param listener - listener
-     * @return EntityContextEvent
+     * @return ContextEvent
      */
-    default EntityContextEvent addEventBehaviourListener(String key, Consumer<State> listener) {
+    default ContextEvent addEventBehaviourListener(String key, Consumer<State> listener) {
         return addEventBehaviourListener(key, "", listener);
     }
 
@@ -71,35 +71,35 @@ public interface EntityContextEvent {
      * @param key           - unique key
      * @param discriminator - discriminator
      * @param listener      - listener
-     * @return EntityContextEvent
+     * @return ContextEvent
      */
-    EntityContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<State> listener);
+    ContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<State> listener);
 
     /**
      * Fire event with key and value.
      *
      * @param value - must implement equal() method in case if compareValues is true
      * @param key   - unique key
-     * @return EntityContextEvent
+     * @return ContextEvent
      */
-    EntityContextEvent fireEvent(@NotNull String key, @Nullable State value);
+    ContextEvent fireEvent(@NotNull String key, @Nullable State value);
 
     /**
      * Fire event with key and value only if previous saved value is null or value != previousValue
      *
      * @param key   - unique key
      * @param value - value to fire
-     * @return EntityContextEvent
+     * @return ContextEvent
      */
-    EntityContextEvent fireEventIfNotSame(@NotNull String key, @Nullable State value);
+    ContextEvent fireEventIfNotSame(@NotNull String key, @Nullable State value);
 
     // go through all discriminators and count if key exists
     int getEventCount(@NotNull String key);
 
-    <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
+    <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
         (String entityID, String key, Consumer<T> listener);
 
-    <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
+    <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
         (String entityID, String key, EntityUpdateListener<T> listener);
 
     /**
@@ -111,7 +111,7 @@ public interface EntityContextEvent {
      * @param <T>         -
      * @return this
      */
-    <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
+    <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
     (Class<T> entityClass, String key, Consumer<T> listener);
 
     /**
@@ -123,21 +123,21 @@ public interface EntityContextEvent {
      * @param <T>         -
      * @return this
      */
-    <T extends BaseEntityIdentifier> EntityContextEvent addEntityUpdateListener
+    <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
     (Class<T> entityClass, String key, EntityUpdateListener<T> listener);
 
-    <T extends BaseEntityIdentifier> EntityContextEvent addEntityCreateListener
+    <T extends BaseEntityIdentifier> ContextEvent addEntityCreateListener
         (Class<T> entityClass, String key, Consumer<T> listener);
 
-    <T extends BaseEntityIdentifier> EntityContextEvent addEntityRemovedListener
+    <T extends BaseEntityIdentifier> ContextEvent addEntityRemovedListener
         (Class<T> entityClass, String key, Consumer<T> listener);
 
-    <T extends BaseEntityIdentifier> EntityContextEvent addEntityRemovedListener
+    <T extends BaseEntityIdentifier> ContextEvent addEntityRemovedListener
         (String entityID, String key, Consumer<T> listener);
 
-    EntityContextEvent removeEntityUpdateListener(String entityID, String key);
+    ContextEvent removeEntityUpdateListener(String entityID, String key);
 
-    EntityContextEvent removeEntityRemoveListener(String entityID, String key);
+    ContextEvent removeEntityRemoveListener(String entityID, String key);
 
     /**
      * Run only once when internet became available. command executes in separate thread

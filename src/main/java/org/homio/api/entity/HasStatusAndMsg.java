@@ -1,7 +1,7 @@
 package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.homio.api.EntityContextSetting;
+import org.homio.api.ContextSetting;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
@@ -23,7 +23,7 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     default @NotNull Status getStatus() {
-        return EntityContextSetting.getStatus(this, DISTINGUISH_KEY, Status.UNKNOWN);
+        return ContextSetting.getStatus(this, DISTINGUISH_KEY, Status.UNKNOWN);
     }
 
     default void setStatus(@NotNull Status status) {
@@ -34,11 +34,11 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     default @Nullable String getStatusMessage() {
-        return EntityContextSetting.getMessage(this, DISTINGUISH_KEY);
+        return ContextSetting.getMessage(this, DISTINGUISH_KEY);
     }
 
     default void setStatusMessage(@Nullable String msg) {
-        EntityContextSetting.setMessage(this, DISTINGUISH_KEY, msg);
+        ContextSetting.setMessage(this, DISTINGUISH_KEY, msg);
     }
 
     default void setStatusOnline() {
@@ -54,6 +54,6 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
     }
 
     default void setStatus(@Nullable Status status, @Nullable String msg) {
-        EntityContextSetting.setStatus(this, DISTINGUISH_KEY, "Status", status, msg);
+        ContextSetting.setStatus(this, DISTINGUISH_KEY, "Status", status, msg);
     }
 }

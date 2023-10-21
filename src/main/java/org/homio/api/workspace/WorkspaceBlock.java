@@ -23,8 +23,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
-import org.homio.api.EntityContextBGP;
+import org.homio.api.Context;
+import org.homio.api.ContextBGP;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.exception.ServerException;
 import org.homio.api.service.EntityService;
@@ -114,7 +114,7 @@ public interface WorkspaceBlock {
     }
 
     default <T extends BaseEntity> T getMenuValueEntity(String key, MenuBlock.ServerMenuBlock menuBlock) {
-        return getEntityContext().getEntity(getMenuValue(key, menuBlock, String.class));
+        return context().db().getEntity(getMenuValue(key, menuBlock, String.class));
     }
 
     default <S> S getEntityService(String key, MenuBlock.ServerMenuBlock menuBlock, Class<S> serviceClass) {
@@ -135,7 +135,7 @@ public interface WorkspaceBlock {
         if ("-".equals(entityID)) {
             logErrorAndThrow("Menu entity not selected for block: {}", key);
         }
-        T entity = getEntityContext().getEntity(entityID);
+        T entity = context().db().getEntity(entityID);
         if (entity == null) {
             logErrorAndThrow("Unable to find entity for block: {}. Value: {}", key, entityID);
         }
@@ -364,9 +364,9 @@ public interface WorkspaceBlock {
 
     boolean isDestroyed();
 
-    void setThreadContext(EntityContextBGP.ThreadContext<?> threadContext);
+    void setThreadContext(ContextBGP.ThreadContext<?> threadContext);
 
-    EntityContext getEntityContext();
+    Context context();
 
     /**
      * Fires when current thread is released (i.e. when whole block scope is destroyed)

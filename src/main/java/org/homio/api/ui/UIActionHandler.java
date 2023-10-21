@@ -1,6 +1,6 @@
 package org.homio.api.ui;
 
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.json.JSONObject;
 
@@ -9,9 +9,9 @@ import org.json.JSONObject;
  */
 public interface UIActionHandler {
 
-    ActionResponseModel handleAction(EntityContext entityContext, JSONObject params) throws Exception;
+    ActionResponseModel handleAction(Context context, JSONObject params) throws Exception;
 
-    default boolean isEnabled(EntityContext entityContext) {
+    default boolean isEnabled(Context context) {
         return true;
     }
 }

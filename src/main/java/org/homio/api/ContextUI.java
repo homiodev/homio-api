@@ -41,28 +41,28 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
-public interface EntityContextUI {
+public interface ContextUI {
 
-    @NotNull EntityContextUIToastr toastr();
+    @NotNull ContextUI.ContextUIToastr toastr();
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     @NotNull UIInputBuilder inputBuilder();
 
-    @NotNull EntityContextUINotification notification();
+    @NotNull ContextUI.ContextUINotification notification();
 
-    @NotNull EntityContextUIConsole console();
+    @NotNull ContextUI.ContextUIConsole console();
 
-    @NotNull EntityContextUIDialog dialog();
+    @NotNull ContextUI.ContextUIDialog dialog();
 
-    @NotNull EntityContextUIProgress progress();
+    @NotNull ContextUI.ContextUIProgress progress();
 
     void removeItem(@NotNull BaseEntity baseEntity);
 
     void updateItem(@NotNull BaseEntity baseEntity);
 
     default void updateItems(@NotNull Class<? extends BaseEntity> baseEntityClass) {
-        for (BaseEntity baseEntity : getEntityContext().findAll(baseEntityClass)) {
+        for (BaseEntity baseEntity : context().db().findAll(baseEntityClass)) {
             updateItem(baseEntity);
         }
     }
@@ -331,7 +331,7 @@ public interface EntityContextUI {
         @NotNull NotificationInfoLineBuilder setAsLink(@NotNull BaseEntity entity);
     }
 
-    interface EntityContextUIProgress {
+    interface ContextUIProgress {
 
         default ProgressBar createProgressBar(@NotNull String key, boolean dummy) {
             return createProgressBar(key, dummy, null);
@@ -398,7 +398,7 @@ public interface EntityContextUI {
         }
     }
 
-    interface EntityContextUIDialog {
+    interface ContextUIDialog {
 
         default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
             @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
@@ -458,7 +458,7 @@ public interface EntityContextUI {
         }
     }
 
-    interface EntityContextUINotification {
+    interface ContextUINotification {
 
         /**
          * Remove notification block if it has no rows anymore
@@ -497,7 +497,7 @@ public interface EntityContextUI {
 
     }
 
-    interface EntityContextUIToastr {
+    interface ContextUIToastr {
 
         /**
          * Show error toastr message to ui
@@ -622,7 +622,7 @@ public interface EntityContextUI {
         void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level);
     }
 
-    interface EntityContextUIConsole {
+    interface ContextUIConsole {
 
         /**
          * Register console plugin name. In case if console plugin available only if some entity is created or not enabled by some case we may show disabled

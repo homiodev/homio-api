@@ -4,7 +4,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +14,7 @@ public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable 
     @JsonIgnore
     String getDefaultName();
 
-    EntityContext getEntityContext();
+    Context context();
 
     default @NotNull String getTitle() {
         return defaultIfBlank(getName(), defaultIfBlank(getDefaultName(), getEntityID()));

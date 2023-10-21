@@ -9,7 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.homio.api.EntityContext;
+import lombok.experimental.Accessors;
+import org.homio.api.Context;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.HasEntityIdentifier;
@@ -25,7 +26,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
     ReentrantLock serviceAccessLock = new ReentrantLock();
 
-    EntityContext getEntityContext();
+    Context context();
 
     @JsonIgnore
     long getEntityServiceHashCode();
@@ -35,7 +36,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
      */
     @JsonIgnore
     default @NotNull S getService() throws NotFoundException {
-        Object service = getEntityContext().service().getEntityService(getEntityID());
+        Object service = context().service().getEntityService(getEntityID());
         if (service == null) {
             throw new NotFoundException("Service for entity: " + getEntityID() + " not found");
         }
@@ -44,28 +45,28 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
     @JsonIgnore
     default @NotNull Optional<S> optService() {
-        return Optional.ofNullable((S) getEntityContext().service().getEntityService(getEntityID()));
+        return Optional.ofNullable((S) context().service().getEntityService(getEntityID()));
     }
 
     @JsonIgnore
     @NotNull Class<S> getEntityServiceItemClass();
 
     @SneakyThrows
-    default @NotNull Optional<S> getOrCreateService(@NotNull EntityContext entityContext) {
+    default @NotNull Optional<S> getOrCreateService(@NotNull Context context) {
         serviceAccessLock.lock();
         try {
-            if (getEntityContext().service().isHasEntityService(getEntityID())) {
-                return Optional.of((S) getEntityContext().service().getEntityService(getEntityID()));
+            if (context().service().isHasEntityService(getEntityID())) {
+                return Optional.of((S) context().service().getEntityService(getEntityID()));
             }
             try {
-                S service = createService(entityContext);
+                S service = createService(context);
                 if (service != null) {
-                    getEntityContext().service().addEntityService(getEntityID(), service);
+                    context().service().addEntityService(getEntityID(), service);
                 }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-            return Optional.ofNullable((S) getEntityContext().service().getEntityService(getEntityID()));
+            return Optional.ofNullable((S) context().service().getEntityService(getEntityID()));
         } finally {
             serviceAccessLock.unlock();
         }
@@ -74,15 +75,15 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     /**
      * Create service factory method
      *
-     * @param entityContext -
+     * @param context -
      * @return service or null if service has to be created during some external process
      */
-    @Nullable S createService(@NotNull EntityContext entityContext);
+    @Nullable S createService(@NotNull Context context);
 
     String getEntityID();
 
     default void destroyService() throws Exception {
-        S service = (S) getEntityContext().service().removeEntityService(getEntityID());
+        S service = (S) context().service().removeEntityService(getEntityID());
         if (service != null) {
             service.destroy();
         }
@@ -91,14 +92,14 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     @Getter
     abstract class ServiceInstance<E extends EntityService<?, ?>> implements WatchdogService {
 
-        protected final @NotNull EntityContext entityContext;
+        protected final @NotNull @Accessors(fluent = true) Context context;
         protected final String entityID;
         private final AtomicBoolean initializing = new AtomicBoolean(false);
         protected E entity;
         protected long entityHashCode;
 
-        public ServiceInstance(@NotNull EntityContext entityContext, @NotNull E entity, boolean fireFirstInitialize) {
-            this.entityContext = entityContext;
+        public ServiceInstance(@NotNull Context context, @NotNull E entity, boolean fireFirstInitialize) {
+            this.context = context;
             this.entityID = entity.getEntityID();
             this.entity = entity;
             this.entityHashCode = getEntityHashCode(entity);
@@ -106,7 +107,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             if (fireFirstInitialize) {
                 initializing.set(true);
                 // deffer initialize to register service in map and avoid blocking
-                entityContext.bgp().execute(Duration.ofSeconds(5), () -> {
+                context.bgp().execute(Duration.ofSeconds(5), () -> {
                     fireWithSetStatus(this::firstInitialize);
                     initializing.set(false);
                 });
@@ -145,7 +146,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             entity = newEntity;
 
             if (requireReinitialize) {
-                entityContext.bgp().execute(() -> {
+                context.bgp().execute(() -> {
                     while (!initializing.compareAndSet(false, true)) {
                         Thread.yield();
                     }

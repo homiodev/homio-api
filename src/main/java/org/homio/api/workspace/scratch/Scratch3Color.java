@@ -13,6 +13,6 @@ public class Scratch3Color {
     public Scratch3Color(String color) {
         this.color1 = color;
         this.color2 = UI.Color.darker(color, 0.7f);
-        this.color3 = UI.Color.darker(color, 0.9f);
+        this.color3 = UI.Color.darker(color, 0.5f);
     }
 }

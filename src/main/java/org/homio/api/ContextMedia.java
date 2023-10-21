@@ -24,9 +24,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-public interface EntityContextMedia {
+public interface ContextMedia {
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
 
@@ -146,7 +146,7 @@ public interface EntityContextMedia {
 
         boolean getIsAlive();
 
-        @NotNull EntityContext.FileLogger getFileLogger();
+        @NotNull Context.FileLogger getFileLogger();
 
         /**
          * @return true if process was alive and fired stop command, false if process wasn't alive already

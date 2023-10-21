@@ -18,7 +18,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.homio.api.AddonEntrypoint;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-@Getter
 @Log4j2
 @MappedSuperclass
 public abstract class BaseEntity implements
@@ -39,15 +38,17 @@ public abstract class BaseEntity implements
     @JsonIgnore
     @Transient
     @Setter
-    private EntityContext entityContext;
+    private Context context;
 
     @Id
+    @Getter
     @JsonIgnore // serialized by Bean2MixIn
     @Column(length = 128, nullable = false, unique = true)
     @GeneratedValue(generator = "id-generator")
     @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.generator.HomioIdGenerator")
     private String entityID;
 
+    @Getter
     @Version
     @JsonIgnore
     private int version;
@@ -58,11 +59,13 @@ public abstract class BaseEntity implements
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     private String name;
 
+    @Getter
     @JsonIgnore
     @Column(nullable = false)
     @CreationTimestamp
     private Date creationTime;
 
+    @Getter
     @JsonIgnore
     @Column(nullable = false)
     @UpdateTimestamp
@@ -197,4 +200,8 @@ public abstract class BaseEntity implements
 
     @JsonIgnore
     protected abstract long getChildEntityHashCode();
+
+    public Context context() {
+        return context;
+    }
 }

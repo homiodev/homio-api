@@ -5,10 +5,8 @@ import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.SneakyThrows;
 import org.homio.api.entity.BaseEntity;
@@ -24,31 +22,31 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 
-public interface EntityContext {
+public interface Context {
 
-    @NotNull EntityContextMedia media();
+    @NotNull ContextMedia media();
 
-    @NotNull EntityContextWidget widget();
+    @NotNull ContextWidget widget();
 
-    @NotNull EntityContextUI ui();
+    @NotNull ContextUI ui();
 
-    @NotNull EntityContextEvent event();
+    @NotNull ContextEvent event();
 
-    @NotNull EntityContextInstall install();
+    @NotNull ContextInstall install();
 
-    @NotNull EntityContextWorkspace workspace();
+    @NotNull ContextWorkspace workspace();
 
-    @NotNull EntityContextService service();
+    @NotNull ContextService service();
 
-    @NotNull EntityContextBGP bgp();
+    @NotNull ContextBGP bgp();
 
-    @NotNull EntityContextSetting setting();
+    @NotNull ContextSetting setting();
 
-    @NotNull EntityContextVar var();
+    @NotNull ContextVar var();
 
-    @NotNull EntityContextHardware hardware();
+    @NotNull ContextHardware hardware();
 
-    @NotNull EntityContextStorage storage();
+    @NotNull ContextStorage db();
 
     /**
      * Get or create new file logger for entity
@@ -59,79 +57,8 @@ public interface EntityContext {
      */
     @NotNull FileLogger getFileLogger(@NotNull BaseEntity baseEntity, @NotNull String suffix);
 
-    default @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID) {
-        return getEntity(entityID, true);
-    }
-
-    Map<Class<? extends BaseEntity>, BaseEntity> ENTITY_CLASS_TO_POJO = new HashMap<>();
-
-    default @Nullable <T extends BaseEntity> T getEntity(Class<T> entityClass, @NotNull String entityID) {
-        BaseEntity entity = ENTITY_CLASS_TO_POJO.computeIfAbsent(entityClass, CommonUtils::newInstance);
-        return getEntity(entity.setEntityID(entityID), true);
-    }
-
-    default @NotNull <T extends BaseEntity> T getEntityRequire(@NotNull String entityID) {
-        T entity = getEntity(entityID, true);
-        if (entity == null) {
-            throw new NotFoundException("Unable to find entity: " + entityID);
-        }
-        return entity;
-    }
-
-    default @NotNull <T extends BaseEntity> T getEntityRequire(Class<T> entityClass, @NotNull String entityID) {
-        T entity = CommonUtils.newInstance(entityClass);
-        return getEntityRequire(entity.setEntityID(entityID));
-    }
-
-    default @Nullable <T extends BaseEntity> T getEntityOrDefault(@NotNull String entityID, @Nullable T defEntity) {
-        T entity = getEntity(entityID, true);
-        return entity == null ? defEntity : entity;
-    }
-
-    /**
-     * Get entity by entityID.
-     *
-     * @param entityID - entity unique id to fetch
-     * @param useCache - allow to use cache or direct db
-     * @param <T>      -
-     * @return base entity
-     */
-    @Nullable <T extends BaseEntity> T getEntity(@NotNull String entityID, boolean useCache);
-
-    default @Nullable <T extends BaseEntity> T getEntity(@NotNull T entity) {
-        return getEntity(entity.getEntityID());
-    }
-
-    <T extends BaseEntity> void createDelayed(@NotNull T entity);
-
-    <T extends BaseEntity> void updateDelayed(@NotNull T entity, @NotNull Consumer<T> fieldUpdateConsumer);
-
-    default @NotNull <T extends BaseEntity> T save(@NotNull T entity) {
-        return save(entity, true);
-    }
-
-    @NotNull <T extends BaseEntity> T save(@NotNull T entity, boolean fireNotifyListeners);
-
-    default @Nullable <T extends BaseEntity> T delete(@NotNull T entity) {
-        return (T) delete(entity.getEntityID());
-    }
-
-    default @Nullable <T extends BaseEntity> T findAny(@NotNull Class<T> clazz) {
-        List<T> list = findAll(clazz);
-        return list.isEmpty() ? null : list.iterator().next();
-    }
-
-    @NotNull <T extends BaseEntity> List<T> findAll(@NotNull Class<T> clazz);
-
-    @NotNull <T extends BaseEntity> List<T> findAllByPrefix(@NotNull String prefix);
-
-    default @NotNull <T extends BaseEntity> List<T> findAll(@NotNull T entity) {
-        return (List<T>) findAll(entity.getClass());
-    }
-
     @NotNull List<OptionModel> toOptionModels(@Nullable Collection<? extends BaseEntity> entities);
 
-    @Nullable BaseEntity delete(@NotNull String entityId);
 
     @NotNull <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
 
@@ -188,7 +115,7 @@ public interface EntityContext {
         if (authentication != null) {
             User user = (User) authentication.getPrincipal();
             String userEntityID = user.getUsername().split(LIST_DELIMITER)[0];
-            return getEntity(userEntityID);
+            return db().getEntity(userEntityID);
         }
         return null;
     }

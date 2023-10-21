@@ -2,7 +2,7 @@ package org.homio.api.setting;
 
 import com.fazecast.jSerialComm.SerialPort;
 import java.util.Collection;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -15,7 +15,7 @@ public interface SettingPluginOptionsPort extends SettingPlugin<SerialPort>, Set
     }
 
     @Override
-    default @NotNull Collection<OptionModel> getOptions(EntityContext entityContext, JSONObject params) {
+    default @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params) {
         return OptionModel.listOfPorts(withEmpty());
     }
 

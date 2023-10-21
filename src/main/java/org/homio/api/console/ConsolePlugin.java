@@ -3,7 +3,7 @@ package org.homio.api.console;
 import java.util.Map;
 import java.util.Objects;
 import org.homio.api.AddonEntrypoint;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +15,7 @@ import org.json.JSONObject;
  */
 public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     default @NotNull String getName() {
         return getEntityID();

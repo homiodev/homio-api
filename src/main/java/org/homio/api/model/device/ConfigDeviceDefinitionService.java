@@ -1,7 +1,7 @@
 package org.homio.api.model.device;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.homio.api.EntityContextSetting.IS_DEV_ENVIRONMENT;
+import static org.homio.api.ContextSetting.IS_DEV_ENVIRONMENT;
 import static org.homio.api.util.CommonUtils.getErrorMessage;
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;

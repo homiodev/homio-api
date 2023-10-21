@@ -32,7 +32,7 @@ public class ToggleTemplateWidget implements TemplateWidgetBuilder {
     @Override
     public void buildMainWidget(MainWidgetRequest request) {
         WidgetRequest widgetRequest = request.getWidgetRequest();
-        DeviceEndpointsBehaviourContract entity = widgetRequest.getEntity();
+        DeviceEndpointsBehaviourContract entity = widgetRequest.entity();
 
         Map<String, ? extends DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
         List<DeviceEndpoint> includeEndpoints = request.getItemIncludeEndpoints();
@@ -41,7 +41,7 @@ public class ToggleTemplateWidget implements TemplateWidgetBuilder {
         }
         WidgetDefinition wd = request.getItem();
 
-        widgetRequest.getEntityContext().widget().createToggleWidget("tgl_" + entity.getEntityID(), builder -> {
+        widgetRequest.context().widget().createToggleWidget("tgl_" + entity.getEntityID(), builder -> {
             TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
             builder.setDisplayType(wd.getOptions().getToggleType())
                    .setLayout(UIFieldLayout.LayoutBuilder.builder(50, 50).addRow(
@@ -58,7 +58,7 @@ public class ToggleTemplateWidget implements TemplateWidgetBuilder {
                 DeviceEndpoint deviceEndpoint = endpoints.get(endpoint.getEndpointEntityID());
                 builder.addSeries(getName(entity, deviceEndpoint), seriesBuilder -> {
                     TemplateWidgetBuilder.buildIconAndColor(endpoint, seriesBuilder, wbEndpoint, widgetRequest);
-                    TemplateWidgetBuilder.setValueDataSource(seriesBuilder, widgetRequest.getEntityContext(), deviceEndpoint)
+                    TemplateWidgetBuilder.setValueDataSource(seriesBuilder, widgetRequest.context(), deviceEndpoint)
                                          .setColor(UI.Color.random());
                 });
             }

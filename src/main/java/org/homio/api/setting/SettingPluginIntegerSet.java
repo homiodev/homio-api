@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.jetbrains.annotations.NotNull;
 
 public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
@@ -29,7 +29,7 @@ public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
     }
 
     @Override
-    default Set<Integer> parseValue(EntityContext entityContext, String value) {
+    default Set<Integer> parseValue(Context context, String value) {
         if (value == null) {
             return Collections.emptySet();
         }

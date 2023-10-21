@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.Icon;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
@@ -35,13 +35,13 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
         return SettingType.Button;
     }
 
-    PackageContext allPackages(EntityContext entityContext) throws Exception;
+    PackageContext allPackages(Context context) throws Exception;
 
-    PackageContext installedPackages(EntityContext entityContext) throws Exception;
+    PackageContext installedPackages(Context context) throws Exception;
 
-    void installPackage(EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
+    void installPackage(Context context, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
 
-    void unInstallPackage(EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
+    void unInstallPackage(Context context, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
 
     @Getter
     @Setter

@@ -16,7 +16,7 @@ import org.homio.api.setting.console.header.dynamic.DynamicConsoleHeaderSettingP
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface EntityContextSetting {
+public interface ContextSetting {
 
     int SERVER_PORT = Integer.getInteger("server.port", 9111);
     boolean IS_DEV_ENVIRONMENT = Boolean.getBoolean("development");

@@ -1,7 +1,6 @@
 package org.homio.api;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import org.homio.api.service.DependencyExecutableInstaller;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Interface for installing different items install program in thread if progressBar is null, run in execution thread if progressBar not null
  */
-public interface EntityContextInstall {
+public interface ContextInstall {
 
     @NotNull InstallContext nodejs();
 

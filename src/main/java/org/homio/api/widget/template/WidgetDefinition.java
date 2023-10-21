@@ -12,12 +12,12 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.homio.api.EntityContextVar.VariableType;
-import org.homio.api.EntityContextWidget.Fill;
-import org.homio.api.EntityContextWidget.PulseColor;
-import org.homio.api.EntityContextWidget.Stepped;
-import org.homio.api.EntityContextWidget.ToggleType;
-import org.homio.api.EntityContextWidget.ValueCompare;
+import org.homio.api.ContextVar.VariableType;
+import org.homio.api.ContextWidget.Fill;
+import org.homio.api.ContextWidget.PulseColor;
+import org.homio.api.ContextWidget.Stepped;
+import org.homio.api.ContextWidget.ToggleType;
+import org.homio.api.ContextWidget.ValueCompare;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.endpoint.DeviceEndpoint;
@@ -121,9 +121,9 @@ public class WidgetDefinition {
     }
 
     public List<DeviceEndpoint> getIncludeEndpoints(MainWidgetRequest request) {
-        Set<String> topIncludeEndpoints = request.getWidgetRequest().getIncludeEndpoints().stream()
+        Set<String> topIncludeEndpoints = request.getWidgetRequest().includeEndpoints().stream()
                                                  .map(DeviceEndpoint::getEndpointEntityID).collect(Collectors.toSet());
-        List<DeviceEndpoint> allPossibleEndpoints = request.getItem().getEndpoints(request.getWidgetRequest().getEntity());
+        List<DeviceEndpoint> allPossibleEndpoints = request.getItem().getEndpoints(request.getWidgetRequest().entity());
         return allPossibleEndpoints.stream()
                                    .filter(endpoint -> topIncludeEndpoints.contains(endpoint.getEndpointEntityID()))
                                    .collect(Collectors.toList());

@@ -8,8 +8,8 @@ import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.AddonEntrypoint;
-import org.homio.api.EntityContext;
-import org.homio.api.EntityContextBGP.ThreadContext;
+import org.homio.api.Context;
+import org.homio.api.ContextBGP.ThreadContext;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.Status;
@@ -27,41 +27,61 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
 
-    private static final String DEVICE = "DEVICE";
-    private static final String ENDPOINT = "ENDPOINT";
-    private static final String DEVICE__BASE_URL = "rest/device";
+    protected static final String DEVICE = "DEVICE";
+    protected static final String ENDPOINT = "ENDPOINT";
+    protected static final String DEVICE__BASE_URL = "rest/device";
 
-    private final @NotNull ServerMenuBlock deviceMenu;
-    private final @NotNull ServerMenuBlock deviceReadMenu;
-    private final @NotNull ServerMenuBlock deviceWriteMenu;
-    private final @NotNull ServerMenuBlock endpointMenu;
-    private final @NotNull ServerMenuBlock temperatureDeviceMenu;
-    private final @NotNull ServerMenuBlock humidityDeviceMenu;
-    private final @NotNull ServerMenuBlock readEndpointMenu;
-    private final @NotNull ServerMenuBlock writeEndpointMenu;
-    private final @NotNull StaticMenuBlock<OnOff> onOffMenu;
-    private final @NotNull ServerMenuBlock deviceWriteBoolMenu;
-    private final @NotNull ServerMenuBlock writeBoolEndpointMenu;
+    protected final @NotNull ServerMenuBlock deviceMenu;
+    protected final @NotNull ServerMenuBlock deviceReadMenu;
+    protected final @NotNull ServerMenuBlock deviceWriteMenu;
+    protected final @NotNull ServerMenuBlock endpointMenu;
+    protected final @NotNull ServerMenuBlock readEndpointMenu;
+    protected final @NotNull ServerMenuBlock writeEndpointMenu;
+    protected final @NotNull StaticMenuBlock<OnOff> onOffMenu;
+    protected final @NotNull ServerMenuBlock deviceWriteBoolMenu;
+    protected final @NotNull ServerMenuBlock writeBoolEndpointMenu;
+    protected final String devicePrefix;
 
-    public Scratch3BaseDeviceBlocks(String color, EntityContext entityContext, AddonEntrypoint addonEntrypoint) {
-        super(color, entityContext, addonEntrypoint);
+    public Scratch3BaseDeviceBlocks(
+        String color,
+        Context context,
+        AddonEntrypoint addonEntrypoint,
+        String devicePrefix) {
+        super(color, context, addonEntrypoint);
         setParent("devices");
+        this.devicePrefix = devicePrefix;
 
         this.onOffMenu = menuStatic("onOffMenu", OnOff.class, OnOff.off);
-        this.deviceMenu = menuServer("deviceMenu", DEVICE__BASE_URL, "Device", "-");
-        this.deviceReadMenu = menuServer("deviceReadMenu", DEVICE__BASE_URL + "?access=read", "Device", "-");
-        this.deviceWriteBoolMenu = menuServer("deviceWriteBoolMenu", DEVICE__BASE_URL + "?access=write&type=bool", "Device", "-");
-        this.deviceWriteMenu = menuServer("deviceWriteMenu", DEVICE__BASE_URL + "?access=write", "Device", "-");
-        this.temperatureDeviceMenu = menuServer("temperatureDeviceMenu", DEVICE__BASE_URL + "/temperature", "Device", "-");
-        this.humidityDeviceMenu = menuServer("humidityDeviceMenu", DEVICE__BASE_URL + "/humidity", "Device", "-");
-        this.endpointMenu = menuServer("endpointMenu", DEVICE__BASE_URL + "/endpoints", "Endpoint", "-")
+        this.deviceMenu = menuServer("deviceMenu",
+            "%s?prefix=%s".formatted(DEVICE__BASE_URL, devicePrefix),
+            "Device", "-");
+        this.deviceReadMenu = menuServer("deviceReadMenu",
+            "%s?prefix=%s&access=read".formatted(DEVICE__BASE_URL, devicePrefix),
+            "Device", "-");
+        this.deviceWriteBoolMenu = menuServer("deviceWriteBoolMenu",
+            "%s?prefix=%s&access=write&type=bool".formatted(DEVICE__BASE_URL, devicePrefix),
+            "Device",
+            "-");
+        this.deviceWriteMenu = menuServer("deviceWriteMenu",
+            "%s?prefix=%s&access=write".formatted(DEVICE__BASE_URL, devicePrefix),
+            "Device", "-");
+        this.endpointMenu = menuServer("endpointMenu",
+            "%s/endpoints".formatted(DEVICE__BASE_URL),
+            "Endpoint", "-")
             .setDependency(this.deviceMenu);
-        this.readEndpointMenu = menuServer("readEndpointMenu", DEVICE__BASE_URL + "/endpoints?access=read", "Endpoint", "-")
+        this.readEndpointMenu = menuServer("readEndpointMenu",
+            "%s/endpoints?access=read".formatted(DEVICE__BASE_URL),
+            "Endpoint", "-")
             .setDependency(this.deviceReadMenu);
-        this.writeEndpointMenu = menuServer("writeEndpointMenu", DEVICE__BASE_URL + "/endpoints?access=write", "Endpoint", "-")
+        this.writeEndpointMenu = menuServer("writeEndpointMenu",
+            "%s/endpoints?access=write".formatted(DEVICE__BASE_URL),
+            "Endpoint", "-")
             .setDependency(this.deviceWriteMenu);
-        this.writeBoolEndpointMenu = menuServer("writeBoolEndpointMenu", DEVICE__BASE_URL + "/endpoints?access=write&type=bool", "Endpoint", "-")
+        this.writeBoolEndpointMenu = menuServer("writeBoolEndpointMenu",
+            "%s/endpoints?access=write&type=bool".formatted(DEVICE__BASE_URL),
+            "Endpoint", "-")
             .setDependency(this.deviceWriteMenu);
+
         // reporter blocks
         blockReporter(50, "time_since_last_event", "time since last event [ENDPOINT] of [DEVICE]",
             workspaceBlock -> {
@@ -78,20 +98,6 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
             block.addArgument(DEVICE, this.deviceMenu);
             block.overrideColor("#84185c");
         });
-
-        blockReporter(52, "temperature", "temperature [DEVICE]",
-            workspaceBlock -> getDeviceEndpoint(workspaceBlock, deviceMenu, "temperature").getLastValue(),
-            block -> {
-                block.addArgument(DEVICE, this.temperatureDeviceMenu);
-                block.overrideColor("#307596");
-            });
-
-        blockReporter(53, "humidity", "humidity [DEVICE]",
-            workspaceBlock -> getDeviceEndpoint(workspaceBlock, deviceMenu, "humidity").getLastValue(),
-            block -> {
-                block.addArgument(DEVICE, humidityDeviceMenu);
-                block.overrideColor("#3B8774");
-            });
 
         // command blocks
         blockCommand(80, "read_edp", "Read [ENDPOINT] value of [DEVICE]", workspaceBlock ->
@@ -139,7 +145,7 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
             });
     }
 
-    private @NotNull DeviceEndpoint getDeviceEndpoint(
+    protected @NotNull DeviceEndpoint getDeviceEndpoint(
         @NotNull WorkspaceBlock workspaceBlock,
         @NotNull ServerMenuBlock deviceMenu,
         @NotNull ServerMenuBlock endpointMenu) {
@@ -166,32 +172,8 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
         });
     }
 
-    /**
-     * Handler to wait specific seconds after some event and fire event after that
-     */
-    private void whenNoValueChangeSince(@NotNull WorkspaceBlock workspaceBlock) {
-        workspaceBlock.handleNext(next -> {
-            Integer secondsToWait = workspaceBlock.getInputInteger("DURATION");
-            if (secondsToWait < 1) {
-                workspaceBlock.logErrorAndThrow("Duration must be greater than 1 seconds. Value: {}", secondsToWait);
-            }
-            DeviceEndpoint endpoint = getDeviceEndpoint(workspaceBlock);
-            Lock eventOccurredLock = workspaceBlock.getLockManager().getLock(workspaceBlock);
-
-            // add listener on target endpoint for any changes and wake up lock
-            endpoint.addChangeListener(workspaceBlock.getId(), state -> eventOccurredLock.signalAll());
-
-            // thread context that will be started when endpoint's listener fire event
-            ThreadContext<Void> delayThread = entityContext.bgp().builder("when-no-val-" + workspaceBlock.getId())
-                                                           .delay(Duration.ofSeconds(secondsToWait))
-                                                           .tap(workspaceBlock::setThreadContext)
-                                                           .execute(next::handle, false);
-            // remove listener from endpoint. ThreadContext will be cancelled automatically
-            workspaceBlock.onRelease(() ->
-                endpoint.removeChangeListener(workspaceBlock.getId()));
-            // subscribe to lock that will restart delay thread after event
-            workspaceBlock.subscribeToLock(eventOccurredLock, delayThread::reset);
-        });
+    protected @NotNull State getDeviceEndpointState(@NotNull WorkspaceBlock workspaceBlock) {
+        return getDeviceEndpoint(workspaceBlock).getLastValue();
     }
 
     private void whenValueChange(@NotNull WorkspaceBlock workspaceBlock) {
@@ -205,15 +187,11 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
         });
     }
 
-    private @NotNull State getDeviceEndpointState(@NotNull WorkspaceBlock workspaceBlock) {
-        return getDeviceEndpoint(workspaceBlock).getLastValue();
-    }
-
-    private @NotNull DeviceEndpoint getDeviceEndpoint(@NotNull WorkspaceBlock workspaceBlock) {
+    protected @NotNull DeviceEndpoint getDeviceEndpoint(@NotNull WorkspaceBlock workspaceBlock) {
         return getDeviceEndpoint(workspaceBlock, deviceMenu, endpointMenu);
     }
 
-    private @NotNull DeviceEndpoint getDeviceEndpoint(
+    protected @NotNull DeviceEndpoint getDeviceEndpoint(
         @NotNull WorkspaceBlock workspaceBlock,
         @NotNull ServerMenuBlock deviceMenu,
         @NotNull String endpointID) {
@@ -236,18 +214,40 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
         throw new NotImplementedException();
     }
 
-    private @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String ieeeAddress, @NotNull String endpointID) {
-        for (DeviceBaseEntity deviceBaseEntity : entityContext.findAll(DeviceBaseEntity.class)) {
-            if (deviceBaseEntity instanceof DeviceEndpointsBehaviourContract deviceEntity) {
-                if (ieeeAddress.equals(deviceEntity.getIeeeAddress())) {
-                    return deviceEntity.getDeviceEndpoint(endpointID);
-                }
-            }
-        }
-        return null;
+    protected @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String ieeeAddress, @NotNull String endpointID) {
+        DeviceBaseEntity entity = context.db().getEntityRequire(ieeeAddress);
+        return ((DeviceEndpointsBehaviourContract) entity).getDeviceEndpoint(endpointID);
     }
 
-    private enum OnOff {
+    /**
+     * Handler to wait specific seconds after some event and fire event after that
+     */
+    private void whenNoValueChangeSince(@NotNull WorkspaceBlock workspaceBlock) {
+        workspaceBlock.handleNext(next -> {
+            Integer secondsToWait = workspaceBlock.getInputInteger("DURATION");
+            if (secondsToWait < 1) {
+                workspaceBlock.logErrorAndThrow("Duration must be greater than 1 seconds. Value: {}", secondsToWait);
+            }
+            DeviceEndpoint endpoint = getDeviceEndpoint(workspaceBlock);
+            Lock eventOccurredLock = workspaceBlock.getLockManager().getLock(workspaceBlock);
+
+            // add listener on target endpoint for any changes and wake up lock
+            endpoint.addChangeListener(workspaceBlock.getId(), state -> eventOccurredLock.signalAll());
+
+            // thread context that will be started when endpoint's listener fire event
+            ThreadContext<Void> delayThread = context.bgp().builder("when-no-val-" + workspaceBlock.getId())
+                                                     .delay(Duration.ofSeconds(secondsToWait))
+                                                     .tap(workspaceBlock::setThreadContext)
+                                                     .execute(next::handle, false);
+            // remove listener from endpoint. ThreadContext will be cancelled automatically
+            workspaceBlock.onRelease(() ->
+                endpoint.removeChangeListener(workspaceBlock.getId()));
+            // subscribe to lock that will restart delay thread after event
+            workspaceBlock.subscribeToLock(eventOccurredLock, delayThread::reset);
+        });
+    }
+
+    public enum OnOff {
         on, off
     }
 }

@@ -3,9 +3,9 @@ package org.homio.api;
 import org.homio.api.workspace.scratch.Scratch3ExtensionBlocks;
 import org.jetbrains.annotations.NotNull;
 
-public interface EntityContextWorkspace {
+public interface ContextWorkspace {
 
-    @NotNull EntityContext getEntityContext();
+    @NotNull Context context();
 
     /**
      * Register custom Scratch3Extension
