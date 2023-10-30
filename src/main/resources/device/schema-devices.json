@@ -128,9 +128,7 @@
           }
         },
         "required": [
-          "name",
-          "icon",
-          "iconColor"
+          "name"
         ]
       }
     },

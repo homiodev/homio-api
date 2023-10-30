@@ -1,6 +1,7 @@
 package org.homio.api.workspace.scratch;
 
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.workspace.scratch.Scratch3ExtensionBlocks.SETTING;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
@@ -23,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
 
-    public static final String CONDITION = "CONDITION";
     @JsonIgnore
     private final int order;
     private final String opcode;
@@ -86,22 +86,17 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     @SneakyThrows
-    public @NotNull <T extends EntityFieldMetadata> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass) {
-        return addSetting(settingClass, null);
+    public @NotNull <T extends ScratchSettingBaseEntity> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass) {
+        return addSetting(CommonUtils.newInstance(settingClass));
     }
 
     @SneakyThrows
-    public @NotNull <T extends EntityFieldMetadata> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass, @Nullable T entity) {
-        if (entity == null) {
-            entity = CommonUtils.newInstance(settingClass);
-        }
-
-        EntityFieldMetadata entityFieldMetadata = CommonUtils.newInstance(settingClass);
-        if (StringUtils.isEmpty(entityFieldMetadata.getTitle())) {
+    public @NotNull <T extends ScratchSettingBaseEntity> ArgumentTypeDescription addSetting(@NotNull T entity) {
+        if (StringUtils.isEmpty(entity.getTitle())) {
             throw new IllegalArgumentException("Setting class has to have non null title method");
         }
 
-        return addArgument("SETTING", ArgumentType.setting, OBJECT_MAPPER.writeValueAsString(entity));
+        return addArgument(SETTING, ArgumentType.setting, OBJECT_MAPPER.writeValueAsString(entity));
     }
 
     public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull ArgumentType type, @NotNull String defaultValue) {
@@ -204,6 +199,15 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
                 return defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
             }
             return null;
+        }
+    }
+
+    public interface ScratchSettingBaseEntity extends EntityFieldMetadata {
+
+        @Override
+        // requires to instantiate entity for fetch select boxes
+        default String getEntityID() {
+            return getClass().getName();
         }
     }
 }

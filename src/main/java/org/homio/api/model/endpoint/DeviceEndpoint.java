@@ -1,5 +1,6 @@
 package org.homio.api.model.endpoint;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Comparator;
@@ -304,11 +305,24 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     boolean isStateless();
 
     default void assembleUIAction(@NotNull UIInputBuilder uiInputBuilder) {
-        if(getEndpointEntityID().equals(ENDPOINT_DEVICE_STATUS)) {
-            Status status = Status.valueOf(getValue().stringValue());
-            uiInputBuilder.addInfo(status.name(), InfoType.Text).setColor(status.getColor());
-        } else {
-            uiInputBuilder.addInfo(getValue().toString(), InfoType.Text);
+        switch (getEndpointEntityID()) {
+            case ENDPOINT_SIGNAL:
+            case ENDPOINT_BATTERY:
+                int val = getValue().intValue();
+                uiInputBuilder.addInfo(getValue().toString(), InfoType.Text)
+                              .setColor(val < 35 ? "#E74C3C" : (val < 50) ? "#EC8826" : (val < 85) ? "#F1C40F" : "#8BC34A");
+                break;
+            case ENDPOINT_DEVICE_STATUS:
+                Status status = Status.valueOf(getValue().stringValue());
+                uiInputBuilder.addInfo(status.name(), InfoType.Text).setColor(status.getColor());
+                break;
+            case ENDPOINT_LAST_SEEN:
+                long value = getValue().longValue();
+                String color = value > 600000 ? "#E74C3C" : (value > 300000 ? "#EC8826" : "#8BC34A");
+                uiInputBuilder.addDuration(value, color);
+                break;
+            default:
+                uiInputBuilder.addInfo(getValue().toString(), InfoType.Text);
         }
     }
 
@@ -324,15 +338,37 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     @Getter
     @RequiredArgsConstructor
     enum EndpointType {
-        trigger((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue),
-        bool((jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s)), State::boolValue),
-        number((jsonObject, s) -> new DecimalType(jsonObject.getInt(s)), State::floatValue),
-        dimmer((jsonObject, s) -> new DecimalType(jsonObject.getInt(s)), State::intValue),
-        string((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue),
-        select((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue),
-        color((jsonObject, s) -> new StringType(jsonObject.getString(s)), State::stringValue);
+        trigger(
+            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+            jsonNode -> new StringType(jsonNode.asText()),
+            State::stringValue),
+        bool(
+            (jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s)),
+            jsonNode -> OnOffType.of(jsonNode.asBoolean()),
+            State::boolValue),
+        number(
+            (jsonObject, s) -> new DecimalType(jsonObject.getInt(s)),
+            jsonNode -> new DecimalType(jsonNode.asDouble()),
+            State::floatValue),
+        dimmer(
+            (jsonObject, s) -> new DecimalType(jsonObject.getInt(s)),
+            jsonNode -> new DecimalType(jsonNode.asText()),
+            State::intValue),
+        string(
+            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+            jsonNode -> new StringType(jsonNode.asText()),
+            State::stringValue),
+        select(
+            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+            jsonNode -> new StringType(jsonNode.asText()),
+            State::stringValue),
+        color(
+            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+            jsonNode -> new StringType(jsonNode.asText()),
+            State::stringValue);
 
         private final BiFunction<JSONObject, String, State> reader;
+        private final Function<JsonNode, State> nodeReader;
         private final Function<State, Object> fromStateConverter;
     }
 }

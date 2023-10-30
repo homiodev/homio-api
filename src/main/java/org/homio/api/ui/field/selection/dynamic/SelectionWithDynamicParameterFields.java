@@ -3,6 +3,7 @@ package org.homio.api.ui.field.selection.dynamic;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 /**
@@ -22,7 +23,7 @@ public interface SelectionWithDynamicParameterFields {
     @AllArgsConstructor
     class RequestDynamicParameter {
 
-        private @NotNull Object selectionHolder;
+        private @Nullable Object selectionHolder;
         private @NotNull JSONObject metadata; // contains conditions if i.e. for some entities it requires one parameter but for other...
     }
 }

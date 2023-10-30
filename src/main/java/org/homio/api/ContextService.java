@@ -3,12 +3,13 @@ package org.homio.api;
 import static java.lang.String.format;
 import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.service.EntityService;
 import org.homio.api.service.EntityService.ServiceInstance;
-import org.homio.api.state.State;
 import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,26 +20,27 @@ public interface ContextService {
 
     @NotNull Context context();
 
+    @NotNull String getPrimaryMqttEntity();
+
     void registerEntityTypeForSelection(@NotNull Class<? extends HasEntityIdentifier> entityClass, @NotNull String type);
 
-    void registerUserRoleResource(String resource);
+    void registerUserRoleResource(@NotNull String resource);
 
-    default MQTTEntityService getMQTTEntityService(String entityID) {
+    default @Nullable MQTTEntityService getMQTTEntityService(@NotNull String entityID) {
         return getService(entityID, MQTTEntityService.class);
     }
 
-    EntityService.ServiceInstance getEntityService(String entityID);
+    @Nullable EntityService.ServiceInstance getEntityService(@NotNull String entityID);
 
-    default boolean isHasEntityService(String entityID) {
+    default boolean isHasEntityService(@NotNull String entityID) {
         return getEntityService(entityID) != null;
     }
 
-    void addEntityService(String entityID, EntityService.ServiceInstance service);
+    void addEntityService(@NotNull String entityID, @NotNull EntityService.ServiceInstance service);
 
-    ServiceInstance removeEntityService(String entityID);
+    @Nullable ServiceInstance removeEntityService(@NotNull String entityID);
 
-    @Nullable
-    private <T> T getService(String entityID, Class<T> serviceClass) {
+    private <T> @Nullable T getService(@NotNull String entityID, @NotNull Class<T> serviceClass) {
         BaseEntity entity = context().db().getEntity(entityID);
         if (entity != null && !serviceClass.isAssignableFrom(entity.getClass())) {
             throw new IllegalStateException(format("Entity: '%s' has type: '%s' but require: '%s'", entityID, entity.getType(), serviceClass.getSimpleName()));
@@ -48,21 +50,40 @@ public interface ContextService {
 
     interface MQTTEntityService extends HasEntityIdentifier {
 
-        String getUser();
+        @NotNull String getUser();
 
-        SecureString getPassword();
+        @NotNull SecureString getPassword();
 
-        String getHostname();
+        @NotNull String getHostname();
 
         int getPort();
 
-        void publish(String topic, byte[] payload, int qos, boolean retained);
+        default void publish(@NotNull String topic) {
+            publish(topic, new byte[0], 0, false);
+        }
 
-        void addListener(String topic, String discriminator, Consumer<State> listener);
+        default void publish(@NotNull String topic, byte[] payload) {
+            publish(topic, payload, 0, false);
+        }
 
-        void removeListener(String topic, String discriminator);
+        void publish(@NotNull String topic, byte[] payload, int qos, boolean retained);
 
-        static String buildMqttListenEvent(String mqttEntityID, String topic) {
+        default void addListener(@NotNull String topic, @NotNull String discriminator, @NotNull Consumer<String> listener) {
+            addListener(topic, discriminator, (s, value) -> listener.accept(value));
+        }
+
+        void addListener(@NotNull String topic, @NotNull String discriminator, @NotNull BiConsumer<String, String> listener);
+
+        // topic i.e.: +/tele/# or tele/#
+        default void addListener(@NotNull Set<String> topics, @NotNull String discriminator, @NotNull BiConsumer<String, String> listener) {
+            for (String topic : topics) {
+                addListener(topic, discriminator, listener);
+            }
+        }
+
+        void removeListener(@NotNull String topic, @NotNull String discriminator);
+
+        static @NotNull String buildMqttListenEvent(@NotNull String mqttEntityID, @NotNull String topic) {
             return mqttEntityID + LIST_DELIMITER + topic;
         }
     }

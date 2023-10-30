@@ -1,5 +1,6 @@
 package org.homio.api;
 
+import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import org.homio.api.service.DependencyExecutableInstaller;
 import org.homio.hquery.ProgressBar;
@@ -12,6 +13,8 @@ import org.jetbrains.annotations.Nullable;
 public interface ContextInstall {
 
     @NotNull InstallContext nodejs();
+
+    void pipInstall(@NotNull String code);
 
     @NotNull InstallContext createInstallContext(Class<? extends DependencyExecutableInstaller> installerClass);
 
@@ -40,6 +43,17 @@ public interface ContextInstall {
          */
         @Nullable String getVersion();
 
-        @Nullable String getPath(@NotNull String execName);
+        /**
+         * Return executable path with relative against base path where execuable installed
+         *
+         * @param execName - executable name
+         * @return path or execName if linux
+         */
+        @Nullable String getExecutablePath(@NotNull Path execName);
+    }
+
+    interface Python {
+
+        void install();
     }
 }

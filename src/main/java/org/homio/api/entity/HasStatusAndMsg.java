@@ -6,6 +6,7 @@ import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
+import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.color.UIFieldColorStatusMatch;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.homio.api.util.CommonUtils;
@@ -30,7 +31,7 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
         setStatus(status, status == Status.ONLINE ? null : getStatusMessage());
     }
 
-    @UIField(order = 6, hideInEdit = true, hideOnEmpty = true, color = "#B22020")
+    @UIField(order = 6, hideInEdit = true, hideOnEmpty = true, color = "#B22020", type = UIFieldType.HTML)
     @UIFieldShowOnCondition("return !context.get('compactMode')")
     @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
     default @Nullable String getStatusMessage() {

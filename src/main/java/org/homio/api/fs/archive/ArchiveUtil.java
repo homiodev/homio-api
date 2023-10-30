@@ -1,5 +1,8 @@
 package org.homio.api.fs.archive;
 
+import static java.lang.String.format;
+import static org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler.replace;
+
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingPredicate;
 import java.io.BufferedOutputStream;
@@ -51,6 +54,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.util.CommonUtils;
+import org.homio.hquery.Curl;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,6 +62,57 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 @Log4j2
 public final class ArchiveUtil {
+
+    public static void unzipAndMove(@NotNull ProgressBar progressBar, @NotNull Path archive, @NotNull Path targetPath) throws IOException {
+        progressBar.progress(70, format("Unzip %s sources", archive));
+        Path workingPath = archive.getParent();
+        List<Path> files = ArchiveUtil.unzip(archive, workingPath, null, false, progressBar, replace);
+        if (!files.isEmpty()) {
+            /*Path unzipFolder = CommonUtils.getTmpPath().relativize(files.iterator().next());
+            while (unzipFolder.getParent() != null) {
+                unzipFolder = unzipFolder.getParent();
+            }*/
+            Files.delete(archive);
+            CommonUtils.deletePath(targetPath);
+            File srcDir = workingPath.toFile();
+            // we need copy only desired files if we unzip many files to single folder
+            if (files.size() > 1) {
+                File[] listFiles = Objects.requireNonNull(srcDir.listFiles());
+                if (listFiles.length == 1) {
+                    srcDir = listFiles[0];
+                }
+            }
+            // Path unzipPath = CommonUtils.getTmpPath().resolve(unzipFolder);
+            FileUtils.copyDirectory(srcDir, targetPath.toFile());
+        }
+        FileUtils.deleteDirectory(workingPath.toFile());
+    }
+
+    /**
+     * Download archive file from url, extract, delete archive
+     *
+     * @param url             - url of archived source
+     * @param archiveFileName - archive file name
+     * @param progressBar     - progress bar to print progress
+     * @return unarchived downloaded folder
+     */
+    @SneakyThrows
+    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String archiveFileName,
+        @NotNull ProgressBar progressBar) {
+        return downloadAndExtract(url, archiveFileName, progressBar, CommonUtils.getInstallPath());
+    }
+
+    @SneakyThrows
+    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String archiveFileName,
+        @NotNull ProgressBar progressBar, @NotNull Path targetFolder) {
+        progressBar.progress(0, format("Downloading '%s' from url '%s'", archiveFileName, url));
+        Path archivePath = CommonUtils.getTmpPath().resolve(archiveFileName);
+        Curl.downloadWithProgress(url, archivePath, progressBar);
+        progressBar.progress(90, format("Extracting '%s' to path '%s'", archivePath, targetFolder));
+        List<Path> files = ArchiveUtil.unzip(archivePath, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
+        Files.delete(archivePath);
+        return files;
+    }
 
     @SneakyThrows
     public static List<Path> unzip(@NotNull Path archive, @NotNull Path destination, @Nullable String password,

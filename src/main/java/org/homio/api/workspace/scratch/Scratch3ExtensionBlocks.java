@@ -30,6 +30,8 @@ public abstract class Scratch3ExtensionBlocks {
     public static final String EVENT = "EVENT";
     public static final String VALUE = "VALUE";
     public static final String ENTITY = "ENTITY";
+    public static final String CONDITION = "CONDITION";
+    public static final String SETTING = "SETTING";
 
     protected final @NotNull Context context;
     private final @NotNull String id;
@@ -46,7 +48,7 @@ public abstract class Scratch3ExtensionBlocks {
      * Uses for grouping extensions inside select box
      */
     @Setter
-    private String parent;
+    private ScratchParent parent;
 
     public Scratch3ExtensionBlocks(@Nullable String color, @NotNull Context context, @Nullable AddonEntrypoint addonEntryPoint) {
         this(color, context, addonEntryPoint, null);
@@ -56,7 +58,6 @@ public abstract class Scratch3ExtensionBlocks {
     public Scratch3ExtensionBlocks(@Nullable String color, @NotNull Context context, @Nullable AddonEntrypoint addonEntryPoint,
         @Nullable String idSuffix) {
         this.id = addonEntryPoint == null ? Objects.requireNonNull(idSuffix) : addonEntryPoint.getAddonID() + (idSuffix == null ? "" : "-" + idSuffix);
-        this.parent = addonEntryPoint == null ? null : addonEntryPoint.getAddonID();
         this.context = context;
         if (color != null) {
             URL resource = getImage(addonEntryPoint);
@@ -260,5 +261,9 @@ public abstract class Scratch3ExtensionBlocks {
             throw new RuntimeException("Found multiple menu with same name: " + menuBlock.getName());
         }
         return menuBlock;
+    }
+
+    public enum ScratchParent {
+        storage, communication, media, hardware, ui, devices, network, misc, identity
     }
 }

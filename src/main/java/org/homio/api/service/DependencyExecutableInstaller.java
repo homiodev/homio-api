@@ -1,9 +1,9 @@
 package org.homio.api.service;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import lombok.Getter;
@@ -26,18 +26,15 @@ public abstract class DependencyExecutableInstaller {
 
     public abstract String getName();
 
-    public @Nullable String getExecutablePath(@NotNull String execName) {
+    public @Nullable String getExecutablePath(@NotNull Path execName) {
         if (getVersion() == null) {
             return null;
-        }
-        if (IS_OS_LINUX) {
-            return execName;
         }
         if (Files.exists(CommonUtils.getInstallPath().resolve(getName()))) {
             return CommonUtils.getInstallPath().resolve(getName()).resolve(execName).toString();
         }
         // in case if installed externally
-        return execName;
+        return execName.getFileName().toString();
     }
 
     public final @Nullable String getVersion() {

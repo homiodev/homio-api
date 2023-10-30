@@ -6,12 +6,10 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler.replace;
 
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -69,11 +67,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.tika.Tika;
 import org.homio.api.fs.TreeNode;
-import org.homio.api.fs.archive.ArchiveUtil;
-import org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler;
 import org.homio.api.repository.GitHubProject;
-import org.homio.hquery.Curl;
-import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.InputStreamResource;
@@ -88,14 +82,14 @@ import org.w3c.dom.Document;
 
 @Getter
 @Log4j2
-@SuppressWarnings("unused")
-public class CommonUtils {
+public final class CommonUtils {
 
     // map for store different statuses
     private static final @Getter Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Path rootPath;
     private static final @Getter Path logsPath = getOrCreatePath("logs");
+    private static final @Getter Path logsEntitiesPath = getOrCreatePath("logs/entities");
     private static final @Getter Path configPath = getOrCreatePath("conf");
     private static final @Getter Path filesPath = getOrCreatePath("asm_files");
     private static final @Getter Path installPath = getOrCreatePath("installs");
@@ -111,27 +105,6 @@ public class CommonUtils {
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
-    }
-
-    /**
-     * Download archive file from url, extract, delete archive
-     *
-     * @param url             - url of archived source
-     * @param archiveFileName - archive file name
-     * @param progressBar     - progress bar to print progress
-     * @return unarchived downloaded folder
-     */
-    @SneakyThrows
-    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String archiveFileName,
-        @NotNull ProgressBar progressBar) {
-        progressBar.progress(0, format("Downloading '%s' from url '%s'", archiveFileName, url));
-        Path targetFolder = CommonUtils.getInstallPath();
-        Path archivePath = CommonUtils.getTmpPath().resolve(archiveFileName);
-        Curl.downloadWithProgress(url, archivePath, progressBar);
-        progressBar.progress(90, format("Extracting '%s' to path '%s'", archivePath, targetFolder));
-        List<Path> files = ArchiveUtil.unzip(archivePath, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
-        Files.delete(archivePath);
-        return files;
     }
 
     public static String getExtension(String fileName) {
@@ -343,32 +316,10 @@ public class CommonUtils {
         return out.toString();
     }
 
-    public static void unzipAndMove(@NotNull ProgressBar progressBar, @NotNull Path archive, @NotNull Path targetPath) throws IOException {
-        progressBar.progress(70, format("Unzip %s sources", archive));
-        Path workingPath = archive.getParent();
-        List<Path> files = ArchiveUtil.unzip(archive, workingPath, null, false, progressBar, replace);
-        if (!files.isEmpty()) {
-            /*Path unzipFolder = CommonUtils.getTmpPath().relativize(files.iterator().next());
-            while (unzipFolder.getParent() != null) {
-                unzipFolder = unzipFolder.getParent();
-            }*/
-            Files.delete(archive);
-            CommonUtils.deletePath(targetPath);
-            File srcDir = workingPath.toFile();
-            // we need copy only desired files if we unzip many files to single folder
-            if (files.size() > 1) {
-                File[] listFiles = Objects.requireNonNull(srcDir.listFiles());
-                if (listFiles.length == 1) {
-                    srcDir = listFiles[0];
-                }
-            }
-            // Path unzipPath = CommonUtils.getTmpPath().resolve(unzipFolder);
-            FileUtils.copyDirectory(srcDir, targetPath.toFile());
+    public static boolean deletePath(@Nullable Path path) {
+        if (path == null) {
+            return false;
         }
-        FileUtils.deleteDirectory(workingPath.toFile());
-    }
-
-    public static boolean deletePath(@NotNull Path path) {
         try {
             if (Files.exists(path)) {
                 if (Files.isDirectory(path)) {

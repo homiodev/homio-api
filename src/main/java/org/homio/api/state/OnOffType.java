@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 public class OnOffType implements State {
@@ -28,6 +29,14 @@ public class OnOffType implements State {
 
     public static OnOffType of(boolean on) {
         return on ? ON : OFF;
+    }
+
+    public static OnOffType of(@Nullable String value) {
+        if (value != null) {
+            String lowerCase = value.toLowerCase();
+            return OnOffType.of(lowerCase.equals("1") || lowerCase.equals("on") || lowerCase.equals("true"));
+        }
+        return OnOffType.OFF;
     }
 
     public OnOffType invert() {

@@ -226,7 +226,7 @@ public class GitHubProject {
                                   .resolve(project)
                                   .resolve(project + "." + CommonUtils.getExtension(downloadUrl));
         Curl.downloadWithProgress(downloadUrl, archive, progressBar);
-        CommonUtils.unzipAndMove(progressBar, archive, localProjectPath);
+        ArchiveUtil.unzipAndMove(progressBar, archive, localProjectPath);
     }
 
     @SneakyThrows
@@ -492,7 +492,7 @@ public class GitHubProject {
             Path workingPath = CommonUtils.getTmpPath().resolve(project);
             Path archive = workingPath.resolve(name + ".tar.gz");
             Curl.downloadWithProgress(api + "tarball/" + version, archive, progressBar);
-            CommonUtils.unzipAndMove(progressBar, archive, localProjectPath);
+            ArchiveUtil.unzipAndMove(progressBar, archive, localProjectPath);
             return this;
         }
 

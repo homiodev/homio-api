@@ -36,6 +36,10 @@ public interface ContextHardware {
 
     @NotNull ContextHardware startSystemCtl(@NotNull String soft);
 
+    default boolean isSystemCtlExists(@NotNull String soft) {
+        return "active".equals(execute("systemctl is-active mosquitto"));
+    }
+
     void stopSystemCtl(@NotNull String soft);
 
     @NotNull String getHostname();

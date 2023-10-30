@@ -18,6 +18,8 @@ public @interface UIFieldLinkToEntity {
      */
     Class<? extends BaseEntity> value();
 
+    boolean applyTitle() default false;
+
     interface FieldLinkToEntityTitleProvider {
         String getLinkTitle();
     }

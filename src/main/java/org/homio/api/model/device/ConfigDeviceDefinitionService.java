@@ -1,6 +1,5 @@
 package org.homio.api.model.device;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.homio.api.ContextSetting.IS_DEV_ENVIRONMENT;
 import static org.homio.api.util.CommonUtils.getErrorMessage;
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
@@ -136,18 +135,6 @@ public class ConfigDeviceDefinitionService {
                 log.warn("Unable to reload {} device configuration file: {}", fileName, getErrorMessage(ex));
             }
         }
-    }
-
-    public @NotNull String getDeviceIconColor(
-        @NotNull List<ConfigDeviceDefinition> devices,
-        @NotNull String defaultIconColor) {
-        return devices.isEmpty() ? defaultIconColor : defaultIfEmpty(devices.get(0).getIconColor(), defaultIconColor);
-    }
-
-    public @NotNull String getDeviceIcon(
-        @NotNull List<ConfigDeviceDefinition> devices,
-        @NotNull String defaultIcon) {
-        return devices.isEmpty() ? defaultIcon : defaultIfEmpty(devices.get(0).getIcon(), defaultIcon);
     }
 
     public @NotNull JsonNode getDeviceOptions(@NotNull List<ConfigDeviceDefinition> devices) {

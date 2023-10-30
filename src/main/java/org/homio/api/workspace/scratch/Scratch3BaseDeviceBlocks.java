@@ -3,6 +3,7 @@ package org.homio.api.workspace.scratch;
 import static java.lang.String.format;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
@@ -12,11 +13,13 @@ import org.homio.api.Context;
 import org.homio.api.ContextBGP.ThreadContext;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
+import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.Status;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.state.DecimalType;
 import org.homio.api.state.OnOffType;
 import org.homio.api.state.State;
+import org.homio.api.ui.UI;
 import org.homio.api.workspace.Lock;
 import org.homio.api.workspace.WorkspaceBlock;
 import org.homio.api.workspace.scratch.MenuBlock.ServerMenuBlock;
@@ -24,6 +27,9 @@ import org.homio.api.workspace.scratch.MenuBlock.StaticMenuBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Base parent for all devices that exposes some endpoints
+ */
 @Getter
 public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
 
@@ -43,12 +49,12 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
     protected final String devicePrefix;
 
     public Scratch3BaseDeviceBlocks(
-        String color,
-        Context context,
-        AddonEntrypoint addonEntrypoint,
-        String devicePrefix) {
+        @Nullable String color,
+        @NotNull Context context,
+        @Nullable AddonEntrypoint addonEntrypoint,
+        @NotNull String devicePrefix) {
         super(color, context, addonEntrypoint);
-        setParent("devices");
+        setParent(ScratchParent.devices);
         this.devicePrefix = devicePrefix;
 
         this.onOffMenu = menuStatic("onOffMenu", OnOff.class, OnOff.off);
@@ -91,12 +97,13 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
                 block.addArgument(ENDPOINT, this.endpointMenu);
                 block.addArgument(DEVICE, this.deviceMenu);
                 block.appendSpace();
+                block.overrideColor(UI.Color.darker(getScratch3Color().getColor1(), 0.8f));
             });
 
         blockReporter(51, "value", "[ENDPOINT] of [DEVICE]", this::getDeviceEndpointState, block -> {
             block.addArgument(ENDPOINT, this.endpointMenu);
             block.addArgument(DEVICE, this.deviceMenu);
-            block.overrideColor("#84185c");
+            block.overrideColor(UI.Color.darker(getScratch3Color().getColor1(), 0.8f));
         });
 
         // command blocks
@@ -215,8 +222,19 @@ public abstract class Scratch3BaseDeviceBlocks extends Scratch3ExtensionBlocks {
     }
 
     protected @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String ieeeAddress, @NotNull String endpointID) {
-        DeviceBaseEntity entity = context.db().getEntityRequire(ieeeAddress);
+        DeviceBaseEntity entity = getDevice(ieeeAddress);
         return ((DeviceEndpointsBehaviourContract) entity).getDeviceEndpoint(endpointID);
+    }
+
+    protected @NotNull DeviceBaseEntity getDevice(@NotNull String ieeeAddress) {
+        List<DeviceBaseEntity> entities = context.db().getDeviceEntity(ieeeAddress, devicePrefix);
+        if (entities.isEmpty()) {
+            throw new NotFoundException("Unable to find entity: " + ieeeAddress);
+        }
+        if (entities.size() > 1) {
+            throw new NotFoundException("Found multiple entities with id: " + ieeeAddress);
+        }
+        return entities.get(0);
     }
 
     /**

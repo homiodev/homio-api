@@ -35,11 +35,21 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@UISidebarMenu(icon = "fas fa-shapes", parent = UISidebarMenu.TopSidebarMenu.HARDWARE, bg = "#FFFFFF", overridePath = "devices")
+@UISidebarMenu(
+    icon = "fas fa-shapes",
+    parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
+    bg = "#FFFFFF",
+    overridePath = "devices",
+    filter = {"*:fas fa-filter:#8DBA73", "status:fas fa-heart-crack:#C452C4"},
+    sort = {
+        "name~#FF9800:fas fa-arrow-up-a-z:fas fa-arrow-down-z-a",
+        "status~#7EAD28:fas fa-turn-up:fas fa-turn-down",
+        "place~#9C27B0:fas fa-location-dot:fas fa-location-dot fa-rotate-180"
+    })
 @NoArgsConstructor
 public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContract {
 
-    private static final String PREFIX = "dvc_";
+    public static final String PREFIX = "dvc_";
 
     @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
     private @Nullable String ieeeAddress;

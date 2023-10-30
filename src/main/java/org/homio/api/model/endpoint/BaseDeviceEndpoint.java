@@ -93,15 +93,78 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         setInitial(device, endpointEntityID, writable, endpointType);
     }
 
-    private void setInitial(D device, String endpointEntityID, boolean writable, EndpointType endpointType) {
-        this.device = device;
-        this.endpointEntityID = endpointEntityID;
-        this.writable = writable;
-        this.endpointType = endpointType;
-        if (endpointType == EndpointType.trigger) {
-            this.readable = false;
-            this.writable = true;
+    public void init(
+        @NotNull ConfigDeviceDefinitionService configService,
+        @Nullable String endpointEntityID,
+        @NotNull D device,
+        boolean readable,
+        boolean writable,
+        @Nullable String endpointName,
+        @NotNull EndpointType endpointType) {
+
+        this.configService = configService;
+        configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
+        if (configDeviceEndpoint == null && alternateEndpoints != null) {
+            for (String alternativeEndpointEntityId : alternateEndpoints) {
+                configDeviceEndpoint = configService.getDeviceEndpoints().get(alternativeEndpointEntityId);
+                if (configDeviceEndpoint != null) {
+                    endpointEntityID = alternativeEndpointEntityId;
+                    break;
+                }
+            }
         }
+
+        if (endpointName == null) {
+            endpointName = endpointEntityID;
+        }
+
+        if (endpointEntityID == null) {
+            throw new IllegalStateException("Unable to create device endpoint without endpoint id. " + endpointName);
+        }
+        switch (endpointEntityID) {
+            case ENDPOINT_DEVICE_STATUS:
+                icon = new Icon("fa fa-globe", "#42B52D");
+                order = 10;
+                ignoreDuplicates = true;
+                setInitialValue(new StringType(Status.UNKNOWN.name()));
+                break;
+            case ENDPOINT_LAST_SEEN:
+                icon = new Icon("fa fa-eye", "#2D9C2C");
+                setInitialValue(new DecimalType(System.currentTimeMillis()));
+                break;
+            case ENDPOINT_BATTERY:
+                icon = new Icon("fa fa-battery-full", "#32D1B9");
+                min = 0F;
+                max = 100F;
+                break;
+            case ENDPOINT_SIGNAL:
+                icon = new Icon("fa fa-signal", "#D134AF");
+                min = 0F;
+                max = 100F;
+                break;
+        }
+        this.endpointName = endpointName;
+        if (this.unit == null) {
+            this.unit = configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit();
+        }
+        if (configDeviceEndpoint != null && configDeviceEndpoint.getIgnoreDuplicates() != null) {
+            ignoreDuplicates = configDeviceEndpoint.getIgnoreDuplicates();
+        }
+        if (configDeviceEndpoint != null) {
+            this.min = this.min == null ? configDeviceEndpoint.getMin() : this.min;
+            this.max = this.max == null ? configDeviceEndpoint.getMax() : this.max;
+        }
+        this.readable = readable;
+        setInitial(device, endpointEntityID, writable, endpointType);
+
+        if (order == -1) {
+            order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
+            if (order == 0) {
+                order = endpointName.charAt(0) * 10 + endpointName.charAt(1);
+            }
+        }
+
+        stateless = configDeviceEndpoint != null && configDeviceEndpoint.isStateless();
     }
 
     public void setUpdateHandler(Consumer<State> updateHandler) {
@@ -212,62 +275,20 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         return !device.getStatus().isOnline();
     }
 
-    public void init(
-        @NotNull ConfigDeviceDefinitionService configService,
-        @Nullable String endpointEntityID,
-        @NotNull D device,
-        boolean readable,
-        boolean writable,
-        @Nullable String endpointName,
-        @NotNull EndpointType endpointType) {
-
-        this.configService = configService;
-        configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
-        if (configDeviceEndpoint == null && alternateEndpoints != null) {
-            for (String alternativeEndpointEntityId : alternateEndpoints) {
-                configDeviceEndpoint = configService.getDeviceEndpoints().get(alternativeEndpointEntityId);
-                if (configDeviceEndpoint != null) {
-                    endpointEntityID = alternativeEndpointEntityId;
-                    break;
-                }
-            }
+    private void setInitial(D device, String endpointEntityID, boolean writable, EndpointType endpointType) {
+        this.device = device;
+        this.endpointEntityID = endpointEntityID;
+        this.writable = writable;
+        this.endpointType = endpointType;
+        if (endpointType == EndpointType.trigger) {
+            this.readable = false;
+            this.writable = true;
         }
-
-        if (endpointName == null) {
-            endpointName = endpointEntityID;
+        if (endpointType == EndpointType.bool) {
+            value = OnOffType.OFF;
+        } else if (endpointType == EndpointType.number || endpointType == EndpointType.dimmer) {
+            value = DecimalType.ZERO;
         }
-
-        if (endpointEntityID == null) {
-            throw new IllegalStateException("Unable to create device endpoint without endpoint id. " + endpointName);
-        }
-        if (endpointEntityID.equals(ENDPOINT_DEVICE_STATUS)) {
-            icon = new Icon("fa fa-globe", "#42B52D");
-            order = 10;
-            ignoreDuplicates = true;
-            setInitialValue(new StringType(Status.UNKNOWN.name()));
-        }
-        this.endpointName = endpointName;
-        if (this.unit == null) {
-            this.unit = configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit();
-        }
-        if (configDeviceEndpoint != null && configDeviceEndpoint.getIgnoreDuplicates() != null) {
-            ignoreDuplicates = configDeviceEndpoint.getIgnoreDuplicates();
-        }
-        if (configDeviceEndpoint != null) {
-            this.min = this.min == null ? configDeviceEndpoint.getMin() : this.min;
-            this.max = this.max == null ? configDeviceEndpoint.getMax() : this.max;
-        }
-        this.readable = readable;
-        setInitial(device, endpointEntityID, writable, endpointType);
-
-        if (order == -1) {
-            order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
-            if (order == 0) {
-                order = endpointName.charAt(0) * 10 + endpointName.charAt(1);
-            }
-        }
-
-        stateless = configDeviceEndpoint != null && configDeviceEndpoint.isStateless();
     }
 
     @Override

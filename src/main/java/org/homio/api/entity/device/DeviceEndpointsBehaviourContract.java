@@ -1,20 +1,23 @@
 package org.homio.api.entity.device;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.model.device.ConfigDeviceDefinition;
-import org.homio.api.model.device.ConfigDeviceDefinitionService;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.model.endpoint.DeviceEndpointUI;
-import org.homio.api.ui.UI;
+import org.homio.api.ui.UI.Color;
 import org.homio.api.ui.UIActionHandler;
+import org.homio.api.ui.UISidebarChildren;
+import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
@@ -84,16 +87,26 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
 
     @Override
     default @NotNull Icon getEntityIcon() {
-        ConfigDeviceDefinitionService service = getConfigDeviceDefinitionService();
         List<ConfigDeviceDefinition> matchDevices = findMatchDeviceConfigurations();
-        return new Icon(
-            service == null ? "fas fa-server" : service.getDeviceIcon(matchDevices, "fas fa-server"),
-            service == null ? UI.Color.random() : service.getDeviceIconColor(matchDevices, UI.Color.random())
-        );
+        ConfigDeviceDefinition def = matchDevices.isEmpty() ? null : matchDevices.get(0);
+        if (def != null && StringUtils.isNotEmpty(def.getIcon())) {
+            return new Icon(def.getIcon(), def.getIconColor());
+        }
+        String icon = null;
+        String color = null;
+        UISidebarChildren children = getClass().getAnnotation(UISidebarChildren.class);
+        if (children != null) {
+            icon = children.icon();
+            color = children.color();
+        } else {
+            UISidebarMenu sidebarMenu = getClass().getAnnotation(UISidebarMenu.class);
+            if (sidebarMenu != null) {
+                icon = sidebarMenu.icon();
+                color = sidebarMenu.bg();
+            }
+        }
+        return new Icon(defaultIfEmpty(icon, "fas fa-server"), defaultIfEmpty(color, Color.random()));
     }
-
-    @JsonIgnore
-    @Nullable ConfigDeviceDefinitionService getConfigDeviceDefinitionService();
 
     @JsonIgnore
     @NotNull List<ConfigDeviceDefinition> findMatchDeviceConfigurations();

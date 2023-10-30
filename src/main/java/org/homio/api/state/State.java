@@ -30,10 +30,12 @@ public interface State {
         }
         if (value instanceof Boolean) {
             return OnOffType.of((boolean) value);
-        } else if (value instanceof String) {
-            try {
-                return new JsonType(OBJECT_MAPPER.readValue((String) value, JsonNode.class));
-            } catch (Exception ignore) {
+        } else if (value instanceof String str) {
+            if (str.startsWith("{") || str.startsWith("[")) {
+                try {
+                    return new JsonType(OBJECT_MAPPER.readValue((String) value, JsonNode.class));
+                } catch (Exception ignore) {
+                }
             }
             return new StringType(value.toString());
         }

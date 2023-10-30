@@ -4,6 +4,7 @@ import com.pivovarit.function.ThrowingRunnable;
 import java.net.DatagramPacket;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
@@ -74,6 +75,8 @@ public interface ContextEvent {
      * @return ContextEvent
      */
     ContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<State> listener);
+
+    ContextEvent addEventBehaviourListener(Pattern regexp, String discriminator, BiConsumer<String, State> listener);
 
     /**
      * Fire event with key and value.

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.homio.api.entity.BaseEntity;
+import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.storage.DataStorageEntity;
 import org.homio.api.storage.DataStorageService;
@@ -95,4 +96,6 @@ public interface ContextStorage {
 
     <T extends DataStorageEntity> DataStorageService<T> getOrCreateInMemoryService(
         @NotNull Class<T> pojoClass, @NotNull String uniqueId, @Nullable Long quota);
+
+    List<DeviceBaseEntity> getDeviceEntity(@NotNull String ieeeAddress, @Nullable String typePrefix);
 }

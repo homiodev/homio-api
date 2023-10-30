@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -67,6 +68,22 @@ public class TreeNode implements Comparable<TreeNode> {
         this.attributes.lastUpdated = lastModifiedTime;
         this.attributes.size = size;
         this.attributes.contentType = contentType;
+    }
+
+    public void merge(TreeNode update) {
+        this.attributes = update.attributes;
+        if (this.childrenMap == null) {
+            this.childrenMap = update.childrenMap;
+        } else if (update.childrenMap != null) {
+            for (Entry<String, TreeNode> entry : update.childrenMap.entrySet()) {
+                TreeNode thisTreeNode = this.childrenMap.get(entry.getKey());
+                if (thisTreeNode != null) {
+                    thisTreeNode.merge(entry.getValue());
+                } else {
+                    this.childrenMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
     }
 
     // TreeNode not related to saved data yet
