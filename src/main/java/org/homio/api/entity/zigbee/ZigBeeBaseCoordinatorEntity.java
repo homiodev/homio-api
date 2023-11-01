@@ -27,7 +27,7 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     HasEntityIdentifier,
     HasFirmwareVersion,
     HasStatusAndMsg,
-    EntityService<S, T> {
+    EntityService<S> {
 
     @UIField(order = 1, inlineEdit = true)
     @UIFieldGroup("GENERAL")

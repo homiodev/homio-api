@@ -1,7 +1,9 @@
 package org.homio.api;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
+import lombok.SneakyThrows;
 import org.homio.api.service.DependencyExecutableInstaller;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
@@ -14,9 +16,9 @@ public interface ContextInstall {
 
     @NotNull InstallContext nodejs();
 
-    void pipInstall(@NotNull String code);
+    @NotNull PythonEnv pythonEnv(String venv);
 
-    @NotNull InstallContext createInstallContext(Class<? extends DependencyExecutableInstaller> installerClass);
+    @NotNull InstallContext createInstallContext(@NotNull Class<? extends DependencyExecutableInstaller> installerClass);
 
     interface InstallContext {
 
@@ -55,5 +57,26 @@ public interface ContextInstall {
     interface Python {
 
         void install();
+    }
+
+    interface PythonEnv {
+
+        PythonEnv install(String packages);
+
+        Path getPath();
+
+        @SneakyThrows
+        default Path createDirectory(Path path) {
+            return Files.createDirectories(getPath().resolve(path));
+        }
+
+        @SneakyThrows
+        default Path getScript(Path path) {
+            Path script = getPath().resolve("Scripts").resolve(path);
+            if (!Files.exists(script)) {
+                throw new IllegalArgumentException("Unable to find path: " + script);
+            }
+            return script;
+        }
     }
 }

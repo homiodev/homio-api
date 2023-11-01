@@ -1,5 +1,7 @@
 package org.homio.api;
 
+import static org.homio.api.util.CommonUtils.getErrorMessage;
+
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
@@ -21,7 +23,9 @@ import java.util.function.Function;
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.model.HasEntityIdentifier;
+import org.homio.api.service.EntityService;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,6 +72,28 @@ public interface ContextBGP {
     @NotNull <T> ScheduleBuilder<T> builder(@NotNull String name);
 
     @NotNull ProcessBuilder processBuilder(@NotNull String name);
+
+    default @NotNull ProcessBuilder processBuilder(@NotNull DeviceBaseEntity entity, @NotNull Logger log) {
+        return
+            processBuilder(entity.getEntityID())
+                .onStarted(t -> entity.setStatusOnline())
+                .attachLogger(log)
+                .attachEntityStatus(entity)
+                .onFinished((ex, responseCode) -> {
+                    if (ex != null) {
+                        log.error("[{}]: Error while start {} dashboard {}",
+                            entity.getEntityID(), entity.getTitle(), getErrorMessage(ex));
+                    } else {
+                        log.warn("[{}]: {} finished with status: {}",
+                            entity.getEntityID(), entity.getTitle(), responseCode);
+                    }
+                    if (entity instanceof EntityService<?> es) {
+                        es.destroyService(ex);
+                    }
+                })
+                .setErrorLoggerOutput(log::error)
+                .setInputLoggerOutput(msg -> log.info("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg));
+    }
 
     /**
      * Await processes to be done
@@ -316,7 +342,7 @@ public interface ContextBGP {
          * @param name          - unique name of listener
          * @param valueListener - listener: First 2 parameters is value from run/schedule and previous value. Return boolean where is remove listener or not
          *                      after execute
-         * @return true if listeners successfully added
+         * @return this
          */
         @NotNull ScheduleBuilder<T> valueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
     }

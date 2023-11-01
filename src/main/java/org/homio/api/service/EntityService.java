@@ -25,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public interface EntityService<S extends EntityService.ServiceInstance, T extends HasEntityIdentifier>
+public interface EntityService<S extends EntityService.ServiceInstance>
     extends HasStatusAndMsg {
 
     ReentrantLock serviceAccessLock = new ReentrantLock();
@@ -103,10 +103,10 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
 
     String getEntityID();
 
-    default void destroyService() throws Exception {
+    default void destroyService(Exception ex) throws Exception {
         S service = (S) context().service().removeEntityService(getEntityID());
         if (service != null) {
-            service.destroy(false);
+            service.destroy(false, ex);
         }
     }
 
@@ -119,7 +119,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
     }
 
     @Getter
-    abstract class ServiceInstance<E extends EntityService<?, ?>> implements WatchdogService {
+    abstract class ServiceInstance<E extends EntityService<?>> implements WatchdogService {
 
         protected Logger log = LogManager.getLogger(getClass());
         protected final @NotNull @Accessors(fluent = true) Context context;
@@ -200,7 +200,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
             return null;
         }
 
-        public abstract void destroy(boolean forRestart) throws Exception;
+        public abstract void destroy(boolean forRestart, @Nullable Exception ex) throws Exception;
 
         private synchronized void startInitialization() {
             entity.setStatus(Status.INITIALIZE);
@@ -223,7 +223,7 @@ public interface EntityService<S extends EntityService.ServiceInstance, T extend
                        }
                        boolean firstInitialization = entityHashCode == 0;
                        entityHashCode = requestedEntityHashCode;
-                       destroy(true);
+                       destroy(true, null);
                        if (!entity.isStart()) {
                            entity.setStatus(Status.OFFLINE);
                        } else {

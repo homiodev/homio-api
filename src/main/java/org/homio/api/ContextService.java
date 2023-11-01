@@ -2,10 +2,16 @@ package org.homio.api;
 
 import static java.lang.String.format;
 import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+import static org.homio.api.util.CommonUtils.getErrorMessage;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.pivovarit.function.ThrowingBiConsumer;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.service.EntityService;
@@ -85,6 +91,33 @@ public interface ContextService {
 
         static @NotNull String buildMqttListenEvent(@NotNull String mqttEntityID, @NotNull String topic) {
             return mqttEntityID + LIST_DELIMITER + topic;
+        }
+
+        default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
+            @NotNull String entityID, @NotNull Logger log, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
+            addPayloadListener(topic, discriminator, entityID, log, Level.INFO, handler);
+        }
+
+        default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
+            @NotNull String entityID, @NotNull Logger log, @NotNull Level logLevel, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
+            addListener(topic,
+                discriminator, (realTopic, value) -> {
+                    log.log(logLevel, "[{}]: {} {}: {}", discriminator, entityID, realTopic, value);
+                    String payload = value == null ? "" : value;
+                    if (!payload.isEmpty()) {
+                        ObjectNode node;
+                        try {
+                            node = OBJECT_MAPPER.readValue(payload, ObjectNode.class);
+                        } catch (Exception ex) {
+                            node = OBJECT_MAPPER.createObjectNode().put("raw", payload);
+                        }
+                        try {
+                            handler.accept(realTopic, node);
+                        } catch (Exception ex) {
+                            log.error("[{}]: Unable to handle mqtt payload: {}. Msg: {}", entityID, payload, getErrorMessage(ex));
+                        }
+                    }
+                });
         }
     }
 }
