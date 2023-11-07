@@ -14,6 +14,6 @@ public interface DynamicConsoleHeaderContainerSettingPlugin extends ConsoleHeade
 
     @Override
     default @NotNull SettingType getSettingType() {
-        return SettingType.SelectBoxDynamic;
+        return SettingType.SelectBoxButton;
     }
 }

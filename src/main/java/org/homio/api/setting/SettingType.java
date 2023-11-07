@@ -7,9 +7,7 @@ public enum SettingType {
     // Description type uses for showing text inside setting panel on whole width
     Description(false),
     SelectBoxButton,
-
-    // Select box with options fetched from server
-    SelectBoxDynamic,
+    SelectBox,
 
     // Button that fires server action
     Button(false),
@@ -23,9 +21,6 @@ public enum SettingType {
     EnumButtons,
     ColorPicker,
     Chips,
-
-    SelectBox,
-    SelectBoxAdvanced,
 
     // Slider with min/max/step parameters
     Slider,

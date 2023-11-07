@@ -18,7 +18,6 @@ import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.exception.NotFoundException;
-import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
@@ -181,10 +180,16 @@ public interface EntityService<S extends EntityService.ServiceInstance>
          */
         @Override
         public void restartService() {
+            // check entityHashCode with 0 to allow firstInitialization to be first called
             if (entityHashCode != 0 && initializing.compareAndSet(false, true)) {
-                entity.setStatus(Status.RESTARTING);
-                fireWithSetStatus(this::initialize);
-                initializing.set(false);
+                try {
+                    log.info("[{}]: Restarting entity service: {}", entityID, entity.getTitle());
+                    entity.setStatus(Status.RESTARTING);
+                    fireWithSetStatus(this::initialize);
+                } finally {
+                    log.debug("[{}]: Done restarting entity service: {}", entityID, entity.getTitle());
+                    initializing.set(false);
+                }
             }
         }
 
@@ -203,6 +208,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
         public abstract void destroy(boolean forRestart, @Nullable Exception ex) throws Exception;
 
         private synchronized void startInitialization() {
+            initializing.set(true);
             entity.setStatus(Status.INITIALIZE);
             Set<String> errors = entity.getConfigurationErrors();
             String bgpEntityID = "init-" + entity.getEntityID();
@@ -210,36 +216,42 @@ public interface EntityService<S extends EntityService.ServiceInstance>
                 context.bgp().cancelThread(bgpEntityID);
                 String msg = errors.stream().map(Lang::getServerMessage).collect(Collectors.joining("<br>"));
                 entity.setStatus(Status.ERROR, msg);
+                initializing.set(false);
                 return;
             }
 
             // deffer initialize to register service in map and avoid blocking. Also execute last updated entity
-            context.bgp().builder(bgpEntityID).delay(Duration.ofSeconds(5))
+            context.bgp().builder(bgpEntityID).delay(Duration.ofSeconds(3))
                    .execute(() -> {
-                       initializing.set(true);
-                       // delay update hashCode
-                       if (entityHashCode == requestedEntityHashCode) {
-                           return;
-                       }
-                       boolean firstInitialization = entityHashCode == 0;
-                       entityHashCode = requestedEntityHashCode;
-                       destroy(true, null);
-                       if (!entity.isStart()) {
-                           entity.setStatus(Status.OFFLINE);
-                       } else {
-                           if (firstInitialization) {
-                               fireWithSetStatus(this::firstInitialize);
-                           } else {
-                               fireWithSetStatus(this::initialize);
+                       try {
+                           log.info("[{}]: Start initialization of entity service: {}", entityID, entity.getTitle());
+                           // delay update hashCode
+                           if (entityHashCode == requestedEntityHashCode) {
+                               return;
                            }
-                       }
-                       if (entity instanceof BaseEntity be) {
-                           context.ui().updateItem(be);
-                       }
-
-                       // if new update
-                       if (entityHashCode != requestedEntityHashCode) {
-                           startInitialization();
+                           boolean firstInitialization = entityHashCode == 0;
+                           entityHashCode = requestedEntityHashCode;
+                           if (!firstInitialization) {
+                               destroy(true, null);
+                           }
+                           if (!entity.isStart()) {
+                               entity.setStatus(Status.OFFLINE);
+                           } else {
+                               if (firstInitialization) {
+                                   fireWithSetStatus(this::firstInitialize);
+                               } else {
+                                   fireWithSetStatus(this::initialize);
+                               }
+                           }
+                           if (entity instanceof BaseEntity be) {
+                               context.ui().updateItem(be);
+                           }
+                       } finally {
+                           initializing.set(false);
+                           // if new update
+                           if (entityHashCode != requestedEntityHashCode) {
+                               startInitialization();
+                           }
                        }
                    });
         }
@@ -260,7 +272,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
                 handler.run();
             } catch (Exception ex) {
                 entity.setStatusError(ex);
-                log.error("Unable to initialize service: {}", entity.getTitle());
+                log.error("[{}]: Unable to initialize service: {}", entityID, entity.getTitle());
             } finally {
                 updateNotificationBlock();
             }

@@ -94,4 +94,9 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
         private String url;
         private String version;
     }
+
+    @Override
+    default String getConfirmMsg() {
+        return null;
+    }
 }

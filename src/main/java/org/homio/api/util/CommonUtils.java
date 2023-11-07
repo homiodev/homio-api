@@ -33,6 +33,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -471,10 +472,6 @@ public final class CommonUtils {
             method = MethodUtils.getAccessibleMethod(clz, "is" + capitalizeName);
         }
         return method;
-    }
-
-    public static String getMethodShortName(Method method) {
-        return StringUtils.uncapitalize(method.getName().substring(method.getName().startsWith("is") ? 2 : 3));
     }
 
     @SneakyThrows

@@ -10,6 +10,8 @@ public interface ContextHardware {
 
     @NotNull Context context();
 
+    @NotNull ContextNetwork network();
+
     @NotNull String execute(@NotNull String command);
 
     @NotNull String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
@@ -41,8 +43,6 @@ public interface ContextHardware {
     }
 
     void stopSystemCtl(@NotNull String soft);
-
-    @NotNull String getHostname();
 
     int getServiceStatus(@NotNull String serviceName);
 

@@ -9,9 +9,8 @@ public enum UIFieldType {
     // Description type uses for showing text inside setting panel on whole width
     Description,
     SelectBoxButton,
+    SelectBox,
 
-    // Select box with options fetched from server
-    SelectBoxDynamic,
     // Just a text
     Text,
     HTML, // Draw as html
@@ -31,9 +30,6 @@ public enum UIFieldType {
 
     IpAddress,
     Password, // shows *** for users without admin rights
-
-    SelectBox,
-    SelectBoxAdvanced,
 
     Duration,
     StaticDate,

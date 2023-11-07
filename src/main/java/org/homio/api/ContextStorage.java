@@ -36,7 +36,7 @@ public interface ContextStorage {
         return entity;
     }
 
-    default @NotNull <T extends BaseEntity> T getEntityRequire(Class<T> entityClass, @NotNull String entityID) {
+    default @NotNull <T extends BaseEntity> T getEntityRequire(@NotNull Class<T> entityClass, @NotNull String entityID) {
         T entity = CommonUtils.newInstance(entityClass);
         return getEntityRequire(entity.setEntityID(entityID));
     }

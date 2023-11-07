@@ -11,7 +11,7 @@ public interface SettingPluginOptionsPort extends SettingPlugin<SerialPort>, Set
 
     @Override
     default @NotNull SettingType getSettingType() {
-        return SettingType.SelectBoxDynamic;
+        return viewAsButton() ? SettingType.SelectBoxButton : SettingType.SelectBox;
     }
 
     @Override

@@ -33,6 +33,11 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public interface ContextBGP {
 
+    // run ping for ip address every minute
+    void ping(@NotNull String discriminator, @NotNull String ipAddress, @NotNull Consumer<Boolean> availableStatus);
+
+    void unPing(@NotNull String discriminator, @Nullable String ipAddress);
+
     static boolean cancel(ThreadContext<?> threadContext) {
         if (threadContext != null) {
             threadContext.cancel();
@@ -91,7 +96,7 @@ public interface ContextBGP {
                         es.destroyService(ex);
                     }
                 })
-                .setErrorLoggerOutput(log::error)
+                .setErrorLoggerOutput(msg -> log.error("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg))
                 .setInputLoggerOutput(msg -> log.info("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg));
     }
 
@@ -385,7 +390,11 @@ public interface ContextBGP {
 
         boolean isStopped();
 
-        void cancel();
+        default void cancel() {
+            cancel(true);
+        }
+
+        void cancel(boolean mayInterruptIfRunning);
 
         /**
          * Reset thread. Set delay to initial state. If thread already finished - start it again. Start if not started yet

@@ -52,7 +52,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     private @Getter D device;
 
     private @Getter @Setter @Nullable String unit;
-    private @Getter long updated;
+    private @Getter long updated = System.currentTimeMillis();
     private @Getter @NotNull State value = new StringType("N/A");
     private @Nullable Object dbValue;
     private @Nullable @Getter String variableID;
@@ -371,10 +371,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             if (variableType == VariableType.Enum) {
                 Set<String> range = getVariableEnumValues().stream().map(OptionModel::getKey).collect(Collectors.toSet());
                 variableID = context.var().createEnumVariable(getVariableGroupID(),
-                    getEntityID(), getName(false), range, variableMetaBuilder);
+                    buildVariableID(), getName(false), range, variableMetaBuilder);
             } else {
                 variableID = context.var().createVariable(getVariableGroupID(),
-                    getEntityID(), getName(false), variableType, variableMetaBuilder);
+                    buildVariableID(), getName(false), variableType, variableMetaBuilder);
             }
 
             if (isWritable()) {
@@ -390,6 +390,14 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             }
         }
         return variableID;
+    }
+
+    private String buildVariableID() {
+        String id = getEntityID();
+        if (id.toLowerCase().startsWith(group.toLowerCase())) {
+            return id;
+        }
+        return group.toLowerCase() + "_" + id;
     }
 
     protected void pushVariable() {

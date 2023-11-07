@@ -4,21 +4,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Objects;
 import java.util.function.Consumer;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
+@Setter
 @Accessors(chain = true)
-@RequiredArgsConstructor
 public class FileModel implements Comparable<FileModel> {
 
-    private @NotNull final String name;
-    private @NotNull final String content;
+    private @NotNull String name;
+    private @NotNull String content;
     private @NotNull final FileContentType contentType;
-    private @Nullable @Setter @JsonIgnore Consumer<String> saveHandler;
+    private @Nullable @JsonIgnore Consumer<String> saveHandler;
+
+    public FileModel(@NotNull String name, @NotNull String content, @NotNull FileContentType contentType) {
+        this.name = name;
+        this.content = content;
+        this.contentType = contentType;
+    }
 
     @Override
     public int compareTo(FileModel o) {

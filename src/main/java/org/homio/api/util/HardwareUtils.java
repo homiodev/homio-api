@@ -5,9 +5,6 @@ import com.pivovarit.function.ThrowingFunction;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +24,11 @@ import org.jetbrains.annotations.NotNull;
 @Log4j2
 public class HardwareUtils {
 
-    public static String MACHINE_IP_ADDRESS = "127.0.0.1";	/**
+    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
+    public static String APP_ID;
+    public static int RUN_COUNT;
+
+    /**
      * Loads native library from the jar file (storing it in the temp dir)
      * @param library JNI library name
      */
@@ -62,15 +63,6 @@ public class HardwareUtils {
         return StringUtils.isEmpty(value) ? null :
             Stream.of(SerialPort.getCommPorts())
                   .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
-    }
-
-    public static String ping(String host, int port) throws ConnectException {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("google.com", port), 5000);
-            return socket.getLocalAddress().getHostAddress();
-        } catch (Exception ignore) {
-        }
-        throw new ConnectException("Host %s:%s not reachable".formatted(host, port));
     }
 
     public static @NotNull Architecture getArchitecture(@NotNull Context context) {

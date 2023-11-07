@@ -11,7 +11,7 @@ public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
 
     @Override
     default @NotNull SettingType getSettingType() {
-        return SettingType.SelectBoxDynamic;
+        return SettingType.SelectBox;
     }
 
     @Override

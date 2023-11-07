@@ -1,7 +1,6 @@
 package org.homio.api;
 
 import com.pivovarit.function.ThrowingRunnable;
-import java.net.DatagramPacket;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -11,18 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ContextEvent {
-
-    /**
-     * Listen upd on host/port. default host is wildcard listener accept DatagramPacket and string value
-     *
-     * @param listener -
-     * @param host     -
-     * @param key      -
-     * @param port     -
-     */
-    void listenUdp(String key, @Nullable String host, int port, BiConsumer<DatagramPacket, String> listener);
-
-    void stopListenUdp(String key);
 
     /**
      * Remove general listeners and last saved value

@@ -56,6 +56,8 @@ public interface ContextService {
 
     interface MQTTEntityService extends HasEntityIdentifier {
 
+        @Nullable String getLastValue(@NotNull String topic);
+
         @NotNull String getUser();
 
         @NotNull SecureString getPassword();
@@ -87,7 +89,11 @@ public interface ContextService {
             }
         }
 
-        void removeListener(@NotNull String topic, @NotNull String discriminator);
+        void removeListener(@Nullable String topic, @NotNull String discriminator);
+
+        default void removeListener(@NotNull String discriminator) {
+            removeListener(null, discriminator);
+        }
 
         static @NotNull String buildMqttListenEvent(@NotNull String mqttEntityID, @NotNull String topic) {
             return mqttEntityID + LIST_DELIMITER + topic;
