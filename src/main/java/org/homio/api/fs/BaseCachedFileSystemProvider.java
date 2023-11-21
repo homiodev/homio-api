@@ -27,7 +27,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.storage.BaseFileSystemEntity;
 import org.homio.api.fs.BaseCachedFileSystemProvider.BaseFSService;
 import org.homio.api.fs.BaseCachedFileSystemProvider.FsFileEntity;
@@ -39,7 +39,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     FileSystemProvider {
 
     protected @NotNull final Service service;
-    protected @NotNull final EntityContext entityContext;
+    protected @NotNull final Context context;
     protected @NotNull final LoadingCache<String, List<FSFile>> fileCache;
     protected @NotNull final ReentrantLock lock = new ReentrantLock();
     protected @NotNull final Condition condition;
@@ -47,9 +47,9 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     protected @NotNull Entity entity;
     protected long connectionHashCode;
 
-    public BaseCachedFileSystemProvider(@NotNull Entity entity, @NotNull EntityContext entityContext) {
+    public BaseCachedFileSystemProvider(@NotNull Entity entity, @NotNull Context context) {
         this.entity = entity;
-        this.entityContext = entityContext;
+        this.context = context;
         this.condition = lock.newCondition();
 
         this.fileCache = CacheBuilder.newBuilder().
@@ -66,6 +66,18 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         this.service = createService();
     }
 
+    public static String fixPath(Path path) {
+        return fixPath(path.toString());
+    }
+
+    public static String fixPath(String path) {
+        return SystemUtils.IS_OS_WINDOWS ? path.replace("\\", "/") : path;
+    }
+
+    public static String appendSlash(String path) {
+        return path.startsWith("/") ? path : "/" + path;
+    }
+
     @Override
     public long getTotalSpace() {
         return 0;
@@ -73,6 +85,23 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
     @Override
     public long getUsedSpace() {
+        return 0;
+    }
+
+    @Override
+    @SneakyThrows
+    public boolean exists(@NotNull String id) {
+        return getFSFile(id) != null;
+    }
+
+    @Override
+    @SneakyThrows
+    public long size(@NotNull String id) {
+        FSFile fsFile = getFSFile(id);
+        if (fsFile != null) {
+            Long size = fsFile.getSize();
+            return size == null ? 0 : size;
+        }
         return 0;
     }
 
@@ -101,7 +130,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
     @Override
     @SneakyThrows
-    public InputStream getEntryInputStream(@NotNull String id) {
+    public @NotNull InputStream getEntryInputStream(@NotNull String id) {
         try (InputStream stream = service.getInputStream(id)) {
             return new ByteArrayInputStream(IOUtils.toByteArray(stream));
         }
@@ -125,7 +154,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     public TreeNode delete(@NotNull Set<String> ids) {
         List<FSFile> files = new ArrayList<>();
         for (String id : ids) {
-            if (id.equals("")) {
+            if (id.isEmpty()) {
                 throw new IllegalStateException("Path must be specified");
             }
             FSFile fsFile = getFSFile(id);
@@ -161,14 +190,6 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         }
         this.fileCache.invalidate(StringUtils.defaultIfEmpty(parentId, getNullParentId()));
         return buildRoot(Collections.singleton(getFSFile(fullPath)), true);
-    }
-
-    public static String fixPath(Path path) {
-        return fixPath(path.toString());
-    }
-
-    public static String fixPath(String path) {
-        return SystemUtils.IS_OS_WINDOWS ? path.replace("\\", "/") : path;
     }
 
     @SneakyThrows
@@ -216,13 +237,14 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         }
         Set<TreeNode> rootChildren = getChildren(entity.getFileSystemRoot());
         Set<TreeNode> currentChildren = rootChildren;
-        List<String> items = StreamSupport.stream(Paths.get(file.getAbsolutePathWithoutRoot()).spliterator(), false).map(Path::toString)
-                                            .collect(Collectors.toList());
-        for(int i = 0; i < items.size() - 1; i++) {
+        List<String> items = StreamSupport.stream(Paths.get(file.getAbsolutePathWithoutRoot()).spliterator(), false)
+                                          .map(Path::toString).toList();
+        for (int i = 0; i < items.size() - 1; i++) {
             String pathItem = items.get(i);
-            TreeNode foundedObject = currentChildren.stream().filter(c -> {
-                return c.getName().equals(pathItem);
-            }).findAny().orElseThrow(() -> new IllegalStateException("Unable find object: " + pathItem));
+            TreeNode foundedObject = currentChildren
+                .stream()
+                .filter(c -> c.getName().equals(pathItem)).findAny()
+                .orElseThrow(() -> new IllegalStateException("Unable find object: " + pathItem));
             currentChildren = getChildren(pathItem);
             foundedObject.addChildren(currentChildren);
         }
@@ -254,14 +276,20 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         fileCache.invalidateAll();
     }
 
-    public static String appendSlash(String path) {
-        return path.startsWith("/") ? path : "/" + path;
+    public String appendRoot(String id) {
+        if (!id.startsWith(entity.getFileSystemRoot())) {
+            return fixPath(Paths.get(entity.getFileSystemRoot()).resolve(id));
+        }
+        return id;
     }
 
     protected abstract @NotNull Service createService();
 
     protected @NotNull String getNullParentId() {
         return "/";
+    }
+
+    protected void buildTreeNodeExternal(TreeNode treeNode, FSFile file) {
     }
 
     @NotNull
@@ -314,9 +342,6 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         return treeNode;
     }
 
-    protected void buildTreeNodeExternal(TreeNode treeNode, FSFile file) {
-    }
-
     @SneakyThrows
     private void copyEntries(Collection<TreeNode> entries, String targetId, UploadOption uploadOption, List<FSFile> result) {
         for (TreeNode entry : entries) {
@@ -340,8 +365,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         }
     }
 
-    @Nullable
-    private FSFile getFSFile(String id) {
+    private @Nullable FSFile getFSFile(String id) {
         FSFile fsFile = null;
         try {
             String fileId = appendSlash(appendRoot(id));
@@ -364,13 +388,6 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         } catch (Exception ignored) {
         }
         return fsFile;
-    }
-
-    public String appendRoot(String id) {
-        if (!id.startsWith(entity.getFileSystemRoot())) {
-            return fixPath(Paths.get(entity.getFileSystemRoot()).resolve(id));
-        }
-        return id;
     }
 
     public interface BaseFSService<FSFile> {

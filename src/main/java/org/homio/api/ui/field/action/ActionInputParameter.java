@@ -1,6 +1,6 @@
 package org.homio.api.ui.field.action;
 
-import static org.homio.api.util.CommonUtils.putOpt;
+import static org.homio.api.util.JsonUtils.putOpt;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -21,6 +21,7 @@ import org.json.JSONObject;
 @Accessors(chain = true)
 @RequiredArgsConstructor
 public class ActionInputParameter {
+
     public static Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_.]+");
 
     private final String name;
@@ -44,7 +45,7 @@ public class ActionInputParameter {
             this.validators.add("max:" + input.max());
         }
         if ((type == UIActionInput.Type.number && input.min() > Integer.MIN_VALUE) ||
-                type != UIActionInput.Type.number && input.min() > 0) {
+            type != UIActionInput.Type.number && input.min() > 0) {
             this.validators.add("min:" + input.min());
         }
         if (!".*".equals(input.pattern().regexp())) {
@@ -74,7 +75,7 @@ public class ActionInputParameter {
 
     public static ActionInputParameter ip(String name, String defaultIpAddress) {
         return new ActionInputParameter(name, UIActionInput.Type.ip,
-                Collections.singleton("ip"), defaultIpAddress);
+            Collections.singleton("ip"), defaultIpAddress);
     }
 
     public static ActionInputParameter textarea(String name, String value) {

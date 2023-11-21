@@ -1,6 +1,6 @@
 package org.homio.api.ui.field;
 
-import static org.homio.api.util.CommonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.annotation.ElementType;
@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Widget layout builder
@@ -23,11 +24,11 @@ import lombok.experimental.Accessors;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldLayout {
 
-    String[] options();
+    @NotNull String[] options();
 
-    String rows() default "1:3";
+    @NotNull String rows() default "1:3";
 
-    String columns() default "1:6";
+    @NotNull String columns() default "1:6";
 
     enum VerticalAlign {
         top,
@@ -64,6 +65,7 @@ public @interface UIFieldLayout {
 
         /**
          * Specify column width Restrictions: sum(columnWidthInPercent) must be 100. columnWidthInPercent[i] must be greater than 10%
+         *
          * @param columnWidthInPercent -
          * @return -
          */
@@ -79,7 +81,7 @@ public @interface UIFieldLayout {
         }
 
         @SneakyThrows
-        public String build() {
+        public @NotNull String build() {
             if (this.r.size() == 0) {
                 throw new RuntimeException("Layout must have at least one row");
             }
@@ -92,7 +94,7 @@ public @interface UIFieldLayout {
             return OBJECT_MAPPER.writeValueAsString(this);
         }
 
-        private void buildRow(RowBuilder rowBuilder) {
+        private void buildRow(@NotNull RowBuilder rowBuilder) {
             if (this.columnWidthInPercent.length != rowBuilder.getCell().size()) {
                 throw new RuntimeException("Row columns must be equal to specified column size: " + this.columnWidthInPercent.length);
             }
@@ -123,21 +125,22 @@ public @interface UIFieldLayout {
 
         private final List<Column> cell = new ArrayList<>();
 
-        public RowBuilder addCol(Consumer<Column> columnConsumer) {
+        public RowBuilder addCol(@NotNull Consumer<Column> columnConsumer) {
             Column column = new Column();
             columnConsumer.accept(column);
             cell.add(column);
             return this;
         }
 
-        public RowBuilder addCol(String value, HorizontalAlign horizontalAlign) {
+        public RowBuilder addCol(@NotNull String value, @NotNull HorizontalAlign horizontalAlign) {
             return addCol(value, horizontalAlign, 1);
         }
 
-        public RowBuilder addCol(String value, HorizontalAlign horizontalAlign, int colSpan) {
+        public RowBuilder addCol(@NotNull String value, @NotNull HorizontalAlign horizontalAlign, int colSpan) {
             RowBuilder rowBuilder = addCol(column -> column.setValue(value).setHorizontalAlign(horizontalAlign).setCollSpan(colSpan));
             for (int i = 1; i < colSpan; i++) {
-                addCol(column -> {});
+                addCol(column -> {
+                });
             }
             return rowBuilder;
         }

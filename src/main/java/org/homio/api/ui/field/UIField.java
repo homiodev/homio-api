@@ -20,7 +20,7 @@ public @interface UIField {
     boolean hideInEdit() default false;
 
     /**
-     * @return  Hide field in view mode
+     * @return Hide field in view mode
      */
     boolean hideInView() default false;
 
@@ -38,20 +38,21 @@ public @interface UIField {
     // required not null validation before save
     boolean required() default false;
 
-    // able to edit field directly from view mode (now works only in console)
+    // uses in case to show on UI field with * but don't mandatory to fill
+    boolean semiRequired() default false;
+
+    // able to edit field directly from view mode
     boolean inlineEdit() default false;
 
     boolean copyButton() default false;
-
-    /**
-     * @return Show revert button to set initial value
-     */
-    boolean isRevert() default false;
 
     boolean inlineEditWhenEmpty() default false;
 
     // override field name
     String label() default "";
+
+    // override description label
+    String descriptionLabel() default "";
 
     // override for field name, useful in methods
     String name() default "";

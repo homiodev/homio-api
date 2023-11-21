@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Data source",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "broadcasts",
+        "property",
+        "variable"
+      ]
+    },
+    "value": {
+      "type": "string"
+    },
+    "variableType": {
+      "type": "string",
+      "enum": [
+        "Float",
+        "Any",
+        "Json",
+        "Color",
+        "Bool",
+        "Enum"
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "value"
+  ]
+}

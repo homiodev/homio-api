@@ -64,70 +64,6 @@ public class TarPath implements Path {
         }
     }
 
-    private static TarPath checkPath(Path path) {
-        if (path == null) {
-            throw new NullPointerException();
-        }
-        if (!(path instanceof TarPath)) {
-            throw new ProviderMismatchException();
-        }
-        return (TarPath) path;
-    }
-
-    // removes redundant slashs, replace "\" to zip separator "/"
-    // and check for invalid characters
-    private static byte[] normalize(byte[] path) {
-        if (path.length == 0) {
-            return path;
-        }
-        byte prevC = 0;
-        for (int i = 0; i < path.length; i++) {
-            byte c = path[i];
-            if (c == '\\') {
-                return TarPath.normalize(path, i);
-            }
-            if (c == (byte) '/' && prevC == '/') {
-                return TarPath.normalize(path, i - 1);
-            }
-            if (c == '\u0000') {
-                throw new InvalidPathException(new String(path),
-                        "Path: nul character not allowed");
-            }
-            prevC = c;
-        }
-        return path;
-    }
-
-    private static byte[] normalize(byte[] path, int off) {
-        byte[] to = new byte[path.length];
-        int n = 0;
-        while (n < off) {
-            to[n] = path[n];
-            n++;
-        }
-        int m = n;
-        byte prevC = 0;
-        while (n < path.length) {
-            byte c = path[n++];
-            if (c == (byte) '\\') {
-                c = (byte) '/';
-            }
-            if (c == (byte) '/' && prevC == (byte) '/') {
-                continue;
-            }
-            if (c == '\u0000') {
-                throw new InvalidPathException(new String(path),
-                        "Path: nul character not allowed");
-            }
-            to[m++] = c;
-            prevC = c;
-        }
-        if (m > 1 && to[m - 1] == '/') {
-            m--;
-        }
-        return m == to.length ? to : Arrays.copyOf(to, m);
-    }
-
     @Override
     public TarPath getRoot() {
         if (isAbsolute()) {
@@ -199,7 +135,7 @@ public class TarPath implements Path {
     public TarPath subpath(int beginIndex, int endIndex) {
         initOffsets();
         if (beginIndex < 0 || beginIndex >= offsets.length
-                || endIndex > offsets.length || beginIndex >= endIndex) {
+            || endIndex > offsets.length || beginIndex >= endIndex) {
             throw new IllegalArgumentException();
         }
 
@@ -222,10 +158,6 @@ public class TarPath implements Path {
         TarPath realPath = new TarPath(tfs, getResolvedPath()).toAbsolutePath();
         realPath.checkAccess();
         return realPath;
-    }
-
-    boolean isHidden() {
-        return false;
     }
 
     @Override
@@ -256,38 +188,10 @@ public class TarPath implements Path {
     public URI toUri() {
         try {
             return new URI("tar", tfs.getTarFile().toUri() + "!"
-                    + new String(toAbsolutePath().path), null);
+                + new String(toAbsolutePath().path), null);
         } catch (Exception ex) {
             throw new AssertionError(ex);
         }
-    }
-
-    private boolean equalsNameAt(TarPath other, int index) {
-        int mbegin = offsets[index];
-        int mlen = 0;
-        if (index == offsets.length - 1) {
-            mlen = path.length - mbegin;
-        } else {
-            mlen = offsets[index + 1] - mbegin - 1;
-        }
-        int obegin = other.offsets[index];
-        int olen = 0;
-        if (index == other.offsets.length - 1) {
-            olen = other.path.length - obegin;
-        } else {
-            olen = other.offsets[index + 1] - obegin - 1;
-        }
-        if (mlen != olen) {
-            return false;
-        }
-        int n = 0;
-        while (n < mlen) {
-            if (path[mbegin + n] != other.path[obegin + n]) {
-                return false;
-            }
-            n++;
-        }
-        return true;
     }
 
     @Override
@@ -297,7 +201,7 @@ public class TarPath implements Path {
             return new TarPath(getFileSystem(), new byte[0], true);
         }
         if (/* this.getFileSystem() != o.getFileSystem() || */
-                isAbsolute() != o.isAbsolute()) {
+            isAbsolute() != o.isAbsolute()) {
             throw new IllegalArgumentException();
         }
         int mc = getNameCount();
@@ -328,7 +232,7 @@ public class TarPath implements Path {
         }
         if (i < oc) {
             System.arraycopy(o.path, o.offsets[i], result, pos, o.path.length
-                    - o.offsets[i]);
+                - o.offsets[i]);
         }
         return new TarPath(getFileSystem(), result);
     }
@@ -359,7 +263,7 @@ public class TarPath implements Path {
             System.arraycopy(path, 0, resolved, 0, path.length);
             resolved[path.length] = '/';
             System.arraycopy(o.path, 0, resolved, path.length + 1,
-                    o.path.length);
+                o.path.length);
         }
         return new TarPath(tfs, resolved);
     }
@@ -387,7 +291,7 @@ public class TarPath implements Path {
         }
         olast--;
         return o.path.length == path.length || o.path[olast] == '/'
-                || path[olast + 1] == '/';
+            || path[olast + 1] == '/';
     }
 
     @Override
@@ -444,125 +348,6 @@ public class TarPath implements Path {
         return new TarPath(tfs, resolved, true);
     }
 
-    // create offset list if not already created
-    private void initOffsets() {
-        if (offsets == null) {
-            int count, index;
-            // count names
-            count = 0;
-            index = 0;
-            while (index < path.length) {
-                byte c = path[index++];
-                if (c != '/') {
-                    count++;
-                    while (index < path.length && path[index] != '/') {
-                        index++;
-                    }
-                }
-            }
-            // populate offsets
-            int[] result = new int[count];
-            count = 0;
-            index = 0;
-            while (index < path.length) {
-                byte c = path[index];
-                if (c == '/') {
-                    index++;
-                } else {
-                    result[count++] = index++;
-                    while (index < path.length && path[index] != '/') {
-                        index++;
-                    }
-                }
-            }
-            synchronized (this) {
-                if (offsets == null) {
-                    offsets = result;
-                }
-            }
-        }
-    }
-
-    byte[] getResolvedPath() {
-        byte[] r = resolved;
-        if (r == null) {
-            if (isAbsolute()) {
-                r = getResolved();
-            } else {
-                r = toAbsolutePath().getResolvedPath();
-            }
-            if (r[0] == '/') {
-                r = Arrays.copyOfRange(r, 1, r.length);
-            }
-            resolved = r;
-        }
-        return resolved;
-    }
-
-    // Remove DotSlash(./) and resolve DotDot (..) components
-    private byte[] getResolved() {
-        if (path.length == 0) {
-            return path;
-        }
-        for (byte c : path) {
-            if (c == (byte) '.') {
-                return resolve0();
-            }
-        }
-        return path;
-    }
-
-    // TBD: performance, avoid initOffsets
-    private byte[] resolve0() {
-        byte[] to = new byte[path.length];
-        int nc = getNameCount();
-        int[] lastM = new int[nc];
-        int lastMOff = -1;
-        int m = 0;
-        for (int i = 0; i < nc; i++) {
-            int n = offsets[i];
-            int len = i == offsets.length - 1 ? path.length - n
-                    : offsets[i + 1] - n - 1;
-            if (len == 1 && path[n] == (byte) '.') {
-                if (m == 0 && path[0] == '/') {
-                    to[m++] = '/';
-                }
-                continue;
-            }
-            if (len == 2 && path[n] == '.' && path[n + 1] == '.') {
-                if (lastMOff >= 0) {
-                    m = lastM[lastMOff--]; // retreat
-                    continue;
-                }
-                if (path[0] == '/') { // "/../xyz" skip
-                    if (m == 0) {
-                        to[m++] = '/';
-                    }
-                } else { // "../xyz" -> "../xyz"
-                    if (m != 0 && to[m - 1] != '/') {
-                        to[m++] = '/';
-                    }
-                    while (len-- > 0) {
-                        to[m++] = path[n++];
-                    }
-                }
-                continue;
-            }
-            if (m == 0 && path[0] == '/' || // absolute path
-                    m != 0 && to[m - 1] != '/') { // not the first name
-                to[m++] = '/';
-            }
-            lastM[++lastMOff] = m;
-            while (len-- > 0) {
-                to[m++] = path[n++];
-            }
-        }
-        if (m > 1 && to[m - 1] == '/') {
-            m--;
-        }
-        return m == to.length ? to : Arrays.copyOf(to, m);
-    }
-
     @Override
     public String toString() {
         return new String(path);
@@ -580,7 +365,7 @@ public class TarPath implements Path {
     @Override
     public boolean equals(Object obj) {
         return obj != null && obj instanceof TarPath
-                && tfs == ((TarPath) obj).tfs && compareTo((Path) obj) == 0;
+            && tfs == ((TarPath) obj).tfs && compareTo((Path) obj) == 0;
     }
 
     @Override
@@ -607,7 +392,7 @@ public class TarPath implements Path {
 
     @Override
     public WatchKey register(WatchService watcher, WatchEvent.Kind<?>[] events,
-                             WatchEvent.Modifier... modifiers) {
+        WatchEvent.Modifier... modifiers) {
         if (watcher == null || events == null || modifiers == null) {
             throw new NullPointerException();
         }
@@ -652,26 +437,42 @@ public class TarPath implements Path {
         };
     }
 
-    // ///////////////////////////////////////////////////////////////////
+    boolean isHidden() {
+        return false;
+    }
+
+    byte[] getResolvedPath() {
+        byte[] r = resolved;
+        if (r == null) {
+            if (isAbsolute()) {
+                r = getResolved();
+            } else {
+                r = toAbsolutePath().getResolvedPath();
+            }
+            if (r[0] == '/') {
+                r = Arrays.copyOfRange(r, 1, r.length);
+            }
+            resolved = r;
+        }
+        return resolved;
+    }
 
     void createDirectory(FileAttribute<?>... attrs) throws IOException {
         tfs.createDirectory(getResolvedPath(), attrs);
     }
 
     InputStream newInputStream(OpenOption... options) throws IOException {
-        if (options.length > 0) {
-            for (OpenOption opt : options) {
-                if (opt != READ) {
-                    throw new UnsupportedOperationException("'" + opt
-                            + "' not allowed");
-                }
+        for (OpenOption opt : options) {
+            if (opt != READ) {
+                throw new UnsupportedOperationException("'" + opt
+                    + "' not allowed");
             }
         }
         return tfs.newInputStream(getResolvedPath());
     }
 
     DirectoryStream<Path> newDirectoryStream(Filter<? super Path> filter)
-            throws IOException {
+        throws IOException {
         return new TarDirectoryStream(this, filter);
     }
 
@@ -692,7 +493,7 @@ public class TarPath implements Path {
     }
 
     void setAttribute(String attribute, Object value, LinkOption... options)
-            throws IOException {
+        throws IOException {
         String type = null;
         String attr = null;
         int colonPos = attribute.indexOf(':');
@@ -706,18 +507,20 @@ public class TarPath implements Path {
         TarFileAttributeView view = TarFileAttributeView.get(this, type);
         if (view == null) {
             throw new UnsupportedOperationException("view <" + view
-                    + "> is not supported");
+                + "> is not supported");
         }
         view.setAttribute(attr, value);
     }
 
+    // ///////////////////////////////////////////////////////////////////
+
     void setTimes(FileTime mtime, FileTime atime, FileTime ctime)
-            throws IOException {
+        throws IOException {
         tfs.setTimes(getResolvedPath(), mtime, atime, ctime);
     }
 
     Map<String, Object> readAttributes(String attributes, LinkOption... options)
-            throws IOException {
+        throws IOException {
         String view = null;
         String attrs = null;
         int colonPos = attributes.indexOf(':');
@@ -753,16 +556,16 @@ public class TarPath implements Path {
         checkAccess();
         ((TarPath) other).checkAccess();
         return Arrays.equals(getResolvedPath(),
-                ((TarPath) other).getResolvedPath());
+            ((TarPath) other).getResolvedPath());
     }
 
     SeekableByteChannel newByteChannel(Set<? extends OpenOption> options,
-                                       FileAttribute<?>... attrs) throws IOException {
+        FileAttribute<?>... attrs) throws IOException {
         return tfs.newByteChannel(getResolvedPath(), options, attrs);
     }
 
     FileChannel newFileChannel(Set<? extends OpenOption> options,
-                               FileAttribute<?>... attrs) throws IOException {
+        FileAttribute<?>... attrs) throws IOException {
         return tfs.newFileChannel(getResolvedPath(), options, attrs);
     }
 
@@ -814,7 +617,7 @@ public class TarPath implements Path {
     void move(TarPath target, CopyOption... options) throws IOException {
         if (Files.isSameFile(tfs.getTarFile(), target.tfs.getTarFile())) {
             tfs.copyFile(true, getResolvedPath(), target.getResolvedPath(),
-                    options);
+                options);
         } else {
             copyToTarget(target, options);
             delete();
@@ -824,14 +627,206 @@ public class TarPath implements Path {
     void copy(TarPath target, CopyOption... options) throws IOException {
         if (Files.isSameFile(tfs.getTarFile(), target.tfs.getTarFile())) {
             tfs.copyFile(false, getResolvedPath(), target.getResolvedPath(),
-                    options);
+                options);
         } else {
             copyToTarget(target, options);
         }
     }
 
+    private static TarPath checkPath(Path path) {
+        if (path == null) {
+            throw new NullPointerException();
+        }
+        if (!(path instanceof TarPath)) {
+            throw new ProviderMismatchException();
+        }
+        return (TarPath) path;
+    }
+
+    // removes redundant slashs, replace "\" to zip separator "/"
+    // and check for invalid characters
+    private static byte[] normalize(byte[] path) {
+        if (path.length == 0) {
+            return path;
+        }
+        byte prevC = 0;
+        for (int i = 0; i < path.length; i++) {
+            byte c = path[i];
+            if (c == '\\') {
+                return TarPath.normalize(path, i);
+            }
+            if (c == (byte) '/' && prevC == '/') {
+                return TarPath.normalize(path, i - 1);
+            }
+            if (c == '\u0000') {
+                throw new InvalidPathException(new String(path),
+                    "Path: nul character not allowed");
+            }
+            prevC = c;
+        }
+        return path;
+    }
+
+    private static byte[] normalize(byte[] path, int off) {
+        byte[] to = new byte[path.length];
+        int n = 0;
+        while (n < off) {
+            to[n] = path[n];
+            n++;
+        }
+        int m = n;
+        byte prevC = 0;
+        while (n < path.length) {
+            byte c = path[n++];
+            if (c == (byte) '\\') {
+                c = (byte) '/';
+            }
+            if (c == (byte) '/' && prevC == (byte) '/') {
+                continue;
+            }
+            if (c == '\u0000') {
+                throw new InvalidPathException(new String(path),
+                    "Path: nul character not allowed");
+            }
+            to[m++] = c;
+            prevC = c;
+        }
+        if (m > 1 && to[m - 1] == '/') {
+            m--;
+        }
+        return m == to.length ? to : Arrays.copyOf(to, m);
+    }
+
+    private boolean equalsNameAt(TarPath other, int index) {
+        int mbegin = offsets[index];
+        int mlen = 0;
+        if (index == offsets.length - 1) {
+            mlen = path.length - mbegin;
+        } else {
+            mlen = offsets[index + 1] - mbegin - 1;
+        }
+        int obegin = other.offsets[index];
+        int olen = 0;
+        if (index == other.offsets.length - 1) {
+            olen = other.path.length - obegin;
+        } else {
+            olen = other.offsets[index + 1] - obegin - 1;
+        }
+        if (mlen != olen) {
+            return false;
+        }
+        int n = 0;
+        while (n < mlen) {
+            if (path[mbegin + n] != other.path[obegin + n]) {
+                return false;
+            }
+            n++;
+        }
+        return true;
+    }
+
+    // create offset list if not already created
+    private void initOffsets() {
+        if (offsets == null) {
+            int count, index;
+            // count names
+            count = 0;
+            index = 0;
+            while (index < path.length) {
+                byte c = path[index++];
+                if (c != '/') {
+                    count++;
+                    while (index < path.length && path[index] != '/') {
+                        index++;
+                    }
+                }
+            }
+            // populate offsets
+            int[] result = new int[count];
+            count = 0;
+            index = 0;
+            while (index < path.length) {
+                byte c = path[index];
+                if (c == '/') {
+                    index++;
+                } else {
+                    result[count++] = index++;
+                    while (index < path.length && path[index] != '/') {
+                        index++;
+                    }
+                }
+            }
+            synchronized (this) {
+                if (offsets == null) {
+                    offsets = result;
+                }
+            }
+        }
+    }
+
+    // Remove DotSlash(./) and resolve DotDot (..) components
+    private byte[] getResolved() {
+        for (byte c : path) {
+            if (c == (byte) '.') {
+                return resolve0();
+            }
+        }
+        return path;
+    }
+
+    // TBD: performance, avoid initOffsets
+    private byte[] resolve0() {
+        byte[] to = new byte[path.length];
+        int nc = getNameCount();
+        int[] lastM = new int[nc];
+        int lastMOff = -1;
+        int m = 0;
+        for (int i = 0; i < nc; i++) {
+            int n = offsets[i];
+            int len = i == offsets.length - 1 ? path.length - n
+                : offsets[i + 1] - n - 1;
+            if (len == 1 && path[n] == (byte) '.') {
+                if (m == 0 && path[0] == '/') {
+                    to[m++] = '/';
+                }
+                continue;
+            }
+            if (len == 2 && path[n] == '.' && path[n + 1] == '.') {
+                if (lastMOff >= 0) {
+                    m = lastM[lastMOff--]; // retreat
+                    continue;
+                }
+                if (path[0] == '/') { // "/../xyz" skip
+                    if (m == 0) {
+                        to[m++] = '/';
+                    }
+                } else { // "../xyz" -> "../xyz"
+                    if (m != 0 && to[m - 1] != '/') {
+                        to[m++] = '/';
+                    }
+                    while (len-- > 0) {
+                        to[m++] = path[n++];
+                    }
+                }
+                continue;
+            }
+            if (m == 0 && path[0] == '/' || // absolute path
+                m != 0 && to[m - 1] != '/') { // not the first name
+                to[m++] = '/';
+            }
+            lastM[++lastMOff] = m;
+            while (len-- > 0) {
+                to[m++] = path[n++];
+            }
+        }
+        if (m > 1 && to[m - 1] == '/') {
+            m--;
+        }
+        return m == to.length ? to : Arrays.copyOf(to, m);
+    }
+
     private void copyToTarget(TarPath target, CopyOption... options)
-            throws IOException {
+        throws IOException {
         boolean replaceExisting = false;
         boolean copyAttrs = false;
         for (CopyOption opt : options) {
@@ -875,10 +870,10 @@ public class TarPath implements Path {
         }
         if (copyAttrs) {
             BasicFileAttributeView view = TarFileAttributeView.get(target,
-                    BasicFileAttributeView.class);
+                BasicFileAttributeView.class);
             try {
                 view.setTimes(tfas.lastModifiedTime(), tfas.lastAccessTime(),
-                        tfas.creationTime());
+                    tfas.creationTime());
             } catch (IOException x) {
                 // rollback?
                 try {

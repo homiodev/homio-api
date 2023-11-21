@@ -1,5 +1,7 @@
 package org.homio.api.state;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.function.BiConsumer;
@@ -7,44 +9,51 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.MimeTypeUtils;
 
+@Getter
 @Log4j2
 @RequiredArgsConstructor
 public class JsonType implements State, Comparable<JsonType> {
 
-    @Getter
     private final JsonNode jsonNode;
 
     @SneakyThrows
-    public JsonType(String value) {
-        this.jsonNode = CommonUtils.OBJECT_MAPPER.readValue(value, JsonNode.class);
+    public JsonType(Object value) {
+        if (value instanceof String strValue) {
+            this.jsonNode = OBJECT_MAPPER.readValue(strValue, JsonNode.class);
+        } else {
+            this.jsonNode = OBJECT_MAPPER.valueToTree(value);
+        }
     }
 
-    public JsonNode get(String... paths) {
+    public JsonNode get(String fullPath) {
         JsonNode node = jsonNode;
-        for (String path : paths) {
+        for (String path : fullPath.split("/")) {
             node = node.path(path);
         }
         return node;
     }
 
-    public boolean set(String value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(String value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
     }
 
-    public boolean set(int value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(int value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
     }
 
-    public boolean set(float value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(float value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
     }
 
-    public boolean set(boolean value, String... path) {
-        return setByPath((node, key) -> node.put(key, value), path);
+    public boolean set(boolean value, String fullPath) {
+        return setByPath((node, key) -> node.put(key, value), fullPath.split("/"));
+    }
+
+    public boolean set(State value, String fullPath) {
+        return setByPath(value::setAsNode, fullPath.split("/"));
     }
 
     public boolean setByPath(BiConsumer<ObjectNode, String> handler, String... path) {
@@ -90,14 +99,19 @@ public class JsonType implements State, Comparable<JsonType> {
     }
 
     @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.set(key, jsonNode);
+    }
+
+    @Override
     public int compareTo(@NotNull JsonType o) {
         return 0;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         JsonType jsonType = (JsonType) o;
 

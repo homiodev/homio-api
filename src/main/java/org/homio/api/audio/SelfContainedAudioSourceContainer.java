@@ -4,6 +4,7 @@ import java.util.Collection;
 import org.homio.api.model.OptionModel;
 
 public interface SelfContainedAudioSourceContainer {
+
     Collection<OptionModel> getAudioSource();
 
     String getLabel();

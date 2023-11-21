@@ -21,6 +21,7 @@ public @interface AddonConfiguration {
     AddonConfiguration.Env[] env() default {}; // defines env variables.
 
     @interface Env {
+
         String key();
 
         String value();

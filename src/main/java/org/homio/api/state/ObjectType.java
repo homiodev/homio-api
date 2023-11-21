@@ -1,12 +1,13 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 public class ObjectType implements State {
 
-    @Getter
     private final Object value;
 
     @Getter
@@ -29,12 +30,18 @@ public class ObjectType implements State {
 
     @Override
     public float floatValue() {
-        throw new IllegalStateException("Unable to fetch float value from string");
+        if (value instanceof Number num) {
+            return num.floatValue();
+        }
+        throw new IllegalStateException("Unable to fetch float value from " + value.getClass());
     }
 
     @Override
     public int intValue() {
-        throw new IllegalStateException("Unable to fetch float value from string");
+        if (value instanceof Number num) {
+            return num.intValue();
+        }
+        throw new IllegalStateException("Unable to fetch int value from " + value.getClass());
     }
 
     @Override
@@ -54,17 +61,25 @@ public class ObjectType implements State {
 
     @Override
     public boolean boolValue() {
-        throw new IllegalStateException("Unable to fetch float value from string");
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        throw new IllegalStateException("Unable to fetch boolean value from " + value.getClass());
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, stringValue());
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         ObjectType that = (ObjectType) o;
 
-        return value != null ? value.equals(that.value) : that.value == null;
+        return Objects.equals(value, that.value);
     }
 
     @Override

@@ -34,13 +34,13 @@ public interface UIFlexLayoutBuilder extends UILayoutBuilder {
         return this;
     }
 
-    default UIFlexLayoutBuilder setTitle(String title) {
-        return setTitle(title, null);
-    }
-
     UIFlexLayoutBuilder setTitle(String title, @Nullable String color);
 
     String getTitle();
+
+    default UIFlexLayoutBuilder setTitle(String title) {
+        return setTitle(title, null);
+    }
 
     default UIFlexLayoutBuilder setBackgroundColor(String backgroundColor) {
         appendStyle("background", backgroundColor);

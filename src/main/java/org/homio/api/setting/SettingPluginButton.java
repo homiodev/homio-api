@@ -1,13 +1,14 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.putOpt;
+
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.Icon;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.ActionInputParameter;
-import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,16 +19,24 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
      *
      * @return message
      */
-    String getConfirmMsg();
+    @Nullable String getConfirmMsg();
 
-    default String getConfirmTitle() {
+    default @Nullable String getDialogColor() {
         return null;
     }
 
-    @NotNull Icon getIcon();
-
-    default String getText() {
+    default @Nullable String getConfirmTitle() {
         return null;
+    }
+
+    @Nullable Icon getIcon();
+
+    default @Nullable String getText() {
+        return null;
+    }
+
+    default @Nullable String getText(Context context) {
+        return getText();
     }
 
     /**
@@ -40,22 +49,23 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     }
 
     @Override
-    default Class<JSONObject> getType() {
+    default @NotNull Class<JSONObject> getType() {
         return JSONObject.class;
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Button;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Button;
     }
 
     /**
      * In case of action require user input. Dialog popup shows
-     * @param entityContext -
-     * @param value -
+     *
+     * @param context -
+     * @param value         -
      * @return -
      */
-    default List<ActionInputParameter> getInputParameters(EntityContext entityContext, String value) {
+    default List<ActionInputParameter> getInputParameters(Context context, String value) {
         return null;
     }
 
@@ -64,11 +74,12 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     }
 
     @Override
-    default JSONObject getParameters(EntityContext entityContext, String value) {
-        JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
-        CommonUtils.putOpt(parameters, "confirm", getConfirmMsg());
-        CommonUtils.putOpt(parameters, "title", getConfirmTitle());
-        List<ActionInputParameter> actionInputParameters = getInputParameters(entityContext, value);
+    default @NotNull JSONObject getParameters(Context context, String value) {
+        JSONObject parameters = SettingPlugin.super.getParameters(context, value);
+        putOpt(parameters, "confirm", getConfirmMsg());
+        putOpt(parameters, "dialogColor", getDialogColor());
+        putOpt(parameters, "title", getConfirmTitle());
+        List<ActionInputParameter> actionInputParameters = getInputParameters(context, value);
         if (actionInputParameters != null && !actionInputParameters.isEmpty()) {
             JSONArray inputs = new JSONArray();
             for (ActionInputParameter actionInputParameter : actionInputParameters) {
@@ -80,7 +91,7 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     }
 
     @Override
-    default JSONObject parseValue(EntityContext entityContext, String value) {
+    default JSONObject parseValue(Context context, String value) {
         try {
             return new JSONObject(StringUtils.defaultIfEmpty(value, getDefaultValue()));
         } catch (Exception ex) {

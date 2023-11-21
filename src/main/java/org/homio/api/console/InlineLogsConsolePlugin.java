@@ -9,21 +9,24 @@ import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.ui.UI;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+@Getter
+@Accessors(fluent = true)
 @Component
 @RequiredArgsConstructor
 public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
-    @Getter
-    private final EntityContext entityContext;
+    private final @Accessors(fluent = true) Context context;
     private final List<ConsolePluginComplexLines.ComplexString> values = new ArrayList<>();
 
     @Override
-    public String getEntityID() {
+    public @NotNull String getEntityID() {
         return "icl";
     }
 
@@ -34,14 +37,14 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
     public void clear() {
         this.values.clear();
-        entityContext.ui().sendNotification("-lines-icl", "CLEAR");
+        context.ui().sendRawData("-lines-icl", "CLEAR");
     }
 
     public void add(String value, boolean error) {
         ComplexString complexString =
-                ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
+            ComplexString.of(value, System.currentTimeMillis(), error ? UI.Color.PRIMARY_COLOR : null, null);
         values.add(complexString);
-        entityContext.ui().sendNotification("-lines-icl", complexString.toString());
+        context.ui().sendRawData("-lines-icl", complexString.toString());
     }
 
     @SneakyThrows
@@ -66,6 +69,7 @@ public class InlineLogsConsolePlugin implements ConsolePluginComplexLines {
 
     @RequiredArgsConstructor
     private class StdoutOutputStream extends ByteArrayOutputStream {
+
         private final boolean stdErr;
 
         String value = "";

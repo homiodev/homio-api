@@ -7,12 +7,9 @@ import java.lang.annotation.Target;
 
 /**
  * Key/Value type that stores into string: i.e.:
- *
- * UIKeyValueField(maxSize = 5, keyType = UIFieldType.Float, valueType = UIFieldType.ColorPicker, defaultKey = "0",
- * defaultValue = "#FFFFFF")
- * public String getThreshold() {
- * return getJsonData("threshold", "{}");
- * }
+ * <p>
+ * UIKeyValueField(maxSize = 5, keyType = UIFieldType.Float, valueType = UIFieldType.ColorPicker, defaultKey = "0", defaultValue = "#FFFFFF") public String
+ * getThreshold() { return getJsonData("threshold", "{}"); }
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

@@ -6,6 +6,7 @@ import org.bson.conversions.Bson;
 
 @Getter
 public class SortBy {
+
     private final String orderField;
     private final boolean asc;
 

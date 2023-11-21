@@ -1,15 +1,17 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 
+@Getter
 public class OnOffType implements State {
 
     public static final OnOffType ON = new OnOffType(true);
     public static final OnOffType OFF = new OnOffType(false);
 
-    @Getter
     private final boolean value;
 
     @Getter
@@ -27,6 +29,14 @@ public class OnOffType implements State {
 
     public static OnOffType of(boolean on) {
         return on ? ON : OFF;
+    }
+
+    public static OnOffType of(@Nullable String value) {
+        if (value != null) {
+            String lowerCase = value.toLowerCase();
+            return OnOffType.of(lowerCase.equals("1") || lowerCase.equals("on") || lowerCase.equals("true"));
+        }
+        return OnOffType.OFF;
     }
 
     public OnOffType invert() {
@@ -82,9 +92,14 @@ public class OnOffType implements State {
     }
 
     @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, value);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         OnOffType onOffType = (OnOffType) o;
 

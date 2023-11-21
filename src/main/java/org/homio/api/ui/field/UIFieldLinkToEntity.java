@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 import org.homio.api.entity.BaseEntity;
 
 /**
- * Annotation for able to link field to another page on UI with matched entityID
+ * Annotation for able to link field to another page on UI with matched entityID'
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -17,4 +17,14 @@ public @interface UIFieldLinkToEntity {
      * @return Target class or base class with @UISidebarMenu annotation
      */
     Class<? extends BaseEntity> value();
+
+    boolean applyTitle() default false;
+
+    interface FieldLinkToEntityTitleProvider {
+        String getLinkTitle();
+    }
+
+    record NavEntityTitle(String entityID, String title) {
+
+    }
 }

@@ -1,15 +1,18 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.putOpt;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
 import java.nio.file.Paths;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.model.Icon;
-import org.homio.api.model.KeyValueEnum;
-import org.homio.api.ui.field.UIFieldType;
-import org.homio.api.util.CommonUtils;
+import org.homio.api.model.OptionModel.KeyValueEnum;
+import org.homio.api.util.HardwareUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -19,24 +22,25 @@ public interface SettingPlugin<T> {
 
     /**
      * If want to show setting direct on top header panel instead of settings
+     *
      * @return Base entity which setting available to
      */
-    default Class<? extends BaseEntity> availableForEntity() {
+    default @Nullable Class<? extends BaseEntity> availableForEntity() {
         return null;
     }
 
-    Class<T> getType();
+    @NotNull Class<T> getType();
 
     // specify max width of rendered ui item. Uses with SelectBox/SelectBoxDynamic
-    default Integer getMaxWidth() {
+    default @Nullable Integer getMaxWidth() {
         return null;
     }
 
-    default Icon getIcon() {
-        return new Icon();
+    default @Nullable Icon getIcon() {
+        return null;
     }
 
-    default String getDefaultValue() {
+    default @NotNull String getDefaultValue() {
         switch (getSettingType()) {
             case Integer:
             case Slider:
@@ -56,13 +60,13 @@ public interface SettingPlugin<T> {
     }
 
     // min/max/step (Slider)
-    default JSONObject getParameters(EntityContext entityContext, String value) {
+    default @NotNull JSONObject getParameters(Context context, String value) {
         JSONObject parameters = new JSONObject();
-        CommonUtils.putOpt(parameters, "maxWidth", getMaxWidth());
+        putOpt(parameters, "maxWidth", getMaxWidth());
         return parameters;
     }
 
-    UIFieldType getSettingType();
+    @NotNull SettingType getSettingType();
 
     // if secured - users without admin privileges can't see values
     default boolean isSecuredValue() {
@@ -79,27 +83,33 @@ public interface SettingPlugin<T> {
     }
 
     // disabled input/button on ui
-    default boolean isDisabled(EntityContext entityContext) {
+    default boolean isDisabled(Context context) {
         return false;
     }
 
     // visible on ui or not
-    default boolean isVisible(EntityContext entityContext) {
+    default boolean isVisible(Context context) {
         return true;
     }
 
     // grouping settings by group name
-    default String group() {
+    default @Nullable String group() {
         return null;
     }
 
-    default T parseValue(EntityContext entityContext, String value) {
+    default @Nullable T parseValue(Context context, String value) {
         if (value == null) {
             return null;
         }
         switch (getType().getSimpleName()) {
+            case "ObjectNode":
+                try {
+                    return (T) OBJECT_MAPPER.readValue(value, ObjectNode.class);
+                } catch (Exception ignore) {
+                    return (T) OBJECT_MAPPER.createObjectNode();
+                }
             case "Integer":
-                return parseInteger(entityContext, value);
+                return parseInteger(context, value);
             case "Path":
                 return (T) Paths.get(value);
         }
@@ -111,33 +121,28 @@ public interface SettingPlugin<T> {
                 return (T) Boolean.valueOf(value);
             case Integer:
             case Slider:
-                return parseInteger(entityContext, value);
+                return parseInteger(context, value);
         }
         if (getType().isEnum()) {
             return (T) Enum.valueOf((Class) getType(), value);
         }
         if (SerialPort.class.equals(getType())) {
-            return (T) CommonUtils.getSerialPort(value);
+            return (T) HardwareUtils.getSerialPort(value);
         }
         return (T) value;
     }
 
     // Is it able to save value to database or local variable
     default boolean isStorable() {
-        return true;
+        return getSettingType().isStorable();
     }
 
     /**
      * Values of settings with transient state doesn't save to db
+     *
      * @return is setting is transient
      */
     default boolean transientState() {
-        if (this.getSettingType() == UIFieldType.Button) {
-            JSONObject parameters = this.getParameters(null, null);
-            if (parameters == null || parameters.length() == 1 && parameters.has("confirm")) {
-                return true;
-            }
-        }
         return !this.isStorable();
     }
 
@@ -152,24 +157,25 @@ public interface SettingPlugin<T> {
 
     /**
      * Covnerter from target type to string
+     *
      * @param value -
      * @return -
      */
-    default String writeValue(T value) {
+    default @NotNull String writeValue(@Nullable T value) {
         if (value == null) {
             return "";
         }
         return value.toString();
     }
 
-    default T parseInteger(EntityContext entityContext, String value) {
+    default @NotNull T parseInteger(@NotNull Context context, @NotNull String value) {
         Integer parseValue;
         try {
             parseValue = Integer.valueOf(value);
         } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Unable parse setting value <" + value + "> as integer value");
         }
-        JSONObject parameters = getParameters(entityContext, value);
+        JSONObject parameters = getParameters(context, value);
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
                 throw new IllegalArgumentException(
@@ -186,11 +192,11 @@ public interface SettingPlugin<T> {
     /**
      * Assert that user has access to change setting
      *
-     * @param entityContext - entity context
+     * @param context - entity context
      * @param user          - logged in user
      * @throws IllegalAccessException - access denied
      */
-    default void assertUserAccess(@NotNull EntityContext entityContext, @Nullable UserEntity user) throws IllegalAccessException {
+    default void assertUserAccess(@NotNull Context context, @Nullable UserEntity user) throws IllegalAccessException {
         if (user == null || !user.isAdmin()) {
             throw new IllegalAccessException();
         }

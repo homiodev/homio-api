@@ -7,6 +7,7 @@ import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
 public interface AudioSink {
+
     String getId();
 
     Map<String, String> getSources();

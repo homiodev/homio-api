@@ -9,9 +9,9 @@ import java.util.function.Function;
 public class CachedValue<T, P> {
 
     private final Function<P, T> fetchHandler;
+    private final Duration ttl;
     private long lastCheck = 0;
     private T value;
-    private final Duration ttl;
 
     public CachedValue(Duration ttl, Function<P, T> fetchHandler) {
         this.fetchHandler = fetchHandler;

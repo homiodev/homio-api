@@ -9,13 +9,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation uses for jackson serialization / deserialization for serial port types.
- * Uses in conjunctions with SerialPortConverter class i.e.:
- *
- * JsonSerialPort
- * Convert(converter = SerialPortConverter.class) -- uses for save/get with DB
- * UIFieldBeanSelection -- uses for selection on ui
- * private SerialPort somePort;
+ * Annotation uses for jackson serialization / deserialization for serial port types. Uses in conjunctions with SerialPortConverter class i.e.:
+ * <p>
+ * JsonSerialPort Convert(converter = SerialPortConverter.class) -- uses for save/get with DB UIFieldBeanSelection -- uses for selection on ui private
+ * SerialPort somePort;
  */
 @JacksonAnnotationsInside
 @JsonSerialize(using = SerialPortSerializer.class)

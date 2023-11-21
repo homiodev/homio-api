@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorBooleanMatch {
+
     String True() default "#1F8D2D";
 
     String False() default "#B22020";

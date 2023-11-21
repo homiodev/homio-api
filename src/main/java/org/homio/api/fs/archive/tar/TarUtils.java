@@ -32,21 +32,6 @@ public class TarUtils {
         return tmp.toString();
     }
 
-    private static boolean isRegexMeta(char c) {
-        return regexMetaChars.indexOf(c) != -1;
-    }
-
-    private static boolean isGlobMeta(char c) {
-        return globMetaChars.indexOf(c) != -1;
-    }
-
-    private static char next(String glob, int i) {
-        if (i < glob.length()) {
-            return glob.charAt(i);
-        }
-        return EOL;
-    }
-
     public static String toRegexPattern(String globPattern) {
         boolean inGroup = false;
         StringBuilder regex = new StringBuilder("^");
@@ -59,7 +44,7 @@ public class TarUtils {
                     // escape special characters
                     if (i == globPattern.length()) {
                         throw new PatternSyntaxException("No character to escape",
-                                globPattern, i - 1);
+                            globPattern, i - 1);
                     }
                     char next = globPattern.charAt(i++);
                     if (isGlobMeta(next) || isRegexMeta(next)) {
@@ -98,12 +83,12 @@ public class TarUtils {
                         }
                         if (c == '/') {
                             throw new PatternSyntaxException(
-                                    "Explicit 'name separator' in class",
-                                    globPattern, i - 1);
+                                "Explicit 'name separator' in class",
+                                globPattern, i - 1);
                         }
                         // TBD: how to specify ']' in a class?
                         if (c == '\\' || c == '[' || c == '&'
-                                && next(globPattern, i) == '&') {
+                            && next(globPattern, i) == '&') {
                             // escape '\', '[' or "&&" for regex class
                             regex.append('\\');
                         }
@@ -112,14 +97,14 @@ public class TarUtils {
                         if (c == '-') {
                             if (!hasRangeStart) {
                                 throw new PatternSyntaxException("Invalid range",
-                                        globPattern, i - 1);
+                                    globPattern, i - 1);
                             }
                             if ((c = next(globPattern, i++)) == EOL || c == ']') {
                                 break;
                             }
                             if (c < last) {
                                 throw new PatternSyntaxException("Invalid range",
-                                        globPattern, i - 3);
+                                    globPattern, i - 3);
                             }
                             regex.append(c);
                             hasRangeStart = false;
@@ -130,14 +115,14 @@ public class TarUtils {
                     }
                     if (c != ']') {
                         throw new PatternSyntaxException("Missing ']", globPattern,
-                                i - 1);
+                            i - 1);
                     }
                     regex.append("]]");
                     break;
                 case '{':
                     if (inGroup) {
                         throw new PatternSyntaxException("Cannot nest groups",
-                                globPattern, i - 1);
+                            globPattern, i - 1);
                     }
                     regex.append("(?:(?:");
                     inGroup = true;
@@ -191,6 +176,21 @@ public class TarUtils {
             baos.write(data, 0, nRead);
         }
         return baos.toByteArray();
+    }
+
+    private static boolean isRegexMeta(char c) {
+        return regexMetaChars.indexOf(c) != -1;
+    }
+
+    private static boolean isGlobMeta(char c) {
+        return globMetaChars.indexOf(c) != -1;
+    }
+
+    private static char next(String glob, int i) {
+        if (i < glob.length()) {
+            return glob.charAt(i);
+        }
+        return EOL;
     }
 
 }

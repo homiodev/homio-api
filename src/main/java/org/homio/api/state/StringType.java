@@ -1,14 +1,16 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+@Getter
 public class StringType implements State {
+
     public static StringType EMPTY = new StringType("");
 
-    @Getter
     private final @NotNull String value;
 
     @Getter
@@ -54,9 +56,14 @@ public class StringType implements State {
     }
 
     @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, value);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         StringType that = (StringType) o;
 

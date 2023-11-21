@@ -5,10 +5,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * This is not a string but a CharSequence that can be cleared of its memory.
- * Important for handling passwords. Represents text that should be kept
- * confidential, such as by deleting it from computer memory when no longer
- * needed or garbaged collected.
+ * This is not a string but a CharSequence that can be cleared of its memory. Important for handling passwords. Represents text that should be kept
+ * confidential, such as by deleting it from computer memory when no longer needed or garbage collected.
  */
 public class SecureString implements CharSequence {
 
@@ -46,8 +44,7 @@ public class SecureString implements CharSequence {
     }
 
     /**
-     * @return Convert array back to String but not using toString(). See toString() docs
-     * below.
+     * @return Convert array back to String but not using toString(). See toString() docs below.
      */
     public String asString() {
         final char[] value = new char[chars.length];
@@ -75,15 +72,21 @@ public class SecureString implements CharSequence {
         return this.length() == 0 ? "" : "Secure:XXXXX";
     }
 
-    /**
-     * Called by garbage collector.
-     * <p>
-     * {@inheritDoc}
-     */
     @Override
-    public void finalize() throws Throwable {
-        clear();
-        super.finalize();
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        String val2 = obj.toString();
+        if (obj instanceof SecureString) {
+            val2 = ((SecureString) obj).asString();
+        }
+        return this.asString().equals(val2);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.asString());
     }
 
     /**
@@ -100,22 +103,5 @@ public class SecureString implements CharSequence {
             pad[i] = random.nextInt();
             chars[i] = pad[i] ^ charAt;
         }
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        String val2 = obj.toString();
-        if (obj instanceof SecureString) {
-            val2 = ((SecureString) obj).asString();
-        }
-        return this.asString().equals(val2);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.asString());
     }
 }

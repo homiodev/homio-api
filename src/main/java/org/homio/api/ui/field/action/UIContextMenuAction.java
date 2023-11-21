@@ -11,11 +11,16 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIContextMenuAction {
+
     String value();
 
     String icon() default "";
 
     String iconColor() default "";
+
+    String confirmMessage() default "";
+
+    String confirmMessageDialogColor() default "";
 
     UIActionInput[] inputs() default {};
 }

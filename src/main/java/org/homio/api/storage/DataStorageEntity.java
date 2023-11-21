@@ -18,8 +18,8 @@ public abstract class DataStorageEntity implements Comparable<DataStorageEntity>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         DataStorageEntity that = (DataStorageEntity) o;
 

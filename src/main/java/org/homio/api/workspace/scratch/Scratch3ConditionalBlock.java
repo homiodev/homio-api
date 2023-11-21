@@ -5,11 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 
+@SuppressWarnings({"unused", "unchecked", "rawtypes"})
 @Getter
 public class Scratch3ConditionalBlock extends Scratch3Block {
 
     Scratch3ConditionalBlock(int order, String opcode, BlockType blockType, String text, Scratch3BlockHandler handler,
-                             Scratch3BlockEvaluateHandler evaluateHandler) {
+        Scratch3BlockEvaluateHandler evaluateHandler) {
         super(order, opcode, blockType, new ArrayList<>(Collections.singletonList(text)), handler, evaluateHandler);
     }
 

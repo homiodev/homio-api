@@ -1,5 +1,8 @@
 package org.homio.api.fs.archive;
 
+import static java.lang.String.format;
+import static org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler.replace;
+
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingPredicate;
 import java.io.BufferedOutputStream;
@@ -12,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -49,18 +53,71 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.fs.TreeNode;
-import org.homio.api.ui.field.ProgressBar;
 import org.homio.api.util.CommonUtils;
+import org.homio.hquery.Curl;
+import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("unused")
 @Log4j2
 public final class ArchiveUtil {
 
+    public static void unzipAndMove(@NotNull ProgressBar progressBar, @NotNull Path archive, @NotNull Path targetPath) throws IOException {
+        progressBar.progress(70, format("Unzip %s sources", archive));
+        Path workingPath = archive.getParent();
+        List<Path> files = ArchiveUtil.unzip(archive, workingPath, null, false, progressBar, replace);
+        if (!files.isEmpty()) {
+            /*Path unzipFolder = CommonUtils.getTmpPath().relativize(files.iterator().next());
+            while (unzipFolder.getParent() != null) {
+                unzipFolder = unzipFolder.getParent();
+            }*/
+            Files.delete(archive);
+            CommonUtils.deletePath(targetPath);
+            File srcDir = workingPath.toFile();
+            // we need copy only desired files if we unzip many files to single folder
+            if (files.size() > 1) {
+                File[] listFiles = Objects.requireNonNull(srcDir.listFiles());
+                if (listFiles.length == 1) {
+                    srcDir = listFiles[0];
+                }
+            }
+            // Path unzipPath = CommonUtils.getTmpPath().resolve(unzipFolder);
+            FileUtils.copyDirectory(srcDir, targetPath.toFile());
+        }
+        FileUtils.deleteDirectory(workingPath.toFile());
+    }
+
+    /**
+     * Download archive file from url, extract, delete archive
+     *
+     * @param url             - url of archived source
+     * @param archiveFileName - archive file name
+     * @param progressBar     - progress bar to print progress
+     * @return unarchived downloaded folder
+     */
+    @SneakyThrows
+    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String archiveFileName,
+        @NotNull ProgressBar progressBar) {
+        return downloadAndExtract(url, archiveFileName, progressBar, CommonUtils.getInstallPath());
+    }
+
+    @SneakyThrows
+    public static @NotNull List<Path> downloadAndExtract(@NotNull String url, @NotNull String archiveFileName,
+        @NotNull ProgressBar progressBar, @NotNull Path targetFolder) {
+        progressBar.progress(0, format("Downloading '%s' from url '%s'", archiveFileName, url));
+        Path archivePath = CommonUtils.getTmpPath().resolve(archiveFileName);
+        Curl.downloadWithProgress(url, archivePath, progressBar);
+        progressBar.progress(90, format("Extracting '%s' to path '%s'", archivePath, targetFolder));
+        List<Path> files = ArchiveUtil.unzip(archivePath, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
+        Files.delete(archivePath);
+        return files;
+    }
+
     @SneakyThrows
     public static List<Path> unzip(@NotNull Path archive, @NotNull Path destination, @Nullable String password,
-                                   boolean createArchiveNameDirectory,
-                                   @Nullable ProgressBar progressBar, @NotNull UnzipFileIssueHandler handler) {
+        boolean createArchiveNameDirectory,
+        @Nullable ProgressBar progressBar, @NotNull UnzipFileIssueHandler handler) {
         if (progressBar != null) {
             progressBar.progress(0, "Unzip files. Calculate size...");
         }
@@ -82,9 +139,9 @@ public final class ArchiveUtil {
 
     @SneakyThrows
     public static List<Path> unzip(@NotNull Path path, @NotNull ArchiveUtil.ArchiveFormat archiveFormat,
-                                   @NotNull Path destination,
-                                   @Nullable String password, @Nullable ProgressBar progressBar,
-                                   @NotNull UnzipFileIssueHandler handler) {
+        @NotNull Path destination,
+        @Nullable String password, @Nullable ProgressBar progressBar,
+        @NotNull UnzipFileIssueHandler handler) {
         if (progressBar != null) {
             progressBar.progress(0, "Unzip files. Calculate size...");
         }
@@ -119,11 +176,11 @@ public final class ArchiveUtil {
     @SneakyThrows
     public static List<File> getArchiveEntries(@NotNull Path archive, @Nullable String password) {
         return ArchiveFormat.getHandlerByPath(archive)
-                .getArchiveEntries(archive, password == null ? null : password.toCharArray());
+                            .getArchiveEntries(archive, password == null ? null : password.toCharArray());
     }
 
     @SneakyThrows
-    public static List<File> getChildren(@NotNull Path archive, @Nullable String entryId) {
+    public static List<File> getChildren(@NotNull Path archive, @NotNull String entryId) {
         List<File> archiveEntries = getArchiveEntries(archive, null);
         return archiveEntries.stream().filter(f -> entryId.equals(f.getParent())).collect(Collectors.toList());
     }
@@ -143,22 +200,42 @@ public final class ArchiveUtil {
     @SneakyThrows
     public static InputStream downloadArchiveEntry(@NotNull Path archive, @NotNull String entryNames, @Nullable String password) {
         return ArchiveFormat.getHandlerByPath(archive).downloadArchiveEntry(archive, entryNames.replaceAll("\\\\", "/"),
-                password == null ? null : password.toCharArray());
+            password == null ? null : password.toCharArray());
     }
 
     @SneakyThrows
     public static Set<Path> removeEntries(@NotNull Path archive, @NotNull Set<String> entryNames, @Nullable String password) {
         return ArchiveFormat.getHandlerByPath(archive)
-                .removeEntries(archive, entryNames, password == null ? null : password.toCharArray());
+                            .removeEntries(archive, entryNames, password == null ? null : password.toCharArray());
     }
 
     public static void addToArchive(@NotNull Path archive, @NotNull Collection<TreeNode> files) {
         ArchiveFormat.getHandlerByPath(archive).addEntries(archive, files);
     }
 
+    /**
+     * Archive source directory to destination.
+     *
+     * @param sourceFolder        - existed source dir
+     * @param destinationFile     - dest file
+     * @param archiveFormat       -format
+     * @param progressBar         - progress
+     * @param includeParentFolder - does include parent folder to archive or not
+     */
     @SneakyThrows
-    public static @NotNull Path zip(@NotNull List<Path> sources, @NotNull Path destination, ArchiveFormat archiveFormat,
-                                    @Nullable String level, @Nullable String password, @Nullable ProgressBar progressBar) {
+    public static void zip(@NotNull Path sourceFolder, @NotNull Path destinationFile, ArchiveFormat archiveFormat,
+        @Nullable ProgressBar progressBar, boolean includeParentFolder) {
+        if (!Files.isDirectory(sourceFolder)) {
+            throw new IllegalArgumentException("SourceFolder must be a directory");
+        }
+        Set<Path> sources = includeParentFolder ? Set.of(sourceFolder)
+            : Arrays.stream(Objects.requireNonNull(sourceFolder.toFile().listFiles())).map(File::toPath).collect(Collectors.toSet());
+        zip(sources, destinationFile, archiveFormat, null, null, progressBar);
+    }
+
+    @SneakyThrows
+    public static void zip(@NotNull Collection<Path> sources, @NotNull Path destination, ArchiveFormat archiveFormat,
+        @Nullable String level, @Nullable String password, @Nullable ProgressBar progressBar) {
         if (progressBar != null) {
             progressBar.progress(0, "Zip files. Calculate size...");
         }
@@ -171,19 +248,32 @@ public final class ArchiveUtil {
         if (progressBar != null) {
             progressBar.progress(99, "Zip files done.");
         }
-        return destination;
     }
 
-    private static String fixPath(String path) {
+    /**
+     * Copy file or directory
+     *
+     * @param archive    - archive file
+     * @param sourcePath - source in archive
+     * @param targetPath - target on fs
+     */
+    @SneakyThrows
+    public static void copyEntries(@NotNull Path archive, @NotNull Set<Path> sourcePath, @NotNull Path targetPath, boolean isSkipExisted) {
+        ArchiveFormat archiveFormat = ArchiveFormat.getHandlerByPath(archive);
+        Set<String> entries = sourcePath.stream().map(Path::toString).collect(Collectors.toSet());
+        archiveFormat.downloadArchiveEntries(archive, targetPath, entries, isSkipExisted);
+    }
+
+    public static String fixPath(@NotNull String path) {
         return path.replaceAll("\\\\", "/");
     }
 
-    private static Set<String> fixPath(Collection<String> pathList) {
+    public static Set<String> fixPath(@NotNull Collection<String> pathList) {
         return pathList.stream().map(ArchiveUtil::fixPath).collect(Collectors.toSet());
     }
 
-    private static void writeSeven7ArchiveEntry(boolean isDirectory, TreeNode treeNode, SevenZOutputFile sevenZOutput)
-            throws IOException {
+    private static void writeSeven7ArchiveEntry(boolean isDirectory, @NotNull TreeNode treeNode, @NotNull SevenZOutputFile sevenZOutput)
+        throws IOException {
         SevenZArchiveEntry entry = new SevenZArchiveEntry();
         entry.setDirectory(isDirectory);
         entry.setName(treeNode.getName());
@@ -194,8 +284,8 @@ public final class ArchiveUtil {
         sevenZOutput.closeArchiveEntry();
     }
 
-    private void downloadArchiveEntries(Path archive, Path targetPath, Set<String> entries) {
-        ArchiveFormat.getHandlerByPath(archive).downloadArchiveEntries(archive, targetPath, fixPath(entries));
+    private void downloadArchiveEntries(@NotNull Path archive, @NotNull Path targetPath, @NotNull Set<String> entries, boolean isSkipExisted) {
+        ArchiveFormat.getHandlerByPath(archive).downloadArchiveEntries(archive, targetPath, entries, isSkipExisted);
     }
 
     public enum UnzipFileIssueHandler {
@@ -205,77 +295,70 @@ public final class ArchiveUtil {
     @Getter
     @RequiredArgsConstructor
     public enum ArchiveFormat {
-        tar("tar", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(Files.newOutputStream(file));
-        }),
+        tar("tar", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(Files.newInputStream(archive)),
+            (file, level, password) ->
+                new TarArchiveOutputStream(Files.newOutputStream(file))),
         // tar bz2
-        tarGZ2("tar.gz2", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(new BZip2CompressorInputStream(Files.newInputStream(archive)));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(new BZip2CompressorOutputStream(Files.newOutputStream(file)));
-        }),
+        tarGZ2("tar.gz2", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(new BZip2CompressorInputStream(Files.newInputStream(archive))),
+            (file, level, password) ->
+                new TarArchiveOutputStream(new BZip2CompressorOutputStream(Files.newOutputStream(file)))),
         // tar bz2
-        tarXZ("tar.xz", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(new XZCompressorInputStream(Files.newInputStream(archive)));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(new XZCompressorOutputStream(Files.newOutputStream(file)));
-        }),
+        tarXZ("tar.xz", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(new XZCompressorInputStream(Files.newInputStream(archive))),
+            (file, level, password) ->
+                new TarArchiveOutputStream(new XZCompressorOutputStream(Files.newOutputStream(file)))),
         // tar gz
-        tarGZ("tar.gz", true, path -> true, (archive, password) -> {
-            return new TarArchiveInputStream(new GzipCompressorInputStream(Files.newInputStream(archive)));
-        }, (file, level, password) -> {
-            return new TarArchiveOutputStream(new GzipCompressorOutputStream(Files.newOutputStream(file)));
-        }),
+        tarGZ("tar.gz", true, path -> true,
+            (archive, password) ->
+                new TarArchiveInputStream(new GzipCompressorInputStream(Files.newInputStream(archive))),
+            (file, level, password) ->
+                new TarArchiveOutputStream(new GzipCompressorOutputStream(Files.newOutputStream(file)))),
         // jar
         jar("jar", true, path -> {
             new ZipFile(path.toFile()).close();
             return true;
-        }, (archive, password) -> {
-            return new JarArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
+        }, (archive, password) ->
+            new JarArchiveInputStream(Files.newInputStream(archive)), (file, level, password) -> {
             JarArchiveOutputStream out = new JarArchiveOutputStream(new BufferedOutputStream(Files.newOutputStream(file)));
             out.setLevel("low".equals(level) ? Deflater.BEST_SPEED :
-                    "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
+                "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
             return out;
         }),
         // war
         war("war", true, path -> {
             new ZipFile(path.toFile()).close();
             return true;
-        }, (archive, password) -> {
-            return new JarArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
+        }, (archive, password) -> new JarArchiveInputStream(Files.newInputStream(archive)), (file, level, password) -> {
             JarArchiveOutputStream out = new JarArchiveOutputStream(new BufferedOutputStream(Files.newOutputStream(file)));
             out.setLevel("low".equals(level) ? Deflater.BEST_SPEED :
-                    "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
+                "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
             return out;
         }),
         // zip
         zip("zip", true, path -> {
             new ZipFile(path.toFile()).close();
             return true;
-        }, (archive, password) -> {
-            return new ZipArchiveInputStream(Files.newInputStream(archive));
-        }, (file, level, password) -> {
+        }, (archive, password) -> new ZipArchiveInputStream(Files.newInputStream(archive)), (file, level, password) -> {
             ZipArchiveOutputStream out = new ZipArchiveOutputStream(new BufferedOutputStream(Files.newOutputStream(file)));
             out.setLevel("low".equals(level) ? Deflater.BEST_SPEED :
-                    "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
+                "high".equals(level) ? Deflater.BEST_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
             return out;
         }),
         // 7z
         sevenZ("7z", false, path -> {
             new SevenZFile(path.toFile()).close();
             return true;
-        }, (path, password) -> {
-            return ApacheCompress.createSeven7InputStream(path, password);
-        }, (file, level, password) -> {
-            return new ArchiveOutputStream() {
+        }, ApacheCompress::createSeven7InputStream,
+            (file, level, password) -> new ArchiveOutputStream() {
                 final SevenZOutputFile target = new SevenZOutputFile(file.toFile());
 
                 @Override
-                public void putArchiveEntry(ArchiveEntry entry) throws IOException {
+                public void putArchiveEntry(ArchiveEntry entry) {
                     target.putArchiveEntry(entry);
                 }
 
@@ -310,10 +393,9 @@ public final class ArchiveUtil {
                 }
 
                 @Override
-                public ArchiveEntry createArchiveEntry(File inputFile, String entryNames) throws IOException {
+                public ArchiveEntry createArchiveEntry(File inputFile, String entryNames) {
                     return target.createArchiveEntry(inputFile, entryNames);
                 }
-            };
         });
 
         private final String name;
@@ -346,21 +428,22 @@ public final class ArchiveUtil {
         }
 
         public void zip(@NotNull Path source, @NotNull Path destination, @Nullable String level, char[] password,
-                        @Nullable ProgressBar progressBar) throws Exception {
+            @Nullable ProgressBar progressBar) throws Exception {
             List<Path> sources =
-                    Stream.of(Objects.requireNonNull(source.toFile().listFiles())).map(File::toPath).collect(Collectors.toList());
-            ApacheCompress.archive(sources, createOutputStreamProducer.createStream(destination, level, password), progressBar);
+                Stream.of(Objects.requireNonNull(source.toFile().listFiles())).map(File::toPath).collect(Collectors.toList());
+            ArchiveOutputStream stream = createOutputStreamProducer.createStream(destination, level, password);
+            ApacheCompress.archive(sources, stream, progressBar);
         }
 
-        public void zip(@NotNull List<Path> sources, @NotNull Path destination, @Nullable String level, char[] password,
-                        @Nullable ProgressBar progressBar) throws Exception {
+        public void zip(@NotNull Collection<Path> sources, @NotNull Path destination, @Nullable String level, char[] password,
+            @Nullable ProgressBar progressBar) throws Exception {
             ApacheCompress.archive(sources, createOutputStreamProducer.createStream(destination, level, password), progressBar);
         }
 
         public InputStream downloadArchiveEntry(@NotNull Path archive, @NotNull String entryNames, char[] password)
-                throws Exception {
+            throws Exception {
             return ApacheCompress.downloadEntry(createInputStreamProducer.createStream(archive, password),
-                    entryNames);
+                entryNames);
         }
 
         public List<File> getArchiveEntries(@NotNull Path archive, char[] password) throws Exception {
@@ -368,17 +451,17 @@ public final class ArchiveUtil {
         }
 
         public List<Path> unzip(@NotNull Path archive, @NotNull Path destination, char[] password,
-                                @Nullable ProgressBar progressBar, @NotNull UnzipFileIssueHandler handler, double fileSize)
-                throws Exception {
+            @Nullable ProgressBar progressBar, @NotNull UnzipFileIssueHandler handler, double fileSize)
+            throws Exception {
             return ApacheCompress.unzipCompress(createInputStreamProducer.createStream(archive, password), destination, handler,
-                    fileSize, progressBar);
+                fileSize, progressBar);
         }
 
         @SneakyThrows
         public void renameEntry(Path archive, String entryName, String newName) {
             if (hasBuildInFileSystem) {
                 // may rename only files, not folders
-                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
+                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
                     Path fsPath = archiveFS.getPath(entryName);
                     if (Files.isRegularFile(fsPath)) { // only regular path may be removed inside fs
                         Files.move(fsPath, fsPath.resolveSibling(newName), StandardCopyOption.REPLACE_EXISTING);
@@ -395,23 +478,9 @@ public final class ArchiveUtil {
         }
 
         @SneakyThrows
-        private void modifyArchive(Path archive, ThrowingBiConsumer<Path, List<Path>, Exception> consumer) {
-            Path tmpPath = CommonUtils.getTmpPath().resolve("tmp_archive_" + System.currentTimeMillis());
-            Files.createDirectories(tmpPath);
-            try {
-                List<Path> list = unzip(archive, tmpPath, null, null, UnzipFileIssueHandler.replace, 0);
-                consumer.accept(tmpPath, list);
-                Files.delete(archive);
-                zip(tmpPath, archive, null, null, null);
-            } finally {
-                FileUtils.deleteDirectory(tmpPath.toFile());
-            }
-        }
-
-        @SneakyThrows
         public void addEntries(@NotNull Path archive, @NotNull Collection<TreeNode> files) {
             if (hasBuildInFileSystem) {
-                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
+                try (FileSystem archiveFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
                     CommonUtils.addFiles(Paths.get(""), files, (path, treeNode) ->
                         archiveFS.getPath(path.toString() + treeNode.getName()));
                 }
@@ -419,27 +488,27 @@ public final class ArchiveUtil {
             } else if (this == sevenZ) {
                 SevenZOutputFile sevenZOutput = new SevenZOutputFile(archive.toFile());
                 CommonUtils.addFiles(Paths.get(""), files, (path, treeNode) -> path.resolve(treeNode.getName()),
-                        (treeNode, path) -> writeSeven7ArchiveEntry(false, treeNode, sevenZOutput),
-                        (treeNode, path) -> writeSeven7ArchiveEntry(true, treeNode, sevenZOutput));
+                    (treeNode, path) -> writeSeven7ArchiveEntry(false, treeNode, sevenZOutput),
+                    (treeNode, path) -> writeSeven7ArchiveEntry(true, treeNode, sevenZOutput));
                 sevenZOutput.close();
                 return;
             }
             modifyArchive(archive,
-                    (tmpPath, list) -> CommonUtils.addFiles(tmpPath, files,
-                            (path, treeNode) -> path.resolve(treeNode.getName())));
+                (tmpPath, list) -> CommonUtils.addFiles(tmpPath, files,
+                    (path, treeNode) -> path.resolve(treeNode.getName())));
         }
 
         @SneakyThrows
-        public void downloadArchiveEntries(Path archive, Path targetFolder, Set<String> entries) {
+        public void downloadArchiveEntries(Path archive, Path targetFolder, Set<String> entries, boolean isSkipExisted) {
             ApacheCompress.downloadEntries(createInputStreamProducer.createStream(archive, null),
-                    targetFolder, entries);
+                targetFolder, entries, isSkipExisted);
         }
 
         public Set<Path> removeEntries(@NotNull Path archive, @NotNull Set<String> entryNames, char[] password) throws Exception {
             entryNames = fixPath(entryNames);
             Set<Path> removedItems = new HashSet<>();
             if (hasBuildInFileSystem) {
-                try (FileSystem zipFS = FileSystems.newFileSystem(archive, ClassLoader.getSystemClassLoader())) {
+                try (FileSystem zipFS = FileSystems.newFileSystem(archive, ArchiveUtil.class.getClassLoader())) {
                     for (String entryName : entryNames) {
                         removedItems.addAll(CommonUtils.removeFileOrDirectory(zipFS.getPath(entryName)));
                     }
@@ -463,6 +532,20 @@ public final class ArchiveUtil {
             return name;
         }
 
+        @SneakyThrows
+        private void modifyArchive(Path archive, ThrowingBiConsumer<Path, List<Path>, Exception> consumer) {
+            Path tmpPath = CommonUtils.getTmpPath().resolve("tmp_archive_" + System.currentTimeMillis());
+            Files.createDirectories(tmpPath);
+            try {
+                List<Path> list = unzip(archive, tmpPath, null, null, UnzipFileIssueHandler.replace, 0);
+                consumer.accept(tmpPath, list);
+                Files.delete(archive);
+                zip(tmpPath, archive, null, null, null);
+            } finally {
+                FileUtils.deleteDirectory(tmpPath.toFile());
+            }
+        }
+
         private long size(ArchiveInputStream stream) throws Exception {
             long fullSize = 0;
             ArchiveEntry entry;
@@ -479,10 +562,12 @@ public final class ArchiveUtil {
     }
 
     interface CreateInputStreamProducer {
+
         ArchiveInputStream createStream(@NotNull Path path, char[] password) throws Exception;
     }
 
     interface CreateOutputStreamProducer {
+
         ArchiveOutputStream createStream(@NotNull Path file, @Nullable String level, char[] password) throws Exception;
     }
 }

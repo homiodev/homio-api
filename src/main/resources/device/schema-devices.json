@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "version": {
+      "description": "Specify file version",
+      "type": "string"
+    },
+    "devices": {
+      "type": "array",
+      "description": "Device list",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Uses only in json file to distinguish devices by functionality",
+            "type": "string"
+          },
+          "endpoints": {
+            "title": "List of 'or' endpoints to apply widget for",
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "models": {
+            "title": "List of custom device's model to have same widgets/icons/etc...",
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "icon": {
+            "type": "string"
+          },
+          "iconColor": {
+            "type": "string"
+          },
+          "widgets": {
+            "title": "Describe widgets that able to create in context menu for device",
+            "type": "array",
+            "items": [
+              {
+                "$ref": "/device/widget/schema-widget.json"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    "ignoreEndpoints": {
+      "title": "Set of endpoints that should be fully ignored",
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "endpoints": {
+      "type": "array",
+      "description": "Device endpoints",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Device endpoint name",
+            "type": "string"
+          },
+          "icon": {
+            "title": "Device endpoint icon",
+            "type": "string"
+          },
+          "iconColor": {
+            "title": "Device endpoint icon color",
+            "type": "string"
+          },
+          "ignoreDuplicates": {
+            "title": "Ignore duplicate event/values when call setValue on endpoint",
+            "type": "boolean",
+            "default": true
+          },
+          "stateless": {
+            "title": "Device endpoint should not create variable",
+            "type": "boolean",
+            "default": false
+          },
+          "quota": {
+            "title": "Device endpoint variable quota",
+            "type": "integer",
+            "default": 1000
+          },
+          "persistent": {
+            "title": "Device endpoint variable is persistent",
+            "type": "boolean",
+            "default": false
+          },
+          "unit": {
+            "title": "Device endpoint unit",
+            "type": "string"
+          },
+          "min": {
+            "title": "Device endpoint min value(for numbers)",
+            "type": "integer"
+          },
+          "max": {
+            "title": "Device endpoint max value(for numbers)",
+            "type": "integer"
+          },
+          "order": {
+            "title": "Device endpoint order",
+            "type": "number"
+          },
+          "alias": {
+            "title": "List of endpoint aliases. App skip endpoint aliases if endpoint exists alongside with any alias",
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "List of models group name",
+              "type": "string"
+            },
+            "models": {
+              "title": "Model list",
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "title": "JSON schema for the devices widget configuration file",
+  "type": "object"
+}

@@ -25,11 +25,20 @@ public @interface UISidebarMenu {
     String[] sort() default "";
 
     /**
+     * List of field names that should filter for. Special key: '*' to use any filter
+     *
+     * @return list of filters
+     */
+    String[] filter() default "";
+
+    String filterPlaceholder() default "TITLE.FILTER_DEVICES";
+
+    /**
      * @return Path uses in ui as navigation link
      */
     String overridePath() default "";
 
     enum TopSidebarMenu {
-        HARDWARE, ITEMS, MEDIA
+        HARDWARE, ITEMS, MEDIA, DEVICES
     }
 }

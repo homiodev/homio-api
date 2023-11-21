@@ -1,6 +1,6 @@
 package org.homio.api.ui.field.action.v1;
 
-import org.homio.api.ui.action.UIActionHandler;
+import org.homio.api.ui.UIActionHandler;
 
 public interface UIInputEntity {
 

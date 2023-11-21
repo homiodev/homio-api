@@ -8,11 +8,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
 
 public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<String>> {
 
     @Override
-    default RenderType getRenderType() {
+    default @NotNull RenderType getRenderType() {
         return RenderType.string;
     }
 
@@ -29,6 +30,7 @@ public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<Stri
     @Accessors(chain = true)
     @RequiredArgsConstructor
     class ComplexString {
+
         private final String value;
         private Long date;
         private String color;
@@ -47,7 +49,7 @@ public interface ConsolePluginComplexLines extends ConsolePlugin<Collection<Stri
             StringBuilder sb = new StringBuilder(value);
             if (date != null || color != null || positionToRight != null) {
                 sb.append("~~~").append(date == null ? "" : date).append("~~~").append(defaultString(color))
-                        .append("~~~").append(positionToRight == null ? "" : positionToRight);
+                  .append("~~~").append(positionToRight == null ? "" : positionToRight);
             }
             return sb.toString();
         }

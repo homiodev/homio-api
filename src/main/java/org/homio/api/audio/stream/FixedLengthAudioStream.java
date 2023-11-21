@@ -13,8 +13,7 @@ public abstract class FixedLengthAudioStream extends AudioStream {
     public abstract long length();
 
     /**
-     * Returns a new, fully independent stream instance, which can be read and closed without impacting the original
-     * instance.
+     * Returns a new, fully independent stream instance, which can be read and closed without impacting the original instance.
      *
      * @return a new input stream that can be consumed by the caller
      * @throws Exception -

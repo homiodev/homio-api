@@ -1,22 +1,14 @@
 package org.homio.api.util;
 
+import static java.lang.String.format;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
-import com.pivovarit.function.ThrowingFunction;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +25,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -40,7 +33,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,34 +49,29 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.homio.api.EntityContext;
-import org.homio.api.entity.RestartHandlerOnChange;
+import org.apache.tika.Tika;
 import org.homio.api.fs.TreeNode;
-import org.homio.hquery.hardware.network.NetworkHardwareRepository;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.homio.api.repository.GitHubProject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.thymeleaf.TemplateEngine;
@@ -93,62 +80,28 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
 
-@SuppressWarnings("unused")
+@Getter
 @Log4j2
-public class CommonUtils {
-
-    public static final String APP_UUID;
-    public static final int RUN_COUNT;
-    @Getter
-    private static final Path logsPath = getOrCreatePath("logs");
-    @Getter
-    private static final Path configPath = getOrCreatePath("conf");
-    @Getter
-    private static final Path filesPath = getOrCreatePath("asm_files");
-    @Getter
-    private static final Path installPath = getOrCreatePath("installs");
-    @Getter
-    private static final Path externalJarClassPath = getOrCreatePath("external_jars");
-    @Getter
-    private static final Path addonPath = getOrCreatePath("addons");
-    @Getter
-    private static final Path mediaPath = getOrCreatePath("media");
-    @Getter
-    private static final Path audioPath = getOrCreatePath("media/audio");
-    @Getter
-    private static final Path imagePath = getOrCreatePath("media/image");
-    @Getter
-    private static final Path sshPath = getOrCreatePath("ssh");
-    @Getter
-    private static final Path tmpPath = getOrCreatePath("tmp");
+public final class CommonUtils {
 
     // map for store different statuses
-    @Getter
-    private static final Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
-    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
-    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-    @Getter
-    public static final String FFMPEG_LOCATION;
-
-    public static final ObjectMapper OBJECT_MAPPER;
-    public static final ObjectMapper YAML_OBJECT_MAPPER;
-    private static final Set<String> specialExtensions = new HashSet<>(Arrays.asList("gz", "xz"));
-
-    static {
-        FFMPEG_LOCATION = SystemUtils.IS_OS_LINUX ? "ffmpeg" :
-            CommonUtils.getInstallPath().resolve("ffmpeg").resolve("ffmpeg.exe").toString();
-        OBJECT_MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
-            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        ConfFile confFile = readConfigurationFile();
-        APP_UUID = confFile.getUuid();
-        RUN_COUNT = confFile.getRunCount();
-    }
+    private static final @Getter Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
+    public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static Path rootPath;
+    private static final @Getter Path logsPath = getOrCreatePath("logs");
+    private static final @Getter Path logsEntitiesPath = getOrCreatePath("logs/entities");
+    private static final @Getter Path configPath = getOrCreatePath("conf");
+    private static final @Getter Path filesPath = getOrCreatePath("asm_files");
+    private static final @Getter Path installPath = getOrCreatePath("installs");
+    private static final @Getter Path externalJarClassPath = getOrCreatePath("external_jars");
+    private static final @Getter Path addonPath = getOrCreatePath("addons");
+    private static final @Getter Path mediaPath = getOrCreatePath("media");
+    private static final @Getter Path audioPath = getOrCreatePath("media/audio");
+    private static final @Getter Path imagePath = getOrCreatePath("media/image");
+    private static final @Getter Path sshPath = getOrCreatePath("ssh");
+    private static final @Getter Path tmpPath = getOrCreatePath("tmp");
+    public static final Tika TIKA = new Tika();
+    public static GitHubProject STATIC_FILES = GitHubProject.of("homiodev", "static-files");
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -156,7 +109,7 @@ public class CommonUtils {
 
     public static String getExtension(String fileName) {
         String extension = FilenameUtils.getExtension(fileName);
-        if (specialExtensions.contains(extension)) {
+        if (List.of("gz", "xz").contains(extension)) {
             if (fileName.endsWith(".tar." + extension)) {
                 return "tar." + extension;
             }
@@ -182,12 +135,15 @@ public class CommonUtils {
             }
             return;
         }
+        Set<Path> visitedFiles = new HashSet<>();
         Files.walkFileTree(path, new SimpleFileVisitor<>() {
 
             @Override
             @SneakyThrows
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                pathHandler.accept(file);
+                if (visitedFiles.add(file)) {
+                    pathHandler.accept(file);
+                }
                 return FileVisitResult.CONTINUE;
             }
 
@@ -204,7 +160,9 @@ public class CommonUtils {
                 if (exc != null) {
                     throw exc;
                 }
-                pathHandler.accept(dir);
+                if (visitedFiles.add(dir)) {
+                    pathHandler.accept(dir);
+                }
                 return FileVisitResult.CONTINUE;
             }
         });
@@ -226,6 +184,9 @@ public class CommonUtils {
         if (cause instanceof UnknownHostException) {
             return "UnknownHost: " + cause.getMessage();
         }
+        if (cause instanceof NoSuchFileException) {
+            return "File not found: " + cause.getMessage();
+        }
 
         return StringUtils.defaultString(cause.getMessage(), cause.toString());
     }
@@ -235,23 +196,13 @@ public class CommonUtils {
         return IOUtils.toString(getResource(addonId, resource), Charset.defaultCharset());
     }
 
-    @SneakyThrows
-    public static <T> List<T> readJSON(String resource, Class<T> targetClass) {
-        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(resource);
-        List<T> list = new ArrayList<>();
-        while (resources.hasMoreElements()) {
-            list.add(OBJECT_MAPPER.readValue(resources.nextElement(), targetClass));
-        }
-        return list;
-    }
-
-    public static void addToListSafe(List<String> list, String value) {
-        if (!value.isEmpty()) {
+    public static void addToListSafe(@NotNull List<String> list, @Nullable String value) {
+        if (StringUtils.isNotEmpty(value)) {
             list.add(value);
         }
     }
 
-    public static Path createDirectoriesIfNotExists(Path path) {
+    public static @NotNull Path createDirectoriesIfNotExists(@NotNull Path path) {
         if (Files.notExists(path)) {
             try {
                 Files.createDirectories(path);
@@ -262,21 +213,22 @@ public class CommonUtils {
         return path;
     }
 
-    public static Map<String, String> readPropertiesMerge(String path) {
+    public static @NotNull Map<String, String> readPropertiesMerge(@NotNull String path) {
         Map<String, String> map = new HashMap<>();
         readProperties(path).forEach(map::putAll);
         return map;
     }
 
-    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+    public static @NotNull <T> Predicate<T> distinctByKey(@NotNull Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
     }
 
-    public static List<String> readFile(String fileName) {
+    public static @NotNull List<String> readFile(@NotNull String fileName) {
         try {
-            return IOUtils.readLines(ClassLoader.getSystemClassLoader().getResourceAsStream(fileName),
-                Charset.defaultCharset());
+            try (InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
+                return IOUtils.readLines(Objects.requireNonNull(resource), Charset.defaultCharset());
+            }
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
 
@@ -285,7 +237,7 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    public static FileSystem getOrCreateNewFileSystem(String fileSystemPath) {
+    public static @NotNull FileSystem getOrCreateNewFileSystem(@Nullable String fileSystemPath) {
         if (fileSystemPath == null) {
             return FileSystems.getDefault();
         }
@@ -297,36 +249,38 @@ public class CommonUtils {
     }
 
     @SneakyThrows
-    private static List<Map<String, String>> readProperties(String path) {
-        Enumeration<URL> resources = ClassLoader.getSystemClassLoader().getResources(path);
-        List<Map<String, String>> properties = new ArrayList<>();
-        while (resources.hasMoreElements()) {
-            try (InputStream input = resources.nextElement().openStream()) {
-                Properties prop = new Properties();
-                prop.load(input);
-                properties.add(new HashMap(prop));
-            }
+    public static @Nullable URL getResource(@Nullable String addonID, @NotNull String resource) {
+        URL resourceURL = null;
+        ArrayList<URL> urls = Collections.list(Thread.currentThread().getContextClassLoader().getResources(resource));
+        if (urls.size() == 1) {
+            resourceURL = urls.get(0);
+        } else if (urls.size() > 1 && addonID != null) {
+            resourceURL = urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
         }
-        return properties;
+        return resourceURL;
     }
 
     @SneakyThrows
-    public static <T> T newInstance(Class<T> clazz) {
-        Constructor<T> constructor = findObjectConstructor(clazz);
+    public static <T> @NotNull T newInstance(@NotNull Class<T> clazz, Object... parameters) {
+        Constructor<T> constructor = findObjectConstructor(clazz, ClassUtils.toClass(parameters));
         if (constructor != null) {
-            constructor.setAccessible(true);
-            return constructor.newInstance();
+            return constructor.newInstance(parameters);
         }
-        return null;
+        throw new IllegalArgumentException("Class " + clazz.getSimpleName() + " has to have empty constructor");
     }
 
+    /**
+     * Find constructor. Not well implemented because not find fine-grain constructor. But satisfy app requirements
+     *
+     * @param clazz          class
+     * @param parameterTypes - types
+     * @param <T>            - object type
+     * @return constructor or null
+     */
     @SneakyThrows
-    public static <T> Constructor<T> findObjectConstructor(Class<T> clazz, Class<?>... parameterTypes) {
-        if (parameterTypes.length > 0) {
-            return clazz.getConstructor(parameterTypes);
-        }
+    public static <T> @Nullable Constructor<T> findObjectConstructor(@NotNull Class<T> clazz, Class<?>... parameterTypes) {
         for (Constructor<?> constructor : clazz.getConstructors()) {
-            if (constructor.getParameterCount() == 0) {
+            if (isMatchConstructor(constructor, parameterTypes)) {
                 constructor.setAccessible(true);
                 return (Constructor<T>) constructor;
             }
@@ -334,13 +288,26 @@ public class CommonUtils {
         return null;
     }
 
-    // consume file name with thymaleaf...
-    public static TemplateBuilder templateBuilder(String templateName) {
+    public static boolean isMatchConstructor(Constructor<?> constructor, Class<?>[] parameterTypes) {
+        if (parameterTypes.length != constructor.getParameterCount()) {
+            return false;
+        }
+        for (int i = 0; i < constructor.getParameterCount(); i++) {
+            Class<?> constructorParameterType = constructor.getParameterTypes()[i];
+            if (!constructor.getParameters()[i].getType().isAssignableFrom(parameterTypes[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // consume file name with thymeleaf...
+    public static @NotNull TemplateBuilder templateBuilder(@NotNull String templateName) {
         return new TemplateBuilder(templateName);
     }
 
     @SneakyThrows
-    public static String toString(Document document) {
+    public static @NotNull String toString(@NotNull Document document) {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer = tf.newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
@@ -354,28 +321,10 @@ public class CommonUtils {
         return out.toString();
     }
 
-    @SneakyThrows
-    public static URL getResource(String addonID, String resource) {
-        URL resourceURL = null;
-        ArrayList<URL> urls = Collections.list(ClassLoader.getSystemClassLoader().getResources(resource));
-        if (urls.size() == 1) {
-            resourceURL = urls.get(0);
-        } else if (urls.size() > 1 && addonID != null) {
-            resourceURL = urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
+    public static boolean deletePath(@Nullable Path path) {
+        if (path == null) {
+            return false;
         }
-        return resourceURL;
-    }
-
-    @SneakyThrows
-    public static <T> T readAndMergeJSON(String resource, T targetObject) {
-        ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-        for (URL url : Collections.list(ClassLoader.getSystemClassLoader().getResources(resource))) {
-            updater.readValue(url);
-        }
-        return targetObject;
-    }
-
-    public static boolean deletePath(Path path) {
         try {
             if (Files.exists(path)) {
                 if (Files.isDirectory(path)) {
@@ -391,18 +340,18 @@ public class CommonUtils {
         return false;
     }
 
-    public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-        BiFunction<Path, TreeNode, Path> pathResolver) {
+    public static void addFiles(@NotNull Path tmpPath, @NotNull Collection<TreeNode> files,
+        @NotNull BiFunction<Path, TreeNode, Path> pathResolver) {
         addFiles(tmpPath, files, pathResolver,
             (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
             (treeNode, path) -> Files.createDirectories(path));
     }
 
     @SneakyThrows
-    public static void addFiles(Path tmpPath, Collection<TreeNode> files,
-        BiFunction<Path, TreeNode, Path> pathResolver,
-        ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
-        ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
+    public static void addFiles(@NotNull Path tmpPath, @Nullable Collection<TreeNode> files,
+        @NotNull BiFunction<Path, TreeNode, Path> pathResolver,
+        @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
+        @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
         if (files != null) {
             for (TreeNode treeNode : files) {
                 Path filePath = pathResolver.apply(tmpPath, treeNode);
@@ -417,18 +366,15 @@ public class CommonUtils {
         }
     }
 
-    public static JSONObject putOpt(JSONObject jsonObject, String key, Object value) {
-        if (StringUtils.isNotEmpty(key) && value != null) {
-            jsonObject.put(key, value);
-        }
-        return jsonObject;
-    }
-
-    public static ResponseEntity<InputStreamResource> inputStreamToResource(InputStream stream, MediaType contentType) {
+    public static ResponseEntity<InputStreamResource> inputStreamToResource(
+        @NotNull InputStream stream,
+        @NotNull MediaType contentType,
+        @Nullable HttpHeaders headers) {
         try {
             return ResponseEntity.ok()
                                  .contentLength(stream.available())
                                  .contentType(contentType)
+                                 .headers(headers)
                                  .body(new InputStreamResource(stream));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -438,10 +384,6 @@ public class CommonUtils {
 
     public static String getTimestampString() {
         return getTimestampString(new Date());
-    }
-
-    private static String getTimestampString(Date date) {
-        return DATE_TIME_FORMAT.format(date);
     }
 
     public static List<Date> range(Date minDate, Date maxDate) {
@@ -495,116 +437,63 @@ public class CommonUtils {
         return relativePath;
     }
 
+    @SneakyThrows
     public static Path getRootPath() {
-        return SystemUtils.IS_OS_WINDOWS ? SystemUtils.getUserHome().toPath().resolve("homio") :
-            createDirectoriesIfNotExists(Paths.get("/opt/homio"));
+        if (rootPath == null) {
+            String sysRootPath = System.getProperty("rootPath");
+            if (StringUtils.isEmpty(sysRootPath)) {
+                throw new IllegalAccessException("System property 'rootPath' must be specified");
+            } else {
+                rootPath = Paths.get(sysRootPath);
+            }
+        }
+        return rootPath;
     }
 
     public static Path getOrCreatePath(String path) {
         return createDirectoriesIfNotExists(getRootPath().resolve(path));
     }
 
-    @SneakyThrows
-    public static boolean isRequireRestartHandler(Object oldEntity, Object newEntity) {
-        if (oldEntity == null) { // in case if just created
-            return false;
+    public static String splitNameToReadableFormat(@NotNull String name) {
+        String[] items = name.split("_");
+        if(items.length == 1) {
+            name = name.replaceAll(
+                format("%s|%s|%s",
+                    "(?<=[A-Z])(?=[A-Z][a-z])",
+                    "(?<=[a-z])(?=[A-Z])",
+                    "(?<=[A-Za-z])(?=[0-9])"
+                ), "_"
+            ).toLowerCase();
         }
-        Method[] methods = MethodUtils.getMethodsWithAnnotation(newEntity.getClass(), RestartHandlerOnChange.class, true, false);
-        for (Method method : methods) {
-            Object newValue = MethodUtils.invokeMethod(newEntity, method.getName());
-            Object oldValue = MethodUtils.invokeMethod(oldEntity, method.getName());
-            if (!Objects.equals(newValue, oldValue)) {
-                return true;
-            }
-        }
-        return false;
+        items = name.split("_");
+        return StringUtils.capitalize(String.join(" ", items));
     }
 
-    public static SerialPort getSerialPort(String value) {
-        return StringUtils.isEmpty(value) ? null :
-            Stream.of(SerialPort.getCommPorts())
-                  .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
-    }
-
-    public static boolean isValidJson(String json) {
-        try {
-            new JSONObject(json);
-        } catch (JSONException ignore) {
-            try {
-                new JSONArray(json);
-            } catch (JSONException ne) {
-                return false;
-            }
+    public static Method findMethodByName(Class clz, String name) {
+        String capitalizeName = StringUtils.capitalize(name);
+        Method method = MethodUtils.getAccessibleMethod(clz, "get" + capitalizeName);
+        if (method == null) {
+            method = MethodUtils.getAccessibleMethod(clz, "is" + capitalizeName);
         }
-        return true;
+        return method;
     }
-
-    // Simple utility for scan for ip range
-    public static void scanForDevice(EntityContext entityContext, int devicePort, String deviceName,
-        ThrowingFunction<String, Boolean, Exception> testDevice,
-        Consumer<String> createDeviceHandler) {
-        Consumer<String> deviceHandler = (ip) -> {
-            try {
-                if (testDevice.apply("127.0.0.1")) {
-                    List<String> messages = new ArrayList<>();
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", deviceName));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
-                    messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
-                    entityContext.ui().sendConfirmation("Confirm-" + deviceName + "-" + ip,
-                        Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
-                            createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
-                }
-            } catch (Exception ignore) {
-            }
-        };
-
-        NetworkHardwareRepository networkHardwareRepository = entityContext.getBean(NetworkHardwareRepository.class);
-        String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
-        deviceHandler.accept("127.0.0.1");
-        networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log, Collections.singleton(devicePort), 500,
-            (url, port) -> deviceHandler.accept(url));
-    }
-
- /*   @SneakyThrows
-    public static void tempDir(Consumer<Path> consumer) {
-        Path tmpDir = rootPath.resolve("tmp_" + System.currentTimeMillis());
-        Files.createDirectories(tmpDir);
-        try {
-            consumer.accept(tmpDir);
-        } finally {
-            if (!Files.deleteIfExists(tmpDir)) {
-                log.error("Unable to delete tmpDir: <{}>", tmpDir);
-            }
-        }
-    }*/
 
     @SneakyThrows
-    private static ConfFile readConfigurationFile() {
-        Path confFilePath = getRootPath().resolve("homio.conf");
-        ConfFile confFile = null;
-        if (Files.exists(confFilePath)) {
-            try {
-                confFile = OBJECT_MAPPER.readValue(confFilePath.toFile(), ConfFile.class);
-            } catch (Exception ex) {
-                log.error("Found corrupted config file. Regenerate new one.");
+    private static List<Map<String, String>> readProperties(String path) {
+        Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(path);
+        List<Map<String, String>> properties = new ArrayList<>();
+        while (resources.hasMoreElements()) {
+            try (InputStream input = resources.nextElement().openStream()) {
+                Properties prop = new Properties();
+                prop.load(input);
+                properties.add(new HashMap(prop));
             }
         }
-        if (confFile == null) {
-            confFile = new ConfFile().setRunCount(0).setUuid(String.valueOf(System.currentTimeMillis()));
-        }
-        confFile.setRunCount(confFile.getRunCount() + 1);
-        OBJECT_MAPPER.writeValue(confFilePath.toFile(), confFile);
-        return confFile;
+        return properties;
     }
 
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    private static class ConfFile {
-
-        private String uuid;
-        @JsonProperty("run_count")
-        private int runCount;
+    private static String getTimestampString(Date date) {
+        return DATE_TIME_FORMAT.format(date);
     }
 
     public static class TemplateBuilder {

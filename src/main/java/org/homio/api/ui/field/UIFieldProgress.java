@@ -4,27 +4,30 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.text.DecimalFormat;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Progress bar. Must return int or UIFieldProgress.Progress
- * Max value is 100!
+ * Progress bar. Must return int or UIFieldProgress.Progress Max value is 100!
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldProgress {
-    String color() default "";
 
-    String fillColor() default "";
+    @Nullable String color() default "";
 
-    UIFieldProgressColorChange[] colorChange() default {};
+    @Nullable String fillColor() default "";
+
+    @Nullable UIFieldProgressColorChange[] colorChange() default {};
 
     @Target({ElementType.FIELD})
     @Retention(RetentionPolicy.RUNTIME)
     @interface UIFieldProgressColorChange {
+
         String color();
 
         int whenMoreThan();
@@ -33,6 +36,9 @@ public @interface UIFieldProgress {
     @Getter
     @RequiredArgsConstructor
     class Progress {
+
+        private static DecimalFormat FORMAT = new DecimalFormat("#.##");
+
         private final int value;
         private final int max;
         private final String message;
@@ -52,7 +58,7 @@ public @interface UIFieldProgress {
 
         public static Progress of(int value, int maxValue, boolean showMessage) {
             return Progress.of(value, maxValue, Lang.getServerMessage("USED_QUOTA", FlowMap.of(
-                    "PC", value, "VAL", value, "MAX", maxValue)), showMessage);
+                "PC", FORMAT.format(value / (double) maxValue * 100), "VAL", value, "MAX", maxValue)), showMessage);
         }
     }
 }

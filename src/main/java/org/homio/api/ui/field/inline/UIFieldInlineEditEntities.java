@@ -32,5 +32,5 @@ public @interface UIFieldInlineEditEntities {
      */
     String removeRowCondition() default "return true";
 
-    String noContentTitle() default "NO_CONTENT";
+    String noContentTitle() default "W.ERROR.NO_CONTENT";
 }

@@ -11,23 +11,24 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldIconPicker {
+
     /**
      * @return Allow user to select no icon to hide icon at all
      */
     boolean allowEmptyIcon() default false;
 
     /**
-     * @return  Allow user to use threshold functionality for showing different icon depend on 'value'
+     * @return Allow user to use threshold functionality for showing different icon depend on 'value'
      */
     boolean allowThreshold() default false;
 
     /**
-     * @return  Add Size selector to icon picker. Works only if allowThreshold is true
+     * @return Add Size selector to icon picker. Works only if allowThreshold is true
      */
     boolean allowSize() default true;
 
     /**
-     * @return  Add Spin selector to icon picker. Works only if allowThreshold is true
+     * @return Add Spin selector to icon picker. Works only if allowThreshold is true
      */
     boolean allowSpin() default true;
 

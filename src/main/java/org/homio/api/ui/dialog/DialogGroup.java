@@ -14,6 +14,7 @@ import org.homio.api.ui.field.action.ActionInputParameter;
 @Accessors(chain = true)
 @RequiredArgsConstructor
 public class DialogGroup {
+
     private final String name;
     private String borderColor;
     private List<ActionInputParameter> inputs = new ArrayList<>();

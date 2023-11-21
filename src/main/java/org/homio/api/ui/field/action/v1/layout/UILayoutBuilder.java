@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.homio.api.model.Icon;
-import org.homio.api.ui.action.UIActionHandler;
+import org.homio.api.ui.UIActionHandler;
 import org.homio.api.ui.field.action.v1.UIEntityBuilder;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UIButtonItemBuilder;
@@ -24,14 +24,15 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public interface UILayoutBuilder extends UIEntityBuilder {
+
     @Unmodifiable
     Collection<UIEntityBuilder> getUiEntityBuilders(boolean flat);
 
     @Unmodifiable
     default Collection<UIEntityItemBuilder> getUiEntityItemBuilders(boolean flat) {
         return Collections.unmodifiableCollection(getUiEntityBuilders(flat).stream()
-                .filter(ib -> ib instanceof UIEntityItemBuilder)
-                .map(ib -> (UIEntityItemBuilder) ib).collect(Collectors.toList()));
+                                                                           .filter(ib -> ib instanceof UIEntityItemBuilder)
+                                                                           .map(ib -> (UIEntityItemBuilder) ib).collect(Collectors.toList()));
     }
 
     String getStyle();
@@ -81,19 +82,20 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
     /**
      * Add read-write color picker
-     * @param name -
-     * @param color -
+     *
+     * @param name   -
+     * @param color  -
      * @param action -
      * @return -
      */
     UIColorPickerItemBuilder addColorPicker(@NotNull String name, String color, UIActionHandler action);
 
     UITextInputItemBuilder addInput(@NotNull String name, String defaultValue,
-                                    UITextInputItemBuilder.InputType inputType,
-                                    boolean required);
+        UITextInputItemBuilder.InputType inputType,
+        boolean required);
 
     default UITextInputItemBuilder addTextInput(@NotNull String name, String defaultValue,
-                                                boolean required) {
+        boolean required) {
         return addInput(name, defaultValue, UITextInputItemBuilder.InputType.Text, required);
     }
 

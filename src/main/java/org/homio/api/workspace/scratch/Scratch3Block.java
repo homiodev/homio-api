@@ -1,5 +1,8 @@
 package org.homio.api.workspace.scratch;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.workspace.scratch.Scratch3ExtensionBlocks.SETTING;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +20,10 @@ import org.homio.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("ALL")
 @Getter
 public class Scratch3Block implements Comparable<Scratch3Block> {
-    public static final String CONDITION = "CONDITION";
-    Object text;
+
     @JsonIgnore
     private final int order;
     private final String opcode;
@@ -30,12 +33,15 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     private final Scratch3BlockHandler handler;
     @JsonIgnore
     private final Scratch3BlockEvaluateHandler evaluateHandler;
+    @NotNull Object text;
     @JsonIgnore
     private int spaceCount = 0;
 
     private Scratch3Color scratch3Color;
 
-    protected Scratch3Block(int order, @NotNull String opcode, @NotNull BlockType blockType,
+    protected Scratch3Block(int order,
+        @NotNull String opcode,
+        @NotNull BlockType blockType,
         @NotNull Object text,
         @Nullable Scratch3BlockHandler handler,
         @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
@@ -80,25 +86,17 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     }
 
     @SneakyThrows
-    public @NotNull <T extends EntityFieldMetadata> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass) {
-        return addSetting(settingClass, null);
+    public @NotNull <T extends ScratchSettingBaseEntity> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass) {
+        return addSetting(CommonUtils.newInstance(settingClass));
     }
 
     @SneakyThrows
-    public @NotNull <T extends EntityFieldMetadata> ArgumentTypeDescription addSetting(@NotNull Class<T> settingClass, @Nullable T entity) {
-        if (entity == null) {
-            entity = CommonUtils.newInstance(settingClass);
-        }
-
-        EntityFieldMetadata entityFieldMetadata = CommonUtils.newInstance(settingClass);
-        if (entityFieldMetadata == null) {
-            throw new IllegalArgumentException("Setting class has to have empty constructor");
-        }
-        if (StringUtils.isEmpty(entityFieldMetadata.getTitle())) {
+    public @NotNull <T extends ScratchSettingBaseEntity> ArgumentTypeDescription addSetting(@NotNull T entity) {
+        if (StringUtils.isEmpty(entity.getTitle())) {
             throw new IllegalArgumentException("Setting class has to have non null title method");
         }
 
-        return addArgument("SETTING", ArgumentType.setting, CommonUtils.OBJECT_MAPPER.writeValueAsString(entity));
+        return addArgument(SETTING, ArgumentType.setting, OBJECT_MAPPER.writeValueAsString(entity));
     }
 
     public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull ArgumentType type, @NotNull String defaultValue) {
@@ -139,8 +137,8 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
         Scratch3Block that = (Scratch3Block) o;
         return opcode.equals(that.opcode);
     }
@@ -201,6 +199,15 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
                 return defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
             }
             return null;
+        }
+    }
+
+    public interface ScratchSettingBaseEntity extends EntityFieldMetadata {
+
+        @Override
+        // requires to instantiate entity for fetch select boxes
+        default String getEntityID() {
+            return getClass().getName();
         }
     }
 }

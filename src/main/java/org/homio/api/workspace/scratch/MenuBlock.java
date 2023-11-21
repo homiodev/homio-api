@@ -14,11 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.entity.BaseEntity;
-import org.homio.api.model.KeyValueEnum;
+import org.homio.api.model.OptionModel.KeyValueEnum;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @RequiredArgsConstructor
 public abstract class MenuBlock {
+
     @JsonIgnore
     private final String name;
 
@@ -30,6 +32,7 @@ public abstract class MenuBlock {
     @Getter
     @Accessors(chain = true)
     public static class ServerMenuBlock extends MenuBlock {
+
         private final boolean acceptReporters = true;
         private final boolean async = true;
         private final MenuBlockFunction items;
@@ -38,7 +41,7 @@ public abstract class MenuBlock {
         private final boolean require;
 
         ServerMenuBlock(String name, String url, String keyName, String valueName, String firstKey, String firstValue,
-                        Integer[] clusters, boolean require) {
+            Integer[] clusters, boolean require) {
             super(name);
             this.clusters = clusters;
             this.require = require;
@@ -84,6 +87,7 @@ public abstract class MenuBlock {
         @Getter
         @RequiredArgsConstructor
         static class MenuBlockFunction {
+
             private final String url;
             private final String keyName;
             private final String valueName;
@@ -95,12 +99,13 @@ public abstract class MenuBlock {
     @Getter
     @Accessors(chain = true)
     public static class StaticMenuBlock<T> extends MenuBlock {
+
         private final boolean acceptReporters = true;
         private final List<StaticMenuItem> items = new ArrayList<>();
+        private final Class<T> typeClass;
         private Map<String, List> subMenu;
         @Setter
-        private Object defaultValue;
-        private final Class<T> typeClass;
+        private @Nullable Object defaultValue;
 
         StaticMenuBlock(String name, Map<String, String> map, Class<T> typeClass) {
             super(name);
@@ -121,6 +126,18 @@ public abstract class MenuBlock {
         public StaticMenuBlock add(String key, Object value) {
             this.items.add(new StaticMenuItem(key, value.toString()));
             return this;
+        }
+
+        public <T extends Enum, S extends Enum> void subMenu(T key, Class<S> subMenu) {
+            if (this.subMenu == null) {
+                this.subMenu = new HashMap<>();
+            }
+            this.subMenu.put(key.name(), Stream.of(subMenu.getEnumConstants()).map(Enum::name).collect(Collectors.toList()));
+
+        }
+
+        public String getFirstValue() {
+            return this.items.isEmpty() ? null : this.items.get(0).getText();
         }
 
         StaticMenuBlock addEnum(Class<? extends Enum> enumClass) {
@@ -146,21 +163,10 @@ public abstract class MenuBlock {
             return this;
         }
 
-        public <T extends Enum, S extends Enum> void subMenu(T key, Class<S> subMenu) {
-            if (this.subMenu == null) {
-                this.subMenu = new HashMap<>();
-            }
-            this.subMenu.put(key.name(), Stream.of(subMenu.getEnumConstants()).map(Enum::name).collect(Collectors.toList()));
-
-        }
-
-        public String getFirstValue() {
-            return this.items.isEmpty() ? null : this.items.get(0).getText();
-        }
-
         @Getter
         @AllArgsConstructor
         private static class StaticMenuItem {
+
             private String value;
             private String text;
         }

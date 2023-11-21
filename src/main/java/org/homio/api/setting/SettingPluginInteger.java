@@ -1,15 +1,16 @@
 package org.homio.api.setting;
 
-import org.homio.api.EntityContext;
-import org.homio.api.ui.field.UIFieldType;
-import org.homio.api.util.CommonUtils;
+import static org.homio.api.util.JsonUtils.putOpt;
+
+import org.homio.api.Context;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 public interface SettingPluginInteger extends SettingPlugin<Integer> {
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Integer;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Integer;
     }
 
     default Integer getMin() {
@@ -21,22 +22,22 @@ public interface SettingPluginInteger extends SettingPlugin<Integer> {
     }
 
     @Override
-    default Class<Integer> getType() {
+    default @NotNull Class<Integer> getType() {
         return Integer.class;
     }
 
     int defaultValue();
 
     @Override
-    default String getDefaultValue() {
+    default @NotNull String getDefaultValue() {
         return String.valueOf(defaultValue());
     }
 
     @Override
-    default JSONObject getParameters(EntityContext entityContext, String value) {
-        JSONObject parameters = SettingPlugin.super.getParameters(entityContext, value);
-        CommonUtils.putOpt(parameters, "min", getMin());
-        CommonUtils.putOpt(parameters, "max", getMax());
+    default @NotNull JSONObject getParameters(Context context, String value) {
+        JSONObject parameters = SettingPlugin.super.getParameters(context, value);
+        putOpt(parameters, "min", getMin());
+        putOpt(parameters, "max", getMax());
         return parameters;
     }
 }

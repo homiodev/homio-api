@@ -40,13 +40,36 @@ public class URLAudioStream extends AudioStream {
         this.inputStream = createInputStream();
     }
 
+    @Override
+    public AudioFormat getFormat() {
+        return audioFormat;
+    }
+
+    @Override
+    public int read() throws IOException {
+        return inputStream.read();
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        if (shoutCastSocket != null) {
+            shoutCastSocket.close();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return url;
+    }
+
     private InputStream createInputStream() throws Exception {
         final String filename = url.toLowerCase();
         final String extension = StringUtils.defaultString(FilenameUtils.getExtension(filename), "");
         try {
             switch (extension) {
                 case M3U_EXTENSION:
-                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
+                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8)) {
                         while (true) {
                             String line = scanner.nextLine();
                             if (!line.isEmpty() && !line.startsWith("#")) {
@@ -59,7 +82,7 @@ public class URLAudioStream extends AudioStream {
                     }
                     break;
                 case PLS_EXTENSION:
-                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8.name())) {
+                    try (Scanner scanner = new Scanner(new URL(url).openStream(), StandardCharsets.UTF_8)) {
                         while (true) {
                             String line = scanner.nextLine();
                             if (!line.isEmpty() && line.startsWith("File")) {
@@ -89,7 +112,7 @@ public class URLAudioStream extends AudioStream {
                 OutputStream os = socket.getOutputStream();
                 String userAgent = "WinampMPEG/5.09";
                 String req = "GET / HTTP/1.0\r\nuser-agent: " + userAgent
-                        + "\r\nIcy-MetaData: 1\r\nConnection: keep-alive\r\n\r\n";
+                    + "\r\nIcy-MetaData: 1\r\nConnection: keep-alive\r\n\r\n";
                 os.write(req.getBytes());
                 return socket.getInputStream();
             } else {
@@ -105,28 +128,5 @@ public class URLAudioStream extends AudioStream {
             log.error("Cannot set up stream '{}': {}", url, e.getMessage(), e);
             throw new IOException("IO Error");
         }
-    }
-
-    @Override
-    public AudioFormat getFormat() {
-        return audioFormat;
-    }
-
-    @Override
-    public int read() throws IOException {
-        return inputStream.read();
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-        if (shoutCastSocket != null) {
-            shoutCastSocket.close();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return url;
     }
 }

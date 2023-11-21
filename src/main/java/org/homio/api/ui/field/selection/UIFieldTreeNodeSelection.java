@@ -12,9 +12,16 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldTreeNodeSelection {
 
-    String LOCAL_FS = "LOCAL_FS";
+    // is allowed to edit with keyboard
+    boolean rawInput() default true;
 
-    boolean allowInputRawText() default true;
+    String icon() default "fas fa-folder-open";
+
+    String iconColor() default "";
+
+    String IMAGE_PATTERN = ".*(jpg|jpeg|png|gif)";
+
+    String LOCAL_FS = "LOCAL_FS";
 
     /**
      * @return If set - uses only local file system, otherwise uses all possible file systems
@@ -29,12 +36,30 @@ public @interface UIFieldTreeNodeSelection {
 
     String pattern() default ".*";
 
-    String icon() default "fas fa-folder-open";
-
-    String iconColor() default "";
+    /**
+     * Specify select file/folder dialog title
+     *
+     * @return - dialog title
+     */
+    String dialogTitle() default "";
 
     /**
      * @return Specify file systems ids. All available if not specified
      */
     String[] fileSystemIds() default {UIFieldTreeNodeSelection.LOCAL_FS};
+
+    /**
+     * @return detect if need attach metadata to selected file value###{type: file, fs: fileSystem}
+     */
+    boolean isAttachMetadata() default true;
+
+    /**
+     * @return uses on UI to select prefix
+     */
+    String prefix() default "file";
+
+    /**
+     * @return uses on UI to select prefix as backgroundColor
+     */
+    String prefixColor() default "#707D31";
 }

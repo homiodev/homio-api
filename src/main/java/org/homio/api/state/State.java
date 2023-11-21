@@ -1,8 +1,12 @@
 package org.homio.api.state;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Objects;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.util.CommonUtils;
@@ -10,12 +14,14 @@ import org.homio.api.util.CommonUtils;
 public interface State {
 
     static State of(Object value) {
-        if (value == null || value instanceof State) return (State) value;
+        if (value == null || value instanceof State) {return (State) value;}
         if (value instanceof Map) {
-            return new JsonType(CommonUtils.OBJECT_MAPPER.convertValue(value, JsonNode.class));
+            return new JsonType(OBJECT_MAPPER.convertValue(value, JsonNode.class));
         }
         if (Number.class.isAssignableFrom(value.getClass())) {
-            if (value instanceof Double) {
+            if (value instanceof Float) {
+                return new DecimalType((float) value);
+            } else if (value instanceof Double) {
                 return new DecimalType((double) value);
             } else if (value instanceof Integer) {
                 return new DecimalType((int) value);
@@ -24,10 +30,13 @@ public interface State {
         }
         if (value instanceof Boolean) {
             return OnOffType.of((boolean) value);
-        } else if (value instanceof String) {
-            try {
-                return new JsonType(CommonUtils.OBJECT_MAPPER.readValue((String) value, JsonNode.class));
-            } catch (Exception ignore) {}
+        } else if (value instanceof String str) {
+            if (str.startsWith("{") || str.startsWith("[")) {
+                try {
+                    return new JsonType(OBJECT_MAPPER.readValue((String) value, JsonNode.class));
+                } catch (Exception ignore) {
+                }
+            }
             return new StringType(value.toString());
         }
         if (value instanceof JsonNode) {
@@ -52,6 +61,14 @@ public interface State {
 
     int intValue();
 
+    default int intValue(int defaultValue) {
+        try {
+            return intValue();
+        } catch (Exception ex) {
+            return defaultValue;
+        }
+    }
+
     Object rawValue();
 
     String stringValue();
@@ -69,6 +86,10 @@ public interface State {
         return value.equals("1") || value.equalsIgnoreCase("true");
     }
 
+    default String boolValue(String onValue, String offValue) {
+        return boolValue() ? onValue : offValue;
+    }
+
     default byte[] byteArrayValue() {
         return toString().getBytes(Charset.defaultCharset());
     }
@@ -84,6 +105,9 @@ public interface State {
     @SneakyThrows
     default State optional(String value) {
         return StringUtils.isEmpty(value) ? this :
-                CommonUtils.findObjectConstructor(this.getClass(), String.class).newInstance(value);
+            Objects.requireNonNull(CommonUtils.findObjectConstructor(this.getClass(), String.class))
+                   .newInstance(value);
     }
+
+    void setAsNode(ObjectNode node, String key);
 }

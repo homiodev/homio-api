@@ -6,26 +6,33 @@ import java.util.Collection;
 import java.util.Map;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.entity.log.HasEntityLog;
+import org.homio.api.entity.version.HasFirmwareVersion;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.model.HasEntityLog;
+import org.homio.api.model.endpoint.DeviceEndpoint;
+import org.homio.api.service.EntityService;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldSlider;
 import org.homio.api.ui.field.selection.UIFieldDevicePortSelection;
-import org.homio.api.ui.field.selection.UIFieldSelectNoValue;
-import org.homio.api.ui.field.selection.UIFieldSelectValueOnEmpty;
-import org.homio.api.util.CommonUtils;
-import org.homio.api.service.EntityService;
+import org.homio.api.ui.field.selection.UIFieldSelectConfig;
+import org.homio.api.util.HardwareUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEntity, S extends EntityService.ServiceInstance>
-        extends HasJsonData, HasEntityLog, HasEntityIdentifier, HasStatusAndMsg<T>, EntityService<S, T> {
+    extends
+    HasJsonData,
+    HasEntityLog,
+    HasEntityIdentifier,
+    HasFirmwareVersion,
+    HasStatusAndMsg,
+    EntityService<S> {
 
     @UIField(order = 1, inlineEdit = true)
-    @UIFieldGroup(value = "GENERAL", order = 1)
+    @UIFieldGroup("GENERAL")
     default boolean isStart() {
-        return getJsonData("start", false);
+        return getJsonData("start", true);
     }
 
     default T setStart(boolean start) {
@@ -35,15 +42,14 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
 
     @UIField(order = 3, required = true)
     @UIFieldDevicePortSelection
-    @UIFieldSelectValueOnEmpty(label = "selection.selectPort", icon = "fas fa-door-open")
-    @UIFieldSelectNoValue("error.noPortsAvailable")
-    @UIFieldGroup(value = "PORT", order = 5, borderColor = "#29A397")
+    @UIFieldSelectConfig(selectNoValue = "W.ERROR.NO_PORT", selectOnEmptyLabel = "PLACEHOLDER.SELECT_PORT", selectOnEmptyIcon = "fas fa-door-open")
+    @UIFieldGroup(value = "CONNECTION", order = 5, borderColor = "#29A397")
     default String getPort() {
         return getJsonData("port", "");
     }
 
     default T setPort(String value) {
-        SerialPort serialPort = CommonUtils.getSerialPort(value);
+        SerialPort serialPort = HardwareUtils.getSerialPort(value);
         if (serialPort != null) {
             setSerialPort(serialPort);
         }
@@ -61,9 +67,9 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
         return (T) this;
     }
 
-    @UIField(order = 1)
+    @UIField(order = 5)
     @UIFieldSlider(min = 60, max = 254)
-    @UIFieldGroup(value = "DISCOVERY", order = 15, borderColor = "#663453")
+    @UIFieldGroup("CONNECTION")
     default int getDiscoveryDuration() {
         return getJsonData("dd", 254);
     }
@@ -73,12 +79,10 @@ public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEnti
     }
 
     /**
-     * @return all available properties
-     * Key - device's ieeeAddress
-     * Value - Map[propertyName, property]
+     * @return all available properties Key - device's ieeeAddress Value - Map[propertyName, property]
      */
     @JsonIgnore
-    @NotNull Map<String, Map<String, ? extends ZigBeeProperty>> getCoordinatorTree();
+    @NotNull Map<String, Map<String, ? extends DeviceEndpoint>> getCoordinatorTree();
 
     /**
      * @return all zigbee devices registered in this coordinator

@@ -1,5 +1,6 @@
 package org.homio.api.state;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -10,13 +11,13 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.util.CommonUtils;
-import org.homio.api.util.Curl.RawResponse;
+import org.homio.hquery.Curl.RawResponse;
 import org.springframework.util.MimeTypeUtils;
 
+@Getter
 @Accessors(chain = true)
 public class RawType implements State {
 
-    @Getter
     @Setter
     protected String name;
     protected byte[] bytes;
@@ -110,6 +111,11 @@ public class RawType implements State {
             bytes = Files.readAllBytes(relatedFile);
         }
         return bytes;
+    }
+
+    @Override
+    public void setAsNode(ObjectNode node, String key) {
+        node.put(key, bytes);
     }
 
     @Override

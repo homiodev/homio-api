@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.entity.HasJsonData;
@@ -22,11 +22,11 @@ import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 
 public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
-    extends BaseEntityIdentifier<T>, HasDynamicContextMenuActions, HasStatusAndMsg<T>, HasJsonData {
+    extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg, HasJsonData {
 
     Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
 
-    default @NotNull TreeConfiguration buildFileSystemConfiguration(@NotNull EntityContext entityContext) {
+    default @NotNull TreeConfiguration buildFileSystemConfiguration(@NotNull Context context) {
         return new TreeConfiguration(this);
     }
 
@@ -50,16 +50,16 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     @JsonIgnore
     boolean requireConfigure();
 
-    default @NotNull FS getFileSystem(@NotNull EntityContext entityContext) {
+    default @NotNull FS getFileSystem(@NotNull Context context) {
         String key = getEntityID();
         if (!fileSystemMap.containsKey(key)) {
-            FS fileSystemProvider = buildFileSystem(entityContext);
+            FS fileSystemProvider = buildFileSystem(context);
             fileSystemMap.put(key, fileSystemProvider);
         }
         return (FS) fileSystemMap.get(key);
     }
 
-    @NotNull FS buildFileSystem(@NotNull EntityContext entityContext);
+    @NotNull FS buildFileSystem(@NotNull Context context);
 
     @JsonIgnore
     long getConnectionHashCode();
@@ -70,9 +70,9 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
         return requireConfigure() ? Lang.getServerMessage(prefix.substring(0, prefix.length() - 1) + ".description") : null;
     }
 
-    @UIContextMenuAction(value = "RESTART", icon = "fas fa-power-off")
-    default ActionResponseModel restart(EntityContext entityContext) {
-        if (this.getFileSystem(entityContext).restart(true)) {
+    @UIContextMenuAction(value = "RESTART_FS", icon = "fas fa-file-invoice", iconColor = "#418121")
+    default ActionResponseModel restart(Context context) {
+        if (this.getFileSystem(context).restart(true)) {
             return ActionResponseModel.showSuccess("Success restarted");
         } else {
             return ActionResponseModel.showSuccess("Restart failed");
@@ -80,7 +80,7 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     @Override
-    default void afterDelete(@NotNull EntityContext entityContext) {
+    default void afterDelete() {
         FileSystemProvider provider = fileSystemMap.remove(getEntityID());
         if (provider != null) {
             provider.dispose();
@@ -88,8 +88,8 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     }
 
     @Override
-    default void afterUpdate(@NotNull EntityContext entityContext, boolean persist) {
-        this.getFileSystem(entityContext).setEntity(this);
+    default void afterUpdate() {
+        this.getFileSystem(context()).setEntity(this);
     }
 
     boolean isShowHiddenFiles();

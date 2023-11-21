@@ -1,8 +1,9 @@
 package org.homio.api.service;
 
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.service.CloudProviderService.SshCloud;
 import org.jetbrains.annotations.NotNull;
@@ -22,13 +23,15 @@ public interface CloudProviderService<T extends SshCloud> {
 
     void stop() throws Exception;
 
+    ActionResponseModel sync() throws Exception;
+
     void updateNotificationBlock(@Nullable Exception ex);
 
     default void updateNotificationBlock() {
         updateNotificationBlock(null);
     }
 
-    interface SshCloud<T extends SshCloud> extends HasEntityIdentifier, HasStatusAndMsg<T>, HasJsonData {
+    interface SshCloud<T extends SshCloud> extends HasEntityIdentifier, HasStatusAndMsg, HasJsonData {
 
         /**
          * Does this cloud is primary. Only one entity may be primary. Primary entity uses for cloud provider as tunnel
@@ -41,6 +44,6 @@ public interface CloudProviderService<T extends SshCloud> {
 
         boolean isRestartOnFailure();
 
-        @Nullable CloudProviderService<T> getCloudProviderService(@NotNull EntityContext entityContext);
+        @Nullable CloudProviderService<T> getCloudProviderService(@NotNull Context context);
     }
 }

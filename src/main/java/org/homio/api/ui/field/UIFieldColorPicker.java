@@ -11,15 +11,23 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorPicker {
+
     /**
-     * @return  Allow user to use threshold functionality for showing different icon depend on 'value'
+     * @return Allow user to use threshold functionality for showing different icon depend on 'value'
      */
     boolean allowThreshold() default false;
 
     /**
-     * Add user ability to specify 'animation' condition to UI.
-     * Color animation is animation blink from black to specified color with 1-2sec timeout
+     * Add user ability to specify 'pulse' condition to UI. Color pulse is animation blink from black to specified color with 1-2sec timeout
+     *
      * @return -
      */
-    boolean animateColorCondition() default false;
+    boolean pulseColorCondition() default false;
+
+    /**
+     * Set if need select 'source'(variables) value to change on threshold background
+     *
+     * @return -
+     */
+    boolean thresholdSource() default false;
 }

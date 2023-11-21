@@ -1,0 +1,133 @@
+package org.homio.api.util;
+
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC;
+
+import com.fazecast.jSerialComm.SerialPort;
+import com.pivovarit.function.ThrowingFunction;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.homio.api.Context;
+import org.homio.hquery.hardware.network.NetworkHardwareRepository;
+import org.homio.hquery.hardware.other.MachineHardwareRepository;
+import org.jetbrains.annotations.NotNull;
+
+@Log4j2
+public class HardwareUtils {
+
+    public static String MACHINE_IP_ADDRESS = "127.0.0.1";
+    public static String APP_ID;
+    public static int RUN_COUNT;
+
+    /**
+     * Loads native library from the jar file (storing it in the temp dir)
+     * @param library JNI library name
+     */
+    public static void loadLibrary(String library) {
+        String filename = System.mapLibraryName(library);
+        String fullFilename = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + filename;
+        try {
+            // try to load from the temp dir (in case it is already there)
+            System.load(fullFilename);
+        }
+        catch (UnsatisfiedLinkError err2) {
+            try {
+                // try to extract from the jar
+                File targetFile;
+                try (InputStream is = HardwareUtils.class.getClassLoader().getResourceAsStream(filename)) {
+                    if (is == null) {
+                        throw new IOException(filename + " not found in the jar file (classpath)");
+                    }
+                    targetFile = new File(fullFilename);
+                    FileUtils.copyToFile(is, targetFile);
+                }
+                targetFile.setExecutable(true, false);
+                System.load(fullFilename);
+            }
+            catch (IOException ioe) {
+                throw new RuntimeException("Unable to extract native library: " + library, ioe);
+            }
+        }
+    }
+
+    public static SerialPort getSerialPort(String value) {
+        return StringUtils.isEmpty(value) ? null :
+            Stream.of(SerialPort.getCommPorts())
+                  .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
+    }
+
+    public static @NotNull Architecture getArchitecture(@NotNull Context context) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return Architecture.win64;
+        }
+        String architecture = context.getBean(MachineHardwareRepository.class).getMachineInfo().getArchitecture();
+        if (architecture.startsWith("armv6")) {
+            return Architecture.arm32v6;
+        } else if (architecture.startsWith("armv7")) {
+            return Architecture.arm32v7;
+        } else if (architecture.startsWith("armv8")) {
+            return Architecture.arm32v8;
+        } else if (architecture.startsWith("aarch64")) {
+            return Architecture.aarch64;
+        } else if (architecture.startsWith("x86_64")) {
+            return Architecture.amd64;
+        }
+        throw new IllegalStateException("Unable to find architecture: " + architecture);
+    }
+
+    // Simple utility for scan for ip range
+    public static void scanForDevice(Context context, int devicePort, String deviceName,
+        ThrowingFunction<String, Boolean, Exception> testDevice,
+        Consumer<String> createDeviceHandler) {
+        Consumer<String> deviceHandler = (ip) -> {
+            try {
+                if (testDevice.apply("127.0.0.1")) {
+                    List<String> messages = new ArrayList<>();
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.GENERAL_QUESTION", deviceName));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName + "(" + ip + ":" + devicePort + ")"));
+                    messages.add(Lang.getServerMessage("NEW_DEVICE.URL", ip + ":" + devicePort));
+                    context.ui().dialog().sendConfirmation("Confirm-" + deviceName + "-" + ip,
+                        Lang.getServerMessage("NEW_DEVICE.TITLE", deviceName), () ->
+                            createDeviceHandler.accept(ip), messages, "confirm-create-" + deviceName + "-" + ip);
+                }
+            } catch (Exception ignore) {
+            }
+        };
+
+        NetworkHardwareRepository networkHardwareRepository = context.getBean(NetworkHardwareRepository.class);
+        String ipAddressRange = MACHINE_IP_ADDRESS.substring(0, MACHINE_IP_ADDRESS.lastIndexOf(".") + 1) + "0-255";
+        deviceHandler.accept("127.0.0.1");
+        networkHardwareRepository.buildPingIpAddressTasks(ipAddressRange, log::info, Collections.singleton(devicePort), 500,
+            (url, port) -> deviceHandler.accept(url));
+    }
+
+    @RequiredArgsConstructor
+    public enum Architecture {
+        armv6l(s -> s.contains("linux_armv6")),
+        armv7l(s -> s.contains("linux_armv7")),
+        arm32v6(s -> s.contains("arm32v6") || s.contains("arm6")),
+        arm32v7(s -> s.contains("arm32v7") || s.contains("arm7")),
+        arm32v8(s -> s.contains("arm32v8") || s.contains("arm8")),
+        arm64v8(s -> s.contains("arm64v8")),
+        aarch64(s -> IS_OS_LINUX && s.contains("linux_arm64v8") || IS_OS_MAC && s.contains("darwin_arm64")),
+        amd64(s -> s.contains("amd64")),
+        i386(s -> s.contains("i386")),
+        win32(s -> s.contains("win32")),
+        win64(s -> s.contains("win64") || s.contains("windows")),
+        winArm64(s -> s.contains("win_arm64"));
+
+        public final Predicate<String> matchName;
+    }
+}

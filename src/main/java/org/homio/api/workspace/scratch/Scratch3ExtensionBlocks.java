@@ -17,24 +17,27 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.homio.api.AddonEntrypoint;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
-import org.homio.api.model.KeyValueEnum;
+import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings({"unused", "rawtypes", "SameParameterValue", "unchecked"})
 @Getter
 public abstract class Scratch3ExtensionBlocks {
 
     public static final String EVENT = "EVENT";
     public static final String VALUE = "VALUE";
     public static final String ENTITY = "ENTITY";
+    public static final String CONDITION = "CONDITION";
+    public static final String SETTING = "SETTING";
 
-    protected final EntityContext entityContext;
-    private final String id;
-    private final Map<String, MenuBlock> menus = new HashMap<>();
-    private final List<Scratch3Block> blocks = new ArrayList<>();
-    private final Map<String, Scratch3Block> blocksMap = new HashMap<>();
+    protected final @NotNull Context context;
+    private final @NotNull String id;
+    private final @NotNull Map<String, MenuBlock> menus = new HashMap<>();
+    private final @NotNull List<Scratch3Block> blocks = new ArrayList<>();
+    private final @NotNull Map<String, Scratch3Block> blocksMap = new HashMap<>();
 
     @Setter
     private String name;
@@ -45,185 +48,185 @@ public abstract class Scratch3ExtensionBlocks {
      * Uses for grouping extensions inside select box
      */
     @Setter
-    private String parent;
+    private ScratchParent parent;
 
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, AddonEntrypoint addonEntryPoint) {
-        this(color, entityContext, addonEntryPoint, null);
+    public Scratch3ExtensionBlocks(@Nullable String color, @NotNull Context context, @Nullable AddonEntrypoint addonEntryPoint) {
+        this(color, context, addonEntryPoint, null);
     }
 
     @SneakyThrows
-    public Scratch3ExtensionBlocks(String color, EntityContext entityContext, AddonEntrypoint addonEntryPoint,
-                                   String idSuffix) {
-        this.id = addonEntryPoint == null ? idSuffix : addonEntryPoint.getAddonID() + (idSuffix == null ? "" : "-" + idSuffix);
-        this.parent = addonEntryPoint == null ? null : addonEntryPoint.getAddonID();
-        this.entityContext = entityContext;
+    public Scratch3ExtensionBlocks(@Nullable String color, @NotNull Context context, @Nullable AddonEntrypoint addonEntryPoint,
+        @Nullable String idSuffix) {
+        this.id = addonEntryPoint == null ? Objects.requireNonNull(idSuffix) : addonEntryPoint.getAddonID() + (idSuffix == null ? "" : "-" + idSuffix);
+        this.context = context;
         if (color != null) {
             URL resource = getImage(addonEntryPoint);
             if (resource == null) {
                 throw new IllegalArgumentException("Unable to find Scratch3 image: " + this.id + ".png in classpath");
             }
             this.blockIconURI = "data:image/png;base64," +
-                    Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
+                Base64.getEncoder().encodeToString(IOUtils.toByteArray(Objects.requireNonNull(resource)));
             this.scratch3Color = new Scratch3Color(color);
         }
     }
 
     @SneakyThrows
-    public Scratch3ExtensionBlocks(@NotNull String color, @NotNull EntityContext entityContext, @NotNull String id,
-                                   @NotNull String name, @NotNull URL imageResource) {
+    public Scratch3ExtensionBlocks(@NotNull String color, @NotNull Context context, @NotNull String id,
+        @NotNull String name, @NotNull URL imageResource) {
         this.id = id;
-        this.entityContext = entityContext;
+        this.context = context;
         this.blockIconURI = "data:image/png;base64," + Base64.getEncoder().encodeToString(IOUtils.toByteArray(imageResource));
         this.scratch3Color = new Scratch3Color(color);
     }
 
     // Uses only in app
-    public Scratch3ExtensionBlocks(String id, EntityContext entityContext) {
-        this(null, entityContext, null, id);
+    public Scratch3ExtensionBlocks(String id, @NotNull Context context) {
+        this(null, context, null, id);
     }
 
-    protected Scratch3Block blockHat(int order, String opcode, String text, Scratch3Block.Scratch3BlockHandler handler,
-                                     Consumer<Scratch3Block> configureHandler) {
+    public void init() {
+    }
+
+    protected @NotNull Scratch3Block blockHat(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockHandler handler,
+        @Nullable Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.hat, text, handler, null), configureHandler);
     }
 
-    protected Scratch3Block blockHat(int order, String opcode, String text, Scratch3Block.Scratch3BlockHandler handler) {
+    protected @NotNull Scratch3Block blockHat(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockHandler handler) {
         return blockHat(order, opcode, text, handler, null);
     }
 
-    protected Scratch3Block blockHat(String opcode, Scratch3Block.Scratch3BlockHandler handler) {
-        return blockHat(0, opcode, null, handler, null);
+    protected @NotNull Scratch3Block blockHat(@NotNull String opcode, @NotNull Scratch3Block.Scratch3BlockHandler handler) {
+        return blockHat(0, opcode, "", handler, null);
     }
 
-    protected Scratch3ConditionalBlock blockCondition(int order, String opcode, String text,
-                                                      Scratch3Block.Scratch3BlockHandler handler,
-                                                      Consumer<Scratch3ConditionalBlock> configureHandler) {
+    protected @NotNull Scratch3ConditionalBlock blockCondition(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockHandler handler,
+        @Nullable Consumer<Scratch3ConditionalBlock> configureHandler) {
         return addBlock(new Scratch3ConditionalBlock(order, opcode, BlockType.conditional, text, handler, null),
-                configureHandler);
+            configureHandler);
     }
 
-    protected Scratch3ConditionalBlock blockCondition(int order, String opcode, String text,
-                                                      Scratch3Block.Scratch3BlockHandler handler) {
+    protected @NotNull Scratch3ConditionalBlock blockCondition(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockHandler handler) {
         return blockCondition(order, opcode, text, handler, null);
     }
 
-    protected Scratch3Block blockCommand(int order, String opcode, String text, Scratch3Block.Scratch3BlockHandler handler,
-                                         Consumer<Scratch3Block> configureHandler) {
+    protected @NotNull Scratch3Block blockCommand(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockHandler handler,
+        @Nullable Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.command, text, handler, null),
-                configureHandler);
+            configureHandler);
     }
 
-    protected Scratch3Block blockCommand(int order, String opcode, String text,
-                                         Scratch3Block.Scratch3BlockHandler handler) {
+    protected @NotNull Scratch3Block blockCommand(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockHandler handler) {
         return blockCommand(order, opcode, text, handler, null);
     }
 
-    protected Scratch3Block blockCommand(String opcode, Scratch3Block.Scratch3BlockHandler handler) {
-        return blockCommand(0, opcode, null, handler, null);
+    protected @NotNull Scratch3Block blockCommand(@NotNull String opcode, @NotNull Scratch3Block.Scratch3BlockHandler handler) {
+        return blockCommand(0, opcode, "", handler, null);
     }
 
-    protected Scratch3Block blockReporter(int order, String opcode, String text,
-                                          Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
-                                          Consumer<Scratch3Block> configureHandler) {
+    protected @NotNull Scratch3Block blockReporter(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
+        @Nullable Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.reporter, text, null, evalHandler), configureHandler);
     }
 
-    protected Scratch3Block blockReporter(int order, String opcode, String text,
-                                          Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
+    protected @NotNull Scratch3Block blockReporter(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
         return blockReporter(order, opcode, text, evalHandler, null);
     }
 
-    protected Scratch3Block blockReporter(String opcode, Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
-        return blockReporter(0, opcode, null, evalHandler, null);
+    protected @NotNull Scratch3Block blockReporter(@NotNull String opcode, @NotNull Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
+        return blockReporter(0, opcode, "", evalHandler, null);
     }
-
-    /*@SneakyThrows
-
-
-    protected Scratch3Block ofReporter(String opcode, Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
-        return new Scratch3Block(0, opcode, BlockType.reporter, null, null, evalHandler);
-    }
-*/
 
     @SneakyThrows
-    protected <T extends Scratch3Block> T blockTargetReporter(int order, String opcode, String text,
-                                                              Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
-                                                              Class<T> targetClass, Consumer<T> configureHandler) {
+    protected <T extends Scratch3Block> @NotNull T blockTargetReporter(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
+        @NotNull Class<T> targetClass, Consumer<T> configureHandler) {
         Constructor<T> constructor = targetClass.getDeclaredConstructor(int.class, String.class, BlockType.class, String.class,
-                Scratch3Block.Scratch3BlockHandler.class, Scratch3Block.Scratch3BlockEvaluateHandler.class);
+            Scratch3Block.Scratch3BlockHandler.class, Scratch3Block.Scratch3BlockEvaluateHandler.class);
         T instance = constructor.newInstance(order, opcode, BlockType.reporter, text, null, evalHandler);
         return addBlock(instance, configureHandler);
     }
 
-    protected Scratch3Block blockBoolean(int order, String opcode, String text,
-                                         Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
-                                         Consumer<Scratch3Block> configureHandler) {
+    protected @NotNull Scratch3Block blockBoolean(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockEvaluateHandler evalHandler,
+        @Nullable Consumer<Scratch3Block> configureHandler) {
         return addBlock(new Scratch3Block(order, opcode, BlockType.Boolean, text, null, evalHandler), configureHandler);
     }
 
-    protected Scratch3Block blockBoolean(int order, String opcode, String text,
-                                         Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
+    protected @NotNull Scratch3Block blockBoolean(int order, @NotNull String opcode, @NotNull String text,
+        @NotNull Scratch3Block.Scratch3BlockEvaluateHandler evalHandler) {
         return blockBoolean(order, opcode, text, evalHandler, null);
     }
 
-    protected <T extends Enum> MenuBlock.StaticMenuBlock<T> menuStatic(String name, Class<T> enumClass, T defaultValue) {
+    protected <T extends Enum> MenuBlock.StaticMenuBlock<T> menuStatic(
+        @NotNull String name, @NotNull Class<T> enumClass, @NotNull T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnum(enumClass)
-                .setDefaultValue(defaultValue));
+                                                                           .setDefaultValue(defaultValue));
     }
 
-    protected <T extends Enum> MenuBlock.StaticMenuBlock<T> menuStatic(String name, Class<T> enumClass, T defaultValue,
-                                                                       Predicate<T> filter) {
-        return addMenu(
-                new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnum(enumClass, filter).setDefaultValue(defaultValue));
+    protected <T extends Enum> MenuBlock.StaticMenuBlock<T> menuStatic(
+        @NotNull String name, @NotNull Class<T> enumClass, @NotNull T defaultValue,
+        @NotNull Predicate<T> filter) {
+        return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnum(enumClass, filter).setDefaultValue(defaultValue));
     }
 
-    protected MenuBlock.ServerMenuBlock menuServer(String name, String url, String firstKey, String firstValue,
-                                                   Integer... clusters) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServer(@NotNull String name, @NotNull String url, @NotNull String firstKey, @NotNull String firstValue,
+        Integer... clusters) {
         return addMenu(new MenuBlock.ServerMenuBlock(name, url, firstKey, firstValue, clusters, true));
     }
 
-    protected MenuBlock.ServerMenuBlock menuServer(String name, String url, String firstKey) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServer(@NotNull String name, @NotNull String url, @NotNull String firstKey) {
         return menuServer(name, url, firstKey, "-");
     }
 
-    protected MenuBlock.ServerMenuBlock menuServer(String name, String url, String firstKey, String firstValue) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServer(@NotNull String name, @NotNull String url, @NotNull String firstKey, @NotNull String firstValue) {
         return addMenu(new MenuBlock.ServerMenuBlock(name, url, firstKey, firstValue, null, true));
     }
 
-    protected MenuBlock.ServerMenuBlock menuServerServiceItems(String name, Class<?> entityServiceClass, String firstKey) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServerServiceItems(@NotNull String name, @NotNull Class<?> entityServiceClass, @NotNull String firstKey) {
         return addMenu(new MenuBlock.ServerMenuBlock(name, "rest/item/service/" + entityServiceClass.getSimpleName(), firstKey,
-                "-", null, true));
+            "-", null, true));
     }
 
-    protected MenuBlock.ServerMenuBlock menuServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServerItems(@NotNull String name, @NotNull Class<? extends BaseEntity> itemClass,
+        @NotNull String firstKey) {
         return menuServerItems(name, itemClass, firstKey, "-");
     }
 
-    protected MenuBlock.ServerMenuBlock menuServerItems(String name, Class<? extends BaseEntity> itemClass, String firstKey,
-                                                        String firstValue) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServerItems(@NotNull String name, @NotNull Class<? extends BaseEntity> itemClass, @NotNull String firstKey,
+        @NotNull String firstValue) {
         return addMenu(
-                new MenuBlock.ServerMenuBlock(name, "rest/item/type/" + itemClass.getSimpleName(), firstKey, firstValue, null,
-                        true));
+            new MenuBlock.ServerMenuBlock(name, "rest/item/type/%s/options".formatted(itemClass.getSimpleName()), firstKey, firstValue, null,
+                true));
     }
 
-    protected <T extends KeyValueEnum> MenuBlock.StaticMenuBlock<T> menuStaticKV(String name, Class<T> enumClass,
-        T defaultValue) {
+    protected <T extends KeyValueEnum> MenuBlock.StaticMenuBlock<T> menuStaticKV(@NotNull String name, @NotNull Class<T> enumClass,
+        @Nullable T defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, null, enumClass).addEnumKVE(enumClass).setDefaultValue(defaultValue));
     }
 
-    protected MenuBlock.StaticMenuBlock<String> menuStaticList(String name, Map<String, String> items, String defaultValue) {
+    protected @NotNull MenuBlock.StaticMenuBlock<String> menuStaticList(@NotNull String name, @NotNull Map<String, String> items,
+        @Nullable String defaultValue) {
         return addMenu(new MenuBlock.StaticMenuBlock(name, items, String.class).setDefaultValue(defaultValue));
     }
 
-    protected MenuBlock.ServerMenuBlock menuServerFiles(@Nullable String regexp) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServerFiles(@Nullable String regexp) {
         return menuServer("FILE", defaultString(regexp, ".*"), "File").setUIDelimiter("/");
     }
 
-    protected MenuBlock.ServerMenuBlock menuServerFolders(@Nullable String regexp) {
+    protected @NotNull MenuBlock.ServerMenuBlock menuServerFolders(@Nullable String regexp) {
         return menuServer("FOLDER", defaultString(regexp, ".*"), "Folder").setUIDelimiter("/");
     }
 
-    private <T extends Scratch3Block> T addBlock(T scratch3Block, Consumer<T> configureHandler) {
+    private <T extends Scratch3Block> @NotNull T addBlock(@NotNull T scratch3Block, @Nullable Consumer<T> configureHandler) {
         if (blocksMap.containsKey(scratch3Block.getOpcode())) {
             throw new RuntimeException("Found multiple blocks with same opcode: " + scratch3Block.getOpcode());
         }
@@ -236,7 +239,7 @@ public abstract class Scratch3ExtensionBlocks {
         return scratch3Block;
     }
 
-    private URL getImage(AddonEntrypoint addonEntryPoint) {
+    private @Nullable URL getImage(@Nullable AddonEntrypoint addonEntryPoint) {
         URL resource = null;
         if (addonEntryPoint != null) {
             resource = addonEntryPoint.getResource("images/" + this.id + ".png");
@@ -253,13 +256,14 @@ public abstract class Scratch3ExtensionBlocks {
         return resource;
     }
 
-    public void init() {
-    }
-
-    private <T extends MenuBlock> T addMenu(T menuBlock) {
+    private @NotNull <T extends MenuBlock> T addMenu(@NotNull T menuBlock) {
         if (this.menus.put(menuBlock.getName(), menuBlock) != null) {
             throw new RuntimeException("Found multiple menu with same name: " + menuBlock.getName());
         }
         return menuBlock;
+    }
+
+    public enum ScratchParent {
+        storage, communication, media, hardware, ui, devices, network, misc, identity
     }
 }

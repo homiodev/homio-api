@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.text.NumberFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.homio.api.EntityContext;
+import lombok.experimental.Accessors;
+import org.homio.api.Context;
 import org.homio.api.model.HasEntityIdentifier;
 import org.json.JSONObject;
 
@@ -12,31 +13,27 @@ import org.json.JSONObject;
  * For widget dataSource to set status value
  */
 public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueListener {
+
     void setStatusValue(SetStatusValueRequest request);
 
     /**
      * @return Some entites that implement HasSetStatusValue may be 'readOnly', thus this entities must be skipped
      */
+    @JsonIgnore
     default boolean isAbleToSetValue() {
         return true;
     }
 
-    /**
-     * @return Uses for UI to determine class type description
-     */
-    @JsonIgnore
-    @SelectDataSourceDescription
-    String getSetStatusDescription();
-
     @Getter
     @AllArgsConstructor
     class SetStatusValueRequest {
-        private EntityContext entityContext;
+
+        private @Accessors(fluent = true) Context context;
         private JSONObject dynamicParameters;
         private Object value;
 
         public static Number rawValueToNumber(Object value, Number defaultValue) {
-            if (value == null) return defaultValue;
+            if (value == null) {return defaultValue;}
             if (Number.class.isAssignableFrom(value.getClass())) {
                 return ((Number) value);
             }
@@ -48,7 +45,7 @@ public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
         }
 
         public static Boolean rawValueToBoolean(Object value, Boolean defaultValue) {
-            if (value == null) return defaultValue;
+            if (value == null) {return defaultValue;}
             if (Boolean.class.isAssignableFrom(value.getClass())) {
                 return ((Boolean) value);
             }

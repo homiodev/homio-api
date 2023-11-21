@@ -11,6 +11,7 @@ import org.homio.api.model.Icon;
 @Accessors(chain = true)
 @AllArgsConstructor
 public class SourceHistory {
+
     private final int count;
     private Float min;
     private Float max;

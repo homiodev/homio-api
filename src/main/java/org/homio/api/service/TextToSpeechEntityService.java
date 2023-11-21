@@ -23,10 +23,10 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Interface for entities who have ability to convert text to sound
  */
+@Getter
 @Log4j2
 public abstract class TextToSpeechEntityService {
 
-    @Getter
     private final Path cacheFolder;
     private final Integer maxQuota;
     public long lastTimeCleanOldCache = 0;
@@ -53,12 +53,6 @@ public abstract class TextToSpeechEntityService {
         return file;
     }
 
-    protected String getCharactersFilePrefix(Calendar cal) {
-        return cal.get(Calendar.MONTH) + "_" + cal.get(Calendar.YEAR);
-    }
-
-    protected abstract byte[] synthesizeSpeech(String text);
-
     @SneakyThrows
     public void cleanOldCache() {
         boolean requireToCheckCache = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastTimeCleanOldCache) > 1;
@@ -66,27 +60,6 @@ public abstract class TextToSpeechEntityService {
             lastTimeCleanOldCache = System.currentTimeMillis();
             cleanOldCharacterFiles();
             cleanOldAudioFiles();
-        }
-    }
-
-    @SneakyThrows
-    private void cleanOldAudioFiles() {
-        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".mp3"}, true)) {
-            BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-            if (TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - attributes.lastAccessTime().toMillis()) > 31) {
-                log.info("Delete old audio file <{}>", file.getName());
-                file.delete();
-            }
-        }
-    }
-
-    protected void cleanOldCharacterFiles() {
-        String currentCharactersFileName = getCharacters().getFileName().toString();
-        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".txt"}, true)) {
-            if (!file.getName().equals(currentCharactersFileName)) {
-                log.info("Delete old character file <{}>", file.getName());
-                file.delete();
-            }
         }
     }
 
@@ -125,12 +98,6 @@ public abstract class TextToSpeechEntityService {
         return null;
     }
 
-    private Path saveAudioAndTextToFile(String text, Path cacheFile, byte[] audio) {
-        log.debug("Caching audio file {}", cacheFile.getFileName());
-        CommonUtils.writeToFile(getCharacters(), text, true);
-        return CommonUtils.writeToFile(cacheFile, audio, false);
-    }
-
     public String getUniqueFilenameForText(String text) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -146,5 +113,38 @@ public abstract class TextToSpeechEntityService {
 
     public void destroy() {
         cleanOldCache();
+    }
+
+    protected String getCharactersFilePrefix(Calendar cal) {
+        return cal.get(Calendar.MONTH) + "_" + cal.get(Calendar.YEAR);
+    }
+
+    protected abstract byte[] synthesizeSpeech(String text);
+
+    protected void cleanOldCharacterFiles() {
+        String currentCharactersFileName = getCharacters().getFileName().toString();
+        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".txt"}, true)) {
+            if (!file.getName().equals(currentCharactersFileName)) {
+                log.info("Delete old character file <{}>", file.getName());
+                file.delete();
+            }
+        }
+    }
+
+    @SneakyThrows
+    private void cleanOldAudioFiles() {
+        for (File file : FileUtils.listFiles(cacheFolder.toFile(), new String[]{".mp3"}, true)) {
+            BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+            if (TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - attributes.lastAccessTime().toMillis()) > 31) {
+                log.info("Delete old audio file <{}>", file.getName());
+                file.delete();
+            }
+        }
+    }
+
+    private Path saveAudioAndTextToFile(String text, Path cacheFile, byte[] audio) {
+        log.debug("Caching audio file {}", cacheFile.getFileName());
+        CommonUtils.writeToFile(getCharacters(), text, true);
+        return CommonUtils.writeToFile(cacheFile, audio, false);
     }
 }

@@ -1,46 +1,48 @@
 package org.homio.api.setting;
 
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.homio.api.EntityContext;
-import org.homio.api.ui.field.UIFieldType;
+import org.homio.api.Context;
+import org.jetbrains.annotations.NotNull;
 
 public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
 
     @Override
-    default Class<Set<Integer>> getType() {
+    default @NotNull Class<Set<Integer>> getType() {
         return (Class<Set<Integer>>) Collections.<Integer>emptySet().getClass();
     }
 
     int[] defaultValue();
 
     @Override
-    default String getDefaultValue() {
+    default @NotNull String getDefaultValue() {
         Set<String> values = new HashSet<>();
         for (int value : defaultValue()) {
             values.add(String.valueOf(value));
         }
-        return String.join("~~~", values);
+        return String.join(LIST_DELIMITER, values);
     }
 
     @Override
-    default Set<Integer> parseValue(EntityContext entityContext, String value) {
+    default Set<Integer> parseValue(Context context, String value) {
         if (value == null) {
             return Collections.emptySet();
         }
-        return Stream.of(value.split("~~~")).map(Integer::parseInt).collect(Collectors.toSet());
+        return Stream.of(value.split(LIST_DELIMITER)).map(Integer::parseInt).collect(Collectors.toSet());
     }
 
     @Override
-    default String writeValue(Set<Integer> value) {
-        return value.stream().map(Object::toString).collect(Collectors.joining("~~~"));
+    default @NotNull String writeValue(Set<Integer> value) {
+        return value.stream().map(Object::toString).collect(Collectors.joining(LIST_DELIMITER));
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Chips;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Chips;
     }
 }

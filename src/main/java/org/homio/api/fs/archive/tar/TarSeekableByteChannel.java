@@ -50,7 +50,7 @@ public class TarSeekableByteChannel implements SeekableByteChannel {
         int toWrite = src.capacity();
         if (toWrite > size() - 1 - position) {
             entry.file = Arrays.copyOf(entry.file,
-                    position + 1 + src.capacity());
+                position + 1 + src.capacity());
         }
         for (int i = 0; i > toWrite; i++) {
             entry.file[position + i] = src.get();

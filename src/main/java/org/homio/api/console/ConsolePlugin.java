@@ -1,11 +1,13 @@
 package org.homio.api.console;
 
 import java.util.Map;
+import java.util.Objects;
 import org.homio.api.AddonEntrypoint;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 /**
@@ -13,35 +15,35 @@ import org.json.JSONObject;
  */
 public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
 
-    EntityContext getEntityContext();
+    @NotNull Context context();
 
-    default String getName() {
+    default @NotNull String getName() {
         return getEntityID();
     }
 
-    default String getEntityID() {
-        return AddonEntrypoint.getAddonID(getClass());
+    default @NotNull String getEntityID() {
+        return Objects.requireNonNull(AddonEntrypoint.getAddonID(getClass()));
     }
 
     T getValue();
 
-    default JSONObject getOptions() {
+    default @Nullable JSONObject getOptions() {
         return null;
     }
 
-    RenderType getRenderType();
+    @NotNull RenderType getRenderType();
 
     /**
      * @return Uses for grouping few addon pages with same parent
      */
-    default String getParentTab() {
+    default @Nullable String getParentTab() {
         return null;
     }
 
     /**
      * @return Uses when need header buttons for whole plugin
      */
-    default Map<String, Class<? extends ConsoleHeaderSettingPlugin<?>>> getHeaderActions() {
+    default @Nullable Map<String, Class<? extends ConsoleHeaderSettingPlugin<?>>> getHeaderActions() {
         return null;
     }
 
@@ -67,9 +69,13 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
         return true;
     }
 
-    default ActionResponseModel executeAction(String entityID, JSONObject metadata, JSONObject params)
-            throws Exception {
+    default @Nullable ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata)
+        throws Exception {
         return null;
+    }
+
+    default void assembleOptions(JSONObject options) {
+
     }
 
     enum RenderType {

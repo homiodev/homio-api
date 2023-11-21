@@ -71,13 +71,13 @@ public class SpringUtils {
      *
      * @param text           - text to search pattern values
      * @param propertyGetter - function to apply
-     * @param pattern -
-     * @param prefixLength -
-     * @param suffixLength -
+     * @param pattern        -
+     * @param prefixLength   -
+     * @param suffixLength   -
      * @return updated text
      */
     public static String replaceValues(String text, BiFunction<String, String, String> propertyGetter, Pattern pattern,
-                                       int prefixLength, int suffixLength) {
+        int prefixLength, int suffixLength) {
         Matcher matcher = pattern.matcher(text);
         StringBuffer noteBuffer = new StringBuffer();
         while (matcher.find()) {
@@ -92,7 +92,7 @@ public class SpringUtils {
     }
 
     public static String getEnvProperty(String value, BiFunction<String, String, String> propertyGetter,
-                                        int prefixLength, int suffixLength) {
+        int prefixLength, int suffixLength) {
         String[] array = getSpringValuesPattern(value, prefixLength, suffixLength);
         return propertyGetter.apply(array[0], array[1]);
     }
@@ -111,6 +111,7 @@ public class SpringUtils {
     }
 
     public interface ReplaceEnvHandler {
+
         String replace(String env, String defValue, StringBuffer fullPrefix) throws Exception;
     }
 }

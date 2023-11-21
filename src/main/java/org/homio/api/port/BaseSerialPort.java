@@ -14,16 +14,17 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Logger;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.springframework.boot.web.server.PortInUseException;
 
 @RequiredArgsConstructor
 public abstract class BaseSerialPort implements SerialPortDataListener {
+
     protected final Object bufferSynchronisationObject = new Object();
 
     protected final String coordinator;
     protected final String entityID;
-    protected final EntityContext entityContext;
+    protected final Context context;
     protected final int baudRate;
     protected final PortFlowControl flowControl;
     protected final Runnable portUnavailableListener;
@@ -47,11 +48,11 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
     public boolean open(int baudRate, PortFlowControl flowControl) {
         try {
             log.debug("[{}]: Connecting to serial port [{}] at {} baud, flow control {}.", entityID,
-                    serialPort == null ? "null" : serialPort.getSystemPortName(), baudRate, flowControl);
+                serialPort == null ? "null" : serialPort.getSystemPortName(), baudRate, flowControl);
             try {
                 if (serialPort == null) {
                     serialPort = Stream.of(SerialPort.getCommPorts())
-                            .filter(p -> p.getPortDescription().toLowerCase().contains(coordinator)).findAny().orElse(null);
+                                       .filter(p -> p.getPortDescription().toLowerCase().contains(coordinator)).findAny().orElse(null);
 
                     if (serialPort == null) {
                         log.error("[{}]: Serial Error: Port does not exist.", entityID);
@@ -84,7 +85,7 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
                 return false;
             } catch (RuntimeException e) {
                 log.error("[{}]: Serial Error: Device cannot be opened on Port {}. Caused by {}", entityID,
-                        serialPort == null ? "UNKNOWN_SYSTEM_PORT" : serialPort.getSystemPortName(), e.getMessage());
+                    serialPort == null ? "UNKNOWN_SYSTEM_PORT" : serialPort.getSystemPortName(), e.getMessage());
                 return false;
             }
 
@@ -110,16 +111,16 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
                     while (offset != available) {
                         if (log.isTraceEnabled()) {
                             log.trace("[{}]: Processing DATA_AVAILABLE event: try read  {} at offset {}", entityID,
-                                    available - offset, offset);
+                                available - offset, offset);
                         }
                         int n = inputStream.read(buf, offset, available - offset);
                         if (log.isTraceEnabled()) {
                             log.trace("[{}]: Processing DATA_AVAILABLE event: did read {} of {} at offset {}",
-                                    entityID, n, available - offset, offset);
+                                entityID, n, available - offset, offset);
                         }
                         if (n <= 0) {
                             throw new IOException("Expected to be able to read " + available
-                                    + " bytes, but saw error after " + offset);
+                                + " bytes, but saw error after " + offset);
                         }
                         offset += n;
                     }
@@ -170,8 +171,6 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
         }
     }
 
-    protected abstract void handleSerialEvent(byte[] buf);
-
     public void write(int value) {
         if (outputStream == null) {
             return;
@@ -186,4 +185,6 @@ public abstract class BaseSerialPort implements SerialPortDataListener {
     public int getListeningEvents() {
         return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
     }
+
+    protected abstract void handleSerialEvent(byte[] buf);
 }

@@ -8,45 +8,40 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
 import org.homio.api.model.Icon;
-import org.homio.api.ui.field.ProgressBar;
-import org.homio.api.ui.field.UIFieldType;
+import org.homio.hquery.ProgressBar;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPluginPackageInstall extends SettingPluginButton {
 
     @Override
-    default Icon getIcon() {
+    default @Nullable Icon getIcon() {
         return new Icon("fas fa-book");
     }
 
     @Override
-    default boolean transientState() {
-        return true;
-    }
-
-    @Override
-    default Class<JSONObject> getType() {
+    default @NotNull Class<JSONObject> getType() {
         return JSONObject.class;
     }
 
     @Override
-    default UIFieldType getSettingType() {
-        return UIFieldType.Button;
+    default @NotNull SettingType getSettingType() {
+        return SettingType.Button;
     }
 
-    PackageContext allPackages(EntityContext entityContext) throws Exception;
+    PackageContext allPackages(Context context) throws Exception;
 
-    PackageContext installedPackages(EntityContext entityContext) throws Exception;
+    PackageContext installedPackages(Context context) throws Exception;
 
-    void installPackage(EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
+    void installPackage(Context context, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
 
-    void unInstallPackage(EntityContext entityContext, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
+    void unInstallPackage(Context context, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
 
     @Getter
     @Setter
@@ -54,6 +49,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     @NoArgsConstructor
     @AllArgsConstructor
     class PackageContext {
+
         String error;
         Collection<PackageModel> packages;
     }
@@ -61,13 +57,12 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     @Getter
     @Setter
     @Accessors(chain = true)
-    @RequiredArgsConstructor
     class PackageModel {
 
-        private final String name;
+        private String name;
+        private String title;
+        private String description;
 
-        private final String title;
-        private final String description;
         private String icon;
         private String readme;
         private boolean readmeLazyLoading;
@@ -94,8 +89,14 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     @Data
     @Accessors(chain = true)
     class PackageRequest {
+
         private String name;
         private String url;
         private String version;
+    }
+
+    @Override
+    default String getConfirmMsg() {
+        return null;
     }
 }

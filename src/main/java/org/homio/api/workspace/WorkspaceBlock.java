@@ -1,6 +1,7 @@
 package org.homio.api.workspace;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.pivovarit.function.ThrowingConsumer;
@@ -22,25 +23,28 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.homio.api.EntityContext;
+import org.homio.api.Context;
+import org.homio.api.ContextBGP;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.exception.ServerException;
 import org.homio.api.service.EntityService;
 import org.homio.api.state.RawType;
 import org.homio.api.state.State;
 import org.homio.api.util.CommonUtils;
-import org.homio.api.util.Curl;
 import org.homio.api.util.SpringUtils;
 import org.homio.api.workspace.scratch.MenuBlock;
+import org.homio.hquery.Curl;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public interface WorkspaceBlock {
+
     Set<String> MEDIA_EXTENSIONS = new HashSet<>(
-            Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
-                    ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
-                    ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
-                    ".js", ".mp3"));
+        Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
+            ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
+            ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
+            ".js", ".mp3"));
 
     @SneakyThrows
     static String evalStringWithContext(String value, Function<String, String> valueSupplier) {
@@ -100,7 +104,7 @@ public interface WorkspaceBlock {
     Path getFile(String key, MenuBlock menuBlock, boolean required);
 
     default <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type) {
-        return getMenuValues(key, menuBlock, type, "~~~");
+        return getMenuValues(key, menuBlock, type, LIST_DELIMITER);
     }
 
     <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type, String delimiter);
@@ -110,7 +114,7 @@ public interface WorkspaceBlock {
     }
 
     default <T extends BaseEntity> T getMenuValueEntity(String key, MenuBlock.ServerMenuBlock menuBlock) {
-        return getEntityContext().getEntity(getMenuValue(key, menuBlock, String.class));
+        return context().db().getEntity(getMenuValue(key, menuBlock, String.class));
     }
 
     default <S> S getEntityService(String key, MenuBlock.ServerMenuBlock menuBlock, Class<S> serviceClass) {
@@ -131,7 +135,7 @@ public interface WorkspaceBlock {
         if ("-".equals(entityID)) {
             logErrorAndThrow("Menu entity not selected for block: {}", key);
         }
-        T entity = getEntityContext().getEntity(entityID);
+        T entity = context().db().getEntity(entityID);
         if (entity == null) {
             logErrorAndThrow("Unable to find entity for block: {}. Value: {}", key, entityID);
         }
@@ -195,20 +199,20 @@ public interface WorkspaceBlock {
         onRelease(releaseHandler);
     }
 
-    default <T> void subscribeToLock(BroadcastLock lock, Runnable handler) {
+    default <T> void subscribeToLock(Lock lock, Runnable handler) {
         subscribeToLock(lock, o -> true, 0, null, handler);
     }
 
-    default <T> void subscribeToLock(BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
+    default <T> void subscribeToLock(Lock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
         subscribeToLock(lock, o -> true, timeout, timeUnit, handler);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, Runnable handler) {
+    default void subscribeToLock(Lock lock, Function<Object, Boolean> checkFn, Runnable handler) {
         subscribeToLock(lock, checkFn, 0, null, handler);
     }
 
-    default void subscribeToLock(BroadcastLock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
-                                 Runnable runnable) {
+    default void subscribeToLock(Lock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
+        Runnable runnable) {
         while (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit) && checkFn.apply(lock.getValue())) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
@@ -222,11 +226,11 @@ public interface WorkspaceBlock {
         }
     }
 
-    default <T> void waitForLock(BroadcastLock lock, Runnable handler) {
+    default <T> void waitForLock(Lock lock, Runnable handler) {
         waitForLock(lock, 0, null, handler);
     }
 
-    default <T> void waitForLock(BroadcastLock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
+    default <T> void waitForLock(Lock lock, int timeout, TimeUnit timeUnit, Runnable handler) {
         if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit)) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
@@ -339,6 +343,9 @@ public interface WorkspaceBlock {
         return getExtensionId() + "_" + getOpcode();
     }
 
+    /**
+     * @return next block
+     */
     WorkspaceBlock getNext();
 
     WorkspaceBlock getParent();
@@ -349,25 +356,41 @@ public interface WorkspaceBlock {
 
     String getDescription();
 
-    BroadcastLockManager getBroadcastLockManager();
+    /**
+     * Get Lock manager that wait when event occurs
+     * @return lock manager
+     */
+    LockManager getLockManager();
 
     boolean isDestroyed();
 
-    EntityContext getEntityContext();
+    void setThreadContext(ContextBGP.ThreadContext<?> threadContext);
 
+    Context context();
+
+    /**
+     * Fires when current thread is released (i.e. when whole block scope is destroyed)
+     * @param listener - listener that fires on thread release
+     */
     void onRelease(ThrowingRunnable<Exception> listener);
 
-    default WorkspaceBlock getNextOrThrow() {
+    /**
+     * Get next block or throw error
+     * @return next block
+     */
+    default @NotNull WorkspaceBlock getNextOrThrow() {
         WorkspaceBlock next = getNext();
         if (next == null) {
             logErrorAndThrow("No next block found");
+            throw new ServerException("No next block found");
         }
         return next;
     }
 
-    default WorkspaceBlock getChildOrThrow() {
+    default @NotNull WorkspaceBlock getChildOrThrow() {
         if (!hasChild()) {
             logErrorAndThrow("No child block found");
+            throw new ServerException("No child block found");
         }
         return getChild();
     }
@@ -381,8 +404,7 @@ public interface WorkspaceBlock {
         Object input = getInput(key, true);
         byte[] content = null;
         String name = null;
-        if (input instanceof String) {
-            String mediaURL = (String) input;
+        if (input instanceof String mediaURL) {
             if (mediaURL.startsWith("http")) {
                 // max 10mb
                 return new RawType(Curl.download(mediaURL, maxDownloadSize));

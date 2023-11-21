@@ -5,6 +5,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.Formatter;
 
 public class TarFileAttributes implements BasicFileAttributes {
+
     private final TarEntry e;
 
     TarFileAttributes(TarEntry e) {
@@ -66,7 +67,7 @@ public class TarFileAttributes implements BasicFileAttributes {
         StringBuilder sb = new StringBuilder(1024);
         try (Formatter fm = new Formatter(sb)) {
             fm.format("    lastModifiedTime: %tc%n", lastModifiedTime()
-                    .toMillis());
+                .toMillis());
             fm.format("    isDirectory     : %b%n", isDirectory());
             fm.format("    size            : %d%n", size());
         }

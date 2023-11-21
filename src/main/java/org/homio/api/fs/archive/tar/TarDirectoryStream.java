@@ -17,8 +17,8 @@ public class TarDirectoryStream implements DirectoryStream<Path> {
     private volatile Iterator<Path> itr;
 
     TarDirectoryStream(TarPath tarPath,
-                       Filter<? super Path> filter)
-            throws IOException {
+        Filter<? super Path> filter)
+        throws IOException {
         tarfs = tarPath.getFileSystem();
         path = tarPath.getResolvedPath();
         this.filter = filter;

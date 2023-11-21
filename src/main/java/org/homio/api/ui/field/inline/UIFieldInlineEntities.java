@@ -6,8 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate Set[BaseEntity] to show list if entities in table with ability to CRUD in edit mode
- * This is like show all tabs but as table in General Tab
+ * Annotate Set[BaseEntity] to show list if entities in table with ability to CRUD in edit mode This is like show all tabs but as table in General Tab
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -18,5 +17,5 @@ public @interface UIFieldInlineEntities {
      */
     String bg();
 
-    String noContentTitle() default "NO_CONTENT";
+    String noContentTitle() default "W.ERROR.NO_CONTENT";
 }

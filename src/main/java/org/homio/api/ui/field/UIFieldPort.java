@@ -8,7 +8,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldPort {
-    int min() default 1025;
+
+    int min() default 1;
 
     int max() default 65535;
 }

@@ -6,13 +6,11 @@ import org.jetbrains.annotations.NotNull;
 
 public interface UserEntity {
 
-    @NotNull String getEntityID();
+    String getEntityID();
 
     String getEmail();
 
     String getName();
-
-    @NotNull String getLang();
 
     @NotNull UserType getUserType();
 
@@ -38,12 +36,12 @@ public interface UserEntity {
         return getUserType() == UserType.ADMIN;
     }
 
+    default boolean isAllowResource(String resource) {
+        return getUserType() == UserType.ADMIN;
+    }
+
     // other is not for homio user but other purposes
     enum UserType {
         ADMIN, PRIVILEGED, GUEST, OTHER
-    }
-
-    default boolean isAllowResource(String resource) {
-        return getUserType() == UserType.ADMIN;
     }
 }

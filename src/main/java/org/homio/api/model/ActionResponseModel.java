@@ -16,6 +16,7 @@ import org.json.JSONObject;
 @Setter
 @Accessors(chain = true)
 public class ActionResponseModel {
+
     private final Object value;
     private ResponseAction responseAction = ResponseAction.info;
 
@@ -45,11 +46,15 @@ public class ActionResponseModel {
         } else {
             content = new ObjectMapper().writeValueAsString(value);
         }
-        return showFiles(Collections.singleton(new FileModel(title, content, FileContentType.json, true)));
+        return showFiles(Collections.singleton(new FileModel(title, content, FileContentType.json)));
     }
 
     public static ActionResponseModel showFiles(Set<FileModel> fileModels) {
         return new ActionResponseModel(fileModels, ResponseAction.files);
+    }
+
+    public static ActionResponseModel showFile(FileModel fileModel) {
+        return ActionResponseModel.showFiles(Set.of(fileModel));
     }
 
     public static ActionResponseModel showInfoAlreadyDone() {
@@ -73,7 +78,11 @@ public class ActionResponseModel {
     }
 
     public static ActionResponseModel success() {
-        return new ActionResponseModel("ACTION.SUCCESS", ResponseAction.success);
+        return new ActionResponseModel("ACTION.RESPONSE.SUCCESS", ResponseAction.success);
+    }
+
+    public static ActionResponseModel fired() {
+        return new ActionResponseModel("ACTION.RESPONSE.FIRED", ResponseAction.info);
     }
 
     public static ActionResponseModel showSuccess(String value) {
@@ -84,12 +93,24 @@ public class ActionResponseModel {
         return new ActionResponseModel(value, param0, value0, ResponseAction.info);
     }
 
+    public static ActionResponseModel showInfo(String value, String value0) {
+        return new ActionResponseModel(value, "VALUE", value0, ResponseAction.info);
+    }
+
     public static ActionResponseModel showWarn(String value, String param0, String value0) {
         return new ActionResponseModel(value, param0, value0, ResponseAction.warning);
     }
 
+    public static ActionResponseModel showWarn(String value, String value0) {
+        return new ActionResponseModel(value, "VALUE", value0, ResponseAction.warning);
+    }
+
     public static ActionResponseModel showError(String value, String param0, String value0) {
         return new ActionResponseModel(value, param0, value0, ResponseAction.error);
+    }
+
+    public static ActionResponseModel showError(String value, String value0) {
+        return new ActionResponseModel(value, "VALUE", value0, ResponseAction.error);
     }
 
     public static ActionResponseModel showSuccess(String value, String param0, String value0) {

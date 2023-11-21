@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
+@Getter
 @RequiredArgsConstructor
 public enum AggregationType {
     None(false),
@@ -20,11 +21,11 @@ public enum AggregationType {
     AverageNoZero(false),
     Median(false);
 
-    @Getter
     private final boolean requireSorting;
 
     /**
      * Stream must be already sorted for First, Last
+     *
      * @param stream -
      * @return -
      */

@@ -11,14 +11,11 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldStaticSelection {
-    /**
-     * @return List of options.
-     * Example: {'1', '2', '3:SomeLabel', '5..8', '9..12;Channel %s'}
-     */
-    String[] value();
+
+    boolean rawInput() default false;
 
     /**
-     * @return Specify SelectBox as text input(user may type text manually) with button to select from static selections
+     * @return List of options. Example: {'1', '2', '3:SomeLabel', '5..8', '9..12;Channel %s'}
      */
-    boolean allowInputRawText() default false;
+    String[] value();
 }

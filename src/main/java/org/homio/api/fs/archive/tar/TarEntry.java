@@ -1,10 +1,12 @@
 package org.homio.api.fs.archive.tar;
 
 import java.util.Date;
+import lombok.Getter;
 
 public class TarEntry {
-    protected byte[] file;
-    protected TarHeader header;
+
+    @Getter protected byte[] file;
+    @Getter protected TarHeader header;
     protected boolean isDirectory;
 
     private TarEntry() {
@@ -32,21 +34,17 @@ public class TarEntry {
     }
 
     public boolean equals(TarEntry it) {
-        return header.name.toString().equals(it.header.name.toString());
+        return header.name.toString().contentEquals(it.header.name);
     }
 
     public boolean isDescendent(TarEntry desc) {
         return desc.header.name.toString().startsWith(header.name.toString());
     }
 
-    public TarHeader getHeader() {
-        return header;
-    }
-
     public String getName() {
         String name = header.name.toString();
         if (header.namePrefix != null
-                && !header.namePrefix.toString().equals("")) {
+            && !header.namePrefix.toString().equals("")) {
             name = header.namePrefix + "/" + name;
         }
 
@@ -106,10 +104,6 @@ public class TarEntry {
         header.modTime = time.getTime() / 1000;
     }
 
-    public byte[] getFile() {
-        return file;
-    }
-
     public long getSize() {
         return header.size;
     }
@@ -132,7 +126,7 @@ public class TarEntry {
 
     public void extractTarHeader(String entryName) {
         header = TarHeader.createHeader(entryName, file.length,
-                header.modTime / 1000, isDirectory);
+            header.modTime / 1000, isDirectory);
     }
 
     public long computeCheckSum(byte[] buf) {
@@ -149,20 +143,20 @@ public class TarEntry {
         int offset = 0;
 
         offset = TarHeader.getNameBytes(header.name, outbuf, offset,
-                TarHeader.NAMELEN);
+            TarHeader.NAMELEN);
         offset = Octal.getOctalBytes(header.mode, outbuf, offset,
-                TarHeader.MODELEN);
+            TarHeader.MODELEN);
         offset = Octal.getOctalBytes(header.userId, outbuf, offset,
-                TarHeader.UIDLEN);
+            TarHeader.UIDLEN);
         offset = Octal.getOctalBytes(header.groupId, outbuf, offset,
-                TarHeader.GIDLEN);
+            TarHeader.GIDLEN);
 
         long size = header.size;
 
         offset = Octal.getLongOctalBytes(size, outbuf, offset,
-                TarHeader.SIZELEN);
+            TarHeader.SIZELEN);
         offset = Octal.getLongOctalBytes(header.modTime, outbuf, offset,
-                TarHeader.MODTIMELEN);
+            TarHeader.MODTIMELEN);
 
         int csOffset = offset;
         for (int c = 0; c < TarHeader.CHKSUMLEN; ++c) {
@@ -172,28 +166,28 @@ public class TarEntry {
         outbuf[offset++] = header.linkFlag;
 
         offset = TarHeader.getNameBytes(header.linkName, outbuf, offset,
-                TarHeader.NAMELEN);
+            TarHeader.NAMELEN);
         offset = TarHeader.getNameBytes(header.magic, outbuf, offset,
-                TarHeader.USTAR_MAGICLEN);
+            TarHeader.USTAR_MAGICLEN);
         offset = TarHeader.getNameBytes(header.userName, outbuf, offset,
-                TarHeader.USTAR_USER_NAMELEN);
+            TarHeader.USTAR_USER_NAMELEN);
         offset = TarHeader.getNameBytes(header.groupName, outbuf, offset,
-                TarHeader.USTAR_GROUP_NAMELEN);
+            TarHeader.USTAR_GROUP_NAMELEN);
         offset = Octal.getOctalBytes(header.devMajor, outbuf, offset,
-                TarHeader.USTAR_DEVLEN);
+            TarHeader.USTAR_DEVLEN);
         offset = Octal.getOctalBytes(header.devMinor, outbuf, offset,
-                TarHeader.USTAR_DEVLEN);
+            TarHeader.USTAR_DEVLEN);
         offset = TarHeader.getNameBytes(header.namePrefix, outbuf, offset,
-                TarHeader.USTAR_FILENAME_PREFIX);
+            TarHeader.USTAR_FILENAME_PREFIX);
 
-        for (; offset < outbuf.length; ) {
+        while (offset < outbuf.length) {
             outbuf[offset++] = 0;
         }
 
         long checkSum = computeCheckSum(outbuf);
 
         Octal.getCheckSumOctalBytes(checkSum, outbuf, csOffset,
-                TarHeader.CHKSUMLEN);
+            TarHeader.CHKSUMLEN);
     }
 
     public void parseTarHeader(byte[] bh) {
@@ -218,7 +212,7 @@ public class TarEntry {
         offset += TarHeader.MODTIMELEN;
 
         header.checkSum = (int) Octal.parseOctal(bh, offset,
-                TarHeader.CHKSUMLEN);
+            TarHeader.CHKSUMLEN);
         offset += TarHeader.CHKSUMLEN;
 
         header.linkFlag = bh[offset++];
@@ -227,26 +221,26 @@ public class TarEntry {
         offset += TarHeader.NAMELEN;
 
         header.magic = TarHeader
-                .parseName(bh, offset, TarHeader.USTAR_MAGICLEN);
+            .parseName(bh, offset, TarHeader.USTAR_MAGICLEN);
         offset += TarHeader.USTAR_MAGICLEN;
 
         header.userName = TarHeader.parseName(bh, offset,
-                TarHeader.USTAR_USER_NAMELEN);
+            TarHeader.USTAR_USER_NAMELEN);
         offset += TarHeader.USTAR_USER_NAMELEN;
 
         header.groupName = TarHeader.parseName(bh, offset,
-                TarHeader.USTAR_GROUP_NAMELEN);
+            TarHeader.USTAR_GROUP_NAMELEN);
         offset += TarHeader.USTAR_GROUP_NAMELEN;
 
         header.devMajor = (int) Octal.parseOctal(bh, offset,
-                TarHeader.USTAR_DEVLEN);
+            TarHeader.USTAR_DEVLEN);
         offset += TarHeader.USTAR_DEVLEN;
 
         header.devMinor = (int) Octal.parseOctal(bh, offset,
-                TarHeader.USTAR_DEVLEN);
+            TarHeader.USTAR_DEVLEN);
         offset += TarHeader.USTAR_DEVLEN;
 
         header.namePrefix = TarHeader.parseName(bh, offset,
-                TarHeader.USTAR_FILENAME_PREFIX);
+            TarHeader.USTAR_FILENAME_PREFIX);
     }
 }
