@@ -15,7 +15,7 @@
 
   <url>https://github.com/homiodev/homio-api</url>
 
-  <version>1.3.2</version>
+  <version>1.3.3-SNAPSHOT</version>
 
   <properties>
     <homio-hquery.version>1.2.5</homio-hquery.version>
@@ -244,8 +244,4 @@
       <groupId>org.apache.commons</groupId>
     </dependency>
   </dependencies>
-
-  <scm>
-    <tag>1.3.2</tag>
-  </scm>
 </project>
