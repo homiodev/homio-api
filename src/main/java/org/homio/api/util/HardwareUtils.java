@@ -1,5 +1,8 @@
 package org.homio.api.util;
 
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC;
+
 import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingFunction;
 import java.io.File;
@@ -112,12 +115,18 @@ public class HardwareUtils {
 
     @RequiredArgsConstructor
     public enum Architecture {
-        arm32v6(s -> s.contains("arm32v6")),
-        arm32v7(s -> s.contains("arm32v7")),
-        arm32v8(s -> s.contains("arm32v8")),
-        aarch64(s -> s.contains("arm64")),
+        armv6l(s -> s.contains("linux_armv6")),
+        armv7l(s -> s.contains("linux_armv7")),
+        arm32v6(s -> s.contains("arm32v6") || s.contains("arm6")),
+        arm32v7(s -> s.contains("arm32v7") || s.contains("arm7")),
+        arm32v8(s -> s.contains("arm32v8") || s.contains("arm8")),
+        arm64v8(s -> s.contains("arm64v8")),
+        aarch64(s -> IS_OS_LINUX && s.contains("linux_arm64v8") || IS_OS_MAC && s.contains("darwin_arm64")),
         amd64(s -> s.contains("amd64")),
-        win64(s -> s.contains("windows"));
+        i386(s -> s.contains("i386")),
+        win32(s -> s.contains("win32")),
+        win64(s -> s.contains("win64") || s.contains("windows")),
+        winArm64(s -> s.contains("win_arm64"));
 
         public final Predicate<String> matchName;
     }

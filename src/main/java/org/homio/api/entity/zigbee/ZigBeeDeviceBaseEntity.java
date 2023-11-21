@@ -4,10 +4,10 @@ import lombok.extern.log4j.Log4j2;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.version.HasFirmwareVersion;
+import org.homio.api.model.WebAddress;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.UISidebarMenu.TopSidebarMenu;
 import org.homio.api.ui.field.UIFieldLinkToEntity.FieldLinkToEntityTitleProvider;
-import org.homio.api.ui.field.model.HrefModel;
 import org.jetbrains.annotations.Nullable;
 
 @Log4j2
@@ -39,5 +39,5 @@ public abstract class ZigBeeDeviceBaseEntity extends DeviceBaseEntity
         return ieeeAddress.toUpperCase().substring(2); // cut 0X;
     }
 
-    public abstract @Nullable HrefModel getManufacturer();
+    public abstract @Nullable WebAddress getManufacturer();
 }

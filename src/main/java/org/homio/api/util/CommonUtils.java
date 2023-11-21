@@ -33,7 +33,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -136,12 +135,15 @@ public final class CommonUtils {
             }
             return;
         }
+        Set<Path> visitedFiles = new HashSet<>();
         Files.walkFileTree(path, new SimpleFileVisitor<>() {
 
             @Override
             @SneakyThrows
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                pathHandler.accept(file);
+                if (visitedFiles.add(file)) {
+                    pathHandler.accept(file);
+                }
                 return FileVisitResult.CONTINUE;
             }
 
@@ -158,7 +160,9 @@ public final class CommonUtils {
                 if (exc != null) {
                     throw exc;
                 }
-                pathHandler.accept(dir);
+                if (visitedFiles.add(dir)) {
+                    pathHandler.accept(dir);
+                }
                 return FileVisitResult.CONTINUE;
             }
         });

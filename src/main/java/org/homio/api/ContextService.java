@@ -7,9 +7,13 @@ import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingBiConsumer;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.entity.BaseEntity;
@@ -43,6 +47,11 @@ public interface ContextService {
     }
 
     void addEntityService(@NotNull String entityID, @NotNull EntityService.ServiceInstance service);
+
+    // return new url to uses as proxy
+    @NotNull String registerUrlProxy(@NotNull String entityID, @NotNull String url, @NotNull Consumer<RouteProxyBuilder> builder);
+
+    boolean unRegisterUrlProxy(@NotNull String entityID);
 
     @Nullable ServiceInstance removeEntityService(@NotNull String entityID);
 
@@ -125,5 +134,14 @@ public interface ContextService {
                     }
                 });
         }
+    }
+
+    interface RouteProxyBuilder {
+
+        void setUrlProducer(Function<HttpServletRequest, ProxyUrl> urlProducer);
+
+        void setResponseHeaders(Function<ProxyUrl, Map<String, String>> responseHeaderBuilder);
+
+        record ProxyUrl(@NotNull String url, @Nullable Map<String, List<String>> headers) {}
     }
 }

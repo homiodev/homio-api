@@ -380,7 +380,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             if (isWritable()) {
                 context.var().setLinkListener(requireNonNull(variableID), varValue -> {
                     if (!this.device.getStatus().isOnline()) {
-                        throw new RuntimeException("Unable to handle property " + getVariableID() + " actio. Device noy online");
+                        throw new RuntimeException("Unable to handle property " + getVariableID() + " action. Device not online");
                     }
                     // fire updates only if variable updates externally
                     if (!Objects.equals(dbValue, varValue)) {
@@ -410,7 +410,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     /**
      * Fire ui updated when endpoint value changed
      */
-    protected void updateUI() {
+    public void updateUI() {
         context.ui().updateInnerSetItem(device, "endpoints",
             endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
     }

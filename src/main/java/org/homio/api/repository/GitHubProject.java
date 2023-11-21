@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.Getter;
@@ -36,6 +38,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.homio.api.Context;
@@ -67,6 +70,8 @@ public class GitHubProject {
     private final @NotNull @Getter String api;
     private final @NotNull @Getter Map<String, String> httpHeaders = new HashMap<>();
     private final @NotNull @Getter Path localProjectPath;
+    private @Setter @Getter @Accessors(chain = true) String linuxExecutableAsset;
+
     // releases sorted by published_at
     private final CachedValue<List<JsonNode>, GitHubProject> releasesCache =
         new CachedValue<>(Duration.ofHours(24), gitHubProject ->
@@ -220,13 +225,27 @@ public class GitHubProject {
         @NotNull String version,
         @NotNull ProgressBar progressBar) {
         JsonNode release = getRelease(version);
-        JsonNode asset = findAssertByArchitecture(context, release);
+        JsonNode asset = findAssetByArchitecture(context, release);
         String downloadUrl = asset.get("browser_download_url").asText();
-        Path archive = CommonUtils.getTmpPath()
-                                  .resolve(project)
-                                  .resolve(project + "." + CommonUtils.getExtension(downloadUrl));
-        Curl.downloadWithProgress(downloadUrl, archive, progressBar);
-        ArchiveUtil.unzipAndMove(progressBar, archive, localProjectPath);
+        String extension = CommonUtils.getExtension(downloadUrl);
+        if (extension.isEmpty()) {
+            downloadAndInstallNotArchiveAsset(downloadUrl, progressBar, context);
+        } else {
+            Path archive = CommonUtils.getTmpPath().resolve(project).resolve(project + "." + extension);
+            Curl.downloadWithProgress(downloadUrl, archive, progressBar);
+            ArchiveUtil.unzipAndMove(progressBar, archive, localProjectPath);
+        }
+    }
+
+    public void downloadAndInstallNotArchiveAsset(String downloadUrl, @NotNull ProgressBar progressBar, @NotNull Context context) {
+        if (linuxExecutableAsset == null) {
+            throw new IllegalStateException("Must be implemented by child instance");
+        }
+        Path targetPath = localProjectPath.resolve(linuxExecutableAsset);
+        Curl.downloadWithProgress(downloadUrl, targetPath, progressBar);
+        if (SystemUtils.IS_OS_LINUX) {
+            context.hardware().execute("chmod +x " + targetPath);
+        }
     }
 
     @SneakyThrows
@@ -371,16 +390,20 @@ public class GitHubProject {
     }
 
     private void installLatestReleaseInternally(Context context, CompletableFuture<Void> future) {
+        log.info("Installing {}/{}", repo, project);
         try {
             String version = getLastReleaseVersion();
             if (version == null) {
+                log.error("Unable to find any release from {}/{}", repo, project);
                 future.completeExceptionally(new RuntimeException("Unable to find release version from: " + repo + "/" + project));
             } else {
                 downloadReleaseAndInstall(context, version, (progress, message, error) ->
                     log.info(message));
+                log.error("Install {}/{} succeeded", repo, project);
                 future.complete(null);
             }
         } catch (Exception ex) {
+            log.error("Unable to install {}/{}", repo, project, ex);
             future.completeExceptionally(ex);
         }
     }
@@ -432,18 +455,36 @@ public class GitHubProject {
         }
     }
 
-    private static @NotNull JsonNode findAssertByArchitecture(@NotNull Context context, JsonNode release) {
+    private static @NotNull JsonNode findAssetByArchitecture(@NotNull Context context, JsonNode release) {
         Architecture architecture = HardwareUtils.getArchitecture(context);
-        List<String> assetNames = new ArrayList<>();
+        Map<String, JsonNode> assetNames = new HashMap<>();
         for (JsonNode asset : release.withArray("assets")) {
             String assetName = asset.get("name").asText();
             if (architecture.matchName.test(assetName)) {
                 return asset;
             }
-            assetNames.add(assetName);
+            assetNames.put(assetName, asset);
+        }
+        if (architecture.name().startsWith("arm")) {
+            JsonNode foundAsset = getFoundAsset(assetNames, s -> s.endsWith("_arm"));
+            if (foundAsset == null) {
+                foundAsset = getFoundAsset(assetNames, s -> s.contains("_arm"));
+            }
+            if (foundAsset != null) {
+                return foundAsset;
+            }
         }
         throw new IllegalStateException("Unable to find release asset for current architecture: " + architecture.name()
-            + ". Available assets: " + String.join("\n", assetNames));
+            + ". Available assets:\n\t" + String.join("\n\t", assetNames.keySet()));
+    }
+
+    private static JsonNode getFoundAsset(Map<String, JsonNode> assetNames, Function<String, Boolean> filter) {
+        return assetNames.entrySet()
+                         .stream()
+                         .filter(s -> filter.apply(s.getKey()))
+                         .findAny()
+                         .map(Entry::getValue)
+                         .orElse(null);
     }
 
     @Getter

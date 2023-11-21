@@ -33,6 +33,10 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public interface ContextBGP {
 
+    void addLowPriorityRequest(String key, ThrowingRunnable<Exception> handler);
+
+    void removeLowPriorityRequest(String key);
+
     // run ping for ip address every minute
     void ping(@NotNull String discriminator, @NotNull String ipAddress, @NotNull Consumer<Boolean> availableStatus);
 

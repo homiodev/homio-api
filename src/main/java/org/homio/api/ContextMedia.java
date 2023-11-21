@@ -11,15 +11,15 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
 import org.apache.logging.log4j.Level;
 import org.homio.api.model.Icon;
+import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -30,11 +30,11 @@ public interface ContextMedia {
 
     void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
 
-    void registerMediaMTXSource(@NotNull String path, @NotNull MediaMTXSource source);
+    void registerVideoSource(@NotNull String path, @NotNull String source);
 
-    void unRegisterMediaMTXSource(@NotNull String path);
+    void unRegisterVideoSource(@NotNull String path);
 
-    @NotNull MediaMTXInfo getMediaMTXInfo(@NotNull String path);
+    void addSourceInfo(@NotNull String path, @NotNull Map<String, OptionModel> videoSources);
 
     @NotNull VideoInputDevice createVideoInputDevice(@NotNull String vfile);
 
@@ -186,30 +186,5 @@ public interface ContextMedia {
         default void ffmpegLog(@NotNull Level level, @NotNull String message) {
 
         }
-    }
-
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    @RequiredArgsConstructor
-    class MediaMTXSource {
-
-        private final @NotNull String source;
-        private boolean sourceOnDemand = true;
-        private boolean sourceAnyPortEnable = false;
-        private @NotNull SourceProtocol sourceProtocol = SourceProtocol.automatic;
-
-        public enum SourceProtocol {
-            automatic, udp, multicast, tcp
-        }
-    }
-
-    interface MediaMTXInfo {
-
-        @NotNull String getPath();
-
-        boolean isReady();
-
-        boolean isExists();
     }
 }

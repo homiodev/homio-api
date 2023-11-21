@@ -1,8 +1,10 @@
 package org.homio.api.setting;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 import static org.homio.api.util.JsonUtils.putOpt;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
 import java.nio.file.Paths;
 import org.homio.api.Context;
@@ -100,6 +102,12 @@ public interface SettingPlugin<T> {
             return null;
         }
         switch (getType().getSimpleName()) {
+            case "ObjectNode":
+                try {
+                    return (T) OBJECT_MAPPER.readValue(value, ObjectNode.class);
+                } catch (Exception ignore) {
+                    return (T) OBJECT_MAPPER.createObjectNode();
+                }
             case "Integer":
                 return parseInteger(context, value);
             case "Path":

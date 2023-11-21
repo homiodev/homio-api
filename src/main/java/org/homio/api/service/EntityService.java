@@ -279,7 +279,9 @@ public interface EntityService<S extends EntityService.ServiceInstance>
         }
 
         protected long getEntityHashCode(E entity) {
-            return entity.getEntityServiceHashCode();
+            long code = entityID.hashCode();
+            code += entity.isStart() ? 1 : 2;
+            return code + entity.getEntityServiceHashCode();
         }
 
         public interface BackupContext {
