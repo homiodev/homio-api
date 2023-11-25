@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
@@ -28,6 +27,7 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.apache.commons.io.file.PathUtils;
+import org.homio.api.exception.ServerException;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.widget.template.WidgetDefinition;
 import org.homio.hquery.Curl;
@@ -74,7 +74,10 @@ public class ConfigDeviceDefinitionService {
         this.localFilePath = CommonUtils.getConfigPath().resolve(fileName);
         this.serverFilePath = "https://raw.githubusercontent.com/homiodev/static-files/master/" + fileName;
 
-        URL localZdFile = Objects.requireNonNull(getClass().getClassLoader().getResource(fileName));
+        URL localZdFile = getClass().getClassLoader().getResource(fileName);
+        if (localZdFile == null) {
+            throw new ServerException("Config resource: " + fileName + " not found");
+        }
         Path configFileLocation = localFilePath;
         if (isRequireCopyJarFileToFIleSystem(configFileLocation)) {
             PathUtils.copy(localZdFile::openStream, configFileLocation, StandardCopyOption.REPLACE_EXISTING);

@@ -1,5 +1,6 @@
 package org.homio.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import org.homio.hquery.ProgressBar;
 import org.homio.hquery.api.HQueryMaxWaitTimeout;
@@ -66,6 +67,8 @@ public interface ContextHardware {
         execute("$PM update");
         return this;
     }
+
+    @NotNull JsonNode findAssetByArchitecture(JsonNode release);
 
     interface ProcessStat {
         // get cpu usage in % by process

@@ -286,6 +286,7 @@ public class TreeNode implements Comparable<TreeNode> {
         // for UI
         private @Nullable String icon;
         private @Nullable String color;
+        private @Nullable Boolean readOnly;
         private @Nullable List<Text> texts; // text array next to name!
         private @Nullable List<TreeNodeChip> chips;
         private boolean removed; // for server -> client updates marking that node has to be removed

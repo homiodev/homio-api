@@ -23,11 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.Getter;
@@ -48,8 +46,6 @@ import org.homio.api.fs.archive.ArchiveUtil.ArchiveFormat;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.OptionModel;
 import org.homio.api.util.CommonUtils;
-import org.homio.api.util.HardwareUtils;
-import org.homio.api.util.HardwareUtils.Architecture;
 import org.homio.hquery.Curl;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
@@ -326,7 +322,7 @@ public class GitHubProject {
                 .getValue(this)
                 .stream()
                 .map(r -> {
-                    OptionModel model = OptionModel.key(r.get("tag_name").asText());
+                    OptionModel model = OptionModel.of(r.get("tag_name").asText(), r.path("name").asText());
                     String description = r.get("published_at").asText();
                     if (r.get("prerelease").asBoolean(false)) {
                         description += " [pre-release]";
@@ -456,35 +452,7 @@ public class GitHubProject {
     }
 
     private static @NotNull JsonNode findAssetByArchitecture(@NotNull Context context, JsonNode release) {
-        Architecture architecture = HardwareUtils.getArchitecture(context);
-        Map<String, JsonNode> assetNames = new HashMap<>();
-        for (JsonNode asset : release.withArray("assets")) {
-            String assetName = asset.get("name").asText();
-            if (architecture.matchName.test(assetName)) {
-                return asset;
-            }
-            assetNames.put(assetName, asset);
-        }
-        if (architecture.name().startsWith("arm")) {
-            JsonNode foundAsset = getFoundAsset(assetNames, s -> s.endsWith("_arm"));
-            if (foundAsset == null) {
-                foundAsset = getFoundAsset(assetNames, s -> s.contains("_arm"));
-            }
-            if (foundAsset != null) {
-                return foundAsset;
-            }
-        }
-        throw new IllegalStateException("Unable to find release asset for current architecture: " + architecture.name()
-            + ". Available assets:\n\t" + String.join("\n\t", assetNames.keySet()));
-    }
-
-    private static JsonNode getFoundAsset(Map<String, JsonNode> assetNames, Function<String, Boolean> filter) {
-        return assetNames.entrySet()
-                         .stream()
-                         .filter(s -> filter.apply(s.getKey()))
-                         .findAny()
-                         .map(Entry::getValue)
-                         .orElse(null);
+        return context.hardware().findAssetByArchitecture(release);
     }
 
     @Getter
