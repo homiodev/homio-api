@@ -77,6 +77,10 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }
 
+    public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull Long defaultValue) {
+        return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
+    }
+
     public @NotNull ArgumentTypeDescription addArgument(@NotNull String argumentName, @NotNull Float defaultValue) {
         return addArgument(argumentName, ArgumentType.number, String.valueOf(defaultValue));
     }

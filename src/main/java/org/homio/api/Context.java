@@ -76,8 +76,6 @@ public interface Context {
 
     @NotNull <T> Map<String, T> getBeansOfTypeWithBeanName(@NotNull Class<T> clazz);
 
-    @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByAddons(@NotNull Class<T> clazz);
-
     default boolean isAdmin() {
         UserEntity user = getUser();
         return user != null && user.isAdmin();
