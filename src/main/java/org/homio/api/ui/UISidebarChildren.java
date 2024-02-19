@@ -17,4 +17,6 @@ public @interface UISidebarChildren {
     String color();
 
     boolean allowCreateItem() default true;
+
+    int maxAllowCreateItem() default -1;
 }

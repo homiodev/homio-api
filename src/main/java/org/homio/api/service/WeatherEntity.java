@@ -16,6 +16,10 @@ public abstract class WeatherEntity<T extends ServiceInstance & WeatherService> 
     @NotNull WeatherInfo readWeather(@NotNull String city, @Nullable Long timestamp);
   }
 
+  public enum WeatherInfoType {
+    Temperature, WindSpeed, WindDegree, Visibility, FeelsLike, Humidity, Pressure, Clouds
+  }
+
   @Setter
   @Getter
   public static class WeatherInfo {
@@ -29,6 +33,7 @@ public abstract class WeatherEntity<T extends ServiceInstance & WeatherService> 
     private Double feelsLike;
     private Double humidity;
     private Double pressure;
+    private Double clouds;
     private long dt;
 
     private Map<Long, HourWeatherInfo> hours;

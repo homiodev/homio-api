@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -68,6 +69,10 @@ public class TreeNode implements Comparable<TreeNode> {
         this.attributes.lastUpdated = lastModifiedTime;
         this.attributes.size = size;
         this.attributes.contentType = contentType;
+        if (!dir) {
+            this.attributes.type = FilenameUtils.getExtension(name);
+            this.name = FilenameUtils.removeExtension(name);
+        }
     }
 
     public void merge(TreeNode update) {
@@ -231,8 +236,14 @@ public class TreeNode implements Comparable<TreeNode> {
     }
 
     @Override
-    public int compareTo(@NotNull TreeNode o) {
-        return requireNonNull(this.id).compareTo(requireNonNull(o.id));
+    public int compareTo(@NotNull TreeNode other) {
+        boolean thisIsDir = this.attributes.isDir();
+        // Compare based on type (folder or file)
+        if (thisIsDir != other.getAttributes().isDir()) {
+            return thisIsDir ? -1 : 1; // Folders come before files
+        }
+        // Both are either folders or files, compare alphabetically by name
+        return this.name.compareTo(other.name);
     }
 
     @JsonIgnore
@@ -278,6 +289,7 @@ public class TreeNode implements Comparable<TreeNode> {
 
         private boolean dir;
         private @Nullable Long size;
+        private @Nullable String type;
         private @Nullable Long lastUpdated;
         private boolean empty;
         private @Nullable String contentType;

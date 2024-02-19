@@ -13,13 +13,9 @@ public interface SettingPluginInteger extends SettingPlugin<Integer> {
         return SettingType.Integer;
     }
 
-    default Integer getMin() {
-        return null;
-    }
+    int getMin();
 
-    default Integer getMax() {
-        return null;
-    }
+    int getMax();
 
     @Override
     default @NotNull Class<Integer> getType() {
@@ -36,8 +32,13 @@ public interface SettingPluginInteger extends SettingPlugin<Integer> {
     @Override
     default @NotNull JSONObject getParameters(Context context, String value) {
         JSONObject parameters = SettingPlugin.super.getParameters(context, value);
-        putOpt(parameters, "min", getMin());
-        putOpt(parameters, "max", getMax());
+        parameters.put("min", getMin());
+        parameters.put("max", getMax());
+        putOpt(parameters, "requireApply", isHasApplyButton());
         return parameters;
+    }
+
+    default Boolean isHasApplyButton() {
+        return true;
     }
 }

@@ -13,6 +13,11 @@ import java.lang.annotation.Target;
 public @interface UIFieldIconPicker {
 
     /**
+     * @return Is save icon as simple string i.e. 'fas fa-icon' or as json string
+     */
+    boolean simple() default false;
+
+    /**
      * @return Allow user to select no icon to hide icon at all
      */
     boolean allowEmptyIcon() default false;

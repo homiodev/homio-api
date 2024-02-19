@@ -111,6 +111,7 @@ public class OptionModel implements Comparable<OptionModel> {
             item.getName()).json(
             json -> json.put("dir", item.getAttributes().isDir())
                         .put("size", item.getAttributes().getSize())
+                        .put("type", item.getAttributes().getType())
                         .put("empty", item.getAttributes().isEmpty())
                         .put("lastUpdated", item.getAttributes().getLastUpdated()));
         Collection<TreeNode> children = item.getChildren();

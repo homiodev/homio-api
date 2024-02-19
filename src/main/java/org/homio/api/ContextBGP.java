@@ -200,7 +200,7 @@ public interface ContextBGP {
         @NotNull Map<String, Callable<T>> runnableTasks,
         @NotNull Consumer<Integer> progressConsumer);
 
-    void executeOnExit(ThrowingRunnable<Exception> runnable);
+    void executeOnExit(@NotNull String name, @NotNull ThrowingRunnable<Exception> runnable);
 
     interface ProgressBuilder {
 

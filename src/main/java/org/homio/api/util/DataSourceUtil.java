@@ -35,6 +35,10 @@ public class DataSourceUtil {
             }
         }
 
+        public String getValue(String defaultValue) {
+            return StringUtils.defaultIfEmpty(value, defaultValue);
+        }
+
         public String getEntityValue() {
             String[] items = value.split(LEVEL_DELIMITER);
             return items[items.length - 1];

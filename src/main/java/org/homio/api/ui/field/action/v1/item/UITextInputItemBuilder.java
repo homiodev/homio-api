@@ -1,6 +1,7 @@
 package org.homio.api.ui.field.action.v1.item;
 
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
+import org.jetbrains.annotations.NotNull;
 
 public interface UITextInputItemBuilder extends UIEntityItemBuilder<UITextInputItemBuilder, String> {
 
@@ -11,6 +12,8 @@ public interface UITextInputItemBuilder extends UIEntityItemBuilder<UITextInputI
      * @return this
      */
     UITextInputItemBuilder setApplyButton(boolean value);
+
+    @NotNull UITextInputItemBuilder setRequired(boolean value);
 
     enum InputType {
         Text, TextArea, Password, JSON, Ip

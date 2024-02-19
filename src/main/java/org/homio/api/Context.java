@@ -48,6 +48,8 @@ public interface Context {
 
     @NotNull ContextStorage db();
 
+    @NotNull ContextNetwork network();
+
     /**
      * Get or create new file logger for entity
      *

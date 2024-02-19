@@ -19,6 +19,8 @@ import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -37,6 +39,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.homio.api.Context;
@@ -144,16 +147,11 @@ public class GitHubProject {
     }
 
     public static @NotNull List<OptionModel> getReleasesSince(@NotNull String version, @NotNull List<OptionModel> versions, boolean includeCurrent) {
-        int versionIndex = IntStream.range(0, versions.size())
-                                    .filter(i -> versions.get(i).equals(version))
-                                    .findFirst().orElse(-1);
-        if (versionIndex >= 0) {
-            if (includeCurrent) {
-                return versions.subList(versionIndex, versions.size());
-            }
-            return versions.subList(versionIndex + 1, versions.size());
-        }
-        return versions;
+        ComparableVersion cv = new ComparableVersion(version);
+        return versions.stream().filter(v -> {
+            int diff = new ComparableVersion(v.getKey()).compareTo(cv);
+            return diff > 0 || (diff == 0 && includeCurrent);
+        }).toList();
     }
 
     @SneakyThrows
@@ -321,15 +319,20 @@ public class GitHubProject {
             List<OptionModel> versions = releasesCache
                 .getValue(this)
                 .stream()
+                .map(r -> new Release(
+                    r.get("tag_name").asText(),
+                    r.get("name").asText(),
+                    LocalDateTime.parse(r.get("published_at").asText(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")),
+                    r.get("prerelease").asBoolean(false)))
+                .sorted()
                 .map(r -> {
-                    OptionModel model = OptionModel.of(r.get("tag_name").asText(), r.path("name").asText());
-                    String description = r.get("published_at").asText();
-                    if (r.get("prerelease").asBoolean(false)) {
+                    OptionModel model = OptionModel.of(r.tagName, r.name);
+                    String description = r.created.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    if (r.preRelease) {
                         description += " [pre-release]";
                     }
                     return model.setDescription(description);
-                })
-                                                 .collect(Collectors.toList());
+                }).collect(Collectors.toList());
             if (version == null) {
                 return versions;
             }
@@ -337,6 +340,20 @@ public class GitHubProject {
         } catch (Exception ex) {
             log.error("Unable to fetch release since: {}. Error: {}", version, CommonUtils.getErrorMessage(ex));
             return List.of();
+        }
+    }
+
+    @AllArgsConstructor
+    private static class Release implements Comparable<Release> {
+
+        private String tagName;
+        private String name;
+        private @NotNull LocalDateTime created;
+        private boolean preRelease;
+
+        @Override
+        public int compareTo(@NotNull GitHubProject.Release o) {
+            return o.created.compareTo(created);
         }
     }
 
@@ -535,7 +552,7 @@ public class GitHubProject {
 
     @Getter
     @RequiredArgsConstructor
-    public class VersionedFile {
+    public static class VersionedFile {
 
         private final String name;
         private final String downloadUrl;

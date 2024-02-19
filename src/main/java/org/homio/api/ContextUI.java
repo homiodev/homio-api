@@ -57,6 +57,15 @@ public interface ContextUI {
 
     @NotNull ContextUI.ContextUIProgress progress();
 
+    /**
+     * Assign context menu action to specific entity on UI
+     *
+     * @param entityID - item id
+     * @param key      - unique key
+     * @param builder  - builder
+     */
+    void addItemContextMenu(@NotNull String entityID, @NotNull String key, @NotNull Consumer<UIInputBuilder> builder);
+
     void removeItem(@NotNull BaseEntity baseEntity);
 
     void updateItem(@NotNull BaseEntity baseEntity);

@@ -11,8 +11,6 @@ public interface ContextHardware {
 
     @NotNull Context context();
 
-    @NotNull ContextNetwork network();
-
     @NotNull String execute(@NotNull String command);
 
     @NotNull String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
@@ -40,7 +38,7 @@ public interface ContextHardware {
     @NotNull ContextHardware startSystemCtl(@NotNull String soft);
 
     default boolean isSystemCtlExists(@NotNull String soft) {
-        return "active".equals(execute("systemctl is-active mosquitto"));
+        return "active".equals(executeNoErrorThrow("systemctl is-active mosquitto", 60, null));
     }
 
     void stopSystemCtl(@NotNull String soft);

@@ -18,8 +18,6 @@ public interface UISliderItemBuilder extends UIEntityItemBuilder<UISliderItemBui
 
     UISliderItemBuilder setHideThumbLabel(boolean hideThumbLabel);
 
-    boolean isRequired();
-
     UISliderItemBuilder setRequired(boolean required);
 
     SliderType getSliderType();
