@@ -1,14 +1,14 @@
 package org.homio.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.homio.api.Context;
-import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.BaseEntityIdentifier;
-import org.homio.api.entity.HasJsonData;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.fs.FileSystemProvider;
 import org.homio.api.fs.TreeConfiguration;
@@ -18,16 +18,29 @@ import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
 import org.homio.api.ui.field.action.UIContextMenuAction;
+import org.homio.api.util.DataSourceUtil;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 
-public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntity, FS extends FileSystemProvider>
-    extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg, HasJsonData {
+public interface BaseFileSystemEntity<FS extends FileSystemProvider>
+    extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg,
+    HasPathAlias {
 
-    Map<String, FileSystemProvider> fileSystemMap = new HashMap<>();
+    Map<String, Map<Integer, FileSystemProvider>> fileSystemMap = new HashMap<>();
 
-    default @NotNull TreeConfiguration buildFileSystemConfiguration(@NotNull Context context) {
-        return new TreeConfiguration(this);
+    default @NotNull List<TreeConfiguration> buildFileSystemConfiguration(@NotNull Context context) {
+        List<TreeConfiguration> configurations = new ArrayList<>(3);
+        configurations.add(new TreeConfiguration(this));
+        String pathAlias1 = DataSourceUtil.getSelection(getAliasOnePath()).getValue("");
+        if (!pathAlias1.isEmpty()) {
+            configurations.add(new TreeConfiguration(this, pathAlias1, new Icon(getAliasOneIcon(), getAliasOneIconColor())));
+        }
+        String pathAlias2 = DataSourceUtil.getSelection(getAliasTwoPath()).getValue("");
+        if (!pathAlias2.isEmpty()) {
+            configurations.add(new TreeConfiguration(this, pathAlias2, new Icon(getAliasTwoIcon(), getAliasTwoIconColor())));
+        }
+
+        return configurations;
     }
 
     @NotNull String getFileSystemRoot();
@@ -50,16 +63,16 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
     @JsonIgnore
     boolean requireConfigure();
 
-    default @NotNull FS getFileSystem(@NotNull Context context) {
+    default @NotNull FS getFileSystem(@NotNull Context context, int alias) {
         String key = getEntityID();
-        if (!fileSystemMap.containsKey(key)) {
-            FS fileSystemProvider = buildFileSystem(context);
-            fileSystemMap.put(key, fileSystemProvider);
+        var fsMap = fileSystemMap.computeIfAbsent(key, s -> new HashMap<>());
+        if (!fsMap.containsKey(alias)) {
+            fsMap.put(alias, buildFileSystem(context, alias));
         }
-        return (FS) fileSystemMap.get(key);
+        return (FS) fsMap.get(alias);
     }
 
-    @NotNull FS buildFileSystem(@NotNull Context context);
+    @NotNull FS buildFileSystem(@NotNull Context context, int alias);
 
     @JsonIgnore
     long getConnectionHashCode();
@@ -72,24 +85,23 @@ public interface BaseFileSystemEntity<T extends BaseEntity & BaseFileSystemEntit
 
     @UIContextMenuAction(value = "RESTART_FS", icon = "fas fa-file-invoice", iconColor = "#418121")
     default ActionResponseModel restart(Context context) {
-        if (this.getFileSystem(context).restart(true)) {
-            return ActionResponseModel.showSuccess("Success restarted");
-        } else {
-            return ActionResponseModel.showSuccess("Restart failed");
-        }
+        var fsMap = fileSystemMap.computeIfAbsent(getEntityID(), s -> new HashMap<>());
+        fsMap.values().forEach(d -> d.restart(true));
+        return ActionResponseModel.showSuccess("Success restarted");
     }
 
     @Override
     default void afterDelete() {
-        FileSystemProvider provider = fileSystemMap.remove(getEntityID());
-        if (provider != null) {
-            provider.dispose();
+        var fsMap = fileSystemMap.remove(getEntityID());
+        if (fsMap != null) {
+            fsMap.values().forEach(FileSystemProvider::dispose);
         }
     }
 
     @Override
     default void afterUpdate() {
-        this.getFileSystem(context()).setEntity(this);
+        var fsMap = fileSystemMap.computeIfAbsent(getEntityID(), s -> new HashMap<>());
+        fsMap.values().forEach(d -> d.setEntity(this));
     }
 
     boolean isShowHiddenFiles();

@@ -1,7 +1,7 @@
 package org.homio.api.fs;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import lombok.Getter;
@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.storage.BaseFileSystemEntity;
 import org.homio.api.model.Icon;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Accessors(chain = true)
@@ -18,12 +19,13 @@ public class TreeConfiguration {
 
     private final String id;
     private final String name;
+    private final int alias;
     private Icon icon;
-    private boolean hasDelete;
-    private boolean hasRename;
-    private boolean hasUpload;
-    private boolean hasCreateFile;
-    private boolean hasCreateFolder;
+    private Boolean hasDelete;
+    private Boolean hasRename;
+    private Boolean hasUpload;
+    private Boolean hasCreateFile;
+    private Boolean hasCreateFolder;
     private List<String> editableExtensions;
     private Set<String> zipOpenExtensions;
     private List<TreeNodeChip> chips;
@@ -36,25 +38,38 @@ public class TreeConfiguration {
 
     public TreeConfiguration(String id, String name, Set<TreeNode> children) {
         this.id = id;
+        this.alias = -1;
         this.name = name;
         this.children = children;
     }
 
-    public TreeConfiguration(BaseFileSystemEntity fs) {
+    public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs) {
         this.id = fs.getEntityID();
+        this.alias = -1;
+        this.zipOpenExtensions = fs.getSupportArchiveFormats();
         DeviceBaseEntity entity = (DeviceBaseEntity) fs;
         this.name = StringUtils.left(entity.getTitle(), 20);
         this.icon = fs.getFileSystemIcon();
+
+        makeDefaultFSConfiguration();
+    }
+
+    public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs, @NotNull String path, @NotNull Icon icon) {
+        this.id = fs.getEntityID();
+        this.alias = Math.abs(path.hashCode());
+        this.zipOpenExtensions = fs.getSupportArchiveFormats();
+        this.name = Path.of(path).getFileName().toString();
+        this.icon = icon;
+
+        makeDefaultFSConfiguration();
+    }
+
+    private void makeDefaultFSConfiguration() {
         this.hasDelete = true;
         this.hasRename = true;
         this.hasUpload = true;
         this.hasCreateFile = true;
         this.hasCreateFolder = true;
-        this.zipOpenExtensions = fs.getSupportArchiveFormats();
-
-        this.editableExtensions =
-            Arrays.asList("txt", "java", "cpp", "sh", "css", "scss", "js", "json", "xml", "html", "php", "py", "ts",
-                "ino", "conf", "service", "md", "png", "jpg", "jpeg");
     }
 
     public void setIcon(Icon icon) {

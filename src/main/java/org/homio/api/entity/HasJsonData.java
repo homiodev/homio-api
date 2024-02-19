@@ -110,6 +110,30 @@ public interface HasJsonData {
         return null;
     }
 
+    @SneakyThrows
+    default <T> @Nullable List<T> getJsonDataList(@NotNull String key, @NotNull Class<T> classType) {
+        if (getJsonData().has(key)) {
+            try {
+                return OBJECT_MAPPER.readValue(getJsonData(key),
+                    OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, classType));
+            } catch (Exception ignore) {
+            }
+        }
+        return null;
+    }
+
+    @SneakyThrows
+    default <T> @Nullable Set<T> getJsonDataSet(@NotNull String key, @NotNull Class<T> classType) {
+        if (getJsonData().has(key)) {
+            try {
+                return OBJECT_MAPPER.readValue(getJsonData(key),
+                    OBJECT_MAPPER.getTypeFactory().constructCollectionType(Set.class, classType));
+            } catch (Exception ignore) {
+            }
+        }
+        return null;
+    }
+
     default <E extends Enum> @NotNull E getJsonDataEnum(@NotNull String key, @NotNull E defaultValue) {
         String jsonData = getJsonData(key);
 

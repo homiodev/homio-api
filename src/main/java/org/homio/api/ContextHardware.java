@@ -1,5 +1,6 @@
 package org.homio.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import org.homio.hquery.ProgressBar;
 import org.homio.hquery.api.HQueryMaxWaitTimeout;
@@ -9,8 +10,6 @@ import org.jetbrains.annotations.Nullable;
 public interface ContextHardware {
 
     @NotNull Context context();
-
-    @NotNull ContextNetwork network();
 
     @NotNull String execute(@NotNull String command);
 
@@ -39,7 +38,7 @@ public interface ContextHardware {
     @NotNull ContextHardware startSystemCtl(@NotNull String soft);
 
     default boolean isSystemCtlExists(@NotNull String soft) {
-        return "active".equals(execute("systemctl is-active mosquitto"));
+        return "active".equals(executeNoErrorThrow("systemctl is-active mosquitto", 60, null));
     }
 
     void stopSystemCtl(@NotNull String soft);
@@ -66,6 +65,8 @@ public interface ContextHardware {
         execute("$PM update");
         return this;
     }
+
+    @NotNull JsonNode findAssetByArchitecture(JsonNode release);
 
     interface ProcessStat {
         // get cpu usage in % by process

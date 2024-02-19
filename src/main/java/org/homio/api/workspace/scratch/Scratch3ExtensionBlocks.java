@@ -264,6 +264,6 @@ public abstract class Scratch3ExtensionBlocks {
     }
 
     public enum ScratchParent {
-        storage, communication, media, hardware, ui, devices, network, misc, identity
+        storage, communication, media, hardware, ui, devices, net, misc, identity, fs, imageeditor, audio
     }
 }

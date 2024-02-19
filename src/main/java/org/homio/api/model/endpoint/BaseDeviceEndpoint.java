@@ -371,10 +371,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             if (variableType == VariableType.Enum) {
                 Set<String> range = getVariableEnumValues().stream().map(OptionModel::getKey).collect(Collectors.toSet());
                 variableID = context.var().createEnumVariable(getVariableGroupID(),
-                    buildVariableID(), getName(false), range, variableMetaBuilder);
+                    buildVariableID(), getName(false), range, variableMetaBuilder).getId();
             } else {
                 variableID = context.var().createVariable(getVariableGroupID(),
-                    buildVariableID(), getName(false), variableType, variableMetaBuilder);
+                    buildVariableID(), getName(false), variableType, variableMetaBuilder).getId();
             }
 
             if (isWritable()) {

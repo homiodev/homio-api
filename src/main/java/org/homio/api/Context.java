@@ -48,6 +48,8 @@ public interface Context {
 
     @NotNull ContextStorage db();
 
+    @NotNull ContextNetwork network();
+
     /**
      * Get or create new file logger for entity
      *
@@ -75,8 +77,6 @@ public interface Context {
     @NotNull <T> Collection<T> getBeansOfType(@NotNull Class<T> clazz);
 
     @NotNull <T> Map<String, T> getBeansOfTypeWithBeanName(@NotNull Class<T> clazz);
-
-    @NotNull <T> Map<String, Collection<T>> getBeansOfTypeByAddons(@NotNull Class<T> clazz);
 
     default boolean isAdmin() {
         UserEntity user = getUser();

@@ -6,10 +6,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.homio.api.model.Icon;
+import org.homio.api.model.JSON;
 import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,8 +21,24 @@ public interface ContextVar {
 
     @NotNull Context context();
 
-    default void listen(@NotNull String key, @NotNull String variableId, @NotNull Consumer<State> listener) {
-        context().event().addEventListener(variableId, key, listener);
+    default void onVariableCreated(@NotNull String discriminator, Consumer<Variable> variableListener) {
+        onVariableCreated(discriminator, null, variableListener);
+    }
+
+    default void onVariableRemoved(@NotNull String discriminator, Consumer<Variable> variableListener) {
+        onVariableRemoved(discriminator, null, variableListener);
+    }
+
+    void onVariableCreated(@NotNull String discriminator, @Nullable Pattern variableIdPattern, Consumer<Variable> variableListener);
+
+    void onVariableRemoved(@NotNull String discriminator, @Nullable Pattern variableIdPattern, Consumer<Variable> variableListener);
+
+    default void onVariableUpdated(@NotNull String discriminator, @NotNull String variableId, @NotNull Consumer<State> listener) {
+        context().event().addEventListener(variableId, discriminator, listener);
+    }
+
+    default String getMiscGroup() {
+        return "group_misc";
     }
 
     /**
@@ -31,7 +49,11 @@ public interface ContextVar {
      */
     void setLinkListener(@NotNull String variableId, @NotNull ThrowingConsumer<Object, Exception> listener);
 
-    @Nullable Object get(@NotNull String variableId);
+    @Nullable Object getRawValue(@NotNull String variableId);
+
+    default @Nullable State getValue(@NotNull String variableId) {
+        return State.of(getRawValue(variableId));
+    }
 
     /**
      * Push new value in queue.
@@ -48,14 +70,14 @@ public interface ContextVar {
     @Nullable Object set(@NotNull String variableId, @Nullable Object value, boolean fireLinkListener) throws IllegalArgumentException;
 
     default @Nullable Object setIfNotMatch(@NotNull String variableId, @Nullable Object value) {
-        if (!Objects.equals(get(variableId), value)) {
+        if (!Objects.equals(getRawValue(variableId), value)) {
             return set(variableId, value);
         }
         return value;
     }
 
     default @Nullable Object setIfNotMatch(@NotNull String variableId, boolean value) {
-        Object oldValue = get(variableId);
+        Object oldValue = getRawValue(variableId);
         if (!Objects.equals(oldValue, value)) {
             return set(variableId, value);
         }
@@ -63,7 +85,7 @@ public interface ContextVar {
     }
 
     default @Nullable Object setIfNotMatch(@NotNull String variableId, float value) {
-        Object oldValue = get(variableId);
+        Object oldValue = getRawValue(variableId);
         if (!Objects.equals(oldValue, value)) {
             return set(variableId, value);
         }
@@ -71,7 +93,7 @@ public interface ContextVar {
     }
 
     default void inc(@NotNull String variableId, float value) {
-        Object o = get(variableId);
+        Object o = getRawValue(variableId);
         if (Number.class.isAssignableFrom(o.getClass())) {
             set(variableId, ((Number) o).floatValue() + value);
         }
@@ -94,6 +116,8 @@ public interface ContextVar {
      */
     long count(@NotNull String variableId);
 
+    Set<Variable> getVariables();
+
     /**
      * Does variable exists in system
      *
@@ -110,19 +134,19 @@ public interface ContextVar {
 
     boolean updateVariableIcon(@NotNull String variableId, @Nullable Icon icon);
 
-    @NotNull String createVariable(@NotNull String groupId,
+    @NotNull Variable createVariable(@NotNull String groupId,
         @Nullable String variableId,
         @NotNull String variableName,
         @NotNull VariableType variableType,
         @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
-    @NotNull String createTransformVariable(@NotNull String groupId,
+    @NotNull Variable createTransformVariable(@NotNull String groupId,
         @Nullable String variableId,
         @NotNull String variableName,
         @NotNull VariableType variableType,
         @Nullable Consumer<TransformVariableMetaBuilder> metaBuilder);
 
-    default @NotNull String createEnumVariable(@NotNull String groupId,
+    default @NotNull Variable createEnumVariable(@NotNull String groupId,
         @Nullable String variableId,
         @NotNull String variableName,
         @NotNull Set<String> values,
@@ -135,7 +159,7 @@ public interface ContextVar {
         });
     }
 
-    boolean createGroup(@NotNull String groupId, @NotNull String groupName, @NotNull Consumer<GroupMetaBuilder> groupBuilder);
+    String createGroup(@NotNull String groupId, @NotNull String groupName, @NotNull Consumer<GroupMetaBuilder> groupBuilder);
 
     /**
      * Create group and attach it to parent group
@@ -146,7 +170,7 @@ public interface ContextVar {
      * @param groupBuilder  -
      * @return if group was create ot already exists
      */
-    boolean createSubGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, @NotNull Consumer<GroupMetaBuilder> groupBuilder);
+    String createSubGroup(@NotNull String parentGroupId, @NotNull String groupId, @NotNull String groupName, @NotNull Consumer<GroupMetaBuilder> groupBuilder);
 
     /**
      * Remove group and all associated variables
@@ -242,6 +266,15 @@ public interface ContextVar {
         @NotNull GeneralVariableMetaBuilder setIcon(@Nullable Icon icon);
 
         @NotNull GeneralVariableMetaBuilder setAttributes(@Nullable List<String> attributes);
+
+        /**
+         * Assign any info to variable
+         *
+         * @param key   - key
+         * @param value - value
+         * @return - this
+         */
+        @NotNull GeneralVariableMetaBuilder set(@NotNull String key, @NotNull String value);
     }
 
     interface GroupMetaBuilder {
@@ -260,5 +293,22 @@ public interface ContextVar {
         private @NotNull String type;
         private @Nullable String value;
         private @Nullable String meta;
+    }
+
+    interface Variable {
+
+        String getId();
+
+        String getName();
+
+        Object getRawValue();
+
+        default State getValue() {
+            return State.of(getRawValue());
+        }
+
+        JSON getJsonData();
+
+        void set(Object value);
     }
 }

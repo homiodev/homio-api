@@ -129,13 +129,14 @@ public interface TemplateWidgetBuilder {
         switch (source.getKind()) {
             case variable -> {
                 String variable = context.var().createVariable(entity.getEntityID(),
-                    source.getValue(), source.getValue(), source.getVariableType(), null);
+                    source.getValue(), source.getValue(), source.getVariableType(), null).getId();
                 return context.var().buildDataSource(variable);
             }
             case broadcasts -> {
                 String id = source.getValue() + "_" + entity.getIeeeAddress();
                 String name = source.getValue() + " " + entity.getIeeeAddress();
-                String variableID = context.var().createVariable("broadcasts", id, name, VariableType.Any, null);
+                String variableID = context.var().createVariable("broadcasts", id, name, VariableType.Any, null)
+                    .getId();
                 return context.var().buildDataSource(variableID);
             }
             case property -> {

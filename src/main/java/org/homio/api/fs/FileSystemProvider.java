@@ -16,6 +16,10 @@ public interface FileSystemProvider {
 
     long getUsedSpace();
 
+    int getFileSystemAlias();
+
+    String getFileSystemId();
+
     default void dispose() {
 
     }

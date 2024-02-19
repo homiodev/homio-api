@@ -9,6 +9,7 @@ import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
+import org.homio.api.widget.JavaScriptBuilder;
 import org.homio.api.widget.template.WidgetDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +17,9 @@ import org.jetbrains.annotations.Nullable;
 public interface ContextWidget {
 
     @NotNull Context context();
+
+    void createWidgetTemplate(@NotNull String entityID, @NotNull String name, @NotNull ParentWidget parent,
+        @NotNull Icon icon, @NotNull Consumer<JavaScriptBuilder> jsBuilder);
 
     void createTemplateWidgetActions(
         @NotNull UIInputBuilder uiInputBuilder,
@@ -723,5 +727,17 @@ public interface ContextWidget {
             @NotNull Object numValue,
             @NotNull ValueCompare op,
             @NotNull String source);
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    enum ParentWidget {
+        Weather("fas fa-sun", "#BD9929"),
+        Device("fas fa-microchip", "#3E74C4"),
+        Media("fas fa-compact-disc", ""),
+        Misc("fas fa-puzzle-piece fas", "#C45483");
+
+        private final @NotNull String icon;
+        private final @NotNull String color;
     }
 }

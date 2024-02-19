@@ -1,6 +1,7 @@
 package org.homio.api.ui.field.action.v1.item;
 
 import java.util.Collection;
+import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
@@ -11,10 +12,14 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
 
     boolean isAsButton();
 
+    @NotNull UISelectBoxItemBuilder setRequired(boolean value);
+
     @NotNull UIButtonItemBuilder setAsButton(@Nullable Icon icon, @Nullable String text);
 
     // default - true
     @NotNull UISelectBoxItemBuilder setHighlightSelected(boolean value);
+
+    @NotNull UISelectBoxItemBuilder setLazyItemOptions(@NotNull Class<? extends BaseEntity> itemClass);
 
     @NotNull UISelectBoxItemBuilder addOption(@NotNull OptionModel option);
 

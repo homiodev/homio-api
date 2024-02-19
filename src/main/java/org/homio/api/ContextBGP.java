@@ -168,7 +168,11 @@ public interface ContextBGP {
      * @param key - unique bgp builder key
      * @return - progress builder
      */
-    @NotNull ProgressBuilder runWithProgress(@NotNull String key);
+    default @NotNull ProgressBuilder runWithProgress(@NotNull String key) {
+        return runWithProgress(key, false);
+    }
+
+    @NotNull ProgressBuilder runWithProgress(@NotNull String key, boolean cancellable);
 
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);
 
@@ -196,7 +200,7 @@ public interface ContextBGP {
         @NotNull Map<String, Callable<T>> runnableTasks,
         @NotNull Consumer<Integer> progressConsumer);
 
-    void executeOnExit(ThrowingRunnable<Exception> runnable);
+    void executeOnExit(@NotNull String name, @NotNull ThrowingRunnable<Exception> runnable);
 
     interface ProgressBuilder {
 

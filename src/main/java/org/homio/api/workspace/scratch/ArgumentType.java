@@ -34,5 +34,9 @@ public enum ArgumentType {
 
     broadcast,
 
-    setting
+    setting,
+
+    timer,
+
+    calendar
 }

@@ -12,6 +12,7 @@ import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UIButtonItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UICheckboxItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UIColorPickerItemBuilder;
+import org.homio.api.ui.field.action.v1.item.UIIconPickerItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UIInfoItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UIMultiButtonItemBuilder;
 import org.homio.api.ui.field.action.v1.item.UISelectBoxItemBuilder;
@@ -90,6 +91,12 @@ public interface UILayoutBuilder extends UIEntityBuilder {
      */
     UIColorPickerItemBuilder addColorPicker(@NotNull String name, String color, UIActionHandler action);
 
+    default UIColorPickerItemBuilder addColorPicker(@NotNull String name, String color) {
+        return addColorPicker(name, color, null);
+    }
+
+    UIIconPickerItemBuilder addIconPicker(@NotNull String name, String icon);
+
     UITextInputItemBuilder addInput(@NotNull String name, String defaultValue,
         UITextInputItemBuilder.InputType inputType,
         boolean required);
@@ -99,8 +106,12 @@ public interface UILayoutBuilder extends UIEntityBuilder {
         return addInput(name, defaultValue, UITextInputItemBuilder.InputType.Text, required);
     }
 
-    default UISelectBoxItemBuilder addSelectBox(@NotNull String name, UIActionHandler action) {
+    default UISelectBoxItemBuilder addSelectBox(@NotNull String name, @Nullable UIActionHandler action) {
         return addSelectBox(name, action, getNextOrder());
+    }
+
+    default UISelectBoxItemBuilder addSelectBox(@NotNull String name) {
+        return addSelectBox(name, null, getNextOrder());
     }
 
     UISelectBoxItemBuilder addSelectBox(@NotNull String name, UIActionHandler action, int order);
