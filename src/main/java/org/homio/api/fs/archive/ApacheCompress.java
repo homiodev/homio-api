@@ -63,25 +63,24 @@ public class ApacheCompress {
     }
 
     public static ArchiveInputStream createSeven7InputStream(Path path, char[] password) throws IOException {
-        try (SevenZFile sevenZFile = new SevenZFile(path.toFile(), password)) {
-            return new ArchiveInputStream() {
+        return new ArchiveInputStream() {
+            private final SevenZFile sevenZFile = new SevenZFile(path.toFile(), password);
 
-                @Override
-                public ArchiveEntry getNextEntry() throws IOException {
-                    return sevenZFile.getNextEntry();
-                }
+            @Override
+            public ArchiveEntry getNextEntry() throws IOException {
+                return sevenZFile.getNextEntry();
+            }
 
-                @Override
-                public int read(byte @NotNull [] buf, int offset, int numToRead) throws IOException {
-                    return sevenZFile.read(buf, offset, numToRead);
-                }
+            @Override
+            public int read(byte @NotNull [] buf, int offset, int numToRead) throws IOException {
+                return sevenZFile.read(buf, offset, numToRead);
+            }
 
-                @Override
-                public void close() throws IOException {
-                    sevenZFile.close();
-                }
-            };
-        }
+            @Override
+            public void close() throws IOException {
+                sevenZFile.close();
+            }
+        };
     }
 
     @SneakyThrows
