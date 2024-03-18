@@ -28,6 +28,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
+import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.fs.TreeNode;
@@ -198,13 +199,14 @@ public class OptionModel implements Comparable<OptionModel> {
         return map.entrySet().stream().map(e -> OptionModel.of(e.getKey(), e.getValue())).collect(Collectors.toList());
     }
 
-    public static List<OptionModel> entityList(@NotNull Collection<? extends BaseEntity> list) {
-        return entityList(list, null);
+    public static List<OptionModel> entityList(@NotNull Collection<? extends BaseEntity> list, @NotNull Context context) {
+        return entityList(list, null, context);
     }
 
     public static List<OptionModel> entityList(
         @NotNull Collection<? extends BaseEntity> list,
-        @Nullable BiConsumer<BaseEntity, OptionModel> configurator) {
+        @Nullable BiConsumer<BaseEntity, OptionModel> configurator,
+        @NotNull Context context) {
         return list.stream().map(entity -> {
                        OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
                        if (entity instanceof HasStatusAndMsg status) {
@@ -214,7 +216,7 @@ public class OptionModel implements Comparable<OptionModel> {
                            model.setIcon(sc.getSelectionIcon());
                            model.setDescription(sc.getSelectionDescription());
                        }
-                       entity.configureOptionModel(model);
+                       entity.configureOptionModel(model, context);
                        if (configurator != null) {
                            configurator.accept(entity, model);
                        }

@@ -7,6 +7,7 @@ import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import com.pivovarit.function.ThrowingRunnable;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
@@ -384,11 +385,17 @@ public interface ContextBGP {
 
         @NotNull String getName();
 
+        void rename(@NotNull String newName);
+
+        void writeStreamInfo(byte[] content);
+
+        void attachInputStream(@NotNull InputStream inputStream, @NotNull InputStream errorStream);
+
         @NotNull String getState();
 
         void setState(@NotNull String state);
 
-        @Nullable Object getMetadata(String key);
+        @Nullable Object getMetadata(@NotNull String key);
 
         void setMetadata(@NotNull String key, @NotNull Object value);
 

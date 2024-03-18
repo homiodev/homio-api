@@ -5,8 +5,13 @@ import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.type.MapType;
+import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -128,6 +133,18 @@ public interface HasJsonData {
             try {
                 return OBJECT_MAPPER.readValue(getJsonData(key),
                     OBJECT_MAPPER.getTypeFactory().constructCollectionType(Set.class, classType));
+            } catch (Exception ignore) {
+            }
+        }
+        return null;
+    }
+
+    @SneakyThrows
+    default <T> @Nullable Map<String, String> getJsonDataMap(@NotNull String key, @NotNull Class<T> classType) {
+        if (getJsonData().has(key)) {
+            try {
+                MapType mapType = OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, classType);
+                return OBJECT_MAPPER.readValue(getJsonData(key), mapType);
             } catch (Exception ignore) {
             }
         }

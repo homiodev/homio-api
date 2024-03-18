@@ -5,6 +5,7 @@ import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
+import org.homio.api.ui.field.selection.dynamic.DynamicOptionLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,6 +21,8 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
     @NotNull UISelectBoxItemBuilder setHighlightSelected(boolean value);
 
     @NotNull UISelectBoxItemBuilder setLazyItemOptions(@NotNull Class<? extends BaseEntity> itemClass);
+
+    @NotNull UISelectBoxItemBuilder setLazyOptionLoader(@NotNull Class<? extends DynamicOptionLoader> itemClass);
 
     @NotNull UISelectBoxItemBuilder addOption(@NotNull OptionModel option);
 

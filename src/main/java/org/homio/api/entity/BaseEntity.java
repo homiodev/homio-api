@@ -75,8 +75,9 @@ public abstract class BaseEntity implements
      * Configure OptionModel for show it in select box
      *
      * @param optionModel model to configure
+     * @param context
      */
-    public void configureOptionModel(@NotNull OptionModel optionModel) {
+    public void configureOptionModel(@NotNull OptionModel optionModel, @NotNull Context context) {
     }
 
     public void setName(@Nullable String name) {

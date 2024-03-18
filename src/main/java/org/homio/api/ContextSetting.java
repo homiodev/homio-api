@@ -179,26 +179,35 @@ public interface ContextSetting {
     }
 
     default @Nullable String getEnv(@NotNull String key) {
-        return getEnv(key, String.class, null, false);
+        return getEnv(key, String.class, null, false, null);
     }
 
     default @Nullable String getEnv(@NotNull String key, @Nullable String defaultValue, boolean store) {
-        return getEnv(key, String.class, defaultValue, store);
+        return getEnv(key, String.class, defaultValue, store, null);
     }
 
     default @NotNull <T> T getEnvRequire(@NotNull String key, @NotNull Class<T> classType, @NotNull T defaultValue, boolean store) {
-        return Objects.requireNonNull(getEnv(key, classType, defaultValue, store));
+        return Objects.requireNonNull(getEnv(key, classType, defaultValue, store, null));
     }
 
-    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue, boolean store);
+    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue,
+        boolean store, @Nullable String description);
 
     default int getEnv(@NotNull String key, int defaultValue, boolean store) {
-        Integer value = getEnv(key, Integer.class, defaultValue, store);
+        return getEnv(key, defaultValue, store, null);
+    }
+
+    default int getEnv(@NotNull String key, int defaultValue, boolean store, @Nullable String description) {
+        Integer value = getEnv(key, Integer.class, defaultValue, store, description);
         return value == null ? defaultValue : value;
     }
 
     default boolean getEnv(@NotNull String key, boolean defaultValue, boolean store) {
-        Boolean value = getEnv(key, Boolean.class, defaultValue, store);
+        return getEnv(key, defaultValue, store, null);
+    }
+
+    default boolean getEnv(@NotNull String key, boolean defaultValue, boolean store, @Nullable String description) {
+        Boolean value = getEnv(key, Boolean.class, defaultValue, store, description);
         return value == null ? defaultValue : value;
     }
 

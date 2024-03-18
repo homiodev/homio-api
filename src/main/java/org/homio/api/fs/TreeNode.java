@@ -69,10 +69,6 @@ public class TreeNode implements Comparable<TreeNode> {
         this.attributes.lastUpdated = lastModifiedTime;
         this.attributes.size = size;
         this.attributes.contentType = contentType;
-        if (!dir) {
-            this.attributes.type = FilenameUtils.getExtension(name);
-            this.name = FilenameUtils.removeExtension(name);
-        }
     }
 
     public void merge(TreeNode update) {
