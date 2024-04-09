@@ -59,7 +59,7 @@ public interface HasPathAlias extends HasJsonData {
     @UIFieldGroup("ALIAS_1")
     @UIFieldTab("ALIASES")
     default String getAliasOneIconColor() {
-        return getJsonData("a1c");
+        return getJsonData("a1c", "#ADB5BD");
     }
 
     default void setAliasOnePath(String value) {
@@ -106,7 +106,7 @@ public interface HasPathAlias extends HasJsonData {
     @UIFieldGroup("ALIAS_2")
     @UIFieldTab("ALIASES")
     default String getAliasTwoIconColor() {
-        return getJsonData("a2c");
+        return getJsonData("a2c", "#ADB5BD");
     }
 
     default void setAliasTwoPath(String value) {

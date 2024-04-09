@@ -13,6 +13,9 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.model.OptionModel;
+import org.homio.api.ui.field.action.UIActionInput.Type;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 // TODO:  ???????????????
@@ -24,13 +27,13 @@ public class ActionInputParameter {
 
     public static Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_.]+");
 
-    private final String name;
-    private final UIActionInput.Type type;
-    private final Set<String> validators;
-    private final String value;
-    private String description;
-    private String style;
-    private List<OptionModel> options;
+    private final @NotNull String name;
+    private final @NotNull UIActionInput.Type type;
+    private final @Nullable Set<String> validators;
+    private final @Nullable String value;
+    private @Nullable String description;
+    private @Nullable String style;
+    private @Nullable List<OptionModel> options;
 
     public ActionInputParameter(UIActionInput input) {
         this.name = input.name();
@@ -53,8 +56,19 @@ public class ActionInputParameter {
         }
     }
 
+    public static ActionInputParameter icon(String name, String defaultValue) {
+        return new ActionInputParameter(name, Type.IconPicker, null, defaultValue);
+    }
+    public static ActionInputParameter color(String name, String defaultValue) {
+        return new ActionInputParameter(name, Type.ColorPicker, null, defaultValue);
+    }
+
     public static ActionInputParameter text(String name, String defaultValue, String... validators) {
         return new ActionInputParameter(name, UIActionInput.Type.text, Set.of(validators), defaultValue);
+    }
+
+    public static ActionInputParameter textRequired(String name, String defaultValue, int min, int max) {
+        return new ActionInputParameter(name, UIActionInput.Type.text, Set.of("min:" + min, "max:" + max), defaultValue);
     }
 
     public static ActionInputParameter email(String name, String defaultValue) {

@@ -174,6 +174,8 @@ public interface ContextUI {
 
         @NotNull HeaderButtonBuilder clickAction(@NotNull Supplier<ActionResponseModel> clickAction);
 
+        @NotNull HeaderButtonBuilder attachToHeaderMenu(@NotNull String name);
+
         void build();
     }
 

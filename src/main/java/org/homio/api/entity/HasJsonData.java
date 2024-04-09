@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
@@ -140,7 +142,7 @@ public interface HasJsonData {
     }
 
     @SneakyThrows
-    default <T> @Nullable Map<String, String> getJsonDataMap(@NotNull String key, @NotNull Class<T> classType) {
+    default <T> @Nullable Map<String, T> getJsonDataMap(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
             try {
                 MapType mapType = OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, classType);
@@ -149,6 +151,17 @@ public interface HasJsonData {
             }
         }
         return null;
+    }
+
+    @SneakyThrows
+    default <T> void addJsonDataMap(@NotNull String key, @NotNull Class<T> classType,
+        Consumer<Map<String, T>> updateFn) {
+        Map<String, T> map = getJsonDataMap(key, classType);
+        if(map==null) {
+            map = new HashMap<>();
+        }
+        updateFn.accept(map);
+        setJsonData(key, OBJECT_MAPPER.writeValueAsString(map));
     }
 
     default <E extends Enum> @NotNull E getJsonDataEnum(@NotNull String key, @NotNull E defaultValue) {
