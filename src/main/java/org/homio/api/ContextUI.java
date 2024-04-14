@@ -562,7 +562,7 @@ public interface ContextUI {
 
         default void error(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam,
             @Nullable Exception ex) {
-            sendMessage(title, message, NotificationLevel.error, messageParam, ex, -1);
+            sendMessage(title, message, NotificationLevel.error, messageParam, ex, null);
         }
 
         default void info(@NotNull String message) {
@@ -578,7 +578,7 @@ public interface ContextUI {
         }
 
         default void info(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
-            sendMessage(title, message, NotificationLevel.info, messageParam, null, -1);
+            sendMessage(title, message, NotificationLevel.info, messageParam, null, null);
         }
 
         default void success(@NotNull String message) {
@@ -594,7 +594,7 @@ public interface ContextUI {
         }
 
         default void success(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
-            sendMessage(title, message, NotificationLevel.success, messageParam, null, -1);
+            sendMessage(title, message, NotificationLevel.success, messageParam, null, null);
         }
 
         default void warn(@NotNull String message) {
@@ -610,11 +610,11 @@ public interface ContextUI {
         }
 
         default void warn(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
-            sendMessage(title, message, NotificationLevel.warning, messageParam, null, -1);
+            sendMessage(title, message, NotificationLevel.warning, messageParam, null, null);
         }
 
         default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level,
-            @Nullable FlowMap messageParam, @Nullable Exception ex, int timeout) {
+            @Nullable FlowMap messageParam, @Nullable Exception ex, @Nullable Integer timeout) {
             title = title == null ? null : Lang.getServerMessage(title, messageParam);
             String text;
             if (ex instanceof ServerException) {
@@ -630,7 +630,7 @@ public interface ContextUI {
             sendMessage(title, text, level, timeout);
         }
 
-        void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level, int timeout);
+        void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level, @Nullable Integer timeout);
     }
 
     interface ContextUIConsole {
