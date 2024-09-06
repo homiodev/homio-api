@@ -1,15 +1,7 @@
 package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Transient;
-import jakarta.persistence.Version;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -29,11 +21,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 @Log4j2
 @MappedSuperclass
 public abstract class BaseEntity implements
-    BaseEntityIdentifier,
-    Comparable<BaseEntity> {
+        BaseEntityIdentifier,
+        Comparable<BaseEntity> {
 
     @JsonIgnore
     @Transient
@@ -113,17 +110,39 @@ public abstract class BaseEntity implements
         return getTitle();
     }
 
-    /**
-     * @return Disable edit entity on UI
-     */
-    public boolean isDisableEdit() {
+    public boolean isDisableView() {
+        UserEntity user = context().user().getLoggedInUser();
+        if (user != null && !user.isAdmin()) {
+            try {
+                user.assertViewAccess(this);
+            } catch (Exception ignore) {
+                return true;
+            }
+        }
         return false;
     }
 
-    /**
-     * @return Disable delete entity on UI
-     */
+    public boolean isDisableEdit() {
+        UserEntity user = context().user().getLoggedInUser();
+        if (user != null && !user.isAdmin()) {
+            try {
+                user.assertEditAccess(this);
+            } catch (Exception ignore) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isDisableDelete() {
+        UserEntity user = context().user().getLoggedInUser();
+        if (user != null && !user.isAdmin()) {
+            try {
+                user.assertDeleteAccess(this);
+            } catch (Exception ignore) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -193,16 +212,31 @@ public abstract class BaseEntity implements
      * @return response
      */
     public @Nullable ActionResponseModel handleTextFieldAction(
-        @NotNull String field,
-        @NotNull JSONObject metadata) {
+            @NotNull String field,
+            @NotNull JSONObject metadata) {
         throw new NotImplementedException("Method 'handleTextFieldAction' must be implemented in class: " + getClass().getSimpleName()
-            + " if calls by UI. Field: " + field + ". Meta: " + metadata);
+                                          + " if calls by UI. Field: " + field + ". Meta: " + metadata);
     }
 
     @JsonIgnore
     protected abstract long getChildEntityHashCode();
 
-    public Context context() {
+    public @NotNull Context context() {
         return context;
+    }
+
+    @JsonIgnore
+    @Transient
+    public final @NotNull Set<String> getMissingMandatoryFields() {
+        Set<String> set = new HashSet<>();
+        assembleMissingMandatoryFields(set);
+        return set;
+    }
+
+    /**
+     * List of mandatory fields for entity
+     */
+    protected void assembleMissingMandatoryFields(@NotNull Set<String> fields) {
+
     }
 }

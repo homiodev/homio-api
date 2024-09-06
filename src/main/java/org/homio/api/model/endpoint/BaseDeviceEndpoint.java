@@ -1,25 +1,12 @@
 package org.homio.api.model.endpoint;
 
-import static java.util.Objects.requireNonNull;
-import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import com.pivovarit.function.ThrowingConsumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
 import org.homio.api.ContextVar.VariableMetaBuilder;
@@ -39,42 +26,82 @@ import org.homio.api.state.StringType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
+import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
+
+@Log4j2
 @RequiredArgsConstructor
 public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContract> implements DeviceEndpoint {
 
     private final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
-    private final @NotNull @Getter String group;
-    private final @Getter @Accessors(fluent = true) @NotNull Context context;
+    private final @NotNull
+    @Getter String group;
+    private final @Getter
+    @Accessors(fluent = true)
+    @NotNull Context context;
 
-    private @Getter @Setter Icon icon;
-    private @Getter @Setter String endpointEntityID;
+    private @Getter
+    @Setter Icon icon;
+    private @Getter
+    @Setter String endpointEntityID;
 
     private @Getter D device;
 
-    private @Getter @Setter @Nullable String unit;
+    private @Getter
+    @Setter
+    @Nullable String unit;
     private @Getter long updated = System.currentTimeMillis();
-    private @Getter @NotNull State value = new StringType("N/A");
+    private @Getter
+    @NotNull State value = new StringType("N/A");
     private @Nullable Object dbValue;
-    private @Nullable @Getter String variableID;
-    private @Getter @Setter boolean readable = true;
-    private @Getter @Setter boolean writable = true;
-    private @Getter @Setter String endpointName;
-    private @Getter @Setter EndpointType endpointType;
-    private @Getter @Setter int order = -1;
+    private @Nullable
+    @Getter String variableID;
+    private @Getter
+    @Setter boolean readable = true;
+    private @Getter
+    @Setter boolean writable = false;
+    private @Getter
+    @Setter String endpointName;
+    private @Getter
+    @Setter EndpointType endpointType;
+    private @Getter
+    @Setter int order = -1;
 
     private @Nullable ConfigDeviceDefinitionService configService;
-    private @Getter @Setter @Nullable Float min;
-    private @Getter @Setter @Nullable Float max;
-    private @Getter @Setter @Nullable List<OptionModel> range;
-    private @Getter @Setter @Nullable Object defaultValue;
-    private @JsonIgnore @Nullable Set<String> alternateEndpoints;
-    private @Setter @Nullable ConfigDeviceEndpoint configDeviceEndpoint;
-    private @Getter @Setter boolean visibleEndpoint = true;
-    private @Getter @Setter Supplier<Boolean> visibleEndpointHandler;
+    private @Getter
+    @Setter
+    @Nullable Float min;
+    private @Getter
+    @Setter
+    @Nullable Float max;
+    private @Getter
+    @Setter
+    @Nullable List<OptionModel> range;
+    private @Getter
+    @Setter
+    @Nullable Object defaultValue;
+    private @JsonIgnore
+    @Nullable Set<String> alternateEndpoints;
+    private @Setter
+    @Nullable ConfigDeviceEndpoint configEndpoint;
+    private @Getter
+    @Setter boolean visibleEndpoint = true;
+    private @Getter
+    @Setter Supplier<Boolean> visibleEndpointHandler;
     private @Setter boolean ignoreDuplicates = true;
-    private @Getter @Setter boolean stateless;
-    private @Nullable Consumer<State> updateHandler;
+    private @Getter
+    @Setter boolean stateless;
+    private @Nullable ThrowingConsumer<State, Exception> updateHandler;
     private @Setter boolean dbValueStorable;
+    private Integer scale;
 
     public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group, @NotNull Context context) {
         this(group, context);
@@ -82,32 +109,31 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     }
 
     public BaseDeviceEndpoint(
-        @NotNull Icon icon,
-        @NotNull String group,
-        @NotNull Context context,
-        @NotNull D device,
-        @NotNull String endpointEntityID,
-        boolean writable,
-        @NotNull EndpointType endpointType) {
+            @NotNull Icon icon,
+            @NotNull String group,
+            @NotNull Context context,
+            @NotNull D device,
+            @NotNull String endpointEntityID,
+            boolean writable,
+            @NotNull EndpointType endpointType) {
         this(icon, group, context);
-        setInitial(device, endpointEntityID, writable, endpointType);
+        this.writable = writable;
+        setInitial(device, endpointEntityID, endpointType);
     }
 
     public void init(
-        @NotNull ConfigDeviceDefinitionService configService,
-        @Nullable String endpointEntityID,
-        @NotNull D device,
-        boolean readable,
-        boolean writable,
-        @Nullable String endpointName,
-        @NotNull EndpointType endpointType) {
+            @NotNull ConfigDeviceDefinitionService configService,
+            @Nullable String endpointEntityID,
+            @NotNull D device,
+            @Nullable String endpointName,
+            @Nullable EndpointType endpointType) {
 
         this.configService = configService;
-        configDeviceEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
-        if (configDeviceEndpoint == null && alternateEndpoints != null) {
+        configEndpoint = endpointEntityID == null ? null : configService.getDeviceEndpoints().get(endpointEntityID);
+        if (configEndpoint == null && alternateEndpoints != null) {
             for (String alternativeEndpointEntityId : alternateEndpoints) {
-                configDeviceEndpoint = configService.getDeviceEndpoints().get(alternativeEndpointEntityId);
-                if (configDeviceEndpoint != null) {
+                configEndpoint = configService.getDeviceEndpoints().get(alternativeEndpointEntityId);
+                if (configEndpoint != null) {
                     endpointEntityID = alternativeEndpointEntityId;
                     break;
                 }
@@ -124,52 +150,79 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         switch (endpointEntityID) {
             case ENDPOINT_DEVICE_STATUS:
                 icon = new Icon("fa fa-globe", "#42B52D");
+                writable = false;
+                endpointType = EndpointType.select;
                 order = 10;
                 ignoreDuplicates = true;
+                if (range == null) {
+                    if (configEndpoint != null && configEndpoint.getAvailableValues() != null) {
+                        range = OptionModel.enumList(Status.class, status ->
+                                configEndpoint.getAvailableValues().contains(status.name()));
+                    } else {
+                        range = OptionModel.enumList(Status.class);
+                    }
+                }
                 setInitialValue(new StringType(Status.UNKNOWN.name()));
                 break;
             case ENDPOINT_LAST_SEEN:
                 icon = new Icon("fa fa-eye", "#2D9C2C");
+                writable = false;
+                endpointType = EndpointType.number;
                 setInitialValue(new DecimalType(System.currentTimeMillis()));
                 break;
             case ENDPOINT_BATTERY:
                 icon = new Icon("fa fa-battery-full", "#32D1B9");
+                writable = false;
+                endpointType = EndpointType.number;
                 min = 0F;
                 max = 100F;
                 break;
             case ENDPOINT_SIGNAL:
                 icon = new Icon("fa fa-signal", "#D134AF");
+                writable = false;
+                endpointType = EndpointType.number;
                 min = 0F;
                 max = 100F;
                 break;
         }
         this.endpointName = endpointName;
-        if (this.unit == null) {
-            this.unit = configDeviceEndpoint == null ? null : configDeviceEndpoint.getUnit();
+        if (configEndpoint != null) {
+            scale = scale == null ? configEndpoint.getScale() : scale;
+            if (endpointType == null) {
+                endpointType = configEndpoint.getEndpointType();
+            }
+            if (icon == null && configEndpoint.getIcon() != null) {
+                icon = new Icon(configEndpoint.getIcon(), configEndpoint.getIconColor());
+            }
+            if (unit == null) {
+                unit = configEndpoint.getUnit();
+            }
+            if (endpointType == EndpointType.select && range == null && configEndpoint.getAvailableValues() != null) {
+                range = OptionModel.list(configEndpoint.getAvailableValues());
+            }
+            if (configEndpoint.getIgnoreDuplicates() != null) {
+                ignoreDuplicates = configEndpoint.getIgnoreDuplicates();
+            }
+            min = min == null ? configEndpoint.getMin() : min;
+            max = max == null ? configEndpoint.getMax() : max;
+            stateless = configEndpoint.isStateless();
         }
-        if (configDeviceEndpoint != null && configDeviceEndpoint.getIgnoreDuplicates() != null) {
-            ignoreDuplicates = configDeviceEndpoint.getIgnoreDuplicates();
+        if (endpointType == null) {
+            endpointType = EndpointType.string;
         }
-        if (configDeviceEndpoint != null) {
-            this.min = this.min == null ? configDeviceEndpoint.getMin() : this.min;
-            this.max = this.max == null ? configDeviceEndpoint.getMax() : this.max;
-        }
-        this.readable = readable;
-        setInitial(device, endpointEntityID, writable, endpointType);
+        setInitial(device, endpointEntityID, endpointType);
 
         if (order == -1) {
-            order = configDeviceEndpoint == null ? 0 : configDeviceEndpoint.getOrder();
+            order = configEndpoint == null ? 0 : configEndpoint.getOrder();
             if (order == 0) {
                 order = endpointName.charAt(0) * 10 + endpointName.charAt(1);
             }
         }
-
-        stateless = configDeviceEndpoint != null && configDeviceEndpoint.isStateless();
     }
 
-    public void setUpdateHandler(Consumer<State> updateHandler) {
+    public void setUpdateHandler(ThrowingConsumer<State, Exception> updateHandler) {
         this.updateHandler = updateHandler;
-        if (updateHandler != null && endpointType != EndpointType.trigger) {
+        if (updateHandler != null) {
             this.writable = true;
         }
     }
@@ -184,7 +237,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
                 targetValue = targetState.boolValue();
             }
             case number, dimmer -> {
-                targetState = state instanceof DecimalType ? state : new DecimalType(state.intValue());
+                targetState = state instanceof DecimalType ? state : new DecimalType(state.intValue(), scale);
                 targetValue = state.floatValue();
             }
             default -> {
@@ -198,7 +251,15 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             context().db().save((BaseEntity) getDevice());
         }
         if (updateHandler != null) {
+            applyUpdateHandler(targetState);
+        }
+    }
+
+    protected void applyUpdateHandler(State targetState) {
+        try {
             updateHandler.accept(targetState);
+        } catch (Exception e) {
+            log.error("Error update endpoint {}", endpointName);
         }
     }
 
@@ -207,7 +268,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         if (updateHandler == null) {
             throw new IllegalStateException("No update handler set for write handler: " + getEntityID());
         }
-        updateHandler.accept(getValue());
+        applyUpdateHandler(getValue());
         return null;
     }
 
@@ -247,12 +308,22 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     }
 
     public void setInitialValue(State value) {
+        if (scale != null && value instanceof DecimalType dt && dt.getScale() != scale) {
+            value = new DecimalType(dt.rawValue(), scale);
+        }
         this.value = value;
     }
 
     public void setValue(@Nullable State value, boolean externalUpdate) {
-        if (value == null) {return;}
-        if (this.value.equals(value) && ignoreDuplicates) {return;}
+        if (value == null || value.rawValue() == null) {
+            return;
+        }
+        if (scale != null && value instanceof DecimalType dt && dt.getScale() != scale) {
+            value = new DecimalType(dt.rawValue(), scale);
+        }
+        if (this.value.equals(value) && ignoreDuplicates) {
+            return;
+        }
 
         this.value = value;
         this.updated = System.currentTimeMillis();
@@ -275,10 +346,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         return !device.getStatus().isOnline();
     }
 
-    private void setInitial(D device, String endpointEntityID, boolean writable, EndpointType endpointType) {
+    private void setInitial(D device, String endpointEntityID, EndpointType endpointType) {
         this.device = device;
         this.endpointEntityID = endpointEntityID;
-        this.writable = writable;
         this.endpointType = endpointType;
         if (endpointType == EndpointType.trigger) {
             this.readable = false;
@@ -353,11 +423,11 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
         if (variableID == null) {
             VariableType variableType = getVariableType();
-            boolean persistent = configDeviceEndpoint != null && configDeviceEndpoint.isPersistent();
+            boolean persistent = configEndpoint != null && configEndpoint.isPersistent();
             Consumer<VariableMetaBuilder> customVariableMetaBuilder = getVariableMetaBuilder();
             Consumer<VariableMetaBuilder> variableMetaBuilder = builder -> {
                 builder.setIcon(icon).setLocked(true);
-                Integer quota = configDeviceEndpoint == null ? null : configDeviceEndpoint.getQuota();
+                Integer quota = configEndpoint == null ? null : configEndpoint.getQuota();
                 if (quota != null) {
                     builder.setQuota(quota);
                 }
@@ -371,10 +441,10 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
             if (variableType == VariableType.Enum) {
                 Set<String> range = getVariableEnumValues().stream().map(OptionModel::getKey).collect(Collectors.toSet());
                 variableID = context.var().createEnumVariable(getVariableGroupID(),
-                    buildVariableID(), getName(false), range, variableMetaBuilder).getId();
+                        buildVariableID(), getName(false), range, variableMetaBuilder).getId();
             } else {
                 variableID = context.var().createVariable(getVariableGroupID(),
-                    buildVariableID(), getName(false), variableType, variableMetaBuilder).getId();
+                        buildVariableID(), getName(false), variableType, variableMetaBuilder).getId();
             }
 
             if (isWritable()) {
@@ -412,7 +482,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
      */
     public void updateUI() {
         context.ui().updateInnerSetItem(device, "endpoints",
-            endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
+                endpointEntityID, getEntityID(), new DeviceEndpointUI(this));
     }
 
     public String getVariableGroupID() {
@@ -429,8 +499,8 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     protected @Nullable Consumer<VariableMetaBuilder> getVariableMetaBuilder() {
         return builder -> {
             builder.setWritable(isWritable())
-                   .setDescription(getVariableDescription())
-                   .setColor(getIcon().getColor());
+                    .setDescription(getVariableDescription())
+                    .setColor(getIcon().getColor());
             List<String> attributes = new ArrayList<>();
             if (min != null || max != null) {
                 builder.setNumberRange(min == null ? 0 : min, max == null ? Integer.MAX_VALUE : max);
@@ -518,8 +588,12 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         BaseDeviceEndpoint<?> that = (BaseDeviceEndpoint<?>) o;
         return Objects.equals(endpointEntityID, that.endpointEntityID);
     }

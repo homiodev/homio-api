@@ -1,83 +1,57 @@
 package org.homio.api.widget.template;
 
-import static org.apache.commons.lang3.StringUtils.defaultString;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_BATTERY;
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_HUMIDITY;
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_SIGNAL;
-import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_TEMPERATURE;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.homio.api.Context;
+import org.homio.api.ContextVar.VariableType;
+import org.homio.api.ContextWidget;
+import org.homio.api.ContextWidget.*;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
+import org.homio.api.model.endpoint.DeviceEndpoint;
+import org.homio.api.widget.template.WidgetDefinition.*;
+import org.homio.api.widget.template.WidgetDefinition.Options.Pulse;
+import org.homio.api.widget.template.WidgetDefinition.Options.Source;
+import org.homio.api.widget.template.WidgetDefinition.Options.Threshold;
+import org.homio.api.widget.template.impl.*;
+import org.homio.api.widget.template.impl.endpoints.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.homio.api.Context;
-import org.homio.api.ContextVar.VariableType;
-import org.homio.api.ContextWidget;
-import org.homio.api.ContextWidget.HasIcon;
-import org.homio.api.ContextWidget.HasName;
-import org.homio.api.ContextWidget.HasPadding;
-import org.homio.api.ContextWidget.HasSetSingleValueDataSource;
-import org.homio.api.ContextWidget.HasSingleValueDataSource;
-import org.homio.api.ContextWidget.PulseBuilder;
-import org.homio.api.ContextWidget.SimpleValueWidgetBuilder;
-import org.homio.api.ContextWidget.ThresholdBuilder;
-import org.homio.api.ContextWidget.VerticalAlign;
-import org.homio.api.ContextWidget.WidgetBaseBuilder;
-import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
-import org.homio.api.model.endpoint.DeviceEndpoint;
-import org.homio.api.widget.template.WidgetDefinition.ColorPicker;
-import org.homio.api.widget.template.WidgetDefinition.IconPicker;
-import org.homio.api.widget.template.WidgetDefinition.ItemDefinition;
-import org.homio.api.widget.template.WidgetDefinition.Options.Pulse;
-import org.homio.api.widget.template.WidgetDefinition.Options.Source;
-import org.homio.api.widget.template.WidgetDefinition.Options.Threshold;
-import org.homio.api.widget.template.WidgetDefinition.Padding;
-import org.homio.api.widget.template.WidgetDefinition.WidgetType;
-import org.homio.api.widget.template.impl.BarTimeTemplateWidget;
-import org.homio.api.widget.template.impl.ColorTemplateWidget;
-import org.homio.api.widget.template.impl.ComposeTemplateWidget;
-import org.homio.api.widget.template.impl.DisplayTemplateWidget;
-import org.homio.api.widget.template.impl.LineTemplateWidget;
-import org.homio.api.widget.template.impl.ToggleTemplateWidget;
-import org.homio.api.widget.template.impl.endpoints.BatteryIconEndpointBuilder;
-import org.homio.api.widget.template.impl.endpoints.HumidityIconEndpointBuilder;
-import org.homio.api.widget.template.impl.endpoints.IconEndpointBuilder;
-import org.homio.api.widget.template.impl.endpoints.LastSeenIconEndpointBuilder;
-import org.homio.api.widget.template.impl.endpoints.SignalIconEndpointBuilder;
-import org.homio.api.widget.template.impl.endpoints.TemperatureIconEndpointBuilder;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.homio.api.ContextVar.GROUP_BROADCAST;
+import static org.homio.api.model.endpoint.DeviceEndpoint.*;
 
 public interface TemplateWidgetBuilder {
 
     Map<WidgetType, TemplateWidgetBuilder> WIDGETS = Map.of(
-        WidgetType.color, new ColorTemplateWidget(),
-        WidgetType.toggle, new ToggleTemplateWidget(),
-        WidgetType.display, new DisplayTemplateWidget(),
-        WidgetType.compose, new ComposeTemplateWidget(),
-        WidgetType.barTime, new BarTimeTemplateWidget(),
-        WidgetType.line, new LineTemplateWidget()
+            WidgetType.color, new ColorTemplateWidget(),
+            WidgetType.toggle, new ToggleTemplateWidget(),
+            WidgetType.display, new DisplayTemplateWidget(),
+            WidgetType.compose, new ComposeTemplateWidget(),
+            WidgetType.barTime, new BarTimeTemplateWidget(),
+            WidgetType.line, new LineTemplateWidget()
     );
 
     Map<String, IconEndpointBuilder> ICON_ANIMATE_ENDPOINTS = Map.of(
-        ENDPOINT_TEMPERATURE, new TemperatureIconEndpointBuilder(),
-        ENDPOINT_HUMIDITY, new HumidityIconEndpointBuilder(),
-        ENDPOINT_BATTERY, new BatteryIconEndpointBuilder(),
-        ENDPOINT_SIGNAL, new SignalIconEndpointBuilder(),
-        ENDPOINT_LAST_SEEN, new LastSeenIconEndpointBuilder()
+            ENDPOINT_TEMPERATURE, new TemperatureIconEndpointBuilder(),
+            ENDPOINT_HUMIDITY, new HumidityIconEndpointBuilder(),
+            ENDPOINT_BATTERY, new BatteryIconEndpointBuilder(),
+            ENDPOINT_SIGNAL, new SignalIconEndpointBuilder(),
+            ENDPOINT_LAST_SEEN, new LastSeenIconEndpointBuilder()
     );
 
     static void addEndpoint(
-        @NotNull Context context,
-        @NotNull ContextWidget.HorizontalAlign horizontalAlign,
-        @Nullable DeviceEndpoint endpoint,
-        boolean addUnit,
-        @NotNull Consumer<SimpleValueWidgetBuilder> attachHandler) {
+            @NotNull Context context,
+            @NotNull ContextWidget.HorizontalAlign horizontalAlign,
+            @Nullable DeviceEndpoint endpoint,
+            boolean addUnit,
+            @NotNull Consumer<SimpleValueWidgetBuilder> attachHandler) {
         if (endpoint != null) {
             if (ENDPOINT_LAST_SEEN.equals(endpoint.getEndpointEntityID())) {
                 createSimpleEndpoint(context, horizontalAlign, endpoint, builder -> {
@@ -104,7 +78,7 @@ public interface TemplateWidgetBuilder {
     }
 
     static void buildIconAndColor(DeviceEndpoint endpoint, HasIcon iconBuilder,
-        ItemDefinition itemDefinition, WidgetRequest widgetRequest) {
+                                  ItemDefinition itemDefinition, WidgetRequest widgetRequest) {
         iconBuilder.setIcon(endpoint.getIcon());
 
         if (itemDefinition == null) {
@@ -112,16 +86,16 @@ public interface TemplateWidgetBuilder {
         }
         IconPicker icon = itemDefinition.getIcon();
         if (icon != null) {
-            iconBuilder.setIcon(defaultString(icon.getValue(), endpoint.getIcon().getIcon()),
-                (Consumer<ThresholdBuilder>) iconThresholdBuilder ->
-                    TemplateWidgetBuilder.buildThreshold(widgetRequest, icon.getThresholds(), iconThresholdBuilder));
+            iconBuilder.setIcon(Objects.toString(icon.getValue(), endpoint.getIcon().getIcon()),
+                    (Consumer<ThresholdBuilder>) iconThresholdBuilder ->
+                            TemplateWidgetBuilder.buildThreshold(widgetRequest, icon.getThresholds(), iconThresholdBuilder));
             ColorPicker color = itemDefinition.getIconColor();
             if (color == null || (isEmpty(color.getValue()) && color.getThresholds() == null)) {
                 return;
             }
-            iconBuilder.setIconColor(defaultString(color.getValue(), endpoint.getIcon().getColor()),
-                (Consumer<ThresholdBuilder>) thresholdBuilder ->
-                    TemplateWidgetBuilder.buildThreshold(widgetRequest, color.getThresholds(), thresholdBuilder));
+            iconBuilder.setIconColor(Objects.toString(color.getValue(), endpoint.getIcon().getColor()),
+                    (Consumer<ThresholdBuilder>) thresholdBuilder ->
+                            TemplateWidgetBuilder.buildThreshold(widgetRequest, color.getThresholds(), thresholdBuilder));
         }
     }
 
@@ -129,21 +103,21 @@ public interface TemplateWidgetBuilder {
         switch (source.getKind()) {
             case variable -> {
                 String variable = context.var().createVariable(entity.getEntityID(),
-                    source.getValue(), source.getValue(), source.getVariableType(), null).getId();
+                        source.getValue(), source.getValue(), source.getVariableType(), null).getId();
                 return context.var().buildDataSource(variable);
             }
-            case broadcasts -> {
+            case broadcast -> {
                 String id = source.getValue() + "_" + entity.getIeeeAddress();
                 String name = source.getValue() + " " + entity.getIeeeAddress();
-                String variableID = context.var().createVariable("broadcasts", id, name, VariableType.Any, null)
-                    .getId();
+                String variableID = context.var().createVariable(GROUP_BROADCAST, id, name, VariableType.Any, null)
+                        .getId();
                 return context.var().buildDataSource(variableID);
             }
             case property -> {
                 DeviceEndpoint endpoint = entity.getDeviceEndpoint(source.getValue());
                 if (endpoint == null) {
                     throw new IllegalArgumentException("Unable to find device endpoint: " + source.getValue() +
-                        " for device: " + entity);
+                                                       " for device: " + entity);
                 }
                 return TemplateWidgetBuilder.getSource(context, endpoint);
             }
@@ -165,7 +139,7 @@ public interface TemplateWidgetBuilder {
         Padding padding = wd.getPadding();
         if (padding != null && builder instanceof HasPadding<?> paddingBuilder) {
             paddingBuilder.setPadding(padding.getTop(), padding.getRight(),
-                padding.getBottom(), padding.getLeft());
+                    padding.getBottom(), padding.getLeft());
         }
     }
 
@@ -174,20 +148,20 @@ public interface TemplateWidgetBuilder {
             return;
         }
         builder.setBackground(background.getValue(),
-            (Consumer<ThresholdBuilder>)
-                thresholdBuilder -> buildThreshold(widgetRequest, background.getThresholds(), thresholdBuilder),
-            (Consumer<PulseBuilder>) pulseBuilder ->
-                buildPulseThreshold(widgetRequest, background.getPulses(), pulseBuilder));
+                (Consumer<ThresholdBuilder>)
+                        thresholdBuilder -> buildThreshold(widgetRequest, background.getThresholds(), thresholdBuilder),
+                (Consumer<PulseBuilder>) pulseBuilder ->
+                        buildPulseThreshold(widgetRequest, background.getPulses(), pulseBuilder));
     }
 
     static void buildThreshold(WidgetRequest widgetRequest, List<Threshold> thresholds, ThresholdBuilder thresholdBuilder) {
         if (thresholds != null) {
             for (Threshold threshold : thresholds) {
                 thresholdBuilder.setThreshold(
-                    threshold.getTarget(),
-                    threshold.getValue(),
-                    threshold.getOp(),
-                    buildDataSource(widgetRequest.entity(), widgetRequest.context(), threshold.getSource()));
+                        threshold.getTarget(),
+                        threshold.getValue(),
+                        threshold.getOp(),
+                        buildDataSource(widgetRequest.entity(), widgetRequest.context(), threshold.getSource()));
             }
         }
     }
@@ -196,12 +170,38 @@ public interface TemplateWidgetBuilder {
         if (pulses != null) {
             for (Pulse pulse : pulses) {
                 pulseThresholdBuilder.setPulse(
-                    pulse.getColor(),
-                    pulse.getValue(),
-                    pulse.getOp(),
-                    buildDataSource(widgetRequest.entity(), widgetRequest.context(), pulse.getSource()));
+                        pulse.getColor(),
+                        pulse.getValue(),
+                        pulse.getOp(),
+                        buildDataSource(widgetRequest.entity(), widgetRequest.context(), pulse.getSource()));
             }
         }
+    }
+
+    private static void buildValueSuffix(SimpleValueWidgetBuilder builder, @Nullable String value) {
+        builder.setValueTemplate(null, value)
+                .setValueSuffixFontSize(0.6)
+                .setValueSuffixColor("#777777")
+                .setValueSuffixVerticalAlign(VerticalAlign.bottom);
+    }
+
+    private static void createSimpleEndpoint(
+            @NotNull Context context,
+            @NotNull ContextWidget.HorizontalAlign horizontalAlign,
+            @NotNull DeviceEndpoint endpoint,
+            @NotNull Consumer<SimpleValueWidgetBuilder> attachHandler,
+            boolean addUnit) {
+        context.widget().createSimpleValueWidget(endpoint.getEntityID(), builder -> {
+            builder.setIcon(endpoint.getIcon())
+                    .setValueDataSource(getSource(context, endpoint))
+                    .setAlign(horizontalAlign, VerticalAlign.bottom)
+                    .setValueFontSize(0.8);
+            if (addUnit) {
+                buildValueSuffix(builder, endpoint.getUnit());
+            }
+            Optional.ofNullable(ICON_ANIMATE_ENDPOINTS.get(endpoint.getEndpointEntityID())).ifPresent(ib -> ib.build(builder));
+            attachHandler.accept(builder);
+        });
     }
 
     void buildWidget(WidgetRequest widgetRequest);
@@ -213,33 +213,8 @@ public interface TemplateWidgetBuilder {
 
     void buildMainWidget(MainWidgetRequest request);
 
-    private static void buildValueSuffix(SimpleValueWidgetBuilder builder, @Nullable String value) {
-        builder.setValueTemplate(null, value)
-               .setValueSuffixFontSize(0.6)
-               .setValueSuffixColor("#777777")
-               .setValueSuffixVerticalAlign(VerticalAlign.bottom);
-    }
-
-    private static void createSimpleEndpoint(
-        @NotNull Context context,
-        @NotNull ContextWidget.HorizontalAlign horizontalAlign,
-        @NotNull DeviceEndpoint endpoint,
-        @NotNull Consumer<SimpleValueWidgetBuilder> attachHandler,
-        boolean addUnit) {
-        context.widget().createSimpleValueWidget(endpoint.getEntityID(), builder -> {
-            builder.setIcon(endpoint.getIcon())
-                   .setValueDataSource(getSource(context, endpoint))
-                   .setAlign(horizontalAlign, VerticalAlign.bottom)
-                   .setValueFontSize(0.8);
-            if (addUnit) {
-                buildValueSuffix(builder, endpoint.getUnit());
-            }
-            Optional.ofNullable(ICON_ANIMATE_ENDPOINTS.get(endpoint.getEndpointEntityID())).ifPresent(ib -> ib.build(builder));
-            attachHandler.accept(builder);
-        });
-    }
-
-    record WidgetRequest(@NotNull Context context, @NotNull DeviceEndpointsBehaviourContract entity, @NotNull String tab,
+    record WidgetRequest(@NotNull Context context, @NotNull DeviceEndpointsBehaviourContract entity,
+                         @NotNull String tab,
                          @NotNull WidgetDefinition widgetDefinition, @NotNull List<DeviceEndpoint> includeEndpoints) {
 
     }
@@ -248,12 +223,12 @@ public interface TemplateWidgetBuilder {
     @AllArgsConstructor
     class MainWidgetRequest {
 
-        private final WidgetRequest widgetRequest;
-        private final WidgetDefinition item;
+        private final @NotNull WidgetRequest widgetRequest;
+        private final @NotNull WidgetDefinition item;
         // total number of columns in layout
         private final int layoutColumnNum;
         private final int layoutRowNum;
-        private Consumer<WidgetBaseBuilder> attachToLayoutHandler;
+        private @NotNull Consumer<WidgetBaseBuilder> attachToLayoutHandler;
 
         public List<DeviceEndpoint> getItemIncludeEndpoints() {
             return item.getIncludeEndpoints(this);

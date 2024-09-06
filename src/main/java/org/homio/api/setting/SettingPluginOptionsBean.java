@@ -1,11 +1,12 @@
 package org.homio.api.setting;
 
-import java.util.Collection;
 import org.homio.api.Context;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.OptionModel;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
+
+import java.util.Collection;
 
 public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
 
@@ -25,9 +26,9 @@ public interface SettingPluginOptionsBean<T> extends SettingPluginOptions<T> {
     }
 
     @Override
-    default T parseValue(Context context, String value) {
+    default T deserializeValue(Context context, String value) {
         return context.getBeansOfType(getType()).stream().filter(p -> p.getClass().getSimpleName().equals(value)).findAny()
-                      .orElseThrow(() -> new NotFoundException(
-                                "Unable to find addon: " + value + " of type: " + getType().getSimpleName()));
+                .orElseThrow(() -> new NotFoundException(
+                        "Unable to find addon: " + value + " of type: " + getType().getSimpleName()));
     }
 }

@@ -11,9 +11,10 @@ public interface UITextInputItemBuilder extends UIEntityItemBuilder<UITextInputI
      * @param value on/off
      * @return this
      */
-    UITextInputItemBuilder setApplyButton(boolean value);
+    UITextInputItemBuilder setRequireApply(boolean value);
 
-    @NotNull UITextInputItemBuilder setRequired(boolean value);
+    @NotNull
+    UITextInputItemBuilder setRequired(boolean value);
 
     enum InputType {
         Text, TextArea, Password, JSON, Ip

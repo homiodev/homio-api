@@ -15,10 +15,6 @@ public interface DeviceContract extends HasJsonData, HasEntityIdentifier, BaseEn
 
     void setIeeeAddress(String value);
 
-    String getPlace();
-
-    void setPlace(String value);
-
     default String getModel() {
         return getJsonData("model", "");
     }

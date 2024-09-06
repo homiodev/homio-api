@@ -1,68 +1,53 @@
 package org.homio.api.entity.device;
 
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static org.homio.api.ui.field.UIFieldType.HTML;
-import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
-
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.homio.api.converter.JSONConverter;
 import org.homio.api.entity.BaseEntity;
+import org.homio.api.entity.HasPermissions;
 import org.homio.api.model.JSON;
 import org.homio.api.model.Status;
-import org.homio.api.optionProvider.SelectPlaceOptionLoader;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
-import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.HasDynamicUIFields;
 import org.homio.api.ui.field.color.UIFieldColorBgRef;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
-import org.homio.api.ui.field.selection.UIFieldSelectConfig;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
-import org.homio.api.ui.field.selection.dynamic.UIFieldDynamicSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
+
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.homio.api.ui.field.UIFieldType.HTML;
+import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
 
 @Getter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @UISidebarMenu(
-    icon = "fas fa-shapes",
-    parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
-    bg = "#FFFFFF",
-    overridePath = "devices",
-    filter = {"*:fas fa-filter:#8DBA73", "status:fas fa-heart-crack:#C452C4"},
-    sort = {
-        "name~#FF9800:fas fa-arrow-up-a-z:fas fa-arrow-down-z-a",
-        "status~#7EAD28:fas fa-turn-up:fas fa-turn-down",
-        "place~#9C27B0:fas fa-location-dot:fas fa-location-dot fa-rotate-180"
-    })
+        icon = "fas fa-shapes",
+        parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
+        bg = "#FFFFFF",
+        overridePath = "devices",
+        filter = {"*:fas fa-filter:#8DBA73", "status:fas fa-heart-crack:#C452C4"},
+        sort = {
+                "name~#FF9800:fas fa-arrow-up-a-z:fas fa-arrow-down-z-a",
+                "status~#7EAD28:fas fa-turn-up:fas fa-turn-down",
+                "place~#9C27B0:fas fa-location-dot:fas fa-location-dot fa-rotate-180"
+        })
 @NoArgsConstructor
-public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContract {
+public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContract, HasPermissions {
 
     public static final String PREFIX = "dvc_";
 
     @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
     private @Nullable String ieeeAddress;
-
-    @Setter
-    @Getter
-    @Column(length = 64)
-    @UIField(order = 30, type = UIFieldType.SelectBox, color = "#538744")
-    @UIFieldGroup("GENERAL")
-    @UIFieldSelectConfig(selectOnEmptyLabel = "PLACEHOLDER.SELECT_PLACE")
-    @UIFieldDynamicSelection(SelectPlaceOptionLoader.class)
-    @UIFieldShowOnCondition("return !context.get('compactMode')")
-    private @Nullable String place;
 
     @Getter
     @Setter
@@ -84,6 +69,10 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
 
     @JsonIgnore
     public String getDescriptionImpl() {
+        Set<String> fields = getMissingMandatoryFields();
+        if (!fields.isEmpty()) {
+            return "W.ERROR." + fields.iterator().next().toUpperCase() + "_REQUIRED";
+        }
         return null;
     }
 
@@ -103,9 +92,9 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
         String cd = getName();
         Status status = getStatus();
         return """
-            <div class="inline-2row_d"><div>%s <span style="color:%s">${%s}</span>
-            <span style="float:right" class="color-primary">%s</span></div><div>${%s}</div></div>""".formatted(
-            getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), cd);
+                <div class="inline-2row_d"><div>%s <span style="color:%s">${%s}</span>
+                <span style="float:right" class="color-primary">%s</span></div><div>${%s}</div></div>""".formatted(
+                getIeeeAddress(), status.getColor(), status, trimToEmpty(getModel()), cd);
     }
 
     public boolean isCompactMode() {
@@ -124,13 +113,18 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     }
 
     @Override
+    public boolean isDisableView() {
+        return super.isDisableView() || getJsonData("dis_view", false);
+    }
+
+    @Override
     public boolean isDisableEdit() {
-        return getJsonData("dis_edit", false);
+        return super.isDisableEdit() || getJsonData("dis_edit", false);
     }
 
     @Override
     public boolean isDisableDelete() {
-        return getJsonData("dis_del", false);
+        return super.isDisableDelete() || getJsonData("dis_del", false);
     }
 
     /**
@@ -138,17 +132,6 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
      */
     public @Nullable Boolean isOutdated() {
         return null;
-    }
-
-    @UIField(order = 500, hideInView = true)
-    @UIFieldTreeNodeSelection(pattern = IMAGE_PATTERN, dialogTitle = "DIALOG.SELECT_IMAGE_ID")
-    @UIFieldGroup(value = "ADVANCED", order = 50, borderColor = "#FF1E00")
-    public @Nullable String getImageIdentifier() {
-        return getImageIdentifierImpl();
-    }
-
-    public void setImageIdentifier(@Nullable String value) {
-        setJsonData("img", value);
     }
 
     /**
@@ -178,7 +161,6 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
     @Override
     protected long getChildEntityHashCode() {
         long result = ieeeAddress != null ? ieeeAddress.hashCode() : 0;
-        result = 31 * result + (place != null ? place.hashCode() : 0);
         result = 31 * result + jsonData.toString().hashCode();
         return result;
     }
@@ -189,5 +171,16 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
         if (this instanceof HasDynamicUIFields field) {
             field.writeDynamicFieldValue(key, value);
         }
+    }
+
+    @UIField(order = 2, hideInView = true)
+    @UIFieldTreeNodeSelection(pattern = IMAGE_PATTERN, dialogTitle = "DIALOG.SELECT_IMAGE_ID")
+    @UIFieldGroup("ADVANCED")
+    public @Nullable String getImageIdentifier() {
+        return getImageIdentifierImpl();
+    }
+
+    public void setImageIdentifier(@Nullable String value) {
+        setJsonData("img", value);
     }
 }

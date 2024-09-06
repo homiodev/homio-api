@@ -1,8 +1,5 @@
 package org.homio.api.setting;
 
-import static org.homio.api.util.JsonUtils.putOpt;
-
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
 import org.homio.api.model.Icon;
@@ -12,6 +9,10 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.List;
+
+import static org.homio.api.util.JsonUtils.putOpt;
+
 public interface SettingPluginButton extends SettingPlugin<JSONObject> {
 
     /**
@@ -19,7 +20,8 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
      *
      * @return message
      */
-    @Nullable String getConfirmMsg();
+    @Nullable
+    String getConfirmMsg();
 
     default @Nullable String getDialogColor() {
         return null;
@@ -29,7 +31,8 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
         return null;
     }
 
-    @Nullable Icon getIcon();
+    @Nullable
+    Icon getIcon();
 
     default @Nullable String getText() {
         return null;
@@ -62,7 +65,7 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
      * In case of action require user input. Dialog popup shows
      *
      * @param context -
-     * @param value         -
+     * @param value   -
      * @return -
      */
     default List<ActionInputParameter> getInputParameters(Context context, String value) {
@@ -91,7 +94,7 @@ public interface SettingPluginButton extends SettingPlugin<JSONObject> {
     }
 
     @Override
-    default JSONObject parseValue(Context context, String value) {
+    default JSONObject deserializeValue(Context context, String value) {
         try {
             return new JSONObject(StringUtils.defaultIfEmpty(value, getDefaultValue()));
         } catch (Exception ex) {

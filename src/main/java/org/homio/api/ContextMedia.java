@@ -3,30 +3,36 @@ package org.homio.api;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import com.pivovarit.function.ThrowingRunnable;
-import java.awt.Dimension;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.Level;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
+import org.homio.api.stream.ContentStream;
+import org.homio.api.stream.audio.AudioSpeaker;
+import org.homio.api.stream.audio.MicrophoneInput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+import org.openqa.selenium.WebDriver;
+
+import java.awt.*;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public interface ContextMedia {
 
-    @NotNull Context context();
+    @NotNull
+    Context context();
+
+    void fireSeleniumFirefox(@NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
+
+    // run with render content on UI
+    void fireSeleniumFirefox(@NotNull String title, @NotNull String icon, @NotNull String iconColor, @NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
 
     void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
 
@@ -34,30 +40,48 @@ public interface ContextMedia {
 
     void unRegisterVideoSource(@NotNull String path);
 
-    void addSourceInfo(@NotNull String path, @NotNull Map<String, OptionModel> videoSources);
+    void addVideoSourceInfo(@NotNull String path, @NotNull Map<String, OptionModel> videoSources);
 
-    @NotNull VideoInputDevice createVideoInputDevice(@NotNull String vfile);
+    @NotNull
+    VideoInputDevice createVideoInputDevice(@NotNull String vfile);
+
+    void addAudioSpeaker(@NotNull AudioSpeaker audioSpeaker);
+
+    void removeAudioSpeaker(@NotNull AudioSpeaker audioSpeaker);
+
+    void addMicrophoneInput(@NotNull MicrophoneInput microphoneInput);
+
+    void removeMicrophoneInput(@NotNull MicrophoneInput microphoneInput);
+
+    /**
+     * Create relative url .../stream to fetch data
+     */
+    @NotNull
+    String createStreamUrl(@NotNull ContentStream stream, int timeoutOnInactiveSeconds);
 
     /**
      * @return - Get usb camera
      */
-    @NotNull Set<String> getVideoDevices();
+    @NotNull
+    Set<String> getVideoDevices();
 
     /**
      * @return - Get audio devices
      */
-    @NotNull Set<String> getAudioDevices();
+    @NotNull
+    Set<String> getAudioDevices();
 
-    @NotNull FFMPEG buildFFMPEG(@NotNull String entityID,
-        @NotNull String description,
-        @NotNull FFMPEGHandler handler,
-        @NotNull FFMPEGFormat format,
-        @NotNull String inputArguments,
-        @NotNull String input,
-        @NotNull String outArguments,
-        @NotNull String output,
-        @NotNull String username,
-        @NotNull String password);
+    @NotNull
+    FFMPEG buildFFMPEG(@NotNull String entityID,
+                       @NotNull String description,
+                       @NotNull FFMPEGHandler handler,
+                       @NotNull FFMPEGFormat format,
+                       @NotNull String inputArguments,
+                       @NotNull String input,
+                       @NotNull String outArguments,
+                       @NotNull String output,
+                       @NotNull String username,
+                       @NotNull String password);
 
     @Getter
     @RequiredArgsConstructor
@@ -82,16 +106,19 @@ public interface ContextMedia {
 
     interface VideoInputDevice {
 
-        @NotNull String getName();
+        @NotNull
+        String getName();
 
-        @NotNull VideoInputDevice setName(@NotNull String value);
+        @NotNull
+        VideoInputDevice setName(@NotNull String value);
 
-        @NotNull Dimension[] getResolutions();
+        @NotNull
+        Dimension[] getResolutions();
 
         default @NotNull Set<String> getResolutionSet() {
             Dimension[] resolutions = getResolutions();
             return Arrays.stream(resolutions).sorted(Comparator.comparingInt(o -> o.width + o.height))
-                         .map(r -> String.format("%dx%d", r.width, r.height)).collect(Collectors.toCollection(LinkedHashSet::new));
+                    .map(r -> String.format("%dx%d", r.width, r.height)).collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 
@@ -114,9 +141,9 @@ public interface ContextMedia {
 
         @SneakyThrows
         static <T> T check(
-            @Nullable FFMPEG ffmpeg,
-            @NotNull ThrowingFunction<FFMPEG, T, Exception> checkHandler,
-            @Nullable T defaultValue) {
+                @Nullable FFMPEG ffmpeg,
+                @NotNull ThrowingFunction<FFMPEG, T, Exception> checkHandler,
+                @Nullable T defaultValue) {
             if (ffmpeg != null) {
                 return checkHandler.apply(ffmpeg);
             }
@@ -128,7 +155,8 @@ public interface ContextMedia {
          */
         boolean isRunning();
 
-        @NotNull FFMPEGFormat getFormat();
+        @NotNull
+        FFMPEGFormat getFormat();
 
         default void restartIfRequire() {
             if (isRunning() && !getIsAlive()) {
@@ -140,13 +168,15 @@ public interface ContextMedia {
         void setKeepAlive(int value);
 
         // just keep key-value metadata for i.e. keep output path
-        @NotNull JSONObject getMetadata();
+        @NotNull
+        JSONObject getMetadata();
 
         boolean startConverting();
 
         boolean getIsAlive();
 
-        @NotNull Context.FileLogger getFileLogger();
+        @NotNull
+        Context.FileLogger getFileLogger();
 
         /**
          * @return true if process was alive and fired stop command, false if process wasn't alive already
@@ -162,15 +192,20 @@ public interface ContextMedia {
          */
         boolean stopProcessIfNoKeepAlive();
 
-        @NotNull List<String> getCommandArrayList();
+        @NotNull
+        List<String> getCommandArrayList();
 
-        @NotNull Date getCreationDate();
+        @NotNull
+        Date getCreationDate();
 
-        @NotNull String getDescription();
+        @NotNull
+        String getDescription();
 
-        @NotNull String getOutput();
+        @NotNull
+        String getOutput();
 
-        @NotNull Path getOutputFile();
+        @NotNull
+        Path getOutputFile();
 
         FFMPEG setWorkingDirectory(@NotNull Path workingDirectory);
 

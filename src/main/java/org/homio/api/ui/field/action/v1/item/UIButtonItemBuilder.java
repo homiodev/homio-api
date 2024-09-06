@@ -1,5 +1,6 @@
 package org.homio.api.ui.field.action.v1.item;
 
+import org.homio.api.model.Icon;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,4 +16,8 @@ public interface UIButtonItemBuilder extends UIEntityItemBuilder<UIButtonItemBui
     UIButtonItemBuilder setConfirmMessage(String message);
 
     UIButtonItemBuilder setConfirmMessageDialogColor(String color);
+
+    UIButtonItemBuilder setConfirmMessageDialogTitle(String title);
+
+    UIButtonItemBuilder setConfirmMessageDialogIcon(Icon icon);
 }

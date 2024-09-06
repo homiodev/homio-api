@@ -1,12 +1,13 @@
 package org.homio.api.entity.version;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.List;
 import org.homio.api.Context;
 import org.homio.api.model.OptionModel;
 import org.homio.api.repository.GitHubProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Interface for entities that has specific program to execute and has version
@@ -48,5 +49,5 @@ public interface HasGitHubFirmwareVersion extends HasFirmwareVersion {
     @NotNull GitHubProject getGitHubProject();
 
     @JsonIgnore
-    Context context();
+    @NotNull Context context();
 }

@@ -1,17 +1,18 @@
 package org.homio.api.setting;
 
-import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
-import static org.homio.api.util.JsonUtils.putOpt;
+import org.homio.api.Context;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.homio.api.Context;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
+
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+import static org.homio.api.util.JsonUtils.putOpt;
 
 public interface SettingPluginTextSet extends SettingPlugin<Set<String>> {
 
@@ -32,12 +33,12 @@ public interface SettingPluginTextSet extends SettingPlugin<Set<String>> {
     }
 
     @Override
-    default Set<String> parseValue(Context context, String value) {
+    default Set<String> deserializeValue(Context context, String value) {
         return value == null ? Collections.emptySet() : Stream.of(value.split(LIST_DELIMITER)).collect(Collectors.toSet());
     }
 
     @Override
-    default @NotNull String writeValue(Set<String> value) {
+    default @NotNull String serializeValue(Set<String> value) {
         return String.join(LIST_DELIMITER, value);
     }
 

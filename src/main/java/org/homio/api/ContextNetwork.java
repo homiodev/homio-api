@@ -1,17 +1,7 @@
 package org.homio.api;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import java.net.ConnectException;
-import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.util.List;
-import java.util.function.BiConsumer;
-import javax.jmdns.ServiceInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -19,7 +9,26 @@ import org.homio.hquery.hardware.network.NetworkHardwareRepository.CidrAddress;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.jmdns.ServiceInfo;
+import java.net.ConnectException;
+import java.net.DatagramPacket;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.List;
+import java.util.function.BiConsumer;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 public interface ContextNetwork {
+
+    static String ping(String host, int port) throws ConnectException {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 5000);
+            return socket.getLocalAddress().getHostAddress();
+        } catch (Exception ignore) {
+        }
+        throw new ConnectException("Host %s:%s not reachable".formatted(host, port));
+    }
 
     /**
      * Listen upd on host/port. default host is wildcard listener accept DatagramPacket and string value
@@ -33,18 +42,11 @@ public interface ContextNetwork {
 
     void stopListenUdp(String key);
 
-    static String ping(String host, int port) throws ConnectException {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("google.com", port), 5000);
-            return socket.getLocalAddress().getHostAddress();
-        } catch (Exception ignore) {
-        }
-        throw new ConnectException("Host %s:%s not reachable".formatted(host, port));
-    }
+    @NotNull
+    String getHostname();
 
-    @NotNull String getHostname();
-
-    @NotNull List<ServiceInfo> scanMDNS(@NotNull String serviceType);
+    @NotNull
+    List<ServiceInfo> scanMDNS(@NotNull String serviceType);
 
     void addNetworkAddressChanged(@NotNull String key, @NotNull BiConsumer<List<CidrAddress>, List<CidrAddress>> listener);
 
@@ -65,7 +67,7 @@ public interface ContextNetwork {
     <T> T fetchCached(String address, Class<T> typeClass);
 
     @SneakyThrows
-    private <T> T fetchSingleNode(String address, Class<T> resultType){
+    private <T> T fetchSingleNode(String address, Class<T> resultType) {
         JsonNode jsonNode = fetchCached(address, JsonNode.class);
         if (jsonNode instanceof ArrayNode array) {
             jsonNode = array.iterator().next();

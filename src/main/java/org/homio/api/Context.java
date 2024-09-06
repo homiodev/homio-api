@@ -1,6 +1,11 @@
 package org.homio.api;
 
-import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+import org.homio.api.entity.BaseEntity;
+import org.homio.api.model.OptionModel;
+import org.homio.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -8,47 +13,50 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import lombok.SneakyThrows;
-import org.homio.api.entity.BaseEntity;
-import org.homio.api.entity.UserEntity;
-import org.homio.api.exception.NotFoundException;
-import org.homio.api.model.OptionModel;
-import org.homio.api.util.CommonUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 
 public interface Context {
 
-    @NotNull ContextMedia media();
+    @NotNull
+    ContextUser user();
 
-    @NotNull ContextWidget widget();
+    @NotNull
+    ContextMedia media();
 
-    @NotNull ContextUI ui();
+    @NotNull
+    ContextWidget widget();
 
-    @NotNull ContextEvent event();
+    @NotNull
+    ContextUI ui();
 
-    @NotNull ContextInstall install();
+    @NotNull
+    ContextEvent event();
 
-    @NotNull ContextWorkspace workspace();
+    @NotNull
+    ContextInstall install();
 
-    @NotNull ContextService service();
+    @NotNull
+    ContextWorkspace workspace();
 
-    @NotNull ContextBGP bgp();
+    @NotNull
+    ContextService service();
 
-    @NotNull ContextSetting setting();
+    @NotNull
+    ContextBGP bgp();
 
-    @NotNull ContextVar var();
+    @NotNull
+    ContextSetting setting();
 
-    @NotNull ContextHardware hardware();
+    @NotNull
+    ContextVar var();
 
-    @NotNull ContextStorage db();
+    @NotNull
+    ContextHardware hardware();
 
-    @NotNull ContextNetwork network();
+    @NotNull
+    ContextStorage db();
+
+    @NotNull
+    ContextNetwork network();
 
     /**
      * Get or create new file logger for entity
@@ -57,14 +65,18 @@ public interface Context {
      * @param suffix     - file name suffix
      * @return file logger
      */
-    @NotNull FileLogger getFileLogger(@NotNull BaseEntity baseEntity, @NotNull String suffix);
+    @NotNull
+    FileLogger getFileLogger(@NotNull BaseEntity baseEntity, @NotNull String suffix);
 
-    @NotNull List<OptionModel> toOptionModels(@Nullable Collection<? extends BaseEntity> entities);
+    @NotNull
+    List<OptionModel> toOptionModels(@Nullable Collection<? extends BaseEntity> entities);
 
 
-    @NotNull <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
+    @NotNull
+    <T> T getBean(@NotNull String beanName, @NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
 
-    @NotNull <T> T getBean(@NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
+    @NotNull
+    <T> T getBean(@NotNull Class<T> clazz) throws NoSuchBeanDefinitionException;
 
     default <T> T getBean(@NotNull Class<T> clazz, @NotNull Supplier<T> defaultValueSupplier) {
         try {
@@ -74,55 +86,17 @@ public interface Context {
         }
     }
 
-    @NotNull <T> Collection<T> getBeansOfType(@NotNull Class<T> clazz);
+    @NotNull
+    <T> Collection<T> getBeansOfType(@NotNull Class<T> clazz);
 
-    @NotNull <T> Map<String, T> getBeansOfTypeWithBeanName(@NotNull Class<T> clazz);
+    @NotNull
+    <T> Map<String, T> getBeansOfTypeWithBeanName(@NotNull Class<T> clazz);
 
-    default boolean isAdmin() {
-        UserEntity user = getUser();
-        return user != null && user.isAdmin();
-    }
+    @NotNull
+    <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
 
-    @SneakyThrows
-    default void assertAdminAccess() {
-        if (!isAdmin()) {
-            throw new IllegalAccessException();
-        }
-    }
-
-    default @NotNull UserEntity getUserRequire() {
-        UserEntity user = getUser();
-        if (user == null) {
-            throw new NotFoundException("Unable to find authenticated user");
-        }
-        return user;
-    }
-
-    default void assertAccess(@NotNull String resource) {
-        UserEntity user = getUserRequire();
-        if (!user.isAllowResource(resource)) {
-            throw new AccessDeniedException("Access denied");
-        }
-    }
-
-    default boolean accessEnabled(@NotNull String resource) {
-        UserEntity user = getUserRequire();
-        return user.isAllowResource(resource);
-    }
-
-    default @Nullable UserEntity getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            User user = (User) authentication.getPrincipal();
-            String userEntityID = user.getUsername().split(LIST_DELIMITER)[0];
-            return db().getEntity(userEntityID);
-        }
-        return null;
-    }
-
-    @NotNull <T> List<Class<? extends T>> getClassesWithAnnotation(@NotNull Class<? extends Annotation> annotation);
-
-    @NotNull <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);
+    @NotNull
+    <T> List<Class<? extends T>> getClassesWithParent(@NotNull Class<T> baseClass);
 
     interface FileLogger {
 
@@ -138,8 +112,10 @@ public interface Context {
             logError(CommonUtils.getErrorMessage(ex));
         }
 
-        @NotNull InputStream getFileInputStream();
+        @NotNull
+        InputStream getFileInputStream();
 
-        @NotNull String getName();
+        @NotNull
+        String getName();
     }
 }

@@ -1,18 +1,19 @@
 package org.homio.api.state;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.StringUtils;
 import org.homio.api.util.CommonUtils;
 import org.homio.hquery.Curl.RawResponse;
 import org.springframework.util.MimeTypeUtils;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Objects;
 
 @Getter
 @Accessors(chain = true)
@@ -176,10 +177,10 @@ public class RawType implements State {
     }
 
     public boolean isImage() {
-        return StringUtils.defaultString(mimeType, "").startsWith("image/");
+        return Objects.toString(mimeType, "").startsWith("image/");
     }
 
     public boolean isVideo() {
-        return StringUtils.defaultString(mimeType, "").startsWith("video/");
+        return Objects.toString(mimeType, "").startsWith("video/");
     }
 }

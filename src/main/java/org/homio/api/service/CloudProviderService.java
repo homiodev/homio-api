@@ -19,7 +19,7 @@ public interface CloudProviderService<T extends SshCloud> {
     void setCurrentEntity(@NotNull T sshEntity);
 
     // Method should wait forever until exception
-    void start() throws Exception;
+    void start(Runnable onSuccess) throws Exception;
 
     void stop() throws Exception;
 
@@ -44,6 +44,7 @@ public interface CloudProviderService<T extends SshCloud> {
 
         boolean isRestartOnFailure();
 
-        @Nullable CloudProviderService<T> getCloudProviderService(@NotNull Context context);
+        @Nullable
+        CloudProviderService<T> getCloudProviderService(@NotNull Context context);
     }
 }

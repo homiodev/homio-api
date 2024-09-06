@@ -1,20 +1,17 @@
 package org.homio.api.setting;
 
-import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.homio.api.Context;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 public interface SettingPluginOptionsEnumMulti<T extends Enum<T>> extends SettingPluginOptions<Set<T>> {
 
@@ -37,12 +34,12 @@ public interface SettingPluginOptionsEnumMulti<T extends Enum<T>> extends Settin
     }
 
     @Override
-    default @NotNull String writeValue(@Nullable Set<T> value) {
+    default @NotNull String serializeValue(@Nullable Set<T> value) {
         return value == null ? "" : value.stream().map(Enum::name).collect(Collectors.joining(LIST_DELIMITER));
     }
 
     @Override
-    default Set<T> parseValue(Context context, String value) {
+    default Set<T> deserializeValue(Context context, String value) {
         if (value == null) {
             return Collections.emptySet();
         }

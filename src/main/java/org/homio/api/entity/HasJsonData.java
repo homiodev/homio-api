@@ -1,24 +1,7 @@
 package org.homio.api.entity;
 
-import static java.lang.String.format;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.type.MapType;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
@@ -26,6 +9,15 @@ import org.homio.api.model.JSON;
 import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.lang.String.format;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface HasJsonData {
 
@@ -118,31 +110,31 @@ public interface HasJsonData {
     }
 
     @SneakyThrows
-    default <T> @Nullable List<T> getJsonDataList(@NotNull String key, @NotNull Class<T> classType) {
+    default <T> @NotNull List<T> getJsonDataList(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
             try {
                 return OBJECT_MAPPER.readValue(getJsonData(key),
-                    OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, classType));
+                        OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, classType));
             } catch (Exception ignore) {
             }
         }
-        return null;
+        return new ArrayList<>();
     }
 
     @SneakyThrows
-    default <T> @Nullable Set<T> getJsonDataSet(@NotNull String key, @NotNull Class<T> classType) {
+    default <T> @NotNull Set<T> getJsonDataSet(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
             try {
                 return OBJECT_MAPPER.readValue(getJsonData(key),
-                    OBJECT_MAPPER.getTypeFactory().constructCollectionType(Set.class, classType));
+                        OBJECT_MAPPER.getTypeFactory().constructCollectionType(Set.class, classType));
             } catch (Exception ignore) {
             }
         }
-        return null;
+        return new HashSet<>();
     }
 
     @SneakyThrows
-    default <T> @Nullable Map<String, T> getJsonDataMap(@NotNull String key, @NotNull Class<T> classType) {
+    default <T> @NotNull Map<String, T> getJsonDataMap(@NotNull String key, @NotNull Class<T> classType) {
         if (getJsonData().has(key)) {
             try {
                 MapType mapType = OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, classType);
@@ -150,16 +142,13 @@ public interface HasJsonData {
             } catch (Exception ignore) {
             }
         }
-        return null;
+        return new HashMap<>();
     }
 
     @SneakyThrows
     default <T> void addJsonDataMap(@NotNull String key, @NotNull Class<T> classType,
-        Consumer<Map<String, T>> updateFn) {
+                                    Consumer<Map<String, T>> updateFn) {
         Map<String, T> map = getJsonDataMap(key, classType);
-        if(map==null) {
-            map = new HashMap<>();
-        }
         updateFn.accept(map);
         setJsonData(key, OBJECT_MAPPER.writeValueAsString(map));
     }
@@ -214,7 +203,7 @@ public interface HasJsonData {
 
     default @NotNull Stream<String> getJsonDataStream(@NotNull String key, @NotNull String delimiter) {
         return Stream.of(getJsonData().optString(key, "").split(delimiter))
-                     .filter(StringUtils::isNotEmpty);
+                .filter(StringUtils::isNotEmpty);
     }
 
     default @NotNull Long getJsonData(@NotNull String key, long defaultValue) {
@@ -228,7 +217,7 @@ public interface HasJsonData {
     default String getJsonDataEntity(String key, Context context) {
         String value = getJsonData(key);
         if (isNotEmpty(value)) {
-            BaseEntity entity = context.db().getEntity(value);
+            BaseEntity entity = context.db().get(value);
             if (entity != null) {
                 return entity.getEntityID() + LIST_DELIMITER + entity.getTitle();
             }

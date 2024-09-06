@@ -1,28 +1,9 @@
 package org.homio.api.workspace;
 
-import static org.apache.commons.lang3.StringUtils.defaultString;
-import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
-
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
 import org.homio.api.ContextBGP;
 import org.homio.api.entity.BaseEntity;
@@ -37,14 +18,26 @@ import org.homio.hquery.Curl;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.core.io.Resource;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 public interface WorkspaceBlock {
 
     Set<String> MEDIA_EXTENSIONS = new HashSet<>(
-        Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
-            ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
-            ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
-            ".js", ".mp3"));
+            Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".jpe", ".jif", ".jfif", ".jfi", ".webp", ".webm", ".mkv", ".flv",
+                    ".vob", ".ogv", ".ogg", ".drc", ".avi", ".wmv", ".mp4", ".mpg", ".mpeg", ".m4v", ".flv", ".xlsx", ".xltx",
+                    ".xls", ".xlt", ".xml", ".json", ".txt", ".csv", ".pdf", ".htm", ".html", ".7z", ".zip", ".tar.gz", ".gz",
+                    ".js", ".mp3"));
 
     @SneakyThrows
     static String evalStringWithContext(String value, Function<String, String> valueSupplier) {
@@ -77,7 +70,7 @@ public interface WorkspaceBlock {
                     Path dir = Files.createDirectories(Paths.get(prefix.toString()));
                     return String.valueOf(Objects.requireNonNull(dir.toFile().list()).length);
             }
-            return defaultString(valueSupplier.apply(text), defValue);
+            return Objects.toString(valueSupplier.apply(text), defValue);
         });
 
         DoubleEvaluator eval = new DoubleEvaluator();
@@ -85,7 +78,7 @@ public interface WorkspaceBlock {
             try {
                 return String.valueOf(eval.evaluate(text));
             } catch (Exception ignore) {
-                return StringUtils.defaultString(defValue, text);
+                return Objects.toString(defValue, text);
             }
         });
         return value;
@@ -101,7 +94,7 @@ public interface WorkspaceBlock {
 
     <P> P getMenuValue(String key, MenuBlock menuBlock, Class<P> type);
 
-    Path getFile(String key, MenuBlock menuBlock, boolean required);
+    Resource getFile(String key, MenuBlock menuBlock, boolean required);
 
     default <P> List<P> getMenuValues(String key, MenuBlock menuBlock, Class<P> type) {
         return getMenuValues(key, menuBlock, type, LIST_DELIMITER);
@@ -114,7 +107,7 @@ public interface WorkspaceBlock {
     }
 
     default <T extends BaseEntity> T getMenuValueEntity(String key, MenuBlock.ServerMenuBlock menuBlock) {
-        return context().db().getEntity(getMenuValue(key, menuBlock, String.class));
+        return context().db().get(getMenuValue(key, menuBlock, String.class));
     }
 
     default <S> S getEntityService(String key, MenuBlock.ServerMenuBlock menuBlock, Class<S> serviceClass) {
@@ -135,7 +128,7 @@ public interface WorkspaceBlock {
         if ("-".equals(entityID)) {
             logErrorAndThrow("Menu entity not selected for block: {}", key);
         }
-        T entity = context().db().getEntity(entityID);
+        T entity = context().db().get(entityID);
         if (entity == null) {
             logErrorAndThrow("Unable to find entity for block: {}. Value: {}", key, entityID);
         }
@@ -212,7 +205,7 @@ public interface WorkspaceBlock {
     }
 
     default void subscribeToLock(Lock lock, Function<Object, Boolean> checkFn, int timeout, TimeUnit timeUnit,
-        Runnable runnable) {
+                                 Runnable runnable) {
         while (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
             if (lock.await(this, timeout, timeUnit) && checkFn.apply(lock.getValue())) {
                 if (!Thread.currentThread().isInterrupted() && !this.isDestroyed()) {
@@ -358,6 +351,7 @@ public interface WorkspaceBlock {
 
     /**
      * Get Lock manager that wait when event occurs
+     *
      * @return lock manager
      */
     LockManager getLockManager();
@@ -370,12 +364,14 @@ public interface WorkspaceBlock {
 
     /**
      * Fires when current thread is released (i.e. when whole block scope is destroyed)
+     *
      * @param listener - listener that fires on thread release
      */
     void onRelease(ThrowingRunnable<Exception> listener);
 
     /**
      * Get next block or throw error
+     *
      * @return next block
      */
     default @NotNull WorkspaceBlock getNextOrThrow() {

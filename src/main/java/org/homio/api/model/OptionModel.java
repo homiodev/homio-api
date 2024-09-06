@@ -1,28 +1,10 @@
 package org.homio.api.model;
 
-import static java.lang.String.format;
-import static org.homio.api.entity.HasJsonData.LEVEL_DELIMITER;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -35,6 +17,19 @@ import org.homio.api.fs.TreeNode;
 import org.homio.api.ui.field.selection.SelectionConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static java.lang.String.format;
+import static org.homio.api.entity.HasJsonData.LEVEL_DELIMITER;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -53,17 +48,24 @@ public class OptionModel implements Comparable<OptionModel> {
 
     private final ObjectNode json = OBJECT_MAPPER.createObjectNode();
 
-    private @Getter @NotNull String key;
+    private @Getter
+    @NotNull String key;
 
-    private @Setter @Nullable String title;
+    private @Setter
+    @Nullable String title;
 
-    private @Getter @Nullable String icon;
+    private @Getter
+    @Nullable String icon;
 
-    private @Setter @Getter @Nullable String color;
+    private @Setter
+    @Getter
+    @Nullable String color;
 
-    private @Getter @Nullable List<OptionModel> children;
+    private @Getter
+    @Nullable List<OptionModel> children;
 
-    private @Getter @Nullable Status status;
+    private @Getter
+    @Nullable Status status;
 
     // disabled option is shown but not clickable
     private @Getter Boolean disabled;
@@ -73,44 +75,39 @@ public class OptionModel implements Comparable<OptionModel> {
         this.title = title == null ? null : title.toString();
     }
 
-    public OptionModel setDisabled(Boolean disabled) {
-        this.disabled = Boolean.TRUE.equals(disabled) ? true : null;
-        return this;
-    }
-
-    public static OptionModel key(@NotNull String key) {
+    public static @NotNull OptionModel key(@NotNull String key) {
         return new OptionModel(key, null);
     }
 
-    public static OptionModel separator() {
+    public static @NotNull OptionModel separator() {
         return OptionModel.key("~~~sep~~~");
     }
 
-    public static OptionModel of(@NotNull String key) {
+    public static @NotNull OptionModel of(@NotNull String key) {
         return new OptionModel(key, key);
     }
 
-    public static OptionModel of(@NotNull String key, @Nullable String title) {
+    public static @NotNull OptionModel of(@NotNull String key, @Nullable String title) {
         return new OptionModel(key, title);
     }
 
-    public static List<OptionModel> listWithEmpty(@NotNull Class<? extends KeyValueEnum> enumClass) {
+    public static @NotNull List<OptionModel> listWithEmpty(@NotNull Class<? extends KeyValueEnum> enumClass) {
         return withEmpty(list(enumClass));
     }
 
-    public static List<OptionModel> enumWithEmpty(@NotNull Class<? extends Enum> enumClass) {
+    public static @NotNull List<OptionModel> enumWithEmpty(@NotNull Class<? extends Enum> enumClass) {
         return withEmpty(enumList(enumClass));
     }
 
-    public static List<OptionModel> withEmpty(@NotNull List<OptionModel> list) {
+    public static @NotNull List<OptionModel> withEmpty(@NotNull List<OptionModel> list) {
         list.add(0, OptionModel.of("", "Empty"));
         return list;
     }
 
-    public static OptionModel of(@NotNull TreeNode item) {
-        OptionModel model = OptionModel.of(StringUtils.defaultString(item.getId(), item.toString()),
-            item.getName()).json(
-            json -> json.put("dir", item.getAttributes().isDir())
+    public static @NotNull OptionModel of(@NotNull TreeNode item) {
+        OptionModel model = OptionModel.of(Objects.toString(item.getId(), item.toString()),
+                item.getName()).json(
+                json -> json.put("dir", item.getAttributes().isDir())
                         .put("size", item.getAttributes().getSize())
                         .put("type", item.getAttributes().getType())
                         .put("empty", item.getAttributes().isEmpty())
@@ -124,33 +121,47 @@ public class OptionModel implements Comparable<OptionModel> {
         return model;
     }
 
-    public static List<OptionModel> listOfPorts(boolean withEmpty) {
+    public static @NotNull List<OptionModel> listOfPorts(boolean withEmpty) {
         List<OptionModel> optionModels = Arrays.stream(SerialPort.getCommPorts()).map(p ->
-                                                   new OptionModel(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName()))
-                                               .collect(Collectors.toList());
+                        new OptionModel(p.getSystemPortName(), p.getSystemPortName() + "/" + p.getDescriptivePortName()))
+                .collect(Collectors.toList());
         return withEmpty ? withEmpty(optionModels) : optionModels;
     }
 
-    public static List<OptionModel> enumList(@NotNull Class<? extends Enum> enumClass) {
-        if (HasDescription.class.isAssignableFrom(enumClass)) {
-            return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString())
-                                                                               .setDescription(((HasDescription) n).getDescription()))
-                         .collect(Collectors.toList());
-        }
-        return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.name(), n.toString()))
-                     .collect(Collectors.toList());
+    public static @NotNull List<OptionModel> enumList(@NotNull Class<? extends Enum> enumClass) {
+        return enumList(enumClass, null);
     }
 
-    public static List<OptionModel> list(@NotNull Class<? extends KeyValueEnum> enumClass) {
+    public static <T extends Enum<T>> @NotNull List<OptionModel> enumList(
+            @NotNull Class<T> enumClass,
+            @Nullable Predicate<T> filter) {
+        return Stream.of(enumClass.getEnumConstants())
+                .filter(e -> filter == null || filter.test(e))
+                .map(n -> {
+                    OptionModel optionModel = OptionModel.of(n.name(), n.toString());
+                    if (HasDescription.class.isAssignableFrom(enumClass)) {
+                        optionModel.setDescription(((HasDescription) n).getDescription());
+                    }
+                    if (HasIcon.class.isAssignableFrom(enumClass)) {
+                        String icon = ((HasIcon) n).getIcon();
+                        if (icon != null) {
+                            optionModel.setIcon(new Icon(icon, ((HasIcon) n).getColor()));
+                        }
+                    }
+                    return optionModel;
+                }).collect(Collectors.toList());
+    }
+
+    public static @NotNull List<OptionModel> list(@NotNull Class<? extends KeyValueEnum> enumClass) {
         return Stream.of(enumClass.getEnumConstants()).map(n -> OptionModel.of(n.getKey(), n.getValue()))
-                     .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
-    public static List<OptionModel> list(@NotNull String... values) {
+    public static @NotNull List<OptionModel> list(@NotNull String... values) {
         return list(Arrays.asList(values));
     }
 
-    public static List<OptionModel> list(@NotNull Collection<String> values) {
+    public static @NotNull List<OptionModel> list(@NotNull Collection<String> values) {
         List<OptionModel> models = new ArrayList<>();
         for (String value : values) {
             if (value.contains("..")) { // 1..12;Value %s
@@ -170,15 +181,15 @@ public class OptionModel implements Comparable<OptionModel> {
         return models;
     }
 
-    public static List<OptionModel> listWithEmpty(@NotNull Collection<String> values) {
+    public static @NotNull List<OptionModel> listWithEmpty(@NotNull Collection<String> values) {
         return withEmpty(list(values));
     }
 
-    public static List<OptionModel> list(@NotNull OptionModel... optionModels) {
+    public static @NotNull List<OptionModel> list(@NotNull OptionModel... optionModels) {
         return Stream.of(optionModels).collect(Collectors.toList());
     }
 
-    public static List<OptionModel> list(@NotNull JsonNode jsonNode) {
+    public static @NotNull List<OptionModel> list(@NotNull JsonNode jsonNode) {
         List<OptionModel> list = new ArrayList<>();
         for (JsonNode child : jsonNode) {
             list.add(OptionModel.key(child.asText()));
@@ -186,51 +197,54 @@ public class OptionModel implements Comparable<OptionModel> {
         return list;
     }
 
-    public static List<OptionModel> range(int min, int max) {
+    public static @NotNull List<OptionModel> range(int min, int max) {
         return IntStream.range(min, max).mapToObj(value -> OptionModel.key(String.valueOf(value))).collect(Collectors.toList());
     }
 
-    public static <T> List<OptionModel> list(@NotNull Collection<T> list, @NotNull Function<T, String> keyFn,
-        @NotNull Function<T, String> valueFn) {
+    public static <T> @NotNull List<OptionModel> list(@NotNull Collection<T> list, @NotNull Function<T, String> keyFn,
+                                                      @NotNull Function<T, String> valueFn) {
         return list.stream().map(e -> OptionModel.of(keyFn.apply(e), valueFn.apply(e))).collect(Collectors.toList());
     }
 
-    public static List<OptionModel> list(@NotNull Map<String, String> map) {
+    public static @NotNull List<OptionModel> list(@NotNull Map<String, String> map) {
         return map.entrySet().stream().map(e -> OptionModel.of(e.getKey(), e.getValue())).collect(Collectors.toList());
     }
 
-    public static List<OptionModel> entityList(@NotNull Collection<? extends BaseEntity> list, @NotNull Context context) {
+    public static @NotNull List<OptionModel> entityList(@NotNull Collection<? extends BaseEntity> list, @NotNull Context context) {
         return entityList(list, null, context);
     }
 
-    public static List<OptionModel> entityList(
-        @NotNull Collection<? extends BaseEntity> list,
-        @Nullable BiConsumer<BaseEntity, OptionModel> configurator,
-        @NotNull Context context) {
+    public static @NotNull List<OptionModel> entityList(
+            @NotNull Collection<? extends BaseEntity> list,
+            @Nullable BiConsumer<BaseEntity, OptionModel> configurator,
+            @NotNull Context context) {
         return list.stream().map(entity -> {
-                       OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
-                       if (entity instanceof HasStatusAndMsg status) {
-                           model.setStatus(status);
-                       }
-                       if (entity instanceof SelectionConfiguration sc) {
-                           model.setIcon(sc.getSelectionIcon());
-                           model.setDescription(sc.getSelectionDescription());
-                       }
-                       entity.configureOptionModel(model, context);
-                       if (configurator != null) {
-                           configurator.accept(entity, model);
-                       }
-                       return model;
-                   })
-                   .sorted().collect(Collectors.toList());
+                    OptionModel model = OptionModel.of(entity.getEntityID(), entity.getTitle());
+                    if (entity instanceof HasStatusAndMsg status) {
+                        model.setStatus(status);
+                    }
+                    if (entity instanceof SelectionConfiguration sc) {
+                        model.setIcon(sc.getSelectionIcon());
+                        model.setDescription(sc.getSelectionDescription());
+                    }
+                    entity.configureOptionModel(model, context);
+                    if (configurator != null) {
+                        configurator.accept(entity, model);
+                    }
+                    return model;
+                })
+                .sorted().collect(Collectors.toList());
     }
 
     public static @NotNull List<OptionModel> simpleNamelist(@NotNull Collection list) {
         List<OptionModel> optionModels = new ArrayList<>();
         for (Object o : list) {
             OptionModel optionModel = OptionModel.key(o.getClass().getSimpleName());
-            if (o instanceof HasDescription) {
-                optionModel.json.put("description", ((HasDescription) o).getDescription());
+            if (o instanceof HasDescription description) {
+                optionModel.setDescription(description.getDescription());
+            }
+            if (o instanceof HasIcon icon && icon.getIcon() != null) {
+                optionModel.setIcon(new Icon(icon.getIcon(), icon.getColor()));
             }
             optionModels.add(optionModel);
         }
@@ -250,12 +264,21 @@ public class OptionModel implements Comparable<OptionModel> {
         }
     }
 
-    public OptionModel setStatus(@Nullable HasStatusAndMsg statusEntity) {
+    public static @Nullable OptionModel getByKey(@NotNull Collection<OptionModel> optionModels, @NotNull String key) {
+        return optionModels.stream().filter(o -> o.getKey().equals(key)).findAny().orElse(null);
+    }
+
+    public @NotNull OptionModel setDisabled(Boolean disabled) {
+        this.disabled = Boolean.TRUE.equals(disabled) ? true : null;
+        return this;
+    }
+
+    public @NotNull OptionModel setStatus(@Nullable HasStatusAndMsg statusEntity) {
         this.status = statusEntity == null ? null : statusEntity.getStatus();
         return this;
     }
 
-    public OptionModel setIcon(@Nullable Icon icon) {
+    public @NotNull OptionModel setIcon(@Nullable Icon icon) {
         if (icon != null) {
             this.icon = icon.getIcon();
             this.color = icon.getColor();
@@ -263,7 +286,7 @@ public class OptionModel implements Comparable<OptionModel> {
         return this;
     }
 
-    public OptionModel setIcon(@Nullable String icon) {
+    public @NotNull OptionModel setIcon(@Nullable String icon) {
         this.icon = icon;
         return this;
     }
@@ -307,10 +330,6 @@ public class OptionModel implements Comparable<OptionModel> {
             addChild(child);
         }
         return this;
-    }
-
-    public static @Nullable OptionModel getByKey(@NotNull Collection<OptionModel> optionModels, @NotNull String key) {
-        return optionModels.stream().filter(o -> o.getKey().equals(key)).findAny().orElse(null);
     }
 
     public @Nullable OptionModel findByKey(@NotNull String key) {
@@ -394,7 +413,17 @@ public class OptionModel implements Comparable<OptionModel> {
      */
     public interface HasDescription {
 
-        @Nullable String getDescription();
+        @Nullable
+        String getDescription();
+    }
+
+    public interface HasIcon {
+
+        @Nullable
+        String getIcon();
+
+        @Nullable
+        String getColor();
     }
 
     public interface KeyValueEnum {
@@ -403,7 +432,7 @@ public class OptionModel implements Comparable<OptionModel> {
             return ((Enum) this).name();
         }
 
-        default String getValue() {
+        default @NotNull String getValue() {
             return this.toString();
         }
     }

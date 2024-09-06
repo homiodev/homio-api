@@ -1,13 +1,14 @@
 package org.homio.api;
 
 import com.pivovarit.function.ThrowingRunnable;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public interface ContextEvent {
 
@@ -86,11 +87,14 @@ public interface ContextEvent {
     // go through all discriminators and count if key exists
     int getEventCount(@NotNull String key);
 
-    <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
-        (String entityID, String key, Consumer<T> listener);
+    <T extends BaseEntityIdentifier> ContextEvent addEntityStatusUpdateListener
+            (String entityID, String key, Consumer<T> listener);
 
     <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
-        (String entityID, String key, EntityUpdateListener<T> listener);
+            (String entityID, String key, Consumer<T> listener);
+
+    <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
+            (String entityID, String key, EntityUpdateListener<T> listener);
 
     /**
      * t Listen any changes fot BaseEntity of concrete type.
@@ -117,13 +121,13 @@ public interface ContextEvent {
     (Class<T> entityClass, String key, EntityUpdateListener<T> listener);
 
     <T extends BaseEntityIdentifier> ContextEvent addEntityCreateListener
-        (Class<T> entityClass, String key, Consumer<T> listener);
+            (Class<T> entityClass, String key, Consumer<T> listener);
 
     <T extends BaseEntityIdentifier> ContextEvent addEntityRemovedListener
-        (Class<T> entityClass, String key, Consumer<T> listener);
+            (Class<T> entityClass, String key, Consumer<T> listener);
 
     <T extends BaseEntityIdentifier> ContextEvent addEntityRemovedListener
-        (String entityID, String key, Consumer<T> listener);
+            (String entityID, String key, Consumer<T> listener);
 
     ContextEvent removeEntityUpdateListener(String entityID, String key);
 
@@ -138,6 +142,10 @@ public interface ContextEvent {
     void runOnceOnInternetUp(@NotNull String name, @NotNull ThrowingRunnable<Exception> command);
 
     boolean isInternetUp();
+
+    default void onInternetStatusChanged(String key, Consumer<Boolean> listener) {
+        addEventListener("internet-status", key, state -> listener.accept(state.boolValue()));
+    }
 
     default void ensureInternetUp(String message) {
         if (!isInternetUp()) {

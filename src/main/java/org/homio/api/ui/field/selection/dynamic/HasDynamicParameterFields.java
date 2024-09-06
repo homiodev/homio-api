@@ -1,14 +1,17 @@
 package org.homio.api.ui.field.selection.dynamic;
 
-import java.util.Map;
-import java.util.Map.Entry;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.model.JSON;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 public interface HasDynamicParameterFields extends HasJsonData {
 
-    default JSONObject getDynamicParameterFieldsHolder() {
+    default @Nullable JSONObject getDynamicParameterFieldsHolder() {
         return getJsonData().optJSONObject("dsp");
     }
 
@@ -16,19 +19,19 @@ public interface HasDynamicParameterFields extends HasJsonData {
         setJsonData("dsp", value);
     }
 
-    default JSONObject getChartDynamicParameterFields() {
+    default @NotNull JSONObject getChartDynamicParameterFields() {
         return getDynamicParameterFields("chartDataSource");
     }
 
-    default JSONObject getValueDynamicParameterFields() {
+    default @NotNull JSONObject getValueDynamicParameterFields() {
         return getDynamicParameterFields("valueDataSource");
     }
 
-    default JSONObject getSetValueDynamicParameterFields() {
+    default @NotNull JSONObject getSetValueDynamicParameterFields() {
         return getDynamicParameterFields("setValueDataSource");
     }
 
-    default JSONObject getDynamicParameterFields(String key) {
+    default @NotNull JSONObject getDynamicParameterFields(String key) {
         JSONObject jsonObject = getDynamicParameterFieldsHolder();
         if (jsonObject != null && jsonObject.has(key)) {
             Object obj = jsonObject.get(key);
@@ -41,6 +44,6 @@ public interface HasDynamicParameterFields extends HasJsonData {
             }
             return jsonObject.getJSONObject(key);
         }
-        return null;
+        return new JSONObject();
     }
 }

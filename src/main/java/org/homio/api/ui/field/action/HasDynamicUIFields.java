@@ -1,12 +1,13 @@
 package org.homio.api.ui.field.action;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.UpdatableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * For BaseItems that requires additional ui fields
@@ -61,6 +62,16 @@ public interface HasDynamicUIFields {
 
                 @Override
                 public @NotNull FieldBuilder addSelect(int order, @NotNull UpdatableValue<String> value, @NotNull List<OptionModel> selections) {
+                    return fake(value);
+                }
+
+                @Override
+                public @NotNull FieldBuilder addMultiSelect(int order, @NotNull UpdatableValue<String> value, @NotNull List<OptionModel> selections) {
+                    return fake(value);
+                }
+
+                @Override
+                public @NotNull FieldBuilder addChips(int order, @NotNull UpdatableValue<String> value) {
                     return fake(value);
                 }
 
@@ -130,39 +141,61 @@ public interface HasDynamicUIFields {
 
     interface UIFieldBuilder {
 
-        @NotNull FieldBuilder addSwitch(int order, @NotNull UpdatableValue<Boolean> value);
+        @NotNull
+        FieldBuilder addSwitch(int order, @NotNull UpdatableValue<Boolean> value);
 
-        @NotNull FieldBuilder addInput(int order, @NotNull UpdatableValue<String> value);
+        @NotNull
+        FieldBuilder addInput(int order, @NotNull UpdatableValue<String> value);
 
-        @NotNull FieldBuilder addSlider(int order, float min, float max,
-            @Nullable String header, @NotNull UpdatableValue<Float> value);
+        @NotNull
+        FieldBuilder addSlider(int order, float min, float max,
+                               @Nullable String header, @NotNull UpdatableValue<Float> value);
 
-        @NotNull FieldBuilder addNumber(int order, @NotNull UpdatableValue<Integer> value);
+        @NotNull
+        FieldBuilder addNumber(int order, @NotNull UpdatableValue<Integer> value);
 
-        @NotNull FieldBuilder addSelect(int order, @NotNull UpdatableValue<String> value,
-            @NotNull List<OptionModel> selections);
+        @NotNull
+        FieldBuilder addSelect(int order, @NotNull UpdatableValue<String> value,
+                               @NotNull List<OptionModel> selections);
+
+        @NotNull
+        FieldBuilder addMultiSelect(int order, @NotNull UpdatableValue<String> value,
+                                    @NotNull List<OptionModel> selections);
+
+        @NotNull
+        FieldBuilder addChips(int order, @NotNull UpdatableValue<String> value);
     }
 
     interface FieldBuilder {
 
-        @NotNull FieldBuilder group(@NotNull String name, int order, @Nullable String borderColor);
+        @NotNull
+        FieldBuilder group(@NotNull String name, int order, @Nullable String borderColor);
 
-        @NotNull FieldBuilder hideInEdit(boolean value);
+        @NotNull
+        FieldBuilder hideInEdit(boolean value);
 
-        @NotNull FieldBuilder label(@Nullable String value);
+        @NotNull
+        FieldBuilder label(@Nullable String value);
 
-        @NotNull FieldBuilder hideInView(boolean value);
+        @NotNull
+        FieldBuilder hideInView(boolean value);
 
-        @NotNull FieldBuilder hideOnEmpty(boolean value);
+        @NotNull
+        FieldBuilder hideOnEmpty(boolean value);
 
-        @NotNull FieldBuilder inlineEdit(boolean value);
+        @NotNull
+        FieldBuilder inlineEdit(boolean value);
 
-        @NotNull FieldBuilder disableEdit(boolean value);
+        @NotNull
+        FieldBuilder disableEdit(boolean value);
 
-        @NotNull FieldBuilder required(boolean value);
+        @NotNull
+        FieldBuilder required(boolean value);
 
-        @NotNull FieldBuilder color(@Nullable String value);
+        @NotNull
+        FieldBuilder color(@Nullable String value);
 
-        @NotNull FieldBuilder background(@Nullable String value);
+        @NotNull
+        FieldBuilder background(@Nullable String value);
     }
 }

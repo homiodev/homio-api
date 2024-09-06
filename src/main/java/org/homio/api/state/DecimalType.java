@@ -1,15 +1,17 @@
 package org.homio.api.state;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Objects;
 
 @Getter
 @Log4j2
@@ -37,11 +39,15 @@ public class DecimalType implements State, Comparable<DecimalType> {
     }
 
     public DecimalType(@NotNull BigDecimal value) {
-        this(value, 2);
+        this(value, Math.max(value.scale(), 2));
     }
 
-    public DecimalType(@NotNull BigDecimal value, Integer scale) {
-        this.value = scale == null ? value : value.setScale(scale, RoundingMode.HALF_UP);
+    public DecimalType(@NotNull BigDecimal value, @Nullable Integer scale) {
+        if (scale != null) {
+            this.value = value.setScale(scale, RoundingMode.HALF_UP);
+        } else {
+            this.value = value;
+        }
     }
 
     public DecimalType(@NotNull BigDecimal value, @Nullable BigDecimal oldValue) {
@@ -70,14 +76,22 @@ public class DecimalType implements State, Comparable<DecimalType> {
         this(BigDecimal.valueOf(value));
     }
 
+    public DecimalType(float value, @Nullable Integer scale) {
+        this(BigDecimal.valueOf(value), scale);
+    }
+
     public DecimalType(String value) {
         this(new BigDecimal(value));
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         DecimalType that = (DecimalType) o;
 
@@ -114,7 +128,7 @@ public class DecimalType implements State, Comparable<DecimalType> {
     }
 
     @Override
-    public Object rawValue() {
+    public BigDecimal rawValue() {
         return value;
     }
 
@@ -144,19 +158,27 @@ public class DecimalType implements State, Comparable<DecimalType> {
 
     @Override
     public String toString() {
-        return toFullString();
+        return value.toPlainString();
     }
 
     public @NotNull String toString(int maxPrecision) {
         int precision = value.precision();
-        if(precision <= maxPrecision) {
-            return toFullString();
+        if (precision <= maxPrecision) {
+            return value.toPlainString();
         }
         String formatString = "%." + maxPrecision + "f";
         return String.format(formatString, value);
     }
 
-    public @NotNull String toFullString() {
-        return value.toPlainString();
+    public @NotNull String toUIString() {
+        return toString() + StringUtils.trimToEmpty(unit);
+    }
+
+    public @NotNull String toUIString(int scale) {
+        return toString(scale) + StringUtils.trimToEmpty(unit);
+    }
+
+    public int getScale() {
+        return value.scale();
     }
 }

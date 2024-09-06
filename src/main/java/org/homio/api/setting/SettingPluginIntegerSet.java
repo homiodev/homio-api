@@ -1,14 +1,15 @@
 package org.homio.api.setting;
 
-import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+import org.homio.api.Context;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.homio.api.Context;
-import org.jetbrains.annotations.NotNull;
+
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
 
@@ -29,7 +30,7 @@ public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
     }
 
     @Override
-    default Set<Integer> parseValue(Context context, String value) {
+    default Set<Integer> deserializeValue(Context context, String value) {
         if (value == null) {
             return Collections.emptySet();
         }
@@ -37,7 +38,7 @@ public interface SettingPluginIntegerSet extends SettingPlugin<Set<Integer>> {
     }
 
     @Override
-    default @NotNull String writeValue(Set<Integer> value) {
+    default @NotNull String serializeValue(Set<Integer> value) {
         return value.stream().map(Object::toString).collect(Collectors.joining(LIST_DELIMITER));
     }
 

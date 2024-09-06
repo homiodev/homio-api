@@ -1,8 +1,9 @@
 package org.homio.api.ui.field;
 
-import java.util.function.Function;
 import lombok.Getter;
 import org.homio.api.state.State;
+
+import java.util.function.Function;
 
 @Getter
 public enum UIFieldType {
@@ -10,6 +11,7 @@ public enum UIFieldType {
     Description,
     SelectBoxButton,
     SelectBox,
+    MultiSelectBox,
 
     // Just a text
     Text,
@@ -21,10 +23,12 @@ public enum UIFieldType {
     Toggle,
     Upload,
     TextInput,
-    /**
-     * return type must be enum. Handle as buttons instead of select box
-     */
+
+    // return type must be enum. Handle as buttons instead of select box
     EnumButtons,
+    // must contains @UIFieldXXXSelection annotation
+    EnumMultiButtons,
+
     ColorPicker,
     Chips,
 

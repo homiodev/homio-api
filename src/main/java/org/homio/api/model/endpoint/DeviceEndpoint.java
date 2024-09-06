@@ -1,14 +1,6 @@
 package org.homio.api.model.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
@@ -32,6 +24,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 /**
  * Specify device single endpoint
  */
@@ -50,37 +51,46 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
      */
     static @NotNull Date getLastUpdated(@NotNull Collection<? extends DeviceEndpoint> endpoints) {
         return new Date(endpoints
-            .stream()
-            .max(Comparator.comparingLong(DeviceEndpoint::getUpdated))
-            .map(DeviceEndpoint::getUpdated).orElse(0L));
+                .stream()
+                .max(Comparator.comparingLong(DeviceEndpoint::getUpdated))
+                .map(DeviceEndpoint::getUpdated).orElse(0L));
     }
 
-    @NotNull String getEndpointName();
+    @NotNull
+    String getEndpointName();
 
     /**
      * @param shortFormat -
      * @return Property human representation name
      */
-    @NotNull String getName(boolean shortFormat);
+    @NotNull
+    String getName(boolean shortFormat);
 
-    @Nullable String getDescription();
+    @Nullable
+    String getDescription();
 
-    @NotNull Icon getIcon();
+    @NotNull
+    Icon getIcon();
 
-    @Nullable String getUnit();
+    @Nullable
+    String getUnit();
 
-    @Nullable String getVariableID();
+    @Nullable
+    String getVariableID();
 
-    @Nullable ContextVar.VariableType getVariableType();
+    @Nullable
+    ContextVar.VariableType getVariableType();
 
     /**
      * It's unique device id. it should be same even if user recreate camera from scratch
      *
      * @return device id
      */
-    @NotNull String getDeviceID();
+    @NotNull
+    String getDeviceID();
 
-    @NotNull String getEndpointEntityID();
+    @NotNull
+    String getEndpointEntityID();
 
     default @NotNull String getEntityID() {
         return getDeviceID() + "_" + getEndpointEntityID();
@@ -89,12 +99,14 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     /**
      * @return Last read value
      */
-    @NotNull State getLastValue();
+    @NotNull
+    State getLastValue();
 
     /**
      * @return duration since last event
      */
-    @NotNull Duration getTimeSinceLastEvent();
+    @NotNull
+    Duration getTimeSinceLastEvent();
 
     /**
      * @return is able to write value
@@ -114,7 +126,8 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
 
     void removeChangeListener(@NotNull String id);
 
-    @NotNull DeviceEndpoint.EndpointType getEndpointType();
+    @NotNull
+    DeviceEndpoint.EndpointType getEndpointType();
 
     /**
      * Implement by property that has ability to read value.
@@ -163,13 +176,16 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         throw new IllegalStateException("Must be implemented for 'slider' type");
     }
 
-    @NotNull Context context();
+    @NotNull
+    Context context();
 
-    @NotNull State getValue();
+    @NotNull
+    State getValue();
 
     /**
      * Update endpoint value
-     * @param value - new value
+     *
+     * @param value          - new value
      * @param externalUpdate - if need update state on UI
      */
     void setValue(State value, boolean externalUpdate);
@@ -200,7 +216,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         }
         if (getUnit() != null) {
             uiInputBuilder.addInfo("%s <small>%s</small>"
-                .formatted(value.stringValue(), getUnit()), InfoType.HTML);
+                    .formatted(value.stringValue(), getUnit()), InfoType.HTML);
         } else {
             assembleUIAction(uiInputBuilder);
         }
@@ -212,16 +228,13 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     }
 
     default UIInputBuilder createDimmerActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
-        throw new IllegalStateException("Must be implemented");
+        return createSliderActionBuilder(uiInputBuilder);
     }
 
     default UIInputBuilder createStringActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
-        if (!getValue().stringValue().equals("N/A")) {
-            uiInputBuilder.addTextInput(getEntityID(), getValue().stringValue(), false).setApplyButton(true)
-                          .setDisabled(isDisabled());
-            return uiInputBuilder;
-        }
-        return null;
+        uiInputBuilder.addTextInput(getEntityID(), getValue().stringValue(), false).setRequireApply(true)
+                .setDisabled(isDisabled());
+        return uiInputBuilder;
     }
 
     default UIInputBuilder createSelectActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
@@ -236,15 +249,15 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
         }
 
         postConfigureSelectBoxAction(uiInputBuilder
-            .addSelectBox(getEntityID(), (context, params) -> {
-                setValue(new StringType(params.getString("value")), false);
-                return onExternalUpdated();
-            })
-            .addOptions(options)
-            .setPlaceholder("-----------")
-            .setHighlightSelected(true)
-            .setSelected(getValue().toString())
-            .setDisabled(isDisabled()));
+                .addSelectBox(getEntityID(), (context, params) -> {
+                    setValue(new StringType(params.getString("value")), false);
+                    return onExternalUpdated();
+                })
+                .addOptions(options)
+                .setPlaceholder("-----------")
+                .setHighlightSelected(true)
+                .setSelected(getValue().toString())
+                .setDisabled(isDisabled()));
         return uiInputBuilder;
     }
 
@@ -272,20 +285,24 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     default UIInputBuilder createSliderActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
         float value = getValue().floatValue(0);
         UISliderItemBuilder sliderItemBuilder =
-            uiInputBuilder.addSlider(getEntityID(), value, getMin(), getMax(),
-                              (context, params) -> {
-                                  setValue(new DecimalType(params.getInt("value")), false);
-                                  return onExternalUpdated();
-                              })
-                          .setDefaultValue((Float) getDefaultValue())
-                          .setThumbLabel(getUnit())
-                          .setDisabled(isDisabled());
+                uiInputBuilder.addSlider(getEntityID(), value, getMin(), getMax(),
+                                (context, params) -> {
+                                    setValue(new DecimalType(params.getInt("value")), false);
+                                    return onExternalUpdated();
+                                })
+                        .setDefaultValue((Float) getDefaultValue())
+                        .setThumbLabel(getUnit())
+                        .setDisabled(isDisabled());
         postConfigureSliderAction(sliderItemBuilder);
         return uiInputBuilder;
     }
 
     default UIInputBuilder createTriggerActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
-        throw new IllegalStateException("Must be implemented in child device endpoint to configure action button");
+        uiInputBuilder.addButton(this.getEntityID(), getIcon(), (context, params) -> {
+            onExternalUpdated();
+            return null;
+        }).setText("");
+        return uiInputBuilder;
     }
 
     default UIInputBuilder createBoolActionBuilder(@NotNull UIInputBuilder uiInputBuilder) {
@@ -310,7 +327,7 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
             case ENDPOINT_BATTERY:
                 int val = getValue().intValue();
                 uiInputBuilder.addInfo(getValue().toString(), InfoType.Text)
-                              .setColor(val < 35 ? "#E74C3C" : (val < 50) ? "#EC8826" : (val < 85) ? "#F1C40F" : "#8BC34A");
+                        .setColor(val < 35 ? "#E74C3C" : (val < 50) ? "#EC8826" : (val < 85) ? "#F1C40F" : "#8BC34A");
                 break;
             case ENDPOINT_DEVICE_STATUS:
                 Status status = Status.valueOf(getValue().stringValue());
@@ -339,33 +356,35 @@ public interface DeviceEndpoint extends Comparable<DeviceEndpoint> {
     @RequiredArgsConstructor
     enum EndpointType {
         trigger(
-            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
-            jsonNode -> new StringType(jsonNode.asText()),
-            State::stringValue),
+                (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+                jsonNode -> new StringType(jsonNode.asText()),
+                State::stringValue),
         bool(
-            (jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s)),
-            jsonNode -> OnOffType.of(jsonNode.asBoolean()),
-            State::boolValue),
+                (jsonObject, s) -> OnOffType.of(jsonObject.getBoolean(s)),
+                jsonNode -> OnOffType.of(jsonNode.asBoolean()),
+                State::boolValue),
+        // Number for float numbers
         number(
-            (jsonObject, s) -> new DecimalType(jsonObject.getInt(s)),
-            jsonNode -> new DecimalType(jsonNode.asDouble()),
-            State::floatValue),
+                (jsonObject, s) -> new DecimalType(jsonObject.getInt(s)),
+                jsonNode -> new DecimalType(jsonNode.asDouble()),
+                State::floatValue),
+        // Dimmer for int values
         dimmer(
-            (jsonObject, s) -> new DecimalType(jsonObject.getInt(s)),
-            jsonNode -> new DecimalType(jsonNode.asText()),
-            State::intValue),
+                (jsonObject, s) -> new DecimalType(jsonObject.getInt(s)),
+                jsonNode -> new DecimalType(jsonNode.asText()),
+                State::intValue),
         string(
-            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
-            jsonNode -> new StringType(jsonNode.asText()),
-            State::stringValue),
+                (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+                jsonNode -> new StringType(jsonNode.asText()),
+                State::stringValue),
         select(
-            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
-            jsonNode -> new StringType(jsonNode.asText()),
-            State::stringValue),
+                (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+                jsonNode -> new StringType(jsonNode.asText()),
+                State::stringValue),
         color(
-            (jsonObject, s) -> new StringType(jsonObject.getString(s)),
-            jsonNode -> new StringType(jsonNode.asText()),
-            State::stringValue);
+                (jsonObject, s) -> new StringType(jsonObject.getString(s)),
+                jsonNode -> new StringType(jsonNode.asText()),
+                State::stringValue);
 
         private final BiFunction<JSONObject, String, State> reader;
         private final Function<JsonNode, State> nodeReader;

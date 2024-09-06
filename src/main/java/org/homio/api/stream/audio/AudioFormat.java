@@ -1,12 +1,14 @@
-package org.homio.api.audio;
+package org.homio.api.stream.audio;
 
-import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
-public class AudioFormat {
+import java.util.Objects;
+import java.util.Set;
 
+public class AudioFormat {
     /**
-     * link AudioCodec encoded data without any container header or footer, e.g. MP3 is a non-container format
+     * {@code AudioCodec} encoded data without any container header or footer,
+     * e.g. MP3 is a non-container format
      */
     public static final String CONTAINER_NONE = "NONE";
     /**
@@ -29,9 +31,12 @@ public class AudioFormat {
      * @see <a href="http://wiki.multimedia.cx/?title=PCM#PCM_Types">PCM Types</a>
      */
     public static final String CODEC_PCM_SIGNED = "PCM_SIGNED";
+    // generic pcm signed format (no container) without any further constraints
+    public static final AudioFormat PCM_SIGNED = new AudioFormat(AudioFormat.CONTAINER_NONE,
+            AudioFormat.CODEC_PCM_SIGNED, null, null, null, null);
     // generic wav format without any further constraints
     public static final AudioFormat WAV = new AudioFormat(AudioFormat.CONTAINER_WAVE, AudioFormat.CODEC_PCM_SIGNED,
-        null, null, null, null);
+            null, null, null, null);
     /**
      * PCM Unsigned
      *
@@ -58,7 +63,7 @@ public class AudioFormat {
     public static final String CODEC_MP3 = "MP3";
     // generic mp3 format without any further constraints
     public static final AudioFormat MP3 = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_MP3, null, null,
-        null, null);
+            null, null);
     /**
      * Vorbis Codec
      *
@@ -67,60 +72,63 @@ public class AudioFormat {
     public static final String CODEC_VORBIS = "VORBIS";
     // generic OGG format without any further constraints
     public static final AudioFormat OGG = new AudioFormat(AudioFormat.CONTAINER_OGG, AudioFormat.CODEC_VORBIS, null,
-        null, null, null);
+            null, null, null);
     /**
      * AAC Codec
      */
     public static final String CODEC_AAC = "AAC";
     // generic AAC format without any further constraints
     public static final AudioFormat AAC = new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_AAC, null, null,
-        null, null);
+            null, null);
     /**
      * Codec
      */
-    private final @Nullable
-    String codec;
+    private final @Nullable String codec;
 
     /**
      * Container
      */
-    private final @Nullable
-    String container;
+    private final @Nullable String container;
 
     /**
      * Big endian or little endian
      */
-    private final @Nullable
-    Boolean bigEndian;
+    private final @Nullable Boolean bigEndian;
 
     /**
      * Bit depth
      *
      * @see <a href="http://bit.ly/1OTydad">Bit Depth</a>
      */
-    private final @Nullable
-    Integer bitDepth;
+    private final @Nullable Integer bitDepth;
 
     /**
      * Bit rate
      *
      * @see <a href="http://bit.ly/1OTy5rk">Bit Rate</a>
      */
-    private final @Nullable
-    Integer bitRate;
+    private final @Nullable Integer bitRate;
 
     /**
      * Sample frequency
      */
-    private final @Nullable
-    Long frequency;
+    private final @Nullable Long frequency;
+
+    /**
+     * Channels number
+     */
+    private final @Nullable Integer channels;
 
     /**
      * Constructs an instance with the specified properties.
      * <p>
-     * Note that any properties that are null indicate that the corresponding AudioFormat allows any value for the property.
+     * Note that any properties that are null indicate that
+     * the corresponding AudioFormat allows any value for
+     * the property.
      * <p>
-     * Concretely this implies that if, for example, one passed null for the value of frequency, this would mean the created AudioFormat allowed for any valid
+     * Concretely this implies that if, for example, one
+     * passed null for the value of frequency, this would
+     * mean the created AudioFormat allowed for any valid
      * frequency.
      *
      * @param container The container for the audio
@@ -131,13 +139,40 @@ public class AudioFormat {
      * @param frequency The frequency at which the audio was sampled
      */
     public AudioFormat(@Nullable String container, @Nullable String codec, @Nullable Boolean bigEndian,
-        @Nullable Integer bitDepth, @Nullable Integer bitRate, @Nullable Long frequency) {
+                       @Nullable Integer bitDepth, @Nullable Integer bitRate, @Nullable Long frequency) {
+        this(container, codec, bigEndian, bitDepth, bitRate, frequency, 1);
+    }
+
+    /**
+     * Constructs an instance with the specified properties.
+     * <p>
+     * Note that any properties that are null indicate that
+     * the corresponding AudioFormat allows any value for
+     * the property.
+     * <p>
+     * Concretely this implies that if, for example, one
+     * passed null for the value of frequency, this would
+     * mean the created AudioFormat allowed for any valid
+     * frequency.
+     *
+     * @param container The container for the audio
+     * @param codec     The audio codec
+     * @param bigEndian If the audo data is big endian
+     * @param bitDepth  The bit depth of the audo data
+     * @param bitRate   The bit rate of the audio
+     * @param frequency The frequency at which the audio was sampled
+     * @param channels  The number of channels
+     */
+    public AudioFormat(@Nullable String container, @Nullable String codec, @Nullable Boolean bigEndian,
+                       @Nullable Integer bitDepth, @Nullable Integer bitRate, @Nullable Long frequency,
+                       @Nullable Integer channels) {
         this.container = container;
         this.codec = codec;
         this.bigEndian = bigEndian;
         this.bitDepth = bitDepth;
         this.bitRate = bitRate;
         this.frequency = frequency;
+        this.channels = channels;
     }
 
     /**
@@ -166,11 +201,12 @@ public class AudioFormat {
     }
 
     /**
-     * Gets the first concrete AudioFormat in the passed set or a preferred one based on 16bit, 16KHz, big endian default
+     * Gets the first concrete AudioFormat in the passed set or a preferred one
+     * based on 16bit, 16KHz, big endian default
      *
      * @param audioFormats The AudioFormats from which to choose
-     * @return The preferred AudioFormat or null if none could be determined. A passed concrete format is preferred adding default values to an abstract
-     * AudioFormat in the passed set.
+     * @return The preferred AudioFormat or null if none could be determined. A passed concrete format is preferred
+     * adding default values to an abstract AudioFormat in the passed set.
      */
     public static @Nullable AudioFormat getPreferredFormat(Set<AudioFormat> audioFormats) {
         // Return the first concrete AudioFormat found
@@ -217,15 +253,18 @@ public class AudioFormat {
                 continue;
             }
 
-            // Prefer WAVE container
-            if (!CONTAINER_WAVE.equals(format.getContainer())) {
+            // Prefer WAVE container or raw SIGNED PCM encoded audio
+            if (!CONTAINER_WAVE.equals(format.getContainer())
+                && !(CONTAINER_NONE.equals(format.getContainer()) && CODEC_PCM_SIGNED.equals(format.getCodec()))) {
                 continue;
             }
+
+            Integer channel = format.getChannels() == null ? Integer.valueOf(1) : format.getChannels();
 
             // If required set BigEndian, BitDepth, BitRate, and Frequency to default values
             if (null == format.isBigEndian()) {
                 format = new AudioFormat(format.getContainer(), format.getCodec(), Boolean.TRUE, format.getBitDepth(),
-                    format.getBitRate(), format.getFrequency());
+                        format.getBitRate(), format.getFrequency(), channel);
             }
             if (null == format.getBitDepth() || null == format.getBitRate() || null == format.getFrequency()) {
                 // Define default values
@@ -256,7 +295,7 @@ public class AudioFormat {
                 }
 
                 format = new AudioFormat(format.getContainer(), format.getCodec(), format.isBigEndian(), bitDepth,
-                    bitRate, frequency);
+                        bitRate, frequency, channel);
             }
 
             // Return preferred AudioFormat
@@ -272,8 +311,7 @@ public class AudioFormat {
      *
      * @return The codec
      */
-    public @Nullable
-    String getCodec() {
+    public @Nullable String getCodec() {
         return codec;
     }
 
@@ -282,8 +320,7 @@ public class AudioFormat {
      *
      * @return The container
      */
-    public @Nullable
-    String getContainer() {
+    public @Nullable String getContainer() {
         return container;
     }
 
@@ -292,8 +329,7 @@ public class AudioFormat {
      *
      * @return If format is big endian
      */
-    public @Nullable
-    Boolean isBigEndian() {
+    public @Nullable Boolean isBigEndian() {
         return bigEndian;
     }
 
@@ -303,8 +339,7 @@ public class AudioFormat {
      * @return Bit depth
      * @see <a href="http://bit.ly/1OTydad">Bit Depth</a>
      */
-    public @Nullable
-    Integer getBitDepth() {
+    public @Nullable Integer getBitDepth() {
         return bitDepth;
     }
 
@@ -314,8 +349,7 @@ public class AudioFormat {
      * @return Bit rate
      * @see <a href="http://bit.ly/1OTy5rk">Bit Rate</a>
      */
-    public @Nullable
-    Integer getBitRate() {
+    public @Nullable Integer getBitRate() {
         return bitRate;
     }
 
@@ -324,18 +358,24 @@ public class AudioFormat {
      *
      * @return The frequency
      */
-    public @Nullable
-    Long getFrequency() {
+    public @Nullable Long getFrequency() {
         return frequency;
+    }
+
+    /**
+     * Gets channel number
+     *
+     * @return The number of channels
+     */
+    public @Nullable Integer getChannels() {
+        return channels;
     }
 
     /**
      * Determines if the passed AudioFormat is compatible with this AudioFormat.
      * <p>
-     * This AudioFormat is compatible with the passed AudioFormat if both have the same value for all non-null members of this instance.
-     *
-     * @param audioFormat -
-     * @return -
+     * This AudioFormat is compatible with the passed AudioFormat if both have
+     * the same value for all non-null members of this instance.
      */
     public boolean isCompatible(@Nullable AudioFormat audioFormat) {
         if (audioFormat == null) {
@@ -356,30 +396,22 @@ public class AudioFormat {
         if ((null != getBitRate()) && (!getBitRate().equals(audioFormat.getBitRate()))) {
             return false;
         }
-        return (null == getFrequency()) || (getFrequency().equals(audioFormat.getFrequency()));
+        if ((null != getFrequency()) && (!getFrequency().equals(audioFormat.getFrequency()))) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof AudioFormat format) {
-            if (!(null == getCodec() ? null == format.getCodec() : getCodec().equals(format.getCodec()))) {
-                return false;
-            }
-            if (!(null == getContainer() ? null == format.getContainer()
-                : getContainer().equals(format.getContainer()))) {
-                return false;
-            }
-            if (!(null == isBigEndian() ? null == format.isBigEndian() : isBigEndian().equals(format.isBigEndian()))) {
-                return false;
-            }
-            if (!(null == getBitDepth() ? null == format.getBitDepth() : getBitDepth().equals(format.getBitDepth()))) {
-                return false;
-            }
-            if (!(null == getBitRate() ? null == format.getBitRate() : getBitRate().equals(format.getBitRate()))) {
-                return false;
-            }
-            return null == getFrequency() ? null == format.getFrequency()
-                : getFrequency().equals(format.getFrequency());
+            return Objects.equals(getCodec(), format.getCodec()) && //
+                   Objects.equals(getContainer(), format.getContainer()) && //
+                   Objects.equals(isBigEndian(), format.isBigEndian()) && //
+                   Objects.equals(getBitDepth(), format.getBitDepth()) && //
+                   Objects.equals(getBitRate(), format.getBitRate()) && //
+                   Objects.equals(getFrequency(), format.getFrequency()) && //
+                   Objects.equals(getChannels(), format.getChannels());
         }
         return super.equals(obj);
     }
@@ -394,16 +426,18 @@ public class AudioFormat {
         result = prime * result + ((codec == null) ? 0 : codec.hashCode());
         result = prime * result + ((container == null) ? 0 : container.hashCode());
         result = prime * result + ((frequency == null) ? 0 : frequency.hashCode());
+        result = prime * result + ((channels == null) ? 0 : channels.hashCode());
         return result;
     }
 
     @Override
     public String toString() {
         return "AudioFormat [" + (codec != null ? "codec=" + codec + ", " : "")
-            + (container != null ? "container=" + container + ", " : "")
-            + (bigEndian != null ? "bigEndian=" + bigEndian + ", " : "")
-            + (bitDepth != null ? "bitDepth=" + bitDepth + ", " : "")
-            + (bitRate != null ? "bitRate=" + bitRate + ", " : "")
-            + (frequency != null ? "frequency=" + frequency : "") + "]";
+               + (container != null ? "container=" + container + ", " : "")
+               + (bigEndian != null ? "bigEndian=" + bigEndian + ", " : "")
+               + (bitDepth != null ? "bitDepth=" + bitDepth + ", " : "")
+               + (bitRate != null ? "bitRate=" + bitRate + ", " : "")
+               + (frequency != null ? "frequency=" + frequency + ", " : "")
+               + (channels != null ? "channels=" + channels : "") + "]";
     }
 }

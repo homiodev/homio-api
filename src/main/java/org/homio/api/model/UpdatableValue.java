@@ -5,6 +5,17 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.homio.api.entity.HasJsonData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.util.SystemPropertyUtils;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.time.Duration;
@@ -17,15 +28,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.converter.ConditionalGenericConverter;
-import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.util.NumberUtils;
-import org.springframework.util.SystemPropertyUtils;
 
 /**
  * Represent object with ability to change it's value and notify observable classes
@@ -34,12 +36,19 @@ public class UpdatableValue<T> {
 
     private static final DefaultConversionService CONVERSION_SERVICE = new DefaultConversionService();
     // any class which uses this UpdatableValue may listen it's changes
-    private @NotNull final List<Consumer<T>> updateListeners = new ArrayList<>();
-    private T value;
+    private @NotNull
+    final List<Consumer<T>> updateListeners = new ArrayList<>();
     // when we create UpdatableValue which base on another UpdatableValue we must reflect base changes.
-    private @Getter @NotNull final List<Consumer<T>> reflectListeners = new ArrayList<>();
-    private @Getter @NotNull final String name;
-    private @Getter @NotNull final Class type;
+    private @Getter
+    @NotNull
+    final List<Consumer<T>> reflectListeners = new ArrayList<>();
+    private @Getter
+    @NotNull
+    final String name;
+    private @Getter
+    @NotNull
+    final Class type;
+    private T value;
     private Function<T, T> extraFunc;
     private @NotNull Set<Validator> validators = new HashSet<>();
     private @Getter int updateCount;
@@ -54,9 +63,9 @@ public class UpdatableValue<T> {
     /**
      * Create UpdatableValue with null initial.
      *
-     * @param name      - value name
-     * @param type      - value class type
-     * @param <T>       - value type
+     * @param name - value name
+     * @param type - value class type
+     * @param <T>  - value type
      * @return UpdatableValue
      */
     public static <T> @NotNull UpdatableValue<T> deferred(@NotNull String name, @NotNull Class<T> type) {
@@ -70,11 +79,35 @@ public class UpdatableValue<T> {
         return updatableValue;
     }
 
+    public static <T> @NotNull UpdatableValue<T> wrap(@NotNull HasJsonData jsonData, @NotNull T defaultValue, @NotNull String name) {
+        UpdatableValue<T> updatableValue = new UpdatableValue<>(name, defaultValue.getClass());
+        String value = StringUtils.defaultIfEmpty(jsonData.getJsonData(name), defaultValue.toString());
+        updatableValue.value = updatableValue.parse(value);
+        updatableValue.lastRefreshTime = System.currentTimeMillis();
+        updatableValue.addListener(s -> jsonData.setJsonData(name, s));
+        return updatableValue;
+    }
+
     public static <T> @NotNull UpdatableValue<T> ofNullable(@Nullable T value, @NotNull String name, @NotNull Class<T> valueType) {
         if (value == null) {
             return deferred(name, valueType);
         }
         return wrap(value, name);
+    }
+
+    // fetch field name either from @Field or from @Value or from defaultValueSupplier
+    private static @NotNull String getNameFromAnnotation(@Nullable Value value, @NotNull Supplier<String> defaultValueSupplier) {
+        /*if (field != null) {
+            return field.name();
+        } else*/
+        if (value != null) {
+            String v = value.value();
+            return v.substring(
+                    v.indexOf(SystemPropertyUtils.PLACEHOLDER_PREFIX) + SystemPropertyUtils.PLACEHOLDER_PREFIX.length(),
+                    v.contains(SystemPropertyUtils.VALUE_SEPARATOR) ? v.indexOf(SystemPropertyUtils.VALUE_SEPARATOR)
+                            : v.indexOf(SystemPropertyUtils.PLACEHOLDER_SUFFIX));
+        }
+        return defaultValueSupplier.get();
     }
 
     public T getValue() {
@@ -148,21 +181,6 @@ public class UpdatableValue<T> {
         return updatableValueWithExtra;
     }
 
-    // fetch field name either from @Field or from @Value or from defaultValueSupplier
-    private static @NotNull String getNameFromAnnotation(@Nullable Value value, @NotNull Supplier<String> defaultValueSupplier) {
-        /*if (field != null) {
-            return field.name();
-        } else*/
-        if (value != null) {
-            String v = value.value();
-            return v.substring(
-                v.indexOf(SystemPropertyUtils.PLACEHOLDER_PREFIX) + SystemPropertyUtils.PLACEHOLDER_PREFIX.length(),
-                v.contains(SystemPropertyUtils.VALUE_SEPARATOR) ? v.indexOf(SystemPropertyUtils.VALUE_SEPARATOR)
-                    : v.indexOf(SystemPropertyUtils.PLACEHOLDER_SUFFIX));
-        }
-        return defaultValueSupplier.get();
-    }
-
     private interface Validator {
 
         void validate(@NotNull Object value);
@@ -175,9 +193,9 @@ public class UpdatableValue<T> {
 
         @Override
         public void serialize(
-            @NotNull UpdatableValue updatableValue,
-            @NotNull JsonGenerator gen,
-            @NotNull SerializerProvider provider) throws IOException {
+                @NotNull UpdatableValue updatableValue,
+                @NotNull JsonGenerator gen,
+                @NotNull SerializerProvider provider) throws IOException {
             gen.writeObject(updatableValue.value);
         }
     }
@@ -208,10 +226,10 @@ public class UpdatableValue<T> {
                     throw new RuntimeException("Failed cast targetType <" + targetType.getType() + "> to UpdatableValue in " + targetType.getSource());
                 }
                 String name = getNameFromAnnotation(/*targetType.getAnnotation(Column.class),*/
-                    targetType.getAnnotation(Value.class), () -> {
-                        // must never through as UpdatableValueConverter uses by spring only with @Value annotation
-                        throw new RuntimeException("Can not fetch UpdatableValue name from " + targetType.getSource());
-                    });
+                        targetType.getAnnotation(Value.class), () -> {
+                            // must never through as UpdatableValueConverter uses by spring only with @Value annotation
+                            throw new RuntimeException("Can not fetch UpdatableValue name from " + targetType.getSource());
+                        });
                 UpdatableValue updatableValue = new UpdatableValue<>(name, genericClass);
 
                 updatableValue.validators = collectValidators(targetType, a -> {
@@ -234,21 +252,21 @@ public class UpdatableValue<T> {
         }
 
         private @NotNull Set<Validator> collectValidators(
-            @NotNull TypeDescriptor targetType,
-            @NotNull Function<Annotation, Long> exceedConverter) {
+                @NotNull TypeDescriptor targetType,
+                @NotNull Function<Annotation, Long> exceedConverter) {
             return Stream.of(targetType.getAnnotations())
-                         .filter(a -> exceedConverter.apply(a) != null) // ensures that only known annotations uses
-                         .map(a -> (Validator) value -> {
-                             Long exceedValue = exceedConverter.apply(a);
-                             Long actualValue = ((Number) value).longValue();
-                             if ((actualValue < exceedValue && a.annotationType().isAssignableFrom(Min.class)) ||
-                                 (actualValue > exceedValue && a.annotationType().isAssignableFrom(Max.class))) {
-                                 throw new IllegalArgumentException(
-                                     String.format("Validation fails for value <%s>. %s value is <%d>", value, a.annotationType().getSimpleName(),
-                                         exceedValue));
-                             }
-                         })
-                         .collect(Collectors.toSet());
+                    .filter(a -> exceedConverter.apply(a) != null) // ensures that only known annotations uses
+                    .map(a -> (Validator) value -> {
+                        Long exceedValue = exceedConverter.apply(a);
+                        Long actualValue = ((Number) value).longValue();
+                        if ((actualValue < exceedValue && a.annotationType().isAssignableFrom(Min.class)) ||
+                            (actualValue > exceedValue && a.annotationType().isAssignableFrom(Max.class))) {
+                            throw new IllegalArgumentException(
+                                    String.format("Validation fails for value <%s>. %s value is <%d>", value, a.annotationType().getSimpleName(),
+                                            exceedValue));
+                        }
+                    })
+                    .collect(Collectors.toSet());
         }
     }
 }

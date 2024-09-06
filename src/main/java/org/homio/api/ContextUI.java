@@ -1,22 +1,14 @@
 package org.homio.api;
 
-import static org.homio.api.util.CommonUtils.getErrorMessage;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.console.ConsolePlugin;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.BaseEntityIdentifier;
-import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.version.HasFirmwareVersion;
@@ -26,6 +18,7 @@ import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPluginButton;
+import org.homio.api.stream.audio.AudioStream;
 import org.homio.api.ui.UI.Color;
 import org.homio.api.ui.UIActionHandler;
 import org.homio.api.ui.dialog.DialogModel;
@@ -40,22 +33,42 @@ import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static org.homio.api.util.CommonUtils.getErrorMessage;
+
 @SuppressWarnings("unused")
 public interface ContextUI {
 
-    @NotNull ContextUI.ContextUIToastr toastr();
+    @NotNull
+    ContextUI.ContextUIToastr toastr();
 
-    @NotNull Context context();
+    @NotNull
+    Context context();
 
-    @NotNull UIInputBuilder inputBuilder();
+    @NotNull
+    UIInputBuilder inputBuilder();
 
-    @NotNull ContextUI.ContextUINotification notification();
+    @NotNull
+    ContextUI.ContextUINotification notification();
 
-    @NotNull ContextUI.ContextUIConsole console();
+    @NotNull
+    ContextUI.ContextUIConsole console();
 
-    @NotNull ContextUI.ContextUIDialog dialog();
+    @NotNull
+    ContextUI.ContextUIDialog dialog();
 
-    @NotNull ContextUI.ContextUIProgress progress();
+    @NotNull
+    ContextUI.ContextUIProgress progress();
+
+    @NotNull
+    ContextUI.ContextUIMedia media();
+
+    void registerUIImage(@NotNull String name, @NotNull String base64Image);
 
     /**
      * Assign context menu action to specific entity on UI
@@ -95,7 +108,7 @@ public interface ContextUI {
      * @param value           - value to send to UI
      */
     void updateInnerSetItem(@NotNull BaseEntityIdentifier parentEntity, @NotNull String parentFieldName, @NotNull String innerEntityID,
-        @NotNull String updateField, @NotNull Object value);
+                            @NotNull String updateField, @NotNull Object value);
 
     void sendDynamicUpdate(@NotNull String dynamicUpdateID, @NotNull Object value);
 
@@ -141,9 +154,11 @@ public interface ContextUI {
 
     interface HeaderButtonBuilder {
 
-        @NotNull HeaderButtonBuilder title(@NotNull String title);
+        @NotNull
+        HeaderButtonBuilder title(@NotNull String title);
 
-        @NotNull HeaderButtonBuilder icon(@NotNull Icon icon);
+        @NotNull
+        HeaderButtonBuilder icon(@NotNull Icon icon);
 
         /**
          * Set border
@@ -152,7 +167,8 @@ public interface ContextUI {
          * @param color - default unset
          * @return this
          */
-        @NotNull HeaderButtonBuilder border(int width, @Nullable String color);
+        @NotNull
+        HeaderButtonBuilder border(int width, @Nullable String color);
 
         /**
          * Button available duration
@@ -160,7 +176,8 @@ public interface ContextUI {
          * @param duration time for duration
          * @return this
          */
-        @NotNull HeaderButtonBuilder duration(int duration);
+        @NotNull
+        HeaderButtonBuilder duration(int duration);
 
         /**
          * Specify HeaderButton only available for specific page
@@ -168,13 +185,17 @@ public interface ContextUI {
          * @param page - page id
          * @return - this
          */
-        @NotNull HeaderButtonBuilder availableForPage(@NotNull Class<? extends BaseEntity> page);
+        @NotNull
+        HeaderButtonBuilder availableForPage(@NotNull Class<? extends BaseEntity> page);
 
-        @NotNull HeaderButtonBuilder clickAction(@NotNull Class<? extends SettingPluginButton> clickAction);
+        @NotNull
+        HeaderButtonBuilder clickAction(@NotNull Class<? extends SettingPluginButton> clickAction);
 
-        @NotNull HeaderButtonBuilder clickAction(@NotNull Supplier<ActionResponseModel> clickAction);
+        @NotNull
+        HeaderButtonBuilder clickAction(@NotNull Supplier<ActionResponseModel> clickAction);
 
-        @NotNull HeaderButtonBuilder attachToHeaderMenu(@NotNull String name);
+        @NotNull
+        HeaderButtonBuilder attachToHeaderMenu(@NotNull String name);
 
         void build();
     }
@@ -187,34 +208,40 @@ public interface ContextUI {
          * @param entity - entity to link to
          * @return this
          */
-        @NotNull NotificationBlockBuilder linkToEntity(@NotNull BaseEntity entity);
+        @NotNull
+        NotificationBlockBuilder linkToEntity(@NotNull BaseEntity entity);
 
-        @NotNull NotificationBlockBuilder visibleForUser(@NotNull String email);
+        @NotNull
+        NotificationBlockBuilder visibleForUser(@NotNull String email);
 
-        @NotNull NotificationBlockBuilder blockActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
+        @NotNull
+        NotificationBlockBuilder blockActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
 
-        @NotNull NotificationBlockBuilder addFlexAction(@NotNull String key, @NotNull Consumer<UIFlexLayoutBuilder> builder);
+        @NotNull
+        NotificationBlockBuilder addFlexAction(@NotNull String key, @NotNull Consumer<UIFlexLayoutBuilder> builder);
 
-        @NotNull NotificationBlockBuilder contextMenuActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
+        @NotNull
+        NotificationBlockBuilder contextMenuActionBuilder(@NotNull Consumer<UIInputBuilder> builder);
 
-        @NotNull NotificationBlockBuilder setNameColor(@Nullable String color);
+        @NotNull
+        NotificationBlockBuilder setNameColor(@Nullable String color);
 
         default @NotNull NotificationBlockBuilder setDevices(@Nullable Collection<? extends DeviceBaseEntity> devices) {
             if (devices != null) {
                 addInfo("sum", new Icon("fas fa-mountain-city", "#CDDC39"), Lang.getServerMessage("TITLE.DEVICES_STAT",
-                    FlowMap.of("ONLINE", devices.stream().filter(d -> d.getStatus().isOnline()).count(), "TOTAL", devices.size())));
+                        FlowMap.of("ONLINE", devices.stream().filter(d -> d.getStatus().isOnline()).count(), "TOTAL", devices.size())));
                 if (devices.isEmpty()) {
                     return this;
                 }
                 contextMenuActionBuilder(contextAction -> {
                     for (DeviceBaseEntity device : devices) {
                         String name = device instanceof DeviceEndpointsBehaviourContract
-                            ? ((DeviceEndpointsBehaviourContract) device).getDeviceFullName() :
-                            device.getTitle();
+                                ? ((DeviceEndpointsBehaviourContract) device).getDeviceFullName() :
+                                device.getTitle();
                         contextAction.addInfo(name)
-                                     .setColor(device.getStatus().getColor())
-                                     .setIcon(device.getEntityIcon())
-                                     .linkToEntity(device);
+                                .setColor(device.getStatus().getColor())
+                                .setIcon(device.getEntityIcon())
+                                .linkToEntity(device);
                     }
                 });
             }
@@ -227,12 +254,14 @@ public interface ContextUI {
          * @param status - block status
          * @return this
          */
-        @NotNull NotificationBlockBuilder setStatus(@Nullable Status status);
+        @NotNull
+        NotificationBlockBuilder setStatus(@Nullable Status status);
 
         /**
          * Run handler on every user fetch url
          */
-        @NotNull NotificationBlockBuilder fireOnFetch(@NotNull Runnable handler);
+        @NotNull
+        NotificationBlockBuilder fireOnFetch(@NotNull Runnable handler);
 
         /**
          * Set 'Update' button if firmware already installing or not
@@ -240,7 +269,8 @@ public interface ContextUI {
          * @param value - true if need disable 'update' button
          * @return this
          */
-        @NotNull NotificationBlockBuilder setUpdating(boolean value);
+        @NotNull
+        NotificationBlockBuilder setUpdating(boolean value);
 
         /**
          * Specify custom border color. Default takes color from Status if present. If border and status not specified than fetch all rows from block and check
@@ -249,7 +279,8 @@ public interface ContextUI {
          * @param color - color in hex format
          * @return this
          */
-        @NotNull NotificationBlockBuilder setBorderColor(@Nullable String color);
+        @NotNull
+        NotificationBlockBuilder setBorderColor(@Nullable String color);
 
         /**
          * Set notification block version
@@ -257,7 +288,8 @@ public interface ContextUI {
          * @param version - version string
          * @return builder
          */
-        @NotNull NotificationBlockBuilder setVersion(@Nullable String version);
+        @NotNull
+        NotificationBlockBuilder setVersion(@Nullable String version);
 
         /**
          * Add updatable button to ui notification block.
@@ -267,8 +299,9 @@ public interface ContextUI {
          * @param versions      - list of versions to be able to select from UI select box
          * @return builder
          */
-        @NotNull NotificationBlockBuilder setUpdatable(@NotNull ThrowingBiFunction<ProgressBar, String, ActionResponseModel, Exception> updateHandler,
-            @NotNull List<OptionModel> versions);
+        @NotNull
+        NotificationBlockBuilder setUpdatable(@NotNull ThrowingBiFunction<ProgressBar, String, ActionResponseModel, Exception> updateHandler,
+                                              @NotNull List<OptionModel> versions);
 
         default @NotNull NotificationBlockBuilder setUpdatable(@NotNull HasFirmwareVersion firmwareEntity) {
             List<OptionModel> versions = firmwareEntity.getNewAvailableVersion();
@@ -291,9 +324,11 @@ public interface ContextUI {
             return this;
         }
 
-        @NotNull NotificationInfoLineBuilder addInfo(@NotNull String key, @Nullable Icon icon, @NotNull String info);
+        @NotNull
+        NotificationInfoLineBuilder addInfo(@NotNull String key, @Nullable Icon icon, @NotNull String info);
 
-        @NotNull NotificationBlockBuilder addEntityInfo(@NotNull BaseEntity entity);
+        @NotNull
+        NotificationBlockBuilder addEntityInfo(@NotNull BaseEntity entity);
 
         /**
          * Remove info row
@@ -306,20 +341,17 @@ public interface ContextUI {
 
     interface NotificationInfoLineBuilder {
 
-        @NotNull NotificationInfoLineBuilder setTextColor(@Nullable String color);
-
-        @NotNull NotificationInfoLineBuilder setRightText(@NotNull String text, @Nullable Icon icon, @Nullable String color);
-
-        /**
-         * Specify info status. Calculates on UI when discover border color. Also fetch message if status message is not null and hover it on UI
-         *
-         * @param entity - entity
-         * @return this
-         */
-        @NotNull NotificationInfoLineBuilder setStatus(@NotNull HasStatusAndMsg entity);
+        @NotNull
+        NotificationInfoLineBuilder setTextColor(@Nullable String color);
 
         @NotNull
-        default NotificationInfoLineBuilder setRightText(@NotNull String text) {
+        NotificationInfoLineBuilder setRightText(@Nullable String text, @Nullable Icon icon, @Nullable String color);
+
+        @NotNull
+        NotificationInfoLineBuilder setTooltip(@Nullable String tooltip);
+
+        @NotNull
+        default NotificationInfoLineBuilder setRightText(@Nullable String text) {
             return setRightText(text, null, null);
         }
 
@@ -329,17 +361,33 @@ public interface ContextUI {
             return this;
         }
 
-        @NotNull NotificationInfoLineBuilder setRightButton(@Nullable Icon buttonIcon, @Nullable String buttonText,
-            @Nullable String confirmMessage, @Nullable UIActionHandler handler);
+        @NotNull
+        NotificationButtonBuilder setRightButton(@Nullable Icon buttonIcon, @Nullable String buttonText,
+                                                 @Nullable UIActionHandler handler);
 
-        @NotNull NotificationInfoLineBuilder setRightSettingsButton(@NotNull Icon buttonIcon, @NotNull Consumer<UILayoutBuilder> assembler);
+        @NotNull
+        NotificationInfoLineBuilder setRightToggleButton(boolean value, @Nullable UIActionHandler handler);
+
+        @NotNull
+        NotificationInfoLineBuilder setRightSettingsButton(@NotNull Icon buttonIcon, @NotNull Consumer<UILayoutBuilder> assembler);
 
         @NotNull
         default NotificationInfoLineBuilder setRightSettingsButton(@NotNull Consumer<UILayoutBuilder> assembler) {
             return setRightSettingsButton(new Icon("fas fa-ellipsis-vertical"), assembler);
         }
 
-        @NotNull NotificationInfoLineBuilder setAsLink(@NotNull BaseEntity entity);
+        @NotNull
+        NotificationInfoLineBuilder setAsLink(@NotNull BaseEntity entity);
+
+        interface NotificationButtonBuilder {
+            NotificationButtonBuilder setConfirmMessage(@Nullable String value);
+
+            NotificationButtonBuilder setDialogBackgroundColor(@Nullable String value);
+
+            NotificationButtonBuilder setDialogTitle(@Nullable String value);
+
+            NotificationButtonBuilder setDialogIcon(@Nullable Icon icon);
+        }
     }
 
     interface ContextUIProgress {
@@ -371,10 +419,10 @@ public interface ContextUI {
 
         @SneakyThrows
         default <T> T runAndGet(
-            @NotNull String progressKey,
-            boolean cancellable,
-            @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
-            @Nullable Consumer<Exception> finallyBlock) {
+                @NotNull String progressKey,
+                boolean cancellable,
+                @NotNull ThrowingFunction<ProgressBar, T, Exception> process,
+                @Nullable Consumer<Exception> finallyBlock) {
 
             ProgressBar progressBar = (progress, message, error) -> update(progressKey, progress, message, cancellable);
             Exception exception = null;
@@ -397,10 +445,10 @@ public interface ContextUI {
 
         @SneakyThrows
         default void run(
-            @NotNull String progressKey,
-            boolean cancellable,
-            @NotNull ThrowingConsumer<ProgressBar, Exception> process,
-            @Nullable Consumer<Exception> finallyBlock) {
+                @NotNull String progressKey,
+                boolean cancellable,
+                @NotNull ThrowingConsumer<ProgressBar, Exception> process,
+                @Nullable Consumer<Exception> finallyBlock) {
 
             runAndGet(progressKey, cancellable, progressBar -> {
                 process.accept(progressBar);
@@ -409,10 +457,17 @@ public interface ContextUI {
         }
     }
 
+    interface ContextUIMedia {
+
+        void playWebAudio(@NotNull AudioStream audio, @Nullable Integer from, @Nullable Integer to);
+    }
+
     interface ContextUIDialog {
 
+        MirrorImageDialog topImageDialog(@NotNull String title, @NotNull String icon, @NotNull String iconColor);
+
         default void sendConfirmation(@NotNull String key, @NotNull String title, @NotNull Runnable confirmHandler,
-            @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
+                                      @NotNull Collection<String> messages, @Nullable String headerButtonAttachTo) {
             sendConfirmation(key, title, responseType -> {
                 if (responseType == DialogResponseType.Accepted) {
                     confirmHandler.run();
@@ -431,15 +486,15 @@ public interface ContextUI {
          * @param maxTimeoutInSec      -
          */
         default void sendConfirmation(@NotNull String key, @NotNull String title,
-            @NotNull Consumer<DialogResponseType> confirmHandler, @NotNull Collection<String> messages,
-            int maxTimeoutInSec, @Nullable String headerButtonAttachTo) {
+                                      @NotNull Consumer<DialogResponseType> confirmHandler, @NotNull Collection<String> messages,
+                                      int maxTimeoutInSec, @Nullable String headerButtonAttachTo) {
             sendDialogRequest(key, title, (responseType, pressedButton, parameters) -> confirmHandler.accept(responseType),
-                dialogModel -> {
-                    List<ActionInputParameter> inputs =
-                        messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
-                    dialogModel.headerButtonAttachTo(headerButtonAttachTo).submitButton("Confirm", button -> {
-                    }).group("General", inputs);
-                });
+                    dialogModel -> {
+                        List<ActionInputParameter> inputs =
+                                messages.stream().map(ActionInputParameter::message).collect(Collectors.toList());
+                        dialogModel.headerButtonAttachTo(headerButtonAttachTo).submitButton("Confirm", button -> {
+                        }).group("General", inputs);
+                    });
         }
 
         /**
@@ -449,8 +504,13 @@ public interface ContextUI {
          */
         void sendDialogRequest(@NotNull DialogModel dialogModel);
 
+        /**
+         * Send remove dialog request to ui if dialog not need anymore
+         */
+        void removeDialogRequest(@NotNull String uuid);
+
         default void sendDialogRequest(@NotNull String key, @NotNull String title, @NotNull DialogRequestHandler actionHandler,
-            @NotNull Consumer<DialogModel> dialogBuilderSupplier) {
+                                       @NotNull Consumer<DialogModel> dialogBuilderSupplier) {
             DialogModel dialogModel = new DialogModel(key, title, actionHandler);
             dialogBuilderSupplier.accept(dialogModel);
             sendDialogRequest(dialogModel);
@@ -467,6 +527,10 @@ public interface ContextUI {
         default void reloadWindow(@NotNull String reason) {
             reloadWindow(reason, 5);
         }
+
+        interface MirrorImageDialog {
+            void sendImage(String imageBase64);
+        }
     }
 
     interface ContextUINotification {
@@ -479,10 +543,10 @@ public interface ContextUI {
         void removeEmptyBlock(@NotNull String key);
 
         void addBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
-            @Nullable Consumer<NotificationBlockBuilder> builder);
+                      @Nullable Consumer<NotificationBlockBuilder> builder);
 
         default void addOrUpdateBlock(@NotNull String key, @NotNull String name, @Nullable Icon icon,
-            @NotNull Consumer<NotificationBlockBuilder> builder) {
+                                      @NotNull Consumer<NotificationBlockBuilder> builder) {
             if (isHasBlock(key)) {
                 updateBlock(key, builder);
             } else {
@@ -561,7 +625,7 @@ public interface ContextUI {
         }
 
         default void error(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam,
-            @Nullable Exception ex) {
+                           @Nullable Exception ex) {
             sendMessage(title, message, NotificationLevel.error, messageParam, ex, null);
         }
 
@@ -614,7 +678,7 @@ public interface ContextUI {
         }
 
         default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level,
-            @Nullable FlowMap messageParam, @Nullable Exception ex, @Nullable Integer timeout) {
+                                 @Nullable FlowMap messageParam, @Nullable Exception ex, @Nullable Integer timeout) {
             title = title == null ? null : Lang.getServerMessage(title, messageParam);
             String text;
             if (ex instanceof ServerException) {
@@ -639,10 +703,9 @@ public interface ContextUI {
          * Register console plugin name. In case if console plugin available only if some entity is created or not enabled by some case we may show disabled
          * console name on UI
          *
-         * @param name     - plugin name
-         * @param resource - resource name requires if you need restrict access for users with roles
+         * @param name - plugin name
          */
-        void registerPluginName(@NotNull String name, @Nullable String resource);
+        void registerPluginName(@NotNull String name);
 
         <T extends ConsolePlugin> void registerPlugin(@NotNull String name, @NotNull T plugin);
 
@@ -650,7 +713,8 @@ public interface ContextUI {
             registerPlugin(plugin.getEntityID(), plugin);
         }
 
-        @Nullable <T extends ConsolePlugin> T getRegisteredPlugin(@NotNull String name);
+        @Nullable
+        <T extends ConsolePlugin> T getRegisteredPlugin(@NotNull String name);
 
         boolean unRegisterPlugin(@NotNull String name);
 

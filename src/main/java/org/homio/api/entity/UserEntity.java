@@ -1,8 +1,11 @@
 package org.homio.api.entity;
 
-import java.util.Set;
 import org.apache.logging.log4j.Level;
+import org.homio.api.Context;
+import org.homio.api.setting.SettingPlugin;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
 
 public interface UserEntity {
 
@@ -12,9 +15,11 @@ public interface UserEntity {
 
     String getName();
 
-    @NotNull UserType getUserType();
+    @NotNull
+    UserType getUserType();
 
-    @NotNull Set<String> getRoles();
+    @NotNull
+    Set<String> getRoles();
 
     /**
      * Log for specific user
@@ -36,12 +41,16 @@ public interface UserEntity {
         return getUserType() == UserType.ADMIN;
     }
 
-    default boolean isAllowResource(String resource) {
-        return getUserType() == UserType.ADMIN;
-    }
+    void assertDeleteAccess(BaseEntity entity);
+
+    void assertEditAccess(BaseEntity entity);
+
+    void assertViewAccess(BaseEntity entity);
+
+    void assertSettingsAccess(SettingPlugin<?> setting, Context context);
 
     // other is not for homio user but other purposes
     enum UserType {
-        ADMIN, PRIVILEGED, GUEST, OTHER
+        ADMIN, GUEST, OTHER
     }
 }

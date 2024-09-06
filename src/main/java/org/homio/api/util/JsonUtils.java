@@ -1,7 +1,5 @@
 package org.homio.api.util;
 
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,13 +9,6 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +17,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.OutputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+
 public class JsonUtils {
 
     public static final ObjectMapper OBJECT_MAPPER;
@@ -33,12 +38,19 @@ public class JsonUtils {
 
     static {
         OBJECT_MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         YAML_OBJECT_MAPPER = new ObjectMapper(new YAMLFactory()
-            .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER))
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    @SneakyThrows
+    public static void saveToFile(Object content, Path path) {
+        try (OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.TRUNCATE_EXISTING)) {
+            YAML_OBJECT_MAPPER.writeValue(outputStream, content);
+        }
     }
 
     @SneakyThrows
@@ -65,7 +77,9 @@ public class JsonUtils {
     }
 
     public static @NotNull JsonNode getJsonPath(@Nullable JsonNode node, @NotNull String path) {
-        if (node == null) {return MissingNode.getInstance();}
+        if (node == null) {
+            return MissingNode.getInstance();
+        }
         JsonNode cursor = node;
         for (String item : path.split("/")) {
             cursor = cursor.path(item);
@@ -83,7 +97,7 @@ public class JsonUtils {
      * @return if node was updated
      */
     public static boolean updateJsonPath(@NotNull JsonNode node, @NotNull String path, @NotNull Predicate<JsonNode> requireUpdateFn,
-        @NotNull BiConsumer<ObjectNode, String> updateFn) {
+                                         @NotNull BiConsumer<ObjectNode, String> updateFn) {
         JsonNode cursor = node;
         JsonNode parent = null;
         String[] pathItems = path.split("/");

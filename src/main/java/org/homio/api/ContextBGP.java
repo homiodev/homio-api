@@ -1,26 +1,6 @@
 package org.homio.api;
 
-import static org.homio.api.util.CommonUtils.getErrorMessage;
-
-import com.pivovarit.function.ThrowingBiConsumer;
-import com.pivovarit.function.ThrowingBiFunction;
-import com.pivovarit.function.ThrowingConsumer;
-import com.pivovarit.function.ThrowingFunction;
-import com.pivovarit.function.ThrowingRunnable;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchEvent.Kind;
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import com.pivovarit.function.*;
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.Logger;
 import org.homio.api.entity.HasStatusAndMsg;
@@ -31,17 +11,21 @@ import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchEvent.Kind;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import static org.homio.api.util.CommonUtils.getErrorMessage;
+
 @SuppressWarnings("unused")
 public interface ContextBGP {
-
-    void addLowPriorityRequest(String key, ThrowingRunnable<Exception> handler);
-
-    void removeLowPriorityRequest(String key);
-
-    // run ping for ip address every minute
-    void ping(@NotNull String discriminator, @NotNull String ipAddress, @NotNull Consumer<Boolean> availableStatus);
-
-    void unPing(@NotNull String discriminator, @Nullable String ipAddress);
 
     static boolean cancel(ThreadContext<?> threadContext) {
         if (threadContext != null) {
@@ -59,6 +43,19 @@ public interface ContextBGP {
         return false;
     }
 
+    /**
+     * Add handler that executes once per minute
+     */
+    void addLowPriorityRequest(String key, ThrowingRunnable<Exception> handler);
+
+    void removeLowPriorityRequest(String key);
+
+    // run ping for ip address every minute
+    void ping(@NotNull String discriminator, @NotNull String ipAddress, @NotNull Consumer<Boolean> availableStatus);
+
+    void unPing(@NotNull String discriminator, @Nullable String ipAddress);
+
+    @NotNull
     Context context();
 
     /**
@@ -79,30 +76,32 @@ public interface ContextBGP {
      * @param <T>  -
      * @return -
      */
-    @NotNull <T> ScheduleBuilder<T> builder(@NotNull String name);
+    @NotNull
+    <T> ScheduleBuilder<T> builder(@NotNull String name);
 
-    @NotNull ProcessBuilder processBuilder(@NotNull String name);
+    @NotNull
+    ProcessBuilder processBuilder(@NotNull String name);
 
     default @NotNull ProcessBuilder processBuilder(@NotNull DeviceBaseEntity entity, @NotNull Logger log) {
         return
-            processBuilder(entity.getEntityID())
-                .onStarted(t -> entity.setStatusOnline())
-                .attachLogger(log)
-                .attachEntityStatus(entity)
-                .onFinished((ex, responseCode) -> {
-                    if (ex != null) {
-                        log.error("[{}]: Error while start {} dashboard {}",
-                            entity.getEntityID(), entity.getTitle(), getErrorMessage(ex));
-                    } else {
-                        log.warn("[{}]: {} finished with status: {}",
-                            entity.getEntityID(), entity.getTitle(), responseCode);
-                    }
-                    if (entity instanceof EntityService<?> es) {
-                        es.destroyService(ex);
-                    }
-                })
-                .setErrorLoggerOutput(msg -> log.error("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg))
-                .setInputLoggerOutput(msg -> log.info("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg));
+                processBuilder(entity.getEntityID())
+                        .onStarted(t -> entity.setStatusOnline())
+                        .attachLogger(log)
+                        .attachEntityStatus(entity)
+                        .onFinished((ex, responseCode) -> {
+                            if (ex != null) {
+                                log.error("[{}]: Error while start {} dashboard {}",
+                                        entity.getEntityID(), entity.getTitle(), getErrorMessage(ex));
+                            } else {
+                                log.warn("[{}]: {} finished with status: {}",
+                                        entity.getEntityID(), entity.getTitle(), responseCode);
+                            }
+                            if (entity instanceof EntityService<?> es) {
+                                es.destroyService(ex);
+                            }
+                        })
+                        .setErrorLoggerOutput(msg -> log.error("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg))
+                        .setInputLoggerOutput(msg -> log.info("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg));
     }
 
     /**
@@ -117,9 +116,9 @@ public interface ContextBGP {
      * @return this
      */
     default @NotNull <T> ThreadContext<Map<String, T>> awaitProcesses(@NotNull String name, Duration maxTimeToWait,
-        @NotNull List<ThreadContext<T>> processes,
-        @NotNull Logger logger,
-        @Nullable Consumer<Map<String, T>> finallyBlock) {
+                                                                      @NotNull List<ThreadContext<T>> processes,
+                                                                      @NotNull Logger logger,
+                                                                      @Nullable Consumer<Map<String, T>> finallyBlock) {
         ScheduleBuilder<Map<String, T>> builder = builder(name);
         return builder.execute(arg -> {
             Map<String, T> result = new HashMap<>();
@@ -148,8 +147,9 @@ public interface ContextBGP {
      * @return -
      * @throws IllegalArgumentException if file not readable
      */
-    @NotNull ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
-        throws IllegalArgumentException;
+    @NotNull
+    ThreadContext<Void> runFileWatchdog(@NotNull Path file, String key, @NotNull ThrowingRunnable<Exception> onUpdateCommand)
+            throws IllegalArgumentException;
 
     /**
      * Run directory watchdog for specific events.
@@ -160,8 +160,9 @@ public interface ContextBGP {
      * @return - thread context
      * @throws IllegalArgumentException if directory not exists or dir already under watching
      */
-    @NotNull ThreadContext<Void> runDirectoryWatchdog(@NotNull Path dir, @NotNull ThrowingConsumer<WatchEvent<Path>, Exception> onUpdateCommand,
-        Kind<?>... eventsToListen);
+    @NotNull
+    ThreadContext<Void> runDirectoryWatchdog(@NotNull Path dir, @NotNull ThrowingConsumer<WatchEvent<Path>, Exception> onUpdateCommand,
+                                             Kind<?>... eventsToListen);
 
     /**
      * Create builder that consume progress bar. Every progress bar update reflects on UI.
@@ -173,7 +174,8 @@ public interface ContextBGP {
         return runWithProgress(key, false);
     }
 
-    @NotNull ProgressBuilder runWithProgress(@NotNull String key, boolean cancellable);
+    @NotNull
+    ProgressBuilder runWithProgress(@NotNull String key, boolean cancellable);
 
     boolean isThreadExists(@NotNull String name, boolean checkOnlyRunningThreads);
 
@@ -189,27 +191,30 @@ public interface ContextBGP {
     void registerThreadsPuller(@NotNull String id, @NotNull Consumer<ThreadPuller> threadPullerConsumer);
 
     <P extends HasEntityIdentifier, T> void runInBatch(@NotNull String batchName,
-        @Nullable Duration maxTerminateTimeout,
-        @NotNull Collection<P> taskItems,
-        @NotNull Function<P, Callable<T>> callableProducer,
-        @NotNull Consumer<Integer> progressConsumer,
-        @NotNull Consumer<List<T>> finallyProcessBlockHandler);
+                                                       @Nullable Duration maxTerminateTimeout,
+                                                       @NotNull Collection<P> taskItems,
+                                                       @NotNull Function<P, Callable<T>> callableProducer,
+                                                       @NotNull Consumer<Integer> progressConsumer,
+                                                       @NotNull Consumer<List<T>> finallyProcessBlockHandler);
 
-    @NotNull <T> List<T> runInBatchAndGet(@NotNull String batchName,
-        @Nullable Duration maxTerminateTimeout,
-        int threadsCount,
-        @NotNull Map<String, Callable<T>> runnableTasks,
-        @NotNull Consumer<Integer> progressConsumer);
+    @NotNull
+    <T> List<T> runInBatchAndGet(@NotNull String batchName,
+                                 @Nullable Duration maxTerminateTimeout,
+                                 int threadsCount,
+                                 @NotNull Map<String, Callable<T>> runnableTasks,
+                                 @NotNull Consumer<Integer> progressConsumer);
 
     void executeOnExit(@NotNull String name, @NotNull ThrowingRunnable<Exception> runnable);
 
     interface ProgressBuilder {
 
         // default - false
-        @NotNull ProgressBuilder setCancellable(boolean cancellable);
+        @NotNull
+        ProgressBuilder setCancellable(boolean cancellable);
 
         // default - true
-        @NotNull ProgressBuilder setLogToConsole(boolean value);
+        @NotNull
+        ProgressBuilder setLogToConsole(boolean value);
 
         /**
          * Throw error if process already exists
@@ -217,9 +222,11 @@ public interface ContextBGP {
          * @param ex - error to throw if process already exists
          * @return this
          */
-        @NotNull ProgressBuilder setErrorIfExists(@Nullable Exception ex);
+        @NotNull
+        ProgressBuilder setErrorIfExists(@Nullable Exception ex);
 
-        @NotNull ProgressBuilder onFinally(@Nullable Consumer<Exception> finallyBlock);
+        @NotNull
+        ProgressBuilder onFinally(@Nullable Consumer<Exception> finallyBlock);
 
         @NotNull
         default ProgressBuilder onFinally(@Nullable Runnable finallyBlock) {
@@ -230,7 +237,8 @@ public interface ContextBGP {
             });
         }
 
-        @NotNull ProgressBuilder onError(@Nullable Runnable errorBlock);
+        @NotNull
+        ProgressBuilder onError(@Nullable Runnable errorBlock);
 
         @NotNull
         default ThreadContext<Void> execute(@NotNull ThrowingConsumer<ProgressBar, Exception> command) {
@@ -251,29 +259,40 @@ public interface ContextBGP {
             return future;
         }
 
-        @NotNull <R> ThreadContext<R> execute(@NotNull ThrowingFunction<ProgressBar, R, Exception> command);
+        @NotNull
+        <R> ThreadContext<R> execute(@NotNull ThrowingFunction<ProgressBar, R, Exception> command);
     }
 
     interface ProcessBuilder {
 
-        @NotNull ProcessBuilder setInputLoggerOutput(@Nullable Consumer<String> inputConsumer);
+        @NotNull
+        ProcessBuilder setInputLoggerOutput(@Nullable Consumer<String> inputConsumer);
 
-        @NotNull ProcessBuilder setErrorLoggerOutput(@Nullable Consumer<String> errorConsumer);
+        @NotNull
+        ProcessBuilder setErrorLoggerOutput(@Nullable Consumer<String> errorConsumer);
 
-        @NotNull ProcessBuilder onStarted(@NotNull ThrowingConsumer<ProcessContext, Exception> startedHandler);
+        @NotNull
+        ProcessBuilder onStarted(@NotNull ThrowingConsumer<ProcessContext, Exception> startedHandler);
 
         default @NotNull ProcessBuilder onStarted(@NotNull ThrowingRunnable<Exception> startedHandler) {
             return onStarted(processContext -> startedHandler.run());
         }
 
         // finish handler on error or on regular finish process. finishHandler get ex
-        @NotNull ProcessBuilder onFinished(@NotNull ThrowingBiConsumer<@Nullable Exception, @NotNull Integer, Exception> finishHandler);
+        @NotNull
+        ProcessBuilder onFinished(@NotNull ThrowingBiConsumer<@Nullable Exception, @NotNull Integer, Exception> finishHandler);
 
-        @NotNull ProcessBuilder attachLogger(@NotNull Logger log);
+        @NotNull
+        ProcessBuilder attachLogger(@NotNull Logger log);
 
-        @NotNull ProcessBuilder attachEntityStatus(@NotNull HasStatusAndMsg entity);
+        @NotNull
+        ProcessBuilder attachEntityStatus(@NotNull HasStatusAndMsg entity);
 
-        @NotNull ProcessContext execute(@NotNull String command);
+        @NotNull
+        ProcessBuilder workingDir(@NotNull Path dir);
+
+        @NotNull
+        ProcessContext execute(@NotNull String... command);
     }
 
     interface ScheduleBuilder<T> {
@@ -288,22 +307,28 @@ public interface ContextBGP {
             return execute(command, true);
         }
 
-        @NotNull ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command, boolean start);
+        @NotNull
+        ThreadContext<T> execute(@NotNull ThrowingFunction<ThreadContext<T>, T, Exception> command, boolean start);
 
-        @NotNull ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command, boolean start);
+        @NotNull
+        ThreadContext<Void> execute(@NotNull ThrowingRunnable<Exception> command, boolean start);
 
-        @NotNull ScheduleBuilder<T> interval(@NotNull String cron);
+        @NotNull
+        ScheduleBuilder<T> interval(@NotNull String cron);
 
-        @NotNull ScheduleBuilder<T> interval(@NotNull Duration duration);
+        @NotNull
+        ScheduleBuilder<T> interval(@NotNull Duration duration);
 
         default @NotNull ScheduleBuilder<T> intervalWithDelay(@NotNull Duration duration) {
             delay(duration);
             return interval(duration);
         }
 
-        @NotNull ScheduleBuilder<T> throwOnError(boolean value);
+        @NotNull
+        ScheduleBuilder<T> throwOnError(boolean value);
 
-        @NotNull ScheduleBuilder<T> onError(@NotNull Consumer<Exception> errorListener);
+        @NotNull
+        ScheduleBuilder<T> onError(@NotNull Consumer<Exception> errorListener);
 
         /**
          * Executes once on single thread finished or every run in case of interval
@@ -311,9 +336,11 @@ public interface ContextBGP {
          * @param runnable - code to run
          * @return this
          */
-        @NotNull ScheduleBuilder<T> onFinally(@NotNull Runnable runnable);
+        @NotNull
+        ScheduleBuilder<T> onFinally(@NotNull Runnable runnable);
 
-        @NotNull ScheduleBuilder<T> metadata(@NotNull String key, @NotNull Object value);
+        @NotNull
+        ScheduleBuilder<T> metadata(@NotNull String key, @NotNull Object value);
 
         /**
          * Execute some code with ThreadContext before execution
@@ -321,7 +348,8 @@ public interface ContextBGP {
          * @param handler - consumer to execute
          * @return ScheduleBuilder
          */
-        @NotNull ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
+        @NotNull
+        ScheduleBuilder<T> tap(Consumer<ThreadContext<T>> handler);
 
         /**
          * Set delay before first execution.
@@ -329,26 +357,32 @@ public interface ContextBGP {
          * @param duration - wait timeout
          * @return ScheduleBuilder
          */
-        @NotNull ScheduleBuilder<T> delay(@NotNull Duration duration);
+        @NotNull
+        ScheduleBuilder<T> delay(@NotNull Duration duration);
 
         /**
          * Specify that need path requested authenticated user to background process thread
          *
          * @return this
          */
-        @NotNull ScheduleBuilder<T> auth();
+        @NotNull
+        ScheduleBuilder<T> auth();
 
         // default false
-        @NotNull ScheduleBuilder<T> hideOnUI(boolean value);
+        @NotNull
+        ScheduleBuilder<T> hideOnUI(boolean value);
 
         // default true
-        @NotNull ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
+        @NotNull
+        ScheduleBuilder<T> hideOnUIAfterCancel(boolean value);
 
         // default true
-        @NotNull ScheduleBuilder<T> cancelOnError(boolean value);
+        @NotNull
+        ScheduleBuilder<T> cancelOnError(boolean value);
 
         // link log file to be able to read on UI
-        @NotNull ScheduleBuilder<T> linkLogFile(@NotNull Path logFile);
+        @NotNull
+        ScheduleBuilder<T> linkLogFile(@NotNull Path logFile);
 
         /**
          * Add value listener when run/schedule finished.
@@ -358,23 +392,27 @@ public interface ContextBGP {
          *                      after execute
          * @return this
          */
-        @NotNull ScheduleBuilder<T> valueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
+        @NotNull
+        ScheduleBuilder<T> valueListener(@NotNull String name, @NotNull ThrowingBiFunction<T, T, Boolean, Exception> valueListener);
     }
 
     interface ThreadPuller {
 
-        @NotNull ThreadPuller addThread(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-            @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
+        @NotNull
+        ThreadPuller addThread(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
+                               @Nullable String state, @Nullable String errorMessage, @Nullable String bigDescription);
 
-        @NotNull ThreadPuller addScheduler(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
-            @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
-            int runCount,
-            @Nullable String bigDescription);
+        @NotNull
+        ThreadPuller addScheduler(@NotNull String name, @Nullable String description, @NotNull Date creationTime,
+                                  @Nullable String state, @Nullable String errorMessage, @Nullable Duration period,
+                                  int runCount,
+                                  @Nullable String bigDescription);
     }
 
     interface ProcessContext {
 
-        @NotNull String getName();
+        @NotNull
+        String getName();
 
         boolean isStopped();
 
@@ -383,7 +421,8 @@ public interface ContextBGP {
 
     interface ThreadContext<T> {
 
-        @NotNull String getName();
+        @NotNull
+        String getName();
 
         void rename(@NotNull String newName);
 
@@ -391,15 +430,18 @@ public interface ContextBGP {
 
         void attachInputStream(@NotNull InputStream inputStream, @NotNull InputStream errorStream);
 
-        @NotNull String getState();
+        @NotNull
+        String getState();
 
         void setState(@NotNull String state);
 
-        @Nullable Object getMetadata(@NotNull String key);
+        @Nullable
+        Object getMetadata(@NotNull String key);
 
         void setMetadata(@NotNull String key, @NotNull Object value);
 
-        @Nullable String getDescription();
+        @Nullable
+        String getDescription();
 
         void setDescription(@NotNull String description);
 
@@ -421,7 +463,8 @@ public interface ContextBGP {
          *
          * @return next time to call
          */
-        @Nullable String getTimeToNextSchedule();
+        @Nullable
+        String getTimeToNextSchedule();
 
         /**
          * Await at most timeout to finish process
@@ -430,7 +473,8 @@ public interface ContextBGP {
          * @return response returned by thread
          * @throws Exception -
          */
-        @Nullable T await(@NotNull Duration timeout) throws Exception;
+        @Nullable
+        T await(@NotNull Duration timeout) throws Exception;
 
         /**
          * Add listener to fire when process finishes and value returned from process

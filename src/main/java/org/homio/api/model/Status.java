@@ -1,15 +1,16 @@
 package org.homio.api.model;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Getter
 @RequiredArgsConstructor
-public enum Status {
+public enum Status implements OptionModel.HasIcon {
     ONLINE("#6E993D", "fas fa-check"),
     RUNNING("#B59324", "fas fa-person-running"),
     INITIALIZE("#CF79ED", "fas fa-spinner fa-spin"),

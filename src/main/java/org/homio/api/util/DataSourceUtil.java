@@ -1,14 +1,16 @@
 package org.homio.api.util;
 
-import static org.homio.api.entity.HasJsonData.LEVEL_DELIMITER;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+
+import static org.homio.api.entity.HasJsonData.LEVEL_DELIMITER;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public class DataSourceUtil {
 
@@ -26,7 +28,7 @@ public class DataSourceUtil {
         private @NotNull JsonNode metadata = EMPTY_METADATA;
 
         public SelectionSource(String value, String metadata) {
-            this.value = StringUtils.defaultString(value, "");
+            this.value = Objects.toString(value, "");
             if (StringUtils.isNotEmpty(metadata)) {
                 try {
                     this.metadata = OBJECT_MAPPER.readValue(metadata, JsonNode.class);
@@ -50,7 +52,7 @@ public class DataSourceUtil {
 
         public <T extends BaseEntity> T getValue(Context context) {
             String[] items = value.split(LEVEL_DELIMITER);
-            return context.db().getEntity(items[items.length - 1]);
+            return context.db().get(items[items.length - 1]);
         }
     }
 }

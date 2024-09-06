@@ -1,7 +1,5 @@
 package org.homio.api.console;
 
-import java.util.Map;
-import java.util.Objects;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
@@ -9,6 +7,9 @@ import org.homio.api.setting.console.header.ConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Uses for implementing page for console tab
@@ -22,7 +23,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     default @NotNull String getEntityID() {
-        return Objects.requireNonNull(AddonEntrypoint.getAddonID(getClass()));
+        return Objects.toString(AddonEntrypoint.getAddonID(getClass()), getClass().getSimpleName());
     }
 
     T getValue();
@@ -31,7 +32,8 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
         return null;
     }
 
-    @NotNull RenderType getRenderType();
+    @NotNull
+    RenderType getRenderType();
 
     /**
      * @return Uses for grouping few addon pages with same parent
@@ -70,7 +72,7 @@ public interface ConsolePlugin<T> extends Comparable<ConsolePlugin<?>> {
     }
 
     default @Nullable ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata)
-        throws Exception {
+            throws Exception {
         return null;
     }
 

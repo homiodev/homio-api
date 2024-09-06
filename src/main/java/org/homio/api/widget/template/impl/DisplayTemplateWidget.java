@@ -1,20 +1,8 @@
 package org.homio.api.widget.template.impl;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
-import org.homio.api.ContextWidget.DisplayWidgetBuilder;
-import org.homio.api.ContextWidget.DisplayWidgetSeriesBuilder;
-import org.homio.api.ContextWidget.HasChartDataSource;
-import org.homio.api.ContextWidget.HasLineChartBehaviour;
-import org.homio.api.ContextWidget.VerticalAlign;
+import org.homio.api.ContextWidget.*;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.ui.UI;
@@ -24,6 +12,16 @@ import org.homio.api.widget.template.WidgetDefinition.ItemDefinition;
 import org.homio.api.widget.template.WidgetDefinition.Options;
 import org.homio.api.widget.template.WidgetDefinition.Options.Chart;
 import org.homio.api.widget.template.WidgetDefinition.Options.Source;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class DisplayTemplateWidget implements TemplateWidgetBuilder {
 
@@ -133,8 +131,11 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
         }
     }
 
-    private void addEndpoint(WidgetRequest widgetRequest, WidgetDefinition wb, DisplayWidgetBuilder builder,
-        DeviceEndpoint endpoint, Consumer<DisplayWidgetSeriesBuilder> handler) {
+    private void addEndpoint(@NotNull WidgetRequest widgetRequest,
+                             @NotNull WidgetDefinition wb,
+                             @NotNull DisplayWidgetBuilder builder,
+                             @NotNull DeviceEndpoint endpoint,
+                             @NotNull Consumer<DisplayWidgetSeriesBuilder> handler) {
         builder.addSeries(endpoint.getName(true), seriesBuilder -> {
             seriesBuilder
                 .setValueDataSource(TemplateWidgetBuilder.getSource(widgetRequest.context(), endpoint))

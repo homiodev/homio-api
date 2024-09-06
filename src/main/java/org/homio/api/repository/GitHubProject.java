@@ -1,39 +1,11 @@
 package org.homio.api.repository;
 
-import static java.lang.String.format;
-import static org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler.replace;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-import static org.homio.api.util.JsonUtils.YAML_OBJECT_MAPPER;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
-import java.io.File;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
+import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
@@ -56,6 +28,26 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
+import java.io.File;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static org.homio.api.fs.archive.ArchiveUtil.UnzipFileIssueHandler.replace;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.YAML_OBJECT_MAPPER;
+
 @SuppressWarnings("unused")
 @Log4j2
 @Accessors(chain = true)
@@ -64,59 +56,65 @@ public class GitHubProject {
 
     private static final SimpleDateFormat PUBLISHED_AT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
-    private final @NotNull @Getter String repo;
-    private final @NotNull @Getter String project;
-    private final @NotNull @Getter String api;
-    private final @NotNull @Getter Map<String, String> httpHeaders = new HashMap<>();
-    private final @NotNull @Getter Path localProjectPath;
-    private @Setter @Getter @Accessors(chain = true) String linuxExecutableAsset;
-
+    private final @NotNull
+    @Getter String repo;
+    private final @NotNull
+    @Getter String project;
+    private final @NotNull
+    @Getter String api;
+    private final @NotNull
+    @Getter Map<String, String> httpHeaders = new HashMap<>();
+    private final @NotNull
+    @Getter Path localProjectPath;
     // releases sorted by published_at
     private final CachedValue<List<JsonNode>, GitHubProject> releasesCache =
-        new CachedValue<>(Duration.ofHours(24), gitHubProject ->
-            Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "releases", httpHeaders), JsonNode.class, (jsonNode, status) -> {
-                List<JsonNode> releases = new ArrayList<>();
-                try {
-                    if (status != HttpStatus.OK.value()) {
-                        throw new IllegalStateException(jsonNode.toString());
-                    }
-                    for (JsonNode node : jsonNode) {
-                        releases.add(node);
-                    }
-                    releases.sort((o1, o2) -> {
+            new CachedValue<>(Duration.ofHours(24), gitHubProject ->
+                    Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "releases", httpHeaders), JsonNode.class, (jsonNode, status) -> {
+                        List<JsonNode> releases = new ArrayList<>();
                         try {
-                            return Long.compare(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()).getTime(),
-                                PUBLISHED_AT_DATE_FORMAT.parse(o2.get("published_at").asText()).getTime());
-                        } catch (ParseException e) {
-                            throw new RuntimeException(e);
+                            if (status != HttpStatus.OK.value()) {
+                                throw new IllegalStateException(jsonNode.toString());
+                            }
+                            for (JsonNode node : jsonNode) {
+                                releases.add(node);
+                            }
+                            releases.sort((o1, o2) -> {
+                                try {
+                                    return Long.compare(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()).getTime(),
+                                            PUBLISHED_AT_DATE_FORMAT.parse(o2.get("published_at").asText()).getTime());
+                                } catch (ParseException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        } catch (Exception ex) {
+                            log.error("Unable to fetch releases from GitHub api: {}releases. Error: {}", gitHubProject.api, CommonUtils.getErrorMessage(ex));
                         }
-                    });
-                } catch (Exception ex) {
-                    log.error("Unable to fetch releases from GitHub api: {}releases. Error: {}", gitHubProject.api, CommonUtils.getErrorMessage(ex));
-                }
-                return releases;
-            }));
-
+                        return releases;
+                    }));
     private final CachedValue<List<JsonNode>, GitHubProject> contentCache =
-        new CachedValue<>(Duration.ofHours(24), gitHubProject ->
-            Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "contents", httpHeaders), JsonNode.class, (jsonNode, status) -> {
-                List<JsonNode> contents = new ArrayList<>();
-                try {
-                    if (status != HttpStatus.OK.value()) {
-                        throw new IllegalStateException(jsonNode.toString());
-                    }
-                    for (JsonNode node : jsonNode) {
-                        contents.add(node);
-                    }
-                } catch (Exception ex) {
-                    log.error("Unable to fetch releases from GitHub api: {}releases. Error: {}", gitHubProject.api, CommonUtils.getErrorMessage(ex));
-                }
-                return contents;
-            }));
-
-    private @Nullable @Setter String installedVersion;
+            new CachedValue<>(Duration.ofHours(24), gitHubProject ->
+                    Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "contents", httpHeaders), JsonNode.class, (jsonNode, status) -> {
+                        List<JsonNode> contents = new ArrayList<>();
+                        try {
+                            if (status != HttpStatus.OK.value()) {
+                                throw new IllegalStateException(jsonNode.toString());
+                            }
+                            for (JsonNode node : jsonNode) {
+                                contents.add(node);
+                            }
+                        } catch (Exception ex) {
+                            log.error("Unable to fetch releases from GitHub api: {}releases. Error: {}", gitHubProject.api, CommonUtils.getErrorMessage(ex));
+                        }
+                        return contents;
+                    }));
+    private @Setter
+    @Getter
+    @Accessors(chain = true) String linuxExecutableAsset;
+    private @Nullable
+    @Setter String installedVersion;
     private @Getter boolean updating;
-    private @Nullable @Setter ThrowingBiFunction<Context, GitHubProject, String, Exception> installedVersionResolver;
+    private @Nullable
+    @Setter ThrowingBiFunction<Context, GitHubProject, String, Exception> installedVersionResolver;
 
     private GitHubProject(@NotNull String project, @NotNull String repo, @Nullable Path localProjectPath) {
         this.project = project;
@@ -154,6 +152,10 @@ public class GitHubProject {
         }).toList();
     }
 
+    private static @NotNull JsonNode findAssetByArchitecture(@NotNull Context context, JsonNode release) {
+        return context.hardware().findAssetByArchitecture(release);
+    }
+
     @SneakyThrows
     public boolean backup(Path src, Path target) {
         Path srcPath = getLocalProjectPath().resolve(src);
@@ -188,7 +190,7 @@ public class GitHubProject {
             future.completeExceptionally(new IllegalStateException("Already installed"));
         } else {
             context.event().runOnceOnInternetUp("wait-download-" + repo, () ->
-                installLatestReleaseInternally(context, future));
+                    installLatestReleaseInternally(context, future));
         }
         return future;
     }
@@ -215,9 +217,9 @@ public class GitHubProject {
 
     @SneakyThrows
     public void downloadReleaseAndInstall(
-        @NotNull Context context,
-        @NotNull String version,
-        @NotNull ProgressBar progressBar) {
+            @NotNull Context context,
+            @NotNull String version,
+            @NotNull ProgressBar progressBar) {
         JsonNode release = getRelease(version);
         JsonNode asset = findAssetByArchitecture(context, release);
         String downloadUrl = asset.get("browser_download_url").asText();
@@ -317,22 +319,22 @@ public class GitHubProject {
     public @NotNull List<OptionModel> getReleasesSince(@Nullable String version, boolean includeCurrent) {
         try {
             List<OptionModel> versions = releasesCache
-                .getValue(this)
-                .stream()
-                .map(r -> new Release(
-                    r.get("tag_name").asText(),
-                    r.get("name").asText(),
-                    LocalDateTime.parse(r.get("published_at").asText(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")),
-                    r.get("prerelease").asBoolean(false)))
-                .sorted()
-                .map(r -> {
-                    OptionModel model = OptionModel.of(r.tagName, r.name);
-                    String description = r.created.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                    if (r.preRelease) {
-                        description += " [pre-release]";
-                    }
-                    return model.setDescription(description);
-                }).collect(Collectors.toList());
+                    .getValue(this)
+                    .stream()
+                    .map(r -> new Release(
+                            r.get("tag_name").asText(),
+                            r.get("name").asText(),
+                            LocalDateTime.parse(r.get("published_at").asText(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")),
+                            r.get("prerelease").asBoolean(false)))
+                    .sorted()
+                    .map(r -> {
+                        OptionModel model = OptionModel.of(r.tagName, r.name);
+                        String description = r.created.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        if (r.preRelease) {
+                            description += " [pre-release]";
+                        }
+                        return model.setDescription(description);
+                    }).collect(Collectors.toList());
             if (version == null) {
                 return versions;
             }
@@ -343,23 +345,13 @@ public class GitHubProject {
         }
     }
 
-    @AllArgsConstructor
-    private static class Release implements Comparable<Release> {
-
-        private String tagName;
-        private String name;
-        private @NotNull LocalDateTime created;
-        private boolean preRelease;
-
-        @Override
-        public int compareTo(@NotNull GitHubProject.Release o) {
-            return o.created.compareTo(created);
-        }
-    }
-
     public @Nullable JsonNode getLastRelease() {
-        List<JsonNode> releases = releasesCache.getValue(this);
-        return releases.isEmpty() ? null : releases.get(releases.size() - 1);
+        try {
+            List<JsonNode> releases = releasesCache.getValue(this);
+            return releases.isEmpty() ? null : releases.get(releases.size() - 1);
+        } catch (Exception ignore) {
+            return null;
+        }
     }
 
     public @NotNull List<JsonNode> getContent() {
@@ -368,8 +360,8 @@ public class GitHubProject {
 
     public @NotNull Optional<VersionedFile> getContentFile(String filePrefix) {
         JsonNode jsonNode = getContent().stream()
-                                        .filter(s -> s.get("name").asText().startsWith(filePrefix))
-                                        .findAny().orElse(null);
+                .filter(s -> s.get("name").asText().startsWith(filePrefix))
+                .findAny().orElse(null);
         if (jsonNode != null) {
             String name = jsonNode.get("name").asText();
             VersionedFile versionedFile = new VersionedFile(name, jsonNode.get("download_url").asText(), jsonNode);
@@ -389,15 +381,15 @@ public class GitHubProject {
         Path tmpPath = CommonUtils.getTmpPath().resolve(name + ".tar.gz");
         Curl.download(api + "tarball/" + version, tmpPath);
         ArchiveUtil.unzip(tmpPath, CommonUtils.getTmpPath(), null, false, null,
-            replace);
+                replace);
         Files.delete(tmpPath);
         Files.move(CommonUtils.getTmpPath().resolve(name + "-" + version),
-            targetPath, StandardCopyOption.REPLACE_EXISTING);
+                targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     @SneakyThrows
     public void downloadReleaseFile(@NotNull String version, @NotNull String asset,
-        @NotNull Path archive, @NotNull ProgressBar progressBar) {
+                                    @NotNull Path archive, @NotNull ProgressBar progressBar) {
         String downloadUrl = format("https://github.com/%s/%s/releases/download/%s/%s", project, repo, version, asset);
         Curl.downloadWithProgress(downloadUrl, archive, progressBar);
     }
@@ -411,7 +403,7 @@ public class GitHubProject {
                 future.completeExceptionally(new RuntimeException("Unable to find release version from: " + repo + "/" + project));
             } else {
                 downloadReleaseAndInstall(context, version, (progress, message, error) ->
-                    log.info(message));
+                        log.info(message));
                 log.error("Install {}/{} succeeded", repo, project);
                 future.complete(null);
             }
@@ -424,16 +416,16 @@ public class GitHubProject {
     private JsonNode getRelease(@NotNull String version) {
         List<JsonNode> releases = releasesCache.getValue(this);
         return releases.stream().filter(r -> r.path("tag_name").asText("").equals(version))
-                       .findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find release: " + version));
+                .findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find release: " + version));
     }
 
     // Helper method to execute some process i.e. download from GitHub, backup, etc...
     public @NotNull ActionResponseModel updateProject(
-        @NotNull String name,
-        @NotNull ProgressBar progressBar,
-        boolean backupProject,
-        @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler,
-        @Nullable ThrowingConsumer<Exception, Exception> onFinally) {
+            @NotNull String name,
+            @NotNull ProgressBar progressBar,
+            boolean backupProject,
+            @NotNull ThrowingFunction<ProjectUpdate, ActionResponseModel, Exception> updateHandler,
+            @Nullable ThrowingConsumer<Exception, Exception> onFinally) {
         if (this.updating) {
             return ActionResponseModel.showError("W.ERROR.UPDATE_IN_PROGRESS");
         }
@@ -468,8 +460,28 @@ public class GitHubProject {
         }
     }
 
-    private static @NotNull JsonNode findAssetByArchitecture(@NotNull Context context, JsonNode release) {
-        return context.hardware().findAssetByArchitecture(release);
+    @AllArgsConstructor
+    private static class Release implements Comparable<Release> {
+
+        private String tagName;
+        private String name;
+        private @NotNull LocalDateTime created;
+        private boolean preRelease;
+
+        @Override
+        public int compareTo(@NotNull GitHubProject.Release o) {
+            return o.created.compareTo(created);
+        }
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class VersionedFile {
+
+        private final String name;
+        private final String downloadUrl;
+        private final JsonNode rawNode;
+        private String version;
     }
 
     @Getter
@@ -508,7 +520,7 @@ public class GitHubProject {
             // remove target node if exists
             FileUtils.deleteDirectory(targetFileOrDirectory);
             FileUtils.moveDirectory(CommonUtils.getInstallPath().resolve(backupFileOrFolder + "-backup").toFile(),
-                targetFileOrDirectory);
+                    targetFileOrDirectory);
             return this;
         }
 
@@ -548,15 +560,5 @@ public class GitHubProject {
                 ArchiveUtil.unzip(backup, localProjectPath, null, false, progressBar, replace);
             }
         }
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public static class VersionedFile {
-
-        private final String name;
-        private final String downloadUrl;
-        private final JsonNode rawNode;
-        private String version;
     }
 }

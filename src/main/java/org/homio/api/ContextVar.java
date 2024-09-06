@@ -1,12 +1,6 @@
 package org.homio.api;
 
 import com.pivovarit.function.ThrowingConsumer;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,9 +11,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+
 public interface ContextVar {
 
-    @NotNull Context context();
+    String GROUP_HARDWARE = "hardware";
+    String GROUP_BROADCAST = "broadcast";
+    String GROUP_MISC = "misc";
+
+    @NotNull
+    Context context();
 
     default void onVariableCreated(@NotNull String discriminator, Consumer<Variable> variableListener) {
         onVariableCreated(discriminator, null, variableListener);
@@ -37,10 +43,6 @@ public interface ContextVar {
         context().event().addEventListener(variableId, discriminator, listener);
     }
 
-    default String getMiscGroup() {
-        return "group_misc";
-    }
-
     /**
      * Every writable variable has to have exact one link listener which handle to write operation from UI, etc...
      *
@@ -49,7 +51,8 @@ public interface ContextVar {
      */
     void setLinkListener(@NotNull String variableId, @NotNull ThrowingConsumer<Object, Exception> listener);
 
-    @Nullable Object getRawValue(@NotNull String variableId);
+    @Nullable
+    Object getRawValue(@NotNull String variableId);
 
     default @Nullable State getValue(@NotNull String variableId) {
         return State.of(getRawValue(variableId));
@@ -67,7 +70,8 @@ public interface ContextVar {
         return set(variableId, value, true);
     }
 
-    @Nullable Object set(@NotNull String variableId, @Nullable Object value, boolean fireLinkListener) throws IllegalArgumentException;
+    @Nullable
+    Object set(@NotNull String variableId, @Nullable Object value, boolean fireLinkListener) throws IllegalArgumentException;
 
     default @Nullable Object setIfNotMatch(@NotNull String variableId, @Nullable Object value) {
         if (!Objects.equals(getRawValue(variableId), value)) {
@@ -134,23 +138,25 @@ public interface ContextVar {
 
     boolean updateVariableIcon(@NotNull String variableId, @Nullable Icon icon);
 
-    @NotNull Variable createVariable(@NotNull String groupId,
-        @Nullable String variableId,
-        @NotNull String variableName,
-        @NotNull VariableType variableType,
-        @Nullable Consumer<VariableMetaBuilder> metaBuilder);
+    @NotNull
+    Variable createVariable(@NotNull String groupId,
+                            @Nullable String variableId,
+                            @NotNull String variableName,
+                            @NotNull VariableType variableType,
+                            @Nullable Consumer<VariableMetaBuilder> metaBuilder);
 
-    @NotNull Variable createTransformVariable(@NotNull String groupId,
-        @Nullable String variableId,
-        @NotNull String variableName,
-        @NotNull VariableType variableType,
-        @Nullable Consumer<TransformVariableMetaBuilder> metaBuilder);
+    @NotNull
+    Variable createTransformVariable(@NotNull String groupId,
+                                     @Nullable String variableId,
+                                     @NotNull String variableName,
+                                     @NotNull VariableType variableType,
+                                     @Nullable Consumer<TransformVariableMetaBuilder> metaBuilder);
 
     default @NotNull Variable createEnumVariable(@NotNull String groupId,
-        @Nullable String variableId,
-        @NotNull String variableName,
-        @NotNull Set<String> values,
-        @Nullable Consumer<VariableMetaBuilder> metaBuilder) {
+                                                 @Nullable String variableId,
+                                                 @NotNull String variableName,
+                                                 @NotNull Set<String> values,
+                                                 @Nullable Consumer<VariableMetaBuilder> metaBuilder) {
         return createVariable(groupId, variableId, variableName, VariableType.Enum, builder -> {
             builder.setValues(values);
             if (metaBuilder != null) {
@@ -186,7 +192,8 @@ public interface ContextVar {
      * @param variableId - id
      * @return result
      */
-    @NotNull String buildDataSource(@NotNull String variableId);
+    @NotNull
+    String buildDataSource(@NotNull String variableId);
 
     @Getter
     @RequiredArgsConstructor
@@ -223,21 +230,25 @@ public interface ContextVar {
          * @param value writable or not
          * @return this
          */
-        @NotNull VariableMetaBuilder setWritable(boolean value);
+        @NotNull
+        VariableMetaBuilder setWritable(boolean value);
 
         /**
          * Set enum values. Useful only for Enum variable type
          *
          * @param values list of available options
          */
-        @NotNull VariableMetaBuilder setValues(Set<String> values);
+        @NotNull
+        VariableMetaBuilder setValues(Set<String> values);
     }
 
     interface TransformVariableMetaBuilder extends GeneralVariableMetaBuilder {
 
-        @NotNull TransformVariableMetaBuilder setSourceVariables(@NotNull List<TransformVariableSource> sources);
+        @NotNull
+        TransformVariableMetaBuilder setSourceVariables(@NotNull List<TransformVariableSource> sources);
 
-        @NotNull TransformVariableMetaBuilder setTransformCode(@NotNull String code);
+        @NotNull
+        TransformVariableMetaBuilder setTransformCode(@NotNull String code);
     }
 
     interface GeneralVariableMetaBuilder {
@@ -248,24 +259,33 @@ public interface ContextVar {
          * @param value store or not
          * @return this
          */
-        @NotNull GeneralVariableMetaBuilder setPersistent(boolean value);
+        @NotNull
+        GeneralVariableMetaBuilder setPersistent(boolean value);
 
-        @NotNull GeneralVariableMetaBuilder setQuota(int value);
+        @NotNull
+        GeneralVariableMetaBuilder setQuota(int value);
 
         // is disable to delete entity
-        @NotNull GeneralVariableMetaBuilder setLocked(boolean locked);
+        @NotNull
+        GeneralVariableMetaBuilder setLocked(boolean locked);
 
-        @NotNull GeneralVariableMetaBuilder setColor(@Nullable String value);
+        @NotNull
+        GeneralVariableMetaBuilder setColor(@Nullable String value);
 
-        @NotNull GeneralVariableMetaBuilder setDescription(@Nullable String value);
+        @NotNull
+        GeneralVariableMetaBuilder setDescription(@Nullable String value);
 
-        @NotNull GeneralVariableMetaBuilder setUnit(@Nullable String value);
+        @NotNull
+        GeneralVariableMetaBuilder setUnit(@Nullable String value);
 
-        @NotNull GeneralVariableMetaBuilder setNumberRange(float min, float max);
+        @NotNull
+        GeneralVariableMetaBuilder setNumberRange(float min, float max);
 
-        @NotNull GeneralVariableMetaBuilder setIcon(@Nullable Icon icon);
+        @NotNull
+        GeneralVariableMetaBuilder setIcon(@Nullable Icon icon);
 
-        @NotNull GeneralVariableMetaBuilder setAttributes(@Nullable List<String> attributes);
+        @NotNull
+        GeneralVariableMetaBuilder setAttributes(@Nullable List<String> attributes);
 
         /**
          * Assign any info to variable
@@ -274,25 +294,21 @@ public interface ContextVar {
          * @param value - value
          * @return - this
          */
-        @NotNull GeneralVariableMetaBuilder set(@NotNull String key, @NotNull String value);
+        @NotNull
+        GeneralVariableMetaBuilder set(@NotNull String key, @NotNull String value);
     }
 
     interface GroupMetaBuilder {
 
         // is disable to delete entity
-        @NotNull GroupMetaBuilder setLocked(boolean locked);
+        @NotNull
+        GroupMetaBuilder setLocked(boolean locked);
 
-        @NotNull GroupMetaBuilder setDescription(@Nullable String value);
+        @NotNull
+        GroupMetaBuilder setDescription(@Nullable String value);
 
-        @NotNull GroupMetaBuilder setIcon(@Nullable Icon icon);
-    }
-
-    @Getter
-    @Setter
-    class TransformVariableSource {
-        private @NotNull String type;
-        private @Nullable String value;
-        private @Nullable String meta;
+        @NotNull
+        GroupMetaBuilder setIcon(@Nullable Icon icon);
     }
 
     interface Variable {
@@ -310,5 +326,13 @@ public interface ContextVar {
         JSON getJsonData();
 
         void set(Object value);
+    }
+
+    @Getter
+    @Setter
+    class TransformVariableSource {
+        private @NotNull String type;
+        private @Nullable String value;
+        private @Nullable String meta;
     }
 }

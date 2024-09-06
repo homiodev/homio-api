@@ -1,12 +1,6 @@
 package org.homio.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.homio.api.Context;
 import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.entity.HasStatusAndMsg;
@@ -21,6 +15,8 @@ import org.homio.api.ui.field.action.UIContextMenuAction;
 import org.homio.api.util.DataSourceUtil;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 public interface BaseFileSystemEntity<FS extends FileSystemProvider>
     extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg,
@@ -38,6 +34,9 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
         String pathAlias2 = DataSourceUtil.getSelection(getAliasTwoPath()).getValue("");
         if (!pathAlias2.isEmpty()) {
             configurations.add(new TreeConfiguration(this, pathAlias2, new Icon(getAliasTwoIcon(), getAliasTwoIconColor())));
+        }
+        for (TreeConfiguration configuration : configurations) {
+            configuration.setDynamicUpdateId("tree-%s-%d".formatted(configuration.getId(), configuration.getAlias()));
         }
 
         return configurations;

@@ -2,6 +2,7 @@ package org.homio.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.homio.api.ContextSetting;
+import org.homio.api.exception.ServerException;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
@@ -12,6 +13,8 @@ import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 
 public interface HasStatusAndMsg extends HasEntityIdentifier {
@@ -47,7 +50,11 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
     }
 
     default void setStatusError(@NotNull Exception ex) {
-        setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+        if (ex instanceof ServerException se && se.getStatus() != null) {
+            setStatus(se.getStatus(), CommonUtils.getErrorMessage(ex));
+        } else {
+            setStatus(Status.ERROR, CommonUtils.getErrorMessage(ex));
+        }
     }
 
     default void setStatusError(@NotNull String message) {
@@ -56,5 +63,9 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
 
     default void setStatus(@Nullable Status status, @Nullable String msg) {
         ContextSetting.setStatus(this, DISTINGUISH_KEY, "Status", status, msg);
+    }
+
+    default void addStatusUpdateListener(Consumer<Status> consumer) {
+
     }
 }

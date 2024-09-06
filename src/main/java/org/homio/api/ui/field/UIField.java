@@ -73,4 +73,8 @@ public @interface UIField {
     boolean hideLabelInFullWidth() default true;
 
     String style() default "";
+
+    String valueSuffix() default "";
+
+    String valueSuffixColor() default "";
 }

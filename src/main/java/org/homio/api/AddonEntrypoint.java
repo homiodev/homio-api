@@ -1,15 +1,17 @@
 package org.homio.api;
 
-import java.net.URL;
 import lombok.SneakyThrows;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.net.URL;
 
 public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
 
     String ADDON_PREFIX = "org.homio.addon.";
 
-    static String getAddonID(Class clazz) {
+    static @Nullable String getAddonID(Class clazz) {
         String name = clazz.getName();
         if (name.startsWith(ADDON_PREFIX)) {
             return name.substring(ADDON_PREFIX.length(), name.indexOf('.', ADDON_PREFIX.length()));
@@ -29,21 +31,21 @@ public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
 
     }
 
-    default String getSettingDescription() {
+    default @Nullable String getSettingDescription() {
         return null;
     }
 
     @SneakyThrows
-    default URL getAddonImageURL() {
+    default @NotNull URL getAddonImageURL() {
         return getResource("images/image.png");
     }
 
     // a-z or at most one '-' and nothing else
-    default String getAddonID() {
+    default @Nullable String getAddonID() {
         return AddonEntrypoint.getAddonID(getClass());
     }
 
-    default AddonImageColorIndex getAddonImageColorIndex() {
+    default @NotNull AddonImageColorIndex getAddonImageColorIndex() {
         return AddonImageColorIndex.ZERO;
     }
 
@@ -53,7 +55,7 @@ public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
     }
 
     @SneakyThrows
-    default URL getResource(String resource) {
+    default @Nullable URL getResource(String resource) {
         return CommonUtils.getResource(getAddonID(), resource);
     }
 

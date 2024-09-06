@@ -1,23 +1,12 @@
 package org.homio.api.widget.template;
 
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.homio.api.ContextVar.VariableType;
-import org.homio.api.ContextWidget.Fill;
-import org.homio.api.ContextWidget.PulseColor;
-import org.homio.api.ContextWidget.Stepped;
-import org.homio.api.ContextWidget.ToggleType;
-import org.homio.api.ContextWidget.ValueCompare;
+import org.homio.api.ContextWidget.*;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.endpoint.DeviceEndpoint;
@@ -27,6 +16,14 @@ import org.homio.api.widget.template.WidgetDefinition.Options.Pulse;
 import org.homio.api.widget.template.WidgetDefinition.Options.Threshold;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -86,9 +83,9 @@ public class WidgetDefinition {
         if (this.isAutoDiscovery()) {
             if (type == WidgetType.toggle) {
                 return entity.getDeviceEndpoints().values().stream()
-                             .filter(p -> AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointName()).matches()
-                                 || AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointEntityID()).matches())
-                             .collect(Collectors.toList());
+                        .filter(p -> AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointName()).matches()
+                                     || AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointEntityID()).matches())
+                        .collect(Collectors.toList());
             }
         }
         Stream<DeviceEndpoint> stream = Stream.empty();
@@ -122,11 +119,11 @@ public class WidgetDefinition {
 
     public List<DeviceEndpoint> getIncludeEndpoints(MainWidgetRequest request) {
         Set<String> topIncludeEndpoints = request.getWidgetRequest().includeEndpoints().stream()
-                                                 .map(DeviceEndpoint::getEndpointEntityID).collect(Collectors.toSet());
+                .map(DeviceEndpoint::getEndpointEntityID).collect(Collectors.toSet());
         List<DeviceEndpoint> allPossibleEndpoints = request.getItem().getEndpoints(request.getWidgetRequest().entity());
         return allPossibleEndpoints.stream()
-                                   .filter(endpoint -> topIncludeEndpoints.contains(endpoint.getEndpointEntityID()))
-                                   .collect(Collectors.toList());
+                .filter(endpoint -> topIncludeEndpoints.contains(endpoint.getEndpointEntityID()))
+                .collect(Collectors.toList());
     }
 
     public @Nullable WidgetDefinition.ItemDefinition getEndpoint(String key) {
@@ -265,7 +262,7 @@ public class WidgetDefinition {
             private VariableType variableType;
 
             public enum SourceType {
-                broadcasts, property, variable
+                broadcast, property, variable
             }
         }
     }

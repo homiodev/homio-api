@@ -2,6 +2,25 @@ package org.homio.api.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingRunnable;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.homio.api.Context;
+import org.homio.api.JSDisableMethod;
+import org.homio.api.entity.BaseEntity;
+import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.exception.NotFoundException;
+import org.homio.api.model.Icon;
+import org.homio.api.model.Status;
+import org.homio.api.ui.UISidebarChildren;
+import org.homio.api.ui.UISidebarMenu;
+import org.homio.api.util.Lang;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
@@ -9,27 +28,14 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.homio.api.Context;
-import org.homio.api.entity.BaseEntity;
-import org.homio.api.entity.HasStatusAndMsg;
-import org.homio.api.exception.NotFoundException;
-import org.homio.api.model.Status;
-import org.homio.api.util.Lang;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 
 public interface EntityService<S extends EntityService.ServiceInstance>
-    extends HasStatusAndMsg {
+        extends HasStatusAndMsg {
 
-    ReentrantLock serviceAccessLock = new ReentrantLock();
+    @NotNull ReentrantLock serviceAccessLock = new ReentrantLock();
 
-    Context context();
+    @NotNull Context context();
 
     /**
      * Test where is able to initialize entity
@@ -37,7 +43,8 @@ public interface EntityService<S extends EntityService.ServiceInstance>
      * @return not configured errors
      */
     @JsonIgnore
-    @Nullable Set<String> getConfigurationErrors();
+    @Nullable
+    Set<String> getConfigurationErrors();
 
     /**
      * Able to check if need reinitialize entity service
@@ -69,19 +76,21 @@ public interface EntityService<S extends EntityService.ServiceInstance>
     }
 
     @JsonIgnore
-    @NotNull Class<S> getEntityServiceItemClass();
+    @JSDisableMethod
+    @NotNull
+    Class<S> getEntityServiceItemClass();
 
     @SneakyThrows
     default @NotNull Optional<S> getOrCreateService(@NotNull Context context) {
         serviceAccessLock.lock();
         try {
-            if (context().service().isHasEntityService(getEntityID())) {
+            if (context().service().isHasService(getEntityID())) {
                 return Optional.of((S) context().service().getEntityService(getEntityID()));
             }
             try {
                 S service = createService(context);
                 if (service != null) {
-                    context().service().addEntityService(getEntityID(), service);
+                    context().service().addService(getEntityID(), service);
                 }
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -98,12 +107,15 @@ public interface EntityService<S extends EntityService.ServiceInstance>
      * @param context -
      * @return service or null if service has to be created during some external process
      */
-    @Nullable S createService(@NotNull Context context);
+    @JSDisableMethod
+    @Nullable
+    S createService(@NotNull Context context);
 
     String getEntityID();
 
+    @JSDisableMethod
     default void destroyService(Exception ex) throws Exception {
-        S service = (S) context().service().removeEntityService(getEntityID());
+        S service = (S) context().service().removeService(getEntityID());
         if (service != null) {
             service.destroy(false, ex);
         }
@@ -111,6 +123,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
 
     interface WatchdogService {
 
+        @JSDisableMethod
         void restartService();
 
         @JsonIgnore
@@ -118,24 +131,71 @@ public interface EntityService<S extends EntityService.ServiceInstance>
     }
 
     @Getter
-    abstract class ServiceInstance<E extends EntityService<?>> implements WatchdogService {
+    abstract class ServiceInstance<E extends EntityService<?>> implements WatchdogService, BaseService {
 
-        protected Logger log = LogManager.getLogger(getClass());
-        protected final @NotNull @Accessors(fluent = true) Context context;
-        protected final String entityID;
-        private final AtomicBoolean initializing = new AtomicBoolean(false);
-        protected E entity;
+        protected final @NotNull
+        @Accessors(fluent = true) Context context;
+        protected final @NotNull String entityID;
+        private final @NotNull String name;
+        private final @NotNull AtomicBoolean initializing = new AtomicBoolean(false);
+        protected @NotNull Logger log = LogManager.getLogger(getClass());
+        protected @NotNull E entity;
         protected long entityHashCode;
         protected long requestedEntityHashCode;
+        private @Setter boolean exposeService;
+        private @Setter String parent;
 
-        public ServiceInstance(@NotNull Context context, @NotNull E entity, boolean fireFirstInitialize) {
+        public ServiceInstance(@NotNull Context context, @NotNull E entity, boolean fireFirstInitialize,
+                               @NotNull String name) {
+            this(context, entity, fireFirstInitialize, name, false);
+        }
+
+        // name - use simple notification block if name not null
+        public ServiceInstance(@NotNull Context context, @NotNull E entity, boolean fireFirstInitialize,
+                               @NotNull String name, boolean enableNotificationBlock) {
             this.context = context;
             this.entityID = entity.getEntityID();
             this.entity = entity;
+            this.name = name;
+
+            if (enableNotificationBlock && entity instanceof BaseEntity be) {
+                UISidebarMenu menu = entity.getClass().getDeclaredAnnotation(UISidebarMenu.class);
+                UISidebarChildren children = entity.getClass().getDeclaredAnnotation(UISidebarChildren.class);
+                String icon = children == null ? (menu == null ? "" : menu.icon()) : children.icon();
+                String color = children == null ? (menu == null ? "" : menu.bg()) : children.color();
+                context.ui().notification().addBlockOptional(name, name, new Icon(icon, color));
+                context.ui().notification().updateBlock(name, be);
+
+                context.event().addEntityUpdateListener(entityID, "service", e -> {
+                    context.ui().notification().updateBlock(name, be);
+                    updateNotificationBlock();
+                });
+                context.event().addEntityStatusUpdateListener(entityID, "service", e -> {
+                    context.ui().notification().updateBlock(name, be);
+                    updateNotificationBlock();
+                });
+            } else {
+                context.event().addEntityUpdateListener(entityID, "service", e ->
+                        updateNotificationBlock());
+                context.event().addEntityStatusUpdateListener(entityID, "service", e ->
+                        updateNotificationBlock());
+            }
 
             if (fireFirstInitialize) {
                 entityUpdated(entity);
             }
+        }
+
+        @Override
+        public @Nullable String getIcon() {
+            UISidebarChildren annotation = entity.getClass().getDeclaredAnnotation(UISidebarChildren.class);
+            return annotation == null ? null : annotation.icon();
+        }
+
+        @Override
+        public @Nullable String getColor() {
+            UISidebarChildren annotation = entity.getClass().getDeclaredAnnotation(UISidebarChildren.class);
+            return annotation == null ? null : annotation.color();
         }
 
         public void testServiceWithSetStatus() {
@@ -145,8 +205,6 @@ public interface EntityService<S extends EntityService.ServiceInstance>
                 entity.setStatusOnline();
             } catch (Exception ex) {
                 entity.setStatusError(ex);
-            } finally {
-                updateNotificationBlock();
             }
         }
 
@@ -165,6 +223,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
          *
          * @param newEntity - updated entity
          */
+        @JSDisableMethod
         public void entityUpdated(@NotNull E newEntity) {
             requestedEntityHashCode = getEntityHashCode(newEntity);
             entity = newEntity;
@@ -179,6 +238,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
          * should be as fast as possible. Use inner async if possible Method calls in ForkJoin pool at same time with other services if need
          */
         @Override
+        @JSDisableMethod
         public void restartService() {
             // check entityHashCode with 0 to allow firstInitialization to be first called
             if (entityHashCode != 0 && initializing.compareAndSet(false, true)) {
@@ -193,11 +253,13 @@ public interface EntityService<S extends EntityService.ServiceInstance>
             }
         }
 
+        @JSDisableMethod
         public void updateNotificationBlock() {
         }
 
         /**
          * Executes +- every minute
+         *
          * @return Check if need restart service before call restartService().. Return restart reason or null if not require
          */
         @Override
@@ -205,11 +267,12 @@ public interface EntityService<S extends EntityService.ServiceInstance>
             return null;
         }
 
+        @JSDisableMethod
         public abstract void destroy(boolean forRestart, @Nullable Exception ex) throws Exception;
 
         private synchronized void startInitialization() {
             initializing.set(true);
-            entity.setStatus(Status.INITIALIZE);
+            entity.setStatus(entity.isStart() ? Status.INITIALIZE : Status.CLOSING);
             Set<String> errors = entity.getConfigurationErrors();
             String bgpEntityID = "init-" + entity.getEntityID();
             if (errors != null && !errors.isEmpty()) {
@@ -222,38 +285,38 @@ public interface EntityService<S extends EntityService.ServiceInstance>
 
             // deffer initialize to register service in map and avoid blocking. Also execute last updated entity
             context.bgp().builder(bgpEntityID).delay(Duration.ofSeconds(3))
-                   .execute(() -> {
-                       try {
-                           log.info("[{}]: Start initialization of entity service: {}", entityID, entity.getTitle());
-                           // delay update hashCode
-                           if (entityHashCode == requestedEntityHashCode) {
-                               return;
-                           }
-                           boolean firstInitialization = entityHashCode == 0;
-                           entityHashCode = requestedEntityHashCode;
-                           if (!firstInitialization) {
-                               destroy(true, null);
-                           }
-                           if (!entity.isStart()) {
-                               entity.setStatus(Status.OFFLINE);
-                           } else {
-                               if (firstInitialization) {
-                                   fireWithSetStatus(this::firstInitialize);
-                               } else {
-                                   fireWithSetStatus(this::initialize);
-                               }
-                           }
-                           if (entity instanceof BaseEntity be) {
-                               context.ui().updateItem(be);
-                           }
-                       } finally {
-                           initializing.set(false);
-                           // if new update
-                           if (entityHashCode != requestedEntityHashCode) {
-                               startInitialization();
-                           }
-                       }
-                   });
+                    .execute(() -> {
+                        try {
+                            log.info("[{}]: Start initialization of entity service: {}", entityID, entity.getTitle());
+                            // delay update hashCode
+                            if (entityHashCode == requestedEntityHashCode) {
+                                return;
+                            }
+                            boolean firstInitialization = entityHashCode == 0;
+                            entityHashCode = requestedEntityHashCode;
+                            if (!firstInitialization) {
+                                destroy(true, null);
+                            }
+                            if (!entity.isStart()) {
+                                entity.setStatus(Status.OFFLINE);
+                            } else {
+                                if (firstInitialization) {
+                                    fireWithSetStatus(this::firstInitialize);
+                                } else {
+                                    fireWithSetStatus(this::initialize);
+                                }
+                            }
+                            if (entity instanceof BaseEntity be) {
+                                context.ui().updateItem(be);
+                            }
+                        } finally {
+                            initializing.set(false);
+                            // if new update
+                            if (entityHashCode != requestedEntityHashCode) {
+                                startInitialization();
+                            }
+                        }
+                    });
         }
 
         protected void testService() {
@@ -273,8 +336,6 @@ public interface EntityService<S extends EntityService.ServiceInstance>
             } catch (Exception ex) {
                 entity.setStatusError(ex);
                 log.error("[{}]: Unable to initialize service: {}", entityID, entity.getTitle());
-            } finally {
-                updateNotificationBlock();
             }
         }
 

@@ -1,13 +1,6 @@
 package org.homio.api.workspace.scratch;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-import static org.homio.api.workspace.scratch.Scratch3ExtensionBlocks.SETTING;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -19,6 +12,15 @@ import org.homio.api.util.CommonUtils;
 import org.homio.api.workspace.WorkspaceBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.workspace.scratch.Scratch3ExtensionBlocks.SETTING;
 
 @SuppressWarnings("ALL")
 @Getter
@@ -33,18 +35,19 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
     private final Scratch3BlockHandler handler;
     @JsonIgnore
     private final Scratch3BlockEvaluateHandler evaluateHandler;
-    @NotNull Object text;
+    @NotNull
+    Object text;
     @JsonIgnore
     private int spaceCount = 0;
 
     private Scratch3Color scratch3Color;
 
     protected Scratch3Block(int order,
-        @NotNull String opcode,
-        @NotNull BlockType blockType,
-        @NotNull Object text,
-        @Nullable Scratch3BlockHandler handler,
-        @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
+                            @NotNull String opcode,
+                            @NotNull BlockType blockType,
+                            @NotNull Object text,
+                            @Nullable Scratch3BlockHandler handler,
+                            @Nullable Scratch3BlockEvaluateHandler evaluateHandler) {
         this.order = order;
         this.opcode = opcode;
         this.blockType = blockType;
@@ -141,8 +144,12 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Scratch3Block that = (Scratch3Block) o;
         return opcode.equals(that.opcode);
     }
@@ -164,6 +171,15 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         State handle(@NotNull WorkspaceBlock workspaceBlock) throws Exception;
     }
 
+    public interface ScratchSettingBaseEntity extends EntityFieldMetadata {
+
+        @Override
+        // requires to instantiate entity for fetch select boxes
+        default String getEntityID() {
+            return getClass().getName();
+        }
+    }
+
     @Getter
     @RequiredArgsConstructor
     public static class ArgumentTypeDescription {
@@ -171,6 +187,7 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
         private final @NotNull ArgumentType type;
         private final @Nullable String defaultValue;
         private final @Nullable String menu;
+        private final @NotNull JSONObject metadata = new JSONObject();
 
         @JsonIgnore
         private final MenuBlock menuBlock;
@@ -203,15 +220,6 @@ public class Scratch3Block implements Comparable<Scratch3Block> {
                 return defaultValue instanceof Enum ? ((Enum) defaultValue).name() : defaultValue.toString();
             }
             return null;
-        }
-    }
-
-    public interface ScratchSettingBaseEntity extends EntityFieldMetadata {
-
-        @Override
-        // requires to instantiate entity for fetch select boxes
-        default String getEntityID() {
-            return getClass().getName();
         }
     }
 }

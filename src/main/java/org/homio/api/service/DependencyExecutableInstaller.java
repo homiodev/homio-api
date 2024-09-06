@@ -1,11 +1,5 @@
 package org.homio.api.service;
 
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -16,13 +10,20 @@ import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+
 @Log4j2
 @RequiredArgsConstructor
 public abstract class DependencyExecutableInstaller {
 
     protected final Context context;
-    private String installedVersion;
     protected @Getter String executable;
+    private String installedVersion;
 
     public abstract String getName();
 
@@ -84,6 +85,7 @@ public abstract class DependencyExecutableInstaller {
     }
 
     private void installDependency(CompletableFuture<String> future) {
+        log.info("Installing dependency: {}", getName());
         context.bgp().runWithProgress("install-" + getName()).onFinally(ex -> {
             if (ex != null) {
                 log.error("Unable to install {}", getName(), ex);

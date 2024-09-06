@@ -1,12 +1,8 @@
 package org.homio.api.setting;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-import static org.homio.api.util.JsonUtils.putOpt;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
-import java.nio.file.Paths;
 import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
@@ -16,6 +12,11 @@ import org.homio.api.util.HardwareUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+
+import java.nio.file.Paths;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+import static org.homio.api.util.JsonUtils.putOpt;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPlugin<T> {
@@ -29,7 +30,8 @@ public interface SettingPlugin<T> {
         return null;
     }
 
-    @NotNull Class<T> getType();
+    @NotNull
+    Class<T> getType();
 
     // specify max width of rendered ui item. Uses with SelectBox/SelectBoxDynamic
     default @Nullable Integer getMaxWidth() {
@@ -66,7 +68,8 @@ public interface SettingPlugin<T> {
         return parameters;
     }
 
-    @NotNull SettingType getSettingType();
+    @NotNull
+    SettingType getSettingType();
 
     // if secured - users without admin privileges can't see values
     default boolean isSecuredValue() {
@@ -97,7 +100,7 @@ public interface SettingPlugin<T> {
         return null;
     }
 
-    default @Nullable T parseValue(Context context, String value) {
+    default @Nullable T deserializeValue(Context context, String value) {
         if (value == null) {
             return null;
         }
@@ -156,12 +159,12 @@ public interface SettingPlugin<T> {
     }
 
     /**
-     * Covnerter from target type to string
+     * Convert from target type to string
      *
      * @param value -
      * @return -
      */
-    default @NotNull String writeValue(@Nullable T value) {
+    default @NotNull String serializeValue(@Nullable T value) {
         if (value == null) {
             return "";
         }
@@ -179,11 +182,11 @@ public interface SettingPlugin<T> {
         if (parameters != null) {
             if (parameters.has("min") && parseValue < parameters.getInt("min")) {
                 throw new IllegalArgumentException(
-                    "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
+                        "Setting value <" + value + "> less than minimum value: " + parameters.getInt("min"));
             }
             if (parameters.has("max") && parseValue > parameters.getInt("max")) {
                 throw new IllegalArgumentException(
-                    "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
+                        "Setting value <" + value + "> more than maximum value: " + parameters.getInt("max"));
             }
         }
         return (T) parseValue;
@@ -193,12 +196,11 @@ public interface SettingPlugin<T> {
      * Assert that user has access to change setting
      *
      * @param context - entity context
-     * @param user          - logged in user
-     * @throws IllegalAccessException - access denied
+     * @param user    - logged in user
      */
-    default void assertUserAccess(@NotNull Context context, @Nullable UserEntity user) throws IllegalAccessException {
-        if (user == null || !user.isAdmin()) {
-            throw new IllegalAccessException();
+    default void assertUserAccess(@NotNull Context context, @Nullable UserEntity user) {
+        if (user != null && !user.isAdmin()) {
+            user.assertSettingsAccess(this, context);
         }
     }
 }

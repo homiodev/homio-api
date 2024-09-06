@@ -2,9 +2,6 @@ package org.homio.api;
 
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingRunnable;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasJsonData;
 import org.homio.api.model.HasEntityIdentifier;
@@ -15,6 +12,10 @@ import org.homio.api.setting.console.header.dynamic.DynamicConsoleHeaderContaine
 import org.homio.api.setting.console.header.dynamic.DynamicConsoleHeaderSettingPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface ContextSetting {
 
@@ -38,7 +39,7 @@ public interface ContextSetting {
      * @param <T>            -
      */
     static <T> void setMemValue(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title,
-        @Nullable T value) {
+                                @Nullable T value) {
         MEM_HANDLER.get().setValue(entity, distinguishKey, title, value);
     }
 
@@ -51,7 +52,7 @@ public interface ContextSetting {
     }
 
     static void setStatus(@NotNull HasEntityIdentifier entity, @NotNull String distinguishKey, @NotNull String title, @Nullable Status status,
-        String message) {
+                          String message) {
         setMemValue(entity, distinguishKey + "Message", "", message);
         setMemValue(entity, distinguishKey, title, status);
     }
@@ -85,7 +86,7 @@ public interface ContextSetting {
      * @param dynamicSettings           -
      */
     void reloadSettings(@NotNull Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass,
-        @NotNull List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
+                        @NotNull List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
 
     /**
      * Get setting value by class name
@@ -119,7 +120,7 @@ public interface ContextSetting {
     }
 
     default <T> void listenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-        @NotNull ThrowingRunnable<Exception> listener) {
+                                 @NotNull ThrowingRunnable<Exception> listener) {
         listenValue(settingClass, key, p -> listener.run());
     }
 
@@ -132,15 +133,15 @@ public interface ContextSetting {
      * @param <T>          -
      */
     <T> void listenValueInRequest(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-        @NotNull ThrowingConsumer<T, Exception> listener);
+                                  @NotNull ThrowingConsumer<T, Exception> listener);
 
     <T> void listenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-        @NotNull ThrowingConsumer<T, Exception> listener);
+                         @NotNull ThrowingConsumer<T, Exception> listener);
 
     <T> void unListenValue(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key);
 
     default <T> void listenValueAndGet(@NotNull Class<? extends SettingPlugin<T>> settingClass, @NotNull String key,
-        @NotNull ThrowingConsumer<T, Exception> listener) throws Exception {
+                                       @NotNull ThrowingConsumer<T, Exception> listener) throws Exception {
         listenValue(settingClass, key, listener);
         listener.accept(getValue(settingClass));
     }
@@ -156,7 +157,7 @@ public interface ContextSetting {
      * @param <P>       - target type
      */
     <T extends BaseEntity & HasJsonData, P> void listenEntityValueAndGet(@NotNull T entity, @NotNull String key,
-        @Nullable String jsonKey, @NotNull Class<P> typeClass, @NotNull ThrowingConsumer<P, Exception> listener);
+                                                                         @Nullable String jsonKey, @NotNull Class<P> typeClass, @NotNull ThrowingConsumer<P, Exception> listener);
 
     <T> void setValueRaw(@NotNull Class<? extends SettingPlugin<T>> settingPluginClazz, @Nullable String value);
 
@@ -190,8 +191,9 @@ public interface ContextSetting {
         return Objects.requireNonNull(getEnv(key, classType, defaultValue, store, null));
     }
 
-    @Nullable <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue,
-        boolean store, @Nullable String description);
+    @Nullable
+    <T> T getEnv(@NotNull String key, @NotNull Class<T> classType, @Nullable T defaultValue,
+                 boolean store, @Nullable String description);
 
     default int getEnv(@NotNull String key, int defaultValue, boolean store) {
         return getEnv(key, defaultValue, store, null);
@@ -213,10 +215,11 @@ public interface ContextSetting {
 
     void setEnv(@NotNull String key, @NotNull Object value);
 
-    @NotNull String getApplicationVersion();
+    @NotNull
+    String getApplicationVersion();
 
     default int getApplicationMajorVersion() {
-        return Integer.parseInt(getApplicationVersion().split("\\.")[0]);
+        return Integer.parseInt(getApplicationVersion().substring(1).split("\\.")[0]);
     }
 
     interface MemSetterHandler {

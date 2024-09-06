@@ -5,23 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Bytes;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
@@ -34,15 +17,33 @@ import org.homio.api.fs.BaseCachedFileSystemProvider.FsFileEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystemEntity, FSFile extends FsFileEntity<FSFile>,
-    Service extends BaseFSService<FSFile>> implements
-    FileSystemProvider {
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-    protected @NotNull final Service service;
-    protected @NotNull final Context context;
-    protected @NotNull final LoadingCache<String, List<FSFile>> fileCache;
-    protected @NotNull final ReentrantLock lock = new ReentrantLock();
-    protected @NotNull final Condition condition;
+public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystemEntity, FSFile extends FsFileEntity<FSFile>,
+        Service extends BaseFSService<FSFile>> implements
+        FileSystemProvider {
+
+    protected @NotNull
+    final Service service;
+    protected @NotNull
+    final Context context;
+    protected @NotNull
+    final LoadingCache<String, List<FSFile>> fileCache;
+    protected @NotNull
+    final ReentrantLock lock = new ReentrantLock();
+    protected @NotNull
+    final Condition condition;
     @Getter
     protected @NotNull Entity entity;
     protected long connectionHashCode;
@@ -53,16 +54,16 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         this.condition = lock.newCondition();
 
         this.fileCache = CacheBuilder.newBuilder().
-                                     expireAfterWrite(1, TimeUnit.HOURS).build(new CacheLoader<>() {
-                public @NotNull List<FSFile> load(@NotNull String id) {
-                    try {
-                        return service.readChildren(id);
-                    } catch (Exception ex) {
-                        service.recreate();
-                        return service.readChildren(id);
+                expireAfterWrite(1, TimeUnit.HOURS).build(new CacheLoader<>() {
+                    public @NotNull List<FSFile> load(@NotNull String id) {
+                        try {
+                            return service.readChildren(id);
+                        } catch (Exception ex) {
+                            service.recreate();
+                            return service.readChildren(id);
+                        }
                     }
-                }
-            });
+                });
         this.service = createService();
     }
 
@@ -123,7 +124,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     }
 
     @Override
-    public void setEntity(Object entity) {
+    public void setEntity(@NotNull Object entity) {
         this.entity = (Entity) entity;
         restart(false);
     }
@@ -138,7 +139,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
     @SneakyThrows
     @Override
-    public Set<TreeNode> toTreeNodes(@NotNull Set<String> ids) {
+    public @NotNull Set<TreeNode> toTreeNodes(@NotNull Set<String> ids) {
         Set<TreeNode> fmPaths = new HashSet<>();
         for (String id : ids) {
             FSFile fsFile = getFSFile(id);
@@ -151,7 +152,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
     @SneakyThrows
     @Override
-    public TreeNode delete(@NotNull Set<String> ids) {
+    public @NotNull TreeNode delete(@NotNull Set<String> ids) {
         List<FSFile> files = new ArrayList<>();
         for (String id : ids) {
             if (id.isEmpty()) {
@@ -170,7 +171,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
     @Override
     @SneakyThrows
-    public TreeNode create(@NotNull String parentId, @NotNull String name, boolean isDir, UploadOption uploadOption) {
+    public @Nullable TreeNode create(@NotNull String parentId, @NotNull String name, boolean isDir, UploadOption uploadOption) {
         String fullPath = fixPath(Paths.get(parentId).resolve(name));
 
         if (uploadOption != UploadOption.Replace) {
@@ -194,7 +195,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
     @SneakyThrows
     @Override
-    public TreeNode rename(@NotNull String id, @NotNull String newName, UploadOption uploadOption) {
+    public @Nullable TreeNode rename(@NotNull String id, @NotNull String newName, UploadOption uploadOption) {
         List<FSFile> files = fileCache.get(id);
         if (files.size() == 1) {
             FSFile file = files.get(0);
@@ -221,7 +222,9 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     }
 
     @Override
-    public TreeNode copy(@NotNull Collection<TreeNode> entries, @NotNull String targetId, UploadOption uploadOption) {
+    public @NotNull TreeNode copy(@NotNull Collection<TreeNode> entries,
+                                  @NotNull String targetId,
+                                  @NotNull UploadOption uploadOption) {
         List<FSFile> result = new ArrayList<>();
         copyEntries(entries, targetId, uploadOption, result);
         fileCache.invalidateAll();
@@ -229,8 +232,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     }
 
     @Override
-    @Nullable
-    public Set<TreeNode> loadTreeUpToChild(@Nullable String parent, @NotNull String id) {
+    public @Nullable Set<TreeNode> loadTreeUpToChild(@Nullable String parent, @NotNull String id) {
         FSFile file = getFSFile(id);
         if (file == null) {
             return null;
@@ -238,13 +240,13 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
         Set<TreeNode> rootChildren = getChildren(entity.getFileSystemRoot());
         Set<TreeNode> currentChildren = rootChildren;
         List<String> items = StreamSupport.stream(Paths.get(file.getAbsolutePathWithoutRoot()).spliterator(), false)
-                                          .map(Path::toString).toList();
+                .map(Path::toString).toList();
         for (int i = 0; i < items.size() - 1; i++) {
             String pathItem = items.get(i);
             TreeNode foundedObject = currentChildren
-                .stream()
-                .filter(c -> c.getName().equals(pathItem)).findAny()
-                .orElseThrow(() -> new IllegalStateException("Unable find object: " + pathItem));
+                    .stream()
+                    .filter(c -> c.getName().equals(pathItem)).findAny()
+                    .orElseThrow(() -> new IllegalStateException("Unable find object: " + pathItem));
             currentChildren = getChildren(pathItem);
             foundedObject.addChildren(currentChildren);
         }
@@ -264,7 +266,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     }
 
     @Override
-    @NotNull
+    @Nullable
     public Set<TreeNode> getChildrenRecursively(@NotNull String parentId) {
         TreeNode root = new TreeNode();
         buildTreeNodeRecursively(parentId, root);
@@ -330,20 +332,23 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     private TreeNode buildTreeNode(@NotNull FSFile file, boolean handleAttributes) {
         boolean isDirectory = !handleAttributes || file.isDirectory();
         TreeNode treeNode = new TreeNode(
-            isDirectory,
-            isDirectory && !file.hasChildren(),
-            file.getFilename(),
-            file.getId(),
-            handleAttributes ? file.getSize() : null,
-            handleAttributes ? file.getModifiedDateTime() : null,
-            this,
-            handleAttributes ? file.getContentType() : null);
+                isDirectory,
+                isDirectory && !file.hasChildren(),
+                file.getFilename(),
+                file.getId(),
+                handleAttributes ? file.getSize() : null,
+                handleAttributes ? file.getModifiedDateTime() : null,
+                this,
+                handleAttributes ? file.getContentType() : null);
         buildTreeNodeExternal(treeNode, file);
         return treeNode;
     }
 
     @SneakyThrows
-    private void copyEntries(Collection<TreeNode> entries, String targetId, UploadOption uploadOption, List<FSFile> result) {
+    private void copyEntries(@NotNull Collection<TreeNode> entries,
+                             @NotNull String targetId,
+                             @NotNull UploadOption uploadOption,
+                             @NotNull List<FSFile> result) {
         for (TreeNode entry : entries) {
             String path = fixPath(Paths.get(targetId).resolve(entry.getName()));
             if (entry.getAttributes().isDir()) {
@@ -371,14 +376,14 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
             String fileId = appendSlash(appendRoot(id));
             String parentId = StringUtils.defaultIfEmpty(fixPath(Paths.get(fileId).getParent()), getNullParentId());
             fsFile = fileCache.get(parentId).stream()
-                              .filter(c -> {
-                                  if (c.getId().equals(fileId)) {
-                                      return true;
-                                  }
-                                  String path = appendSlash(fixPath(appendRoot(c.getId())));
-                                  return path.equals(fileId);
-                              })
-                              .findAny().orElse(null);
+                    .filter(c -> {
+                        if (c.getId().equals(fileId)) {
+                            return true;
+                        }
+                        String path = appendSlash(fixPath(appendRoot(c.getId())));
+                        return path.equals(fileId);
+                    })
+                    .findAny().orElse(null);
             if (fsFile == null) {
                 fsFile = service.getFile(fileId);
                 if (fsFile != null) {
@@ -394,7 +399,8 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
         void close();
 
-        @NotNull InputStream getInputStream(@NotNull String id) throws Exception;
+        @NotNull
+        InputStream getInputStream(@NotNull String id) throws Exception;
 
         void mkdir(@NotNull String id) throws Exception;
 
@@ -402,7 +408,8 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
         void rename(@NotNull String oldName, @NotNull String newName) throws Exception;
 
-        @Nullable FSFile getFile(@NotNull String id) throws Exception;
+        @Nullable
+        FSFile getFile(@NotNull String id) throws Exception;
 
         List<FSFile> readChildren(@NotNull String parentId);
 
@@ -426,7 +433,8 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
             return Paths.get(getAbsolutePath()).getFileName().toString();
         }
 
-        @NotNull String getAbsolutePath();
+        @NotNull
+        String getAbsolutePath();
 
         /**
          * Method get absolute path without root and append '/' at begin
@@ -445,9 +453,11 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
         boolean isDirectory() throws Exception;
 
-        @Nullable Long getSize() throws Exception;
+        @Nullable
+        Long getSize() throws Exception;
 
-        @Nullable Long getModifiedDateTime() throws Exception;
+        @Nullable
+        Long getModifiedDateTime() throws Exception;
 
         /**
          * Get parent file
@@ -455,7 +465,8 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
          * @param stub - if return full file with attributes, etc.. or just a stub
          * @return - file or null
          */
-        @Nullable FSFile getParent(boolean stub);
+        @Nullable
+        FSFile getParent(boolean stub);
 
         default boolean isPathEmpty(Path path) {
             if (path == null) {

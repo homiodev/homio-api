@@ -1,61 +1,7 @@
 package org.homio.api.util;
 
-import static java.lang.String.format;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
-
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -80,6 +26,35 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static java.lang.String.format;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.*;
+
 @Getter
 @Log4j2
 public final class CommonUtils {
@@ -100,11 +75,19 @@ public final class CommonUtils {
     private static final @Getter Path imagePath = getOrCreatePath("media/image");
     private static final @Getter Path sshPath = getOrCreatePath("ssh");
     private static final @Getter Path tmpPath = getOrCreatePath("tmp");
+
     public static final Tika TIKA = new Tika();
     public static GitHubProject STATIC_FILES = GitHubProject.of("homiodev", "static-files");
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
+    }
+
+    public static String generateShortUUID(int count) {
+        int byteLength = (int) Math.ceil(count * 3.0 / 4.0);
+        byte[] randomBytes = new byte[byteLength];
+        new SecureRandom().nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes).substring(0, count);
     }
 
     public static String getExtension(String fileName) {
@@ -188,7 +171,7 @@ public final class CommonUtils {
             return "File not found: " + cause.getMessage();
         }
 
-        return StringUtils.defaultString(cause.getMessage(), cause.toString());
+        return Objects.toString(cause.getMessage(), cause.toString());
     }
 
     @SneakyThrows
@@ -341,17 +324,17 @@ public final class CommonUtils {
     }
 
     public static void addFiles(@NotNull Path tmpPath, @NotNull Collection<TreeNode> files,
-        @NotNull BiFunction<Path, TreeNode, Path> pathResolver) {
+                                @NotNull BiFunction<Path, TreeNode, Path> pathResolver) {
         addFiles(tmpPath, files, pathResolver,
-            (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
-            (treeNode, path) -> Files.createDirectories(path));
+                (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
+                (treeNode, path) -> Files.createDirectories(path));
     }
 
     @SneakyThrows
     public static void addFiles(@NotNull Path tmpPath, @Nullable Collection<TreeNode> files,
-        @NotNull BiFunction<Path, TreeNode, Path> pathResolver,
-        @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
-        @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
+                                @NotNull BiFunction<Path, TreeNode, Path> pathResolver,
+                                @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
+                                @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
         if (files != null) {
             for (TreeNode treeNode : files) {
                 Path filePath = pathResolver.apply(tmpPath, treeNode);
@@ -360,22 +343,22 @@ public final class CommonUtils {
                 } else {
                     folderWriteResolver.accept(treeNode, filePath);
                     addFiles(filePath, treeNode.getChildren(true), pathResolver, fileWriteResolver,
-                        folderWriteResolver);
+                            folderWriteResolver);
                 }
             }
         }
     }
 
     public static ResponseEntity<InputStreamResource> inputStreamToResource(
-        @NotNull InputStream stream,
-        @NotNull MediaType contentType,
-        @Nullable HttpHeaders headers) {
+            @NotNull InputStream stream,
+            @NotNull MediaType contentType,
+            @Nullable HttpHeaders headers) {
         try {
             return ResponseEntity.ok()
-                                 .contentLength(stream.available())
-                                 .contentType(contentType)
-                                 .headers(headers)
-                                 .body(new InputStreamResource(stream));
+                    .contentLength(stream.available())
+                    .contentType(contentType)
+                    .headers(headers)
+                    .body(new InputStreamResource(stream));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -456,13 +439,13 @@ public final class CommonUtils {
 
     public static String splitNameToReadableFormat(@NotNull String name) {
         String[] items = name.split("_");
-        if(items.length == 1) {
+        if (items.length == 1) {
             name = name.replaceAll(
-                format("%s|%s|%s",
-                    "(?<=[A-Z])(?=[A-Z][a-z])",
-                    "(?<=[a-z])(?=[A-Z])",
-                    "(?<=[A-Za-z])(?=[0-9])"
-                ), "_"
+                    format("%s|%s|%s",
+                            "(?<=[A-Z])(?=[A-Z][a-z])",
+                            "(?<=[a-z])(?=[A-Z])",
+                            "(?<=[A-Za-z])(?=[0-9])"
+                    ), "_"
             ).toLowerCase();
         }
         items = name.split("_");

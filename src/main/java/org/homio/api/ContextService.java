@@ -1,62 +1,67 @@
 package org.homio.api;
 
-import static java.lang.String.format;
-import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
-import static org.homio.api.util.CommonUtils.getErrorMessage;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingBiConsumer;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.homio.api.entity.BaseEntity;
+import org.homio.api.model.HasEntityIdentifier;
+import org.homio.api.service.BaseService;
+import org.homio.api.service.EntityService;
+import org.homio.api.util.SecureString;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.homio.api.entity.BaseEntity;
-import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.service.EntityService;
-import org.homio.api.service.EntityService.ServiceInstance;
-import org.homio.api.util.SecureString;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static java.lang.String.format;
+import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
+import static org.homio.api.util.CommonUtils.getErrorMessage;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface ContextService {
 
+    // Require to select mqtt service on UI from addons
     String MQTT_SERVICE = "MQTT";
 
-    @NotNull Context context();
+    @NotNull
+    Context context();
 
-    @NotNull String getPrimaryMqttEntity();
+    @NotNull
+    String getPrimaryMqttEntity();
 
     void registerEntityTypeForSelection(@NotNull Class<? extends HasEntityIdentifier> entityClass, @NotNull String type);
-
-    void registerUserRoleResource(@NotNull String resource);
 
     default @Nullable MQTTEntityService getMQTTEntityService(@NotNull String entityID) {
         return getService(entityID, MQTTEntityService.class);
     }
 
-    @Nullable EntityService.ServiceInstance getEntityService(@NotNull String entityID);
+    @Nullable
+    EntityService.ServiceInstance getEntityService(@NotNull String entityID);
 
-    default boolean isHasEntityService(@NotNull String entityID) {
+    default boolean isHasService(@NotNull String entityID) {
         return getEntityService(entityID) != null;
     }
 
-    void addEntityService(@NotNull String entityID, @NotNull EntityService.ServiceInstance service);
+    void addService(@NotNull String entityID, @NotNull BaseService service);
 
     // return new url to uses as proxy
-    @NotNull String registerUrlProxy(@NotNull String entityID, @NotNull String url, @NotNull Consumer<RouteProxyBuilder> builder);
+    @NotNull
+    String registerUrlProxy(@NotNull String entityID, @NotNull String url, @NotNull Consumer<RouteProxyBuilder> builder);
 
     boolean unRegisterUrlProxy(@NotNull String entityID);
 
-    @Nullable ServiceInstance removeEntityService(@NotNull String entityID);
+    @Nullable
+    BaseService removeService(@NotNull String entityID);
 
     private <T> @Nullable T getService(@NotNull String entityID, @NotNull Class<T> serviceClass) {
-        BaseEntity entity = context().db().getEntity(entityID);
+        BaseEntity entity = context().db().get(entityID);
         if (entity != null && !serviceClass.isAssignableFrom(entity.getClass())) {
             throw new IllegalStateException(format("Entity: '%s' has type: '%s' but require: '%s'", entityID, entity.getType(), serviceClass.getSimpleName()));
         }
@@ -65,13 +70,21 @@ public interface ContextService {
 
     interface MQTTEntityService extends HasEntityIdentifier {
 
-        @Nullable String getLastValue(@NotNull String topic);
+        static @NotNull String buildMqttListenEvent(@NotNull String mqttEntityID, @NotNull String topic) {
+            return mqttEntityID + LIST_DELIMITER + topic;
+        }
 
-        @NotNull String getUser();
+        @Nullable
+        String getLastValue(@NotNull String topic);
 
-        @NotNull SecureString getPassword();
+        @NotNull
+        String getUser();
 
-        @NotNull String getHostname();
+        @NotNull
+        SecureString getPassword();
+
+        @NotNull
+        String getHostname();
 
         int getPort();
 
@@ -104,35 +117,31 @@ public interface ContextService {
             removeListener(null, discriminator);
         }
 
-        static @NotNull String buildMqttListenEvent(@NotNull String mqttEntityID, @NotNull String topic) {
-            return mqttEntityID + LIST_DELIMITER + topic;
-        }
-
         default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
-            @NotNull String entityID, @NotNull Logger log, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
+                                        @NotNull String entityID, @NotNull Logger log, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
             addPayloadListener(topic, discriminator, entityID, log, Level.INFO, handler);
         }
 
         default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
-            @NotNull String entityID, @NotNull Logger log, @NotNull Level logLevel, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
+                                        @NotNull String entityID, @NotNull Logger log, @NotNull Level logLevel, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
             addListener(topic,
-                discriminator, (realTopic, value) -> {
-                    log.log(logLevel, "[{}]: {} {}: {}", discriminator, entityID, realTopic, value);
-                    String payload = value == null ? "" : value;
-                    if (!payload.isEmpty()) {
-                        ObjectNode node;
-                        try {
-                            node = OBJECT_MAPPER.readValue(payload, ObjectNode.class);
-                        } catch (Exception ex) {
-                            node = OBJECT_MAPPER.createObjectNode().put("raw", payload);
+                    discriminator, (realTopic, value) -> {
+                        log.log(logLevel, "[{}]: {} {}: {}", discriminator, entityID, realTopic, value);
+                        String payload = value == null ? "" : value;
+                        if (!payload.isEmpty()) {
+                            ObjectNode node;
+                            try {
+                                node = OBJECT_MAPPER.readValue(payload, ObjectNode.class);
+                            } catch (Exception ex) {
+                                node = OBJECT_MAPPER.createObjectNode().put("raw", payload);
+                            }
+                            try {
+                                handler.accept(realTopic, node);
+                            } catch (Exception ex) {
+                                log.error("[{}]: Unable to handle mqtt payload: {}. Msg: {}", entityID, payload, getErrorMessage(ex));
+                            }
                         }
-                        try {
-                            handler.accept(realTopic, node);
-                        } catch (Exception ex) {
-                            log.error("[{}]: Unable to handle mqtt payload: {}. Msg: {}", entityID, payload, getErrorMessage(ex));
-                        }
-                    }
-                });
+                    });
         }
     }
 
@@ -142,6 +151,7 @@ public interface ContextService {
 
         void setResponseHeaders(Function<ProxyUrl, Map<String, String>> responseHeaderBuilder);
 
-        record ProxyUrl(@NotNull String url, @Nullable Map<String, List<String>> headers) {}
+        record ProxyUrl(@NotNull String url, @Nullable Map<String, List<String>> headers) {
+        }
     }
 }

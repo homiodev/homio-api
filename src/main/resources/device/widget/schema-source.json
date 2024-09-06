@@ -6,7 +6,7 @@
     "kind": {
       "type": "string",
       "enum": [
-        "broadcasts",
+        "broadcast",
         "property",
         "variable"
       ]

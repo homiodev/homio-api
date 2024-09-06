@@ -81,6 +81,24 @@
             "title": "Device endpoint icon color",
             "type": "string"
           },
+          "scale": {
+            "title": "Scale factor for EndpointType.number",
+            "type": "number"
+          },
+          "endpointType": {
+            "title": "Device endpoint type",
+            "type": "string",
+            "enum": [
+              "trigger",
+              "bool",
+              "number",
+              "dimmer",
+              "string",
+              "select",
+              "color"
+            ],
+            "default": "string"
+          },
           "ignoreDuplicates": {
             "title": "Ignore duplicate event/values when call setValue on endpoint",
             "type": "boolean",
@@ -116,6 +134,15 @@
           "order": {
             "title": "Device endpoint order",
             "type": "number"
+          },
+          "availableValues": {
+            "title": "List of available values for endpoint",
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
           },
           "alias": {
             "title": "List of endpoint aliases. App skip endpoint aliases if endpoint exists alongside with any alias",
