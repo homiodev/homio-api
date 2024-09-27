@@ -18,7 +18,7 @@ import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
 import org.homio.api.setting.SettingPluginButton;
-import org.homio.api.stream.audio.AudioStream;
+import org.homio.api.stream.ContentStream;
 import org.homio.api.ui.UI.Color;
 import org.homio.api.ui.UIActionHandler;
 import org.homio.api.ui.dialog.DialogModel;
@@ -459,7 +459,7 @@ public interface ContextUI {
 
     interface ContextUIMedia {
 
-        void playWebAudio(@NotNull AudioStream audio, @Nullable Integer from, @Nullable Integer to);
+        void playWebAudio(@NotNull ContentStream audioStream, @Nullable Integer from, @Nullable Integer to);
     }
 
     interface ContextUIDialog {

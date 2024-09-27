@@ -10,8 +10,9 @@ import org.apache.logging.log4j.Level;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.stream.ContentStream;
-import org.homio.api.stream.audio.AudioSpeaker;
-import org.homio.api.stream.audio.MicrophoneInput;
+import org.homio.api.stream.audio.AudioPlayer;
+import org.homio.api.stream.audio.AudioInput;
+import org.homio.api.stream.video.VideoPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -45,13 +46,17 @@ public interface ContextMedia {
     @NotNull
     VideoInputDevice createVideoInputDevice(@NotNull String vfile);
 
-    void addAudioSpeaker(@NotNull AudioSpeaker audioSpeaker);
+    void addAudioPlayer(@NotNull AudioPlayer player);
 
-    void removeAudioSpeaker(@NotNull AudioSpeaker audioSpeaker);
+    void removeAudioPlayer(@NotNull AudioPlayer player);
 
-    void addMicrophoneInput(@NotNull MicrophoneInput microphoneInput);
+    void addVideoPlayer(@NotNull VideoPlayer player);
 
-    void removeMicrophoneInput(@NotNull MicrophoneInput microphoneInput);
+    void removeVideoPlayer(@NotNull VideoPlayer player);
+
+    void addAudioInput(@NotNull AudioInput input);
+
+    void removeAudioInput(@NotNull AudioInput input);
 
     /**
      * Create relative url .../stream to fetch data

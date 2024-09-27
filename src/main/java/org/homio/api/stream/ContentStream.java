@@ -1,10 +1,10 @@
 package org.homio.api.stream;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.Resource;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 // fires when timeout is reached
 public interface ContentStream extends Closeable {
@@ -12,6 +12,11 @@ public interface ContentStream extends Closeable {
     @NotNull
     Resource getResource();
 
-    @Nullable
-    String getMimeType();
+    @NotNull
+    StreamFormat getStreamFormat();
+
+    @Override
+    default void close() throws IOException {
+        // do nothing
+    }
 }

@@ -1,11 +1,14 @@
-package org.homio.api.stream.audio;
+package org.homio.api.stream.impl;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
+import org.homio.api.stream.ContentStream;
+import org.homio.api.stream.StreamFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.ResourceUtils;
 
@@ -23,35 +26,33 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Objects.requireNonNullElseGet;
+
 @Log4j2
-public class URLAudioStream extends UrlResource implements AudioStream {
+public class URLContentStream extends UrlResource implements ContentStream {
 
     public static final String M3U_EXTENSION = "m3u";
     public static final String PLS_EXTENSION = "pls";
     private static final Pattern PLS_STREAM_PATTERN = Pattern.compile("^File[0-9]=(.+)$");
     @Getter
-    private final @NotNull AudioFormat format;
+    private final @NotNull StreamFormat streamFormat;
 
     @Nullable
     private Socket shoutCastSocket;
 
-    public URLAudioStream(@NotNull String url) throws MalformedURLException {
-        this(new URL(url), null);
+    public URLContentStream(@NotNull String url) throws MalformedURLException {
+        this(new URL(url), (StreamFormat) null);
     }
 
-    public URLAudioStream(@NotNull URL url, String fileName) {
+    public URLContentStream(@NotNull URL url, @NotNull String fileName) {
         super(url);
-        this.format = evaluateFormatOrDefault(fileName);
+        this.streamFormat = StreamFormat.evaluateFormat(fileName);
     }
 
-    private static AudioFormat evaluateFormatOrDefault(String fileName) {
-        if (fileName != null) {
-            try {
-                return AudioStream.evaluateFormat(fileName);
-            } catch (Exception ignored) {
-            }
-        }
-        return new AudioFormat(AudioFormat.CONTAINER_NONE, AudioFormat.CODEC_MP3, false, 16, null, null);
+    public URLContentStream(@NotNull URL url, @Nullable StreamFormat streamFormat) {
+        super(url);
+        this.streamFormat = requireNonNullElseGet(streamFormat, () ->
+                StreamFormat.evaluateFormat(getFilename()));
     }
 
     @Override
@@ -138,5 +139,10 @@ public class URLAudioStream extends UrlResource implements AudioStream {
             log.error("Cannot set up stream '{}': {}", getURL(), e.getMessage(), e);
             throw new IOException("IO Error");
         }
+    }
+
+    @Override
+    public @NotNull Resource getResource() {
+        return this;
     }
 }

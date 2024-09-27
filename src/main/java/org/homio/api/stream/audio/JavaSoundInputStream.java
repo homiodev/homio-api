@@ -1,27 +1,30 @@
 package org.homio.api.stream.audio;
 
 import lombok.Getter;
+import org.homio.api.stream.ContentStream;
+import org.homio.api.stream.StreamFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.AbstractResource;
+import org.springframework.core.io.Resource;
 
 import javax.sound.sampled.TargetDataLine;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class JavaSoundInputStream extends AbstractResource implements AudioStream {
+public class JavaSoundInputStream extends AbstractResource implements ContentStream {
 
     /**
      * TargetDataLine for the input
      */
     private final @NotNull TargetDataLine input;
     @Getter
-    private final @NotNull AudioFormat format;
+    private final @NotNull StreamFormat streamFormat;
     private final InputStream inputStream;
 
-    public JavaSoundInputStream(@NotNull TargetDataLine input, @NotNull AudioFormat format) {
+    public JavaSoundInputStream(@NotNull TargetDataLine input, @NotNull AudioFormat streamFormat) {
         this.input = input;
-        this.format = format;
+        this.streamFormat = streamFormat;
         this.inputStream = new InputStream() {
             @Override
             public int read() {
@@ -69,5 +72,10 @@ public class JavaSoundInputStream extends AbstractResource implements AudioStrea
     @Override
     public @NotNull String getDescription() {
         return getClass().getSimpleName() + ": " + input.getLineInfo().toString();
+    }
+
+    @Override
+    public @NotNull Resource getResource() {
+        return this;
     }
 }
