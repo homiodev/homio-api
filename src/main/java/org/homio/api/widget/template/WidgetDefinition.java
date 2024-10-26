@@ -62,7 +62,7 @@ public class WidgetDefinition {
     @Getter
     private @Nullable List<Requests> requests;
     @Getter
-    private Padding padding;
+    private Margin margin;
 
     @SneakyThrows
     public static void replaceField(String path, Object value, WidgetDefinition widgetDefinition) {
@@ -183,7 +183,7 @@ public class WidgetDefinition {
 
     @Getter
     @Setter
-    public static class Padding {
+    public static class Margin {
 
         private int top;
         private int right;
@@ -199,10 +199,10 @@ public class WidgetDefinition {
         // For chart
         private int pointsPerHour = 60;
         private double pointRadius = 0D;
-        private boolean showDynamicLine = false;
+        private int dynamicLineWidth = 0;
         private String dynamicLineColor;
         private String pointBorderColor;
-        private ToggleType toggleType = ToggleType.Regular;
+        private ToggleType toggleType = ToggleType.OnOff;
         private boolean showAxisX = true;
         private boolean showAxisY = true;
         private boolean showChartFullScreenButton = true;

@@ -91,6 +91,7 @@ public class GitHubProject {
                         }
                         return releases;
                     }));
+
     private final CachedValue<List<JsonNode>, GitHubProject> contentCache =
             new CachedValue<>(Duration.ofHours(24), gitHubProject ->
                     Curl.sendSync(Curl.createGetRequest(gitHubProject.api + "contents", httpHeaders), JsonNode.class, (jsonNode, status) -> {
@@ -107,14 +108,19 @@ public class GitHubProject {
                         }
                         return contents;
                     }));
-    private @Setter
+
+    @Setter
     @Getter
-    @Accessors(chain = true) String linuxExecutableAsset;
-    private @Nullable
-    @Setter String installedVersion;
+    @Accessors(chain = true)
+    private String linuxExecutableAsset;
+
+    @Setter
+    private @Nullable String installedVersion;
+
     private @Getter boolean updating;
-    private @Nullable
-    @Setter ThrowingBiFunction<Context, GitHubProject, String, Exception> installedVersionResolver;
+
+    @Setter
+    private @Nullable ThrowingBiFunction<Context, GitHubProject, String, Exception> installedVersionResolver;
 
     private GitHubProject(@NotNull String project, @NotNull String repo, @Nullable Path localProjectPath) {
         this.project = project;

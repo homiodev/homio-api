@@ -214,6 +214,18 @@ public class OptionModel implements Comparable<OptionModel> {
         return entityList(list, null, context);
     }
 
+    public static @NotNull List<OptionModel> entityList(@NotNull Class<? extends BaseEntity> entityClass, @NotNull Context context) {
+        List<? extends BaseEntity> list = context.db().findAll(entityClass);
+        return entityList(list, null, context);
+    }
+
+    public static @NotNull OptionModel entity(
+            @NotNull BaseEntity entity,
+            @Nullable BiConsumer<BaseEntity, OptionModel> configurator,
+            @NotNull Context context) {
+        return entityList(List.of(entity), configurator, context).get(0);
+    }
+
     public static @NotNull List<OptionModel> entityList(
             @NotNull Collection<? extends BaseEntity> list,
             @Nullable BiConsumer<BaseEntity, OptionModel> configurator,

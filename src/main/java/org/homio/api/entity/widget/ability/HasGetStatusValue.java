@@ -1,6 +1,5 @@
 package org.homio.api.entity.widget.ability;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -12,12 +11,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import java.util.List;
+
 /**
  * For widget dataSource to fetch simple entity status
  */
 public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueListener {
 
     Object getStatusValue(@NotNull GetStatusValueRequest request);
+
+    ValueType getValueType();
 
     SourceHistory getSourceHistory(@NotNull GetStatusValueRequest request);
 
@@ -32,14 +35,15 @@ public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
     }
 
     enum ValueType {
-        String, Float, Boolean
+        String, Float, Boolean, Unknown
     }
 
     @Getter
     @AllArgsConstructor
     class GetStatusValueRequest {
 
-        private @NotNull @Accessors(fluent = true) Context context;
+        private @NotNull
+        @Accessors(fluent = true) Context context;
         private @Nullable JSONObject dynamicParameters;
     }
 }

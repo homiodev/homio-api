@@ -6,6 +6,7 @@ import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -18,9 +19,9 @@ public interface ContextEvent {
      * @param key            - unique id
      * @param additionalKeys - additionalKeys
      */
-    void removeEvents(String key, String... additionalKeys);
+    void removeEvents(@NotNull String key, String... additionalKeys);
 
-    void removeEventListener(String discriminator, String key);
+    void removeEventListener(@Nullable String discriminator, @NotNull String key);
 
     /**
      * Listen for general event with key. Replace listener if key already exists
@@ -29,7 +30,8 @@ public interface ContextEvent {
      * @param listener - listener
      * @return this
      */
-    default ContextEvent addEventListener(String key, Consumer<State> listener) {
+    @NotNull
+    default ContextEvent addEventListener(@NotNull String key, @NotNull Consumer<State> listener) {
         return addEventListener(key, "", listener);
     }
 
@@ -41,7 +43,13 @@ public interface ContextEvent {
      * @param listener      - listener
      * @return ContextEvent
      */
-    ContextEvent addEventListener(String key, String discriminator, Consumer<State> listener);
+    @NotNull
+    ContextEvent addEventListener(@NotNull String key, @Nullable String discriminator, @Nullable Duration ttl, @NotNull Consumer<State> listener);
+
+    @NotNull
+    default ContextEvent addEventListener(@NotNull String key, @Nullable String discriminator, @NotNull Consumer<State> listener) {
+        return addEventListener(key, discriminator, null, listener);
+    }
 
     /**
      * Listen for event with key. Fires listener immediately if value was saved before
@@ -50,7 +58,8 @@ public interface ContextEvent {
      * @param listener - listener
      * @return ContextEvent
      */
-    default ContextEvent addEventBehaviourListener(String key, Consumer<State> listener) {
+    @NotNull
+    default ContextEvent addEventBehaviourListener(@NotNull String key, @NotNull Consumer<State> listener) {
         return addEventBehaviourListener(key, "", listener);
     }
 
@@ -62,9 +71,16 @@ public interface ContextEvent {
      * @param listener      - listener
      * @return ContextEvent
      */
-    ContextEvent addEventBehaviourListener(String key, String discriminator, Consumer<State> listener);
+    @NotNull
+    ContextEvent addEventBehaviourListener(@NotNull String key, @Nullable String discriminator, @Nullable Duration ttl,
+                                           @NotNull Consumer<State> listener);
 
-    ContextEvent addEventBehaviourListener(Pattern regexp, String discriminator, BiConsumer<String, State> listener);
+    default @NotNull ContextEvent addEventBehaviourListener(@NotNull String key, @Nullable String discriminator, @NotNull Consumer<State> listener) {
+        return addEventBehaviourListener(key, discriminator, null, listener);
+    }
+
+    @NotNull
+    ContextEvent addEventBehaviourListener(@NotNull Pattern regexp, @Nullable String discriminator, @NotNull BiConsumer<String, State> listener);
 
     /**
      * Fire event with key and value.
@@ -73,6 +89,7 @@ public interface ContextEvent {
      * @param key   - unique key
      * @return ContextEvent
      */
+    @NotNull
     ContextEvent fireEvent(@NotNull String key, @Nullable State value);
 
     /**
@@ -87,14 +104,17 @@ public interface ContextEvent {
     // go through all discriminators and count if key exists
     int getEventCount(@NotNull String key);
 
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityStatusUpdateListener
-            (String entityID, String key, Consumer<T> listener);
+            (@NotNull String entityID, @NotNull String key, @NotNull Consumer<T> listener);
 
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
-            (String entityID, String key, Consumer<T> listener);
+            (@NotNull String entityID, @NotNull String key, @NotNull Consumer<T> listener);
 
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
-            (String entityID, String key, EntityUpdateListener<T> listener);
+            (@NotNull String entityID, @NotNull String key, @NotNull EntityUpdateListener<T> listener);
 
     /**
      * t Listen any changes fot BaseEntity of concrete type.
@@ -105,8 +125,9 @@ public interface ContextEvent {
      * @param <T>         -
      * @return this
      */
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
-    (Class<T> entityClass, String key, Consumer<T> listener);
+    (@NotNull Class<T> entityClass, @NotNull String key, @NotNull Consumer<T> listener);
 
     /**
      * Listen any changes fot BaseEntity of concrete type.
@@ -117,21 +138,27 @@ public interface ContextEvent {
      * @param <T>         -
      * @return this
      */
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityUpdateListener
-    (Class<T> entityClass, String key, EntityUpdateListener<T> listener);
+    (@NotNull Class<T> entityClass, @NotNull String key, @NotNull EntityUpdateListener<T> listener);
 
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityCreateListener
-            (Class<T> entityClass, String key, Consumer<T> listener);
+            (@NotNull Class<T> entityClass, @NotNull String key, @NotNull Consumer<T> listener);
 
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityRemovedListener
-            (Class<T> entityClass, String key, Consumer<T> listener);
+            (@NotNull Class<T> entityClass, @NotNull String key, @NotNull Consumer<T> listener);
 
+    @NotNull
     <T extends BaseEntityIdentifier> ContextEvent addEntityRemovedListener
-            (String entityID, String key, Consumer<T> listener);
+            (@NotNull String entityID, @NotNull String key, @NotNull Consumer<T> listener);
 
-    ContextEvent removeEntityUpdateListener(String entityID, String key);
+    @NotNull
+    ContextEvent removeEntityUpdateListener(@NotNull String entityID, @NotNull String key);
 
-    ContextEvent removeEntityRemoveListener(String entityID, String key);
+    @NotNull
+    ContextEvent removeEntityRemoveListener(@NotNull String entityID, @NotNull String key);
 
     /**
      * Run only once when internet became available. command executes in separate thread
@@ -143,11 +170,11 @@ public interface ContextEvent {
 
     boolean isInternetUp();
 
-    default void onInternetStatusChanged(String key, Consumer<Boolean> listener) {
+    default void onInternetStatusChanged(@NotNull String key, @NotNull Consumer<Boolean> listener) {
         addEventListener("internet-status", key, state -> listener.accept(state.boolValue()));
     }
 
-    default void ensureInternetUp(String message) {
+    default void ensureInternetUp(@NotNull String message) {
         if (!isInternetUp()) {
             throw new IllegalStateException(message);
         }
@@ -159,12 +186,12 @@ public interface ContextEvent {
      * @param key      - key
      * @param listener - listener
      */
-    default void addPortChangeStatusListener(String key, Consumer<State> listener) {
+    default void addPortChangeStatusListener(@NotNull String key, @NotNull Consumer<State> listener) {
         addEventListener("any-port-changed", key, listener);
     }
 
     interface EntityUpdateListener<T> {
 
-        void entityUpdated(T newValue, T oldValue);
+        void entityUpdated(@NotNull T newValue, @Nullable T oldValue);
     }
 }

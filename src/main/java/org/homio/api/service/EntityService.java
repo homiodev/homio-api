@@ -33,9 +33,11 @@ import java.util.stream.Collectors;
 public interface EntityService<S extends EntityService.ServiceInstance>
         extends HasStatusAndMsg {
 
-    @NotNull ReentrantLock serviceAccessLock = new ReentrantLock();
+    @NotNull
+    ReentrantLock serviceAccessLock = new ReentrantLock();
 
-    @NotNull Context context();
+    @NotNull
+    Context context();
 
     /**
      * Test where is able to initialize entity
@@ -44,7 +46,15 @@ public interface EntityService<S extends EntityService.ServiceInstance>
      */
     @JsonIgnore
     @Nullable
-    Set<String> getConfigurationErrors();
+    default Set<String> getConfigurationErrors() {
+        if (this instanceof BaseEntity be) {
+            Set<String> missingMandatoryFields = be.getMissingMandatoryFields();
+            if (!missingMandatoryFields.isEmpty()) {
+                return missingMandatoryFields.stream().map(f -> "ERROR.NO_" + f.toUpperCase()).collect(Collectors.toSet());
+            }
+        }
+        return null;
+    }
 
     /**
      * Able to check if need reinitialize entity service

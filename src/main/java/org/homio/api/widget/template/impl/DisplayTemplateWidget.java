@@ -54,15 +54,15 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
 
         String layoutID = "lt-dsp-" + entity.getIeeeAddress();
         Map<String, DeviceEndpoint> endpoints = entity.getDeviceEndpoints().entrySet().stream()
-                                                      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
         context.widget().createLayoutWidget(layoutID, builder -> {
             TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
             builder.setBlockSize(wd.getBlockWidth(1), wd.getBlockHeight(1))
-                   .setLayoutDimension(endpointCount + 1, 3);
+                    .setLayoutDimension(endpointCount + 1, 3);
         });
         var request = new MainWidgetRequest(widgetRequest, wd, 3,
-            endpointCount + 1, builder -> builder.attachToLayout(layoutID, 0, 0));
+                endpointCount + 1, builder -> builder.attachToLayout(layoutID, 0, 0));
         buildMainWidget(request);
 
         ComposeTemplateWidget.addBottomRow(context, wd, layoutID, endpointCount, endpoints);
@@ -82,7 +82,7 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
         WidgetDefinition wd = request.getItem();
         context.widget().createDisplayWidget("dw-" + entity.getIeeeAddress(), builder -> {
             TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
-            builder.setPadding(0, 2, 0, 2);
+            builder.setMargin(0, 2, 0, 2);
             buildPushValue(request.getItem().getOptions(), builder, entity, context);
 
             TemplateWidgetBuilder.buildBackground(wd.getBackground(), widgetRequest, builder);
@@ -92,15 +92,15 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
                 builder.setLayout(layout);
             }
             builder.setBlockSize(
-                wd.getBlockWidth(request.getLayoutColumnNum()),
-                wd.getBlockHeight(request.getLayoutRowNum()));
+                    wd.getBlockWidth(request.getLayoutColumnNum()),
+                    wd.getBlockHeight(request.getLayoutRowNum()));
 
             request.getAttachToLayoutHandler().accept(builder);
 
             for (DeviceEndpoint endpoint : includeEndpoints) {
                 addEndpoint(widgetRequest, request.getItem(), builder, endpoint, seriesBuilder ->
-                    Optional.ofNullable(ICON_ANIMATE_ENDPOINTS.get(endpoint.getEndpointEntityID()))
-                            .ifPresent(ib -> ib.build(seriesBuilder)));
+                        Optional.ofNullable(ICON_ANIMATE_ENDPOINTS.get(endpoint.getEndpointEntityID()))
+                                .ifPresent(ib -> ib.build(seriesBuilder)));
             }
 
             Chart chart = wd.getOptions().getChart();
@@ -138,11 +138,11 @@ public class DisplayTemplateWidget implements TemplateWidgetBuilder {
                              @NotNull Consumer<DisplayWidgetSeriesBuilder> handler) {
         builder.addSeries(endpoint.getName(true), seriesBuilder -> {
             seriesBuilder
-                .setValueDataSource(TemplateWidgetBuilder.getSource(widgetRequest.context(), endpoint))
-                .setValueTemplate(null, endpoint.getUnit())
-                .setValueSuffixFontSize(0.6)
-                .setValueSuffixColor("#777777")
-                .setValueSuffixVerticalAlign(VerticalAlign.bottom);
+                    .setValueDataSource(TemplateWidgetBuilder.getSource(widgetRequest.context(), endpoint))
+                    .setValueTemplate(null, endpoint.getUnit())
+                    .setValueSuffixFontSize(0.6)
+                    .setValueSuffixColor("#777777")
+                    .setValueSuffixVerticalAlign(VerticalAlign.bottom);
             handler.accept(seriesBuilder);
             ItemDefinition itemDefinition = wb.getEndpoint(endpoint.getEndpointEntityID());
             if (itemDefinition != null) {

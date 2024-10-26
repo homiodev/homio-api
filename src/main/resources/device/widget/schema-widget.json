@@ -175,7 +175,7 @@
     "options": {
       "$ref": "/device/widget/schema-widget-options.json"
     },
-    "padding": {
+    "margin": {
       "type": "object",
       "properties": {
         "top": {

@@ -29,6 +29,7 @@ public enum UIFieldType {
     // must contains @UIFieldXXXSelection annotation
     EnumMultiButtons,
 
+    IconPicker,
     ColorPicker,
     Chips,
 
@@ -39,8 +40,6 @@ public enum UIFieldType {
     StaticDate,
 
     String,
-    // template with prefix and suffix
-    StringTemplate,
 
     // special type (default for detect field type by java type)
     AutoDetect,

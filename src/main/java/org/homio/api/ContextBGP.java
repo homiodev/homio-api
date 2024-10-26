@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.model.HasEntityIdentifier;
-import org.homio.api.service.EntityService;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -95,9 +94,6 @@ public interface ContextBGP {
                             } else {
                                 log.warn("[{}]: {} finished with status: {}",
                                         entity.getEntityID(), entity.getTitle(), responseCode);
-                            }
-                            if (entity instanceof EntityService<?> es) {
-                                es.destroyService(ex);
                             }
                         })
                         .setErrorLoggerOutput(msg -> log.error("[{}]: {}: {}", entity.getEntityID(), entity.getTitle(), msg))

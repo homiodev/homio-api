@@ -10,8 +10,8 @@ import org.apache.logging.log4j.Level;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.stream.ContentStream;
-import org.homio.api.stream.audio.AudioPlayer;
 import org.homio.api.stream.audio.AudioInput;
+import org.homio.api.stream.audio.AudioPlayer;
 import org.homio.api.stream.video.VideoPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,10 +30,12 @@ public interface ContextMedia {
     @NotNull
     Context context();
 
-    void fireSeleniumFirefox(@NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
+    boolean isWebDriverAvailable();
+
+    void fireSelenium(@NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
 
     // run with render content on UI
-    void fireSeleniumFirefox(@NotNull String title, @NotNull String icon, @NotNull String iconColor, @NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
+    void fireSelenium(@NotNull String title, @NotNull String icon, @NotNull String iconColor, @NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
 
     void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
 
@@ -62,7 +64,7 @@ public interface ContextMedia {
      * Create relative url .../stream to fetch data
      */
     @NotNull
-    String createStreamUrl(@NotNull ContentStream stream, int timeoutOnInactiveSeconds);
+    String createStreamUrl(@NotNull ContentStream stream, @Nullable Duration ttl);
 
     /**
      * @return - Get usb camera

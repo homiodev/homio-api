@@ -14,9 +14,6 @@ import org.homio.api.Context;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.OptionModel;
 import org.homio.api.model.Status;
-import org.homio.api.ui.field.UIField;
-import org.homio.api.ui.field.UIFieldGroup;
-import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -51,9 +48,6 @@ public abstract class BaseEntity implements
     private int version;
 
     @Getter
-    @UIField(order = 10, inlineEdit = true)
-    @UIFieldGroup(value = "GENERAL", order = 10)
-    @UIFieldShowOnCondition("return !context.get('compactMode')")
     private String name;
 
     @Getter

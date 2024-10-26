@@ -10,7 +10,7 @@ import java.util.Set;
 public interface HasPermissions extends HasJsonData, BaseEntityIdentifier {
     @UIField(order = 1, hideInView = true)
     @UIFieldGroup(order = 1, value = "ACCESS_HIDE", borderColor = "#5B69B4")
-    @UIFieldTab("PERMISSIONS")
+    @UIFieldTab(value = "PERMISSIONS", order = 99)
     default Set<String> getHideForUsers() {
         UserEntity user = context().user().getLoggedInUser();
         if (user != null && !user.isAdmin()) {

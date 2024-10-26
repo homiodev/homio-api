@@ -134,12 +134,11 @@ public interface TemplateWidgetBuilder {
         builder.setZIndex(wd.getZIndex(defaultZIndex));
         if (builder instanceof HasName<?> nameBuilder) {
             nameBuilder.setName(widgetRequest.entity().getDescription());
-            nameBuilder.setShowName(false);
         }
-        Padding padding = wd.getPadding();
-        if (padding != null && builder instanceof HasPadding<?> paddingBuilder) {
-            paddingBuilder.setPadding(padding.getTop(), padding.getRight(),
-                    padding.getBottom(), padding.getLeft());
+        Margin margin = wd.getMargin();
+        if (margin != null && builder instanceof HasMargin<?> marginBuilder) {
+            marginBuilder.setMargin(margin.getTop(), margin.getRight(),
+                    margin.getBottom(), margin.getLeft());
         }
     }
 

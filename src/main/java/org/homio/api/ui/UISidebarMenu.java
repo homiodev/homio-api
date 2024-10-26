@@ -17,7 +17,7 @@ public @interface UISidebarMenu {
 
     boolean allowCreateNewItems() default false;
 
-    int order() default 1000;
+    int order();
 
     /**
      * @return Available sorting fields. May contains 'name:icon:color' or 'name:icon' or 'name'

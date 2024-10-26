@@ -30,7 +30,7 @@ import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PA
 @Getter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@UISidebarMenu(
+@UISidebarMenu(order = 700,
         icon = "fas fa-shapes",
         parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
         bg = "#FFFFFF",
@@ -45,16 +45,22 @@ import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PA
 public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContract, HasPermissions {
 
     public static final String PREFIX = "dvc_";
-
     @UIField(hideInEdit = true, order = 5, hideOnEmpty = true)
     private @Nullable String ieeeAddress;
-
     @Getter
     @Setter
     @Column(length = 100_000)
     @Convert(converter = JSONConverter.class)
     @JsonIgnore
     private @NotNull JSON jsonData = new JSON();
+
+    @Override
+    @UIField(order = 10, inlineEdit = true)
+    @UIFieldGroup(value = "GENERAL", order = 10)
+    @UIFieldShowOnCondition("return !context.get('compactMode')")
+    public String getName() {
+        return super.getName();
+    }
 
     @UIField(order = 1, hideOnEmpty = true, hideInEdit = true, fullWidth = true, color = "#89AA50", type = HTML)
     @UIFieldShowOnCondition("return !context.get('compactMode')")

@@ -1,7 +1,6 @@
 package org.homio.api.entity.widget.ability;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.text.NumberFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -9,12 +8,16 @@ import org.homio.api.Context;
 import org.homio.api.model.HasEntityIdentifier;
 import org.json.JSONObject;
 
+import java.text.NumberFormat;
+
 /**
  * For widget dataSource to set status value
  */
 public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueListener {
 
     void setStatusValue(SetStatusValueRequest request);
+
+    HasGetStatusValue.ValueType getValueType();
 
     /**
      * @return Some entites that implement HasSetStatusValue may be 'readOnly', thus this entities must be skipped
@@ -33,7 +36,9 @@ public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
         private Object value;
 
         public static Number rawValueToNumber(Object value, Number defaultValue) {
-            if (value == null) {return defaultValue;}
+            if (value == null) {
+                return defaultValue;
+            }
             if (Number.class.isAssignableFrom(value.getClass())) {
                 return ((Number) value);
             }
@@ -45,7 +50,9 @@ public interface HasSetStatusValue extends HasEntityIdentifier, HasUpdateValueLi
         }
 
         public static Boolean rawValueToBoolean(Object value, Boolean defaultValue) {
-            if (value == null) {return defaultValue;}
+            if (value == null) {
+                return defaultValue;
+            }
             if (Boolean.class.isAssignableFrom(value.getClass())) {
                 return ((Boolean) value);
             }

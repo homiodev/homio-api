@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
 import org.homio.api.model.JSON;
+import org.homio.api.util.CommonUtils;
 import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -99,14 +100,14 @@ public interface HasJsonData {
     }
 
     @SneakyThrows
-    default <T> @Nullable T getJsonData(@NotNull String key, @NotNull Class<T> classType) {
+    default <T> @Nullable T getJsonData(@NotNull String key, @NotNull Class<T> classType, boolean createNew) {
         if (getJsonData().has(key)) {
             try {
                 return OBJECT_MAPPER.readValue(getJsonData(key), classType);
             } catch (Exception ignore) {
             }
         }
-        return null;
+        return createNew ? CommonUtils.newInstance(classType) : null;
     }
 
     @SneakyThrows

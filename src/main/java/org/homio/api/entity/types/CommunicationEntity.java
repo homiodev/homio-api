@@ -8,7 +8,7 @@ import org.homio.api.ui.UISidebarMenu;
  * Common class for entities which respond for communications. i.e. telegram
  */
 @Entity
-@UISidebarMenu(icon = "fab fa-facebook-messenger", order = 200, bg = "#A16427", allowCreateNewItems = true, overridePath = "comm")
+@UISidebarMenu(order = 200, icon = "fab fa-facebook-messenger", bg = "#A16427", allowCreateNewItems = true, overridePath = "comm")
 public abstract class CommunicationEntity extends DeviceBaseEntity {
 
 }

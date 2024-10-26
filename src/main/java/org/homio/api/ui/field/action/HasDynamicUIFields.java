@@ -41,6 +41,16 @@ public interface HasDynamicUIFields {
         if (updatableValue.get() == null) {
             assembleUIFields(new UIFieldBuilder() {
                 @Override
+                public @NotNull FieldBuilder addColorPicker(int order, @NotNull UpdatableValue<String> value) {
+                    return fake(value);
+                }
+
+                @Override
+                public @NotNull FieldBuilder addIconPicker(int order, @NotNull UpdatableValue<String> value) {
+                    return fake(value);
+                }
+
+                @Override
                 public @NotNull FieldBuilder addSwitch(int order, @NotNull UpdatableValue<Boolean> value) {
                     return fake(value);
                 }
@@ -140,6 +150,12 @@ public interface HasDynamicUIFields {
     }
 
     interface UIFieldBuilder {
+
+        @NotNull
+        FieldBuilder addColorPicker(int order, @NotNull UpdatableValue<String> value);
+
+        @NotNull
+        FieldBuilder addIconPicker(int order, @NotNull UpdatableValue<String> value);
 
         @NotNull
         FieldBuilder addSwitch(int order, @NotNull UpdatableValue<Boolean> value);

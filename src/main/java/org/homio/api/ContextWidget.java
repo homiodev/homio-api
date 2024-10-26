@@ -117,7 +117,13 @@ public interface ContextWidget {
     }
 
     enum ToggleType {
-        Regular,
+        OnOff,
+        Slide,
+        SwitchGroup
+    }
+
+    enum SimpleToggleType {
+        OnOff,
         Slide
     }
 
@@ -168,6 +174,18 @@ public interface ContextWidget {
 
         private final @NotNull String icon;
         private final @NotNull String color;
+    }
+
+    enum AxisDateFormat {
+        auto,
+        second,
+        minute,
+        hour,
+        day,
+        week,
+        month,
+        quarter,
+        year
     }
 
     interface LineChartBuilder extends
@@ -315,7 +333,7 @@ public interface ContextWidget {
             WidgetBaseBuilder<SimpleValueWidgetBuilder>,
             HasActionOnClick<SimpleValueWidgetBuilder>,
             HasIcon<SimpleValueWidgetBuilder>,
-            HasPadding<SimpleValueWidgetBuilder>,
+            HasMargin<SimpleValueWidgetBuilder>,
             HasSingleValueDataSource<SimpleValueWidgetBuilder>,
             HasAlign<SimpleValueWidgetBuilder>,
             HasValueConverter<SimpleValueWidgetBuilder>,
@@ -325,9 +343,8 @@ public interface ContextWidget {
     interface SliderWidgetBuilder extends
             WidgetBaseBuilder<SliderWidgetBuilder>,
             HasName<SliderWidgetBuilder>,
-            HasPadding<SliderWidgetBuilder>,
-            HasLayout<SliderWidgetBuilder>,
-            HasSourceServerUpdates<SliderWidgetBuilder> {
+            HasMargin<SliderWidgetBuilder>,
+            HasLayout<SliderWidgetBuilder> {
 
         @NotNull
         SliderWidgetBuilder addSeries(@Nullable String name, @NotNull Consumer<SliderWidgetSeriesBuilder> builder);
@@ -336,9 +353,8 @@ public interface ContextWidget {
     interface ToggleWidgetBuilder extends
             WidgetBaseBuilder<ToggleWidgetBuilder>,
             HasName<ToggleWidgetBuilder>,
-            HasPadding<ToggleWidgetBuilder>,
-            HasLayout<ToggleWidgetBuilder>,
-            HasSourceServerUpdates<ToggleWidgetBuilder> {
+            HasMargin<ToggleWidgetBuilder>,
+            HasLayout<ToggleWidgetBuilder> {
 
         // Default - false
         @NotNull
@@ -356,11 +372,10 @@ public interface ContextWidget {
             WidgetChartBaseBuilder<DisplayWidgetBuilder>,
             HasActionOnClick<DisplayWidgetBuilder>,
             HasName<DisplayWidgetBuilder>,
-            HasPadding<DisplayWidgetBuilder>,
+            HasMargin<DisplayWidgetBuilder>,
             HasLayout<DisplayWidgetBuilder>,
             HasChartDataSource<DisplayWidgetBuilder>,
             HasHorizontalLine<DisplayWidgetBuilder>,
-            HasSourceServerUpdates<DisplayWidgetBuilder>,
             HasLineChartBehaviour<DisplayWidgetBuilder> {
 
         // Default - 30%
@@ -410,17 +425,16 @@ public interface ContextWidget {
             WidgetBaseBuilder<SimpleToggleWidgetBuilder>,
             HasToggle<SimpleToggleWidgetBuilder>,
             HasAlign<SimpleToggleWidgetBuilder>,
-            HasPadding<SimpleToggleWidgetBuilder>,
+            HasMargin<SimpleToggleWidgetBuilder>,
             HasSingleValueDataSource<SimpleToggleWidgetBuilder>,
-            HasSetSingleValueDataSource<SimpleToggleWidgetBuilder>,
-            HasSourceServerUpdates<SimpleToggleWidgetBuilder> {
+            HasSetSingleValueDataSource<SimpleToggleWidgetBuilder> {
     }
 
     interface SliderWidgetSeriesBuilder extends
             HasIcon<SliderWidgetSeriesBuilder>,
             HasValueTemplate<SliderWidgetSeriesBuilder>,
             HasName<SliderWidgetSeriesBuilder>,
-            HasPadding<SliderWidgetSeriesBuilder>,
+            HasMargin<SliderWidgetSeriesBuilder>,
             HasSingleValueDataSource<SliderWidgetSeriesBuilder>,
             HasSetSingleValueDataSource<SliderWidgetSeriesBuilder> {
 
@@ -439,10 +453,6 @@ public interface ContextWidget {
         // Default - 1. Min - 1
         @NotNull
         SliderWidgetSeriesBuilder setStep(int value);
-
-        // Default - 'return value;'
-        @NotNull
-        SliderWidgetSeriesBuilder setTextConverter(@Nullable String value);
     }
 
     interface HasValueConverter<T> {
@@ -579,9 +589,6 @@ public interface ContextWidget {
         T setName(@Nullable String value);
 
         @NotNull
-        T setShowName(boolean value);
-
-        @NotNull
         T setNameColor(@Nullable String value);
     }
 
@@ -627,8 +634,8 @@ public interface ContextWidget {
         T setShowChartFullScreenButton(boolean value);
 
         // Default - 60sec. range: 10..600
-        @NotNull
-        T setFetchDataFromServerInterval(int value);
+        // @NotNull
+        // T setFetchDataFromServerInterval(int value);
     }
 
     interface HasLegend<T> {
@@ -648,7 +655,7 @@ public interface ContextWidget {
 
     interface HasHorizontalLine<T> {
 
-        // Default - -1. min = -1, max = 100
+        // Default - 0. min = 0, max = 100
         @NotNull
         T setSingleLinePos(@Nullable Integer value);
 
@@ -656,19 +663,15 @@ public interface ContextWidget {
         @NotNull
         T setSingleLineColor(@Nullable String value);
 
-        // Default - 1 min = 1, max = 10
+        // Default - 0 min = 0, max = 10
         @NotNull
         T setSingleLineWidth(@Nullable Integer value);
-
-        // Default - false
-        @NotNull
-        T setShowDynamicLine(@Nullable Boolean value);
 
         // Default - green
         @NotNull
         T setDynamicLineColor(@Nullable String value);
 
-        // Default - 1
+        // Default - 0
         @NotNull
         T setDynamicLineWidth(@Nullable Integer value);
     }
@@ -682,10 +685,10 @@ public interface ContextWidget {
         T setIconColor(@Nullable String color);
     }
 
-    interface HasPadding<T> {
+    interface HasMargin<T> {
 
         @NotNull
-        T setPadding(int top, int right, int bottom, int left);
+        T setMargin(int top, int right, int bottom, int left);
     }
 
     interface HasIcon<T> {
@@ -717,17 +720,6 @@ public interface ContextWidget {
 
         @NotNull
         T setLayout(@Nullable String value);
-    }
-
-    interface HasSourceServerUpdates<T> {
-
-        // Default - true
-        @NotNull
-        T setListenSourceUpdates(@Nullable Boolean value);
-
-        // Default - false
-        @NotNull
-        T setShowLastUpdateTimer(@Nullable Boolean value);
     }
 
     interface WidgetBaseBuilder<T> {
@@ -827,7 +819,7 @@ public interface ContextWidget {
 
         // Default - ''
         @NotNull
-        T setAxisDateFormat(@Nullable String value);
+        T setAxisDateFormat(@Nullable AxisDateFormat value);
     }
 
     interface ThresholdBuilder {

@@ -14,4 +14,9 @@ public interface CustomWidgetConfigurableEntity extends
 
     void assembleUIFields(@NotNull HasDynamicUIFields.UIFieldBuilder uiFieldBuilder,
                           @NotNull HasJsonData sourceEntity);
+
+    /**
+     * Calls one or more times when load widget on UI
+     */
+    void setWidgetDataStore(CustomWidgetDataStore customWidgetDataStore);
 }

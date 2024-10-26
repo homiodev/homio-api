@@ -14,6 +14,10 @@ public interface StreamPlayer {
 
     void play(@NotNull ContentStream stream, @Nullable Integer startFrame, @Nullable Integer endFrame) throws Exception;
 
+    default boolean isPlaying() {
+        return false;
+    }
+
     default void pause() {
         stop();
     }

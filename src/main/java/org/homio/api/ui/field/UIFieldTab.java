@@ -1,5 +1,7 @@
 package org.homio.api.ui.field;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,4 +15,8 @@ import java.lang.annotation.Target;
 public @interface UIFieldTab {
 
     String value();
+
+    @Nullable String color() default "";
+
+    int order() default 1;
 }

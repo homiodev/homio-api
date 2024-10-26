@@ -59,9 +59,11 @@ import static java.nio.file.StandardOpenOption.*;
 @Log4j2
 public final class CommonUtils {
 
+    public static final Tika TIKA = new Tika();
     // map for store different statuses
     private static final @Getter Map<String, AtomicInteger> statusMap = new ConcurrentHashMap<>();
     public static SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static GitHubProject STATIC_FILES = GitHubProject.of("homiodev", "static-files");
     private static Path rootPath;
     private static final @Getter Path logsPath = getOrCreatePath("logs");
     private static final @Getter Path logsEntitiesPath = getOrCreatePath("logs/entities");
@@ -75,9 +77,6 @@ public final class CommonUtils {
     private static final @Getter Path imagePath = getOrCreatePath("media/image");
     private static final @Getter Path sshPath = getOrCreatePath("ssh");
     private static final @Getter Path tmpPath = getOrCreatePath("tmp");
-
-    public static final Tika TIKA = new Tika();
-    public static GitHubProject STATIC_FILES = GitHubProject.of("homiodev", "static-files");
 
     public static String generateUUID() {
         return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
@@ -352,10 +351,23 @@ public final class CommonUtils {
     public static ResponseEntity<InputStreamResource> inputStreamToResource(
             @NotNull InputStream stream,
             @NotNull MediaType contentType,
-            @Nullable HttpHeaders headers) {
+            @Nullable HttpHeaders headers,
+            @Nullable String fileName,
+            @Nullable Integer contentLength) {
         try {
+            if (headers == null) {
+                headers = new HttpHeaders();
+            }
+            if (fileName != null) {
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+            }
+
+            if (contentLength == null) {
+                contentLength = stream.available();
+            }
+
             return ResponseEntity.ok()
-                    .contentLength(stream.available())
+                    .contentLength(contentLength)
                     .contentType(contentType)
                     .headers(headers)
                     .body(new InputStreamResource(stream));
