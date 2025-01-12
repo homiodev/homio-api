@@ -6,15 +6,15 @@ import org.json.JSONObject;
 
 public interface ConsolePluginString extends ConsolePlugin<String> {
 
-    @Override
-    default @NotNull RenderType getRenderType() {
-        return RenderType.string;
-    }
+  @Override
+  default @NotNull RenderType getRenderType() {
+    return RenderType.string;
+  }
 
-    FileContentType getContentType();
+  FileContentType getContentType();
 
-    @Override
-    default JSONObject getOptions() {
-        return new JSONObject().put("contentType", getContentType());
-    }
+  @Override
+  default JSONObject getOptions() {
+    return new JSONObject().put("contentType", getContentType());
+  }
 }

@@ -10,15 +10,15 @@ import org.springframework.core.io.Resource;
 @Getter
 public class ByteArrayContentStream extends ByteArrayResource implements ContentStream {
 
-    private final @NotNull StreamFormat streamFormat;
+  private final @NotNull StreamFormat streamFormat;
 
-    public ByteArrayContentStream(byte[] byteArray, @NotNull StreamFormat streamFormat) {
-        super(byteArray);
-        this.streamFormat = streamFormat;
-    }
+  public ByteArrayContentStream(byte[] byteArray, @NotNull StreamFormat streamFormat) {
+    super(byteArray);
+    this.streamFormat = streamFormat;
+  }
 
-    @Override
-    public @NotNull Resource getResource() {
-        return this;
-    }
+  @Override
+  public @NotNull Resource getResource() {
+    return this;
+  }
 }

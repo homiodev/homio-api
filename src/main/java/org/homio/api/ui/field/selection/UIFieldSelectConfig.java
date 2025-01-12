@@ -12,28 +12,28 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSelectConfig {
 
-    boolean addEmptySelection() default false;
+  boolean addEmptySelection() default false;
 
-    /**
-     * @return icon for select picker
-     */
-    String icon() default "";
+  /**
+   * @return icon for select picker
+   */
+  String icon() default "";
 
-    /**
-     * @return icon color for icon()
-     */
-    String iconColor() default "";
+  /**
+   * @return icon color for icon()
+   */
+  String iconColor() default "";
 
-    // if set - add UI select box to select if no value specified
-    String selectOnEmptyLabel() default "Select value";
+  // if set - add UI select box to select if no value specified
+  String selectOnEmptyLabel() default "Select value";
 
-    String selectOnEmptyIcon() default "fas fa-th-large";
+  String selectOnEmptyIcon() default "fas fa-th-large";
 
-    String selectOnEmptyColor() default "#A7D21E";
+  String selectOnEmptyColor() default "#A7D21E";
 
-    /**
-     * Annotation on selected field to show text when no values available from server
-     * @return Text to show when no options available
-     */
-    String selectNoValue() default "";
+  /**
+   * Annotation on selected field to show text when no values available from server
+   * @return Text to show when no options available
+   */
+  String selectNoValue() default "";
 }

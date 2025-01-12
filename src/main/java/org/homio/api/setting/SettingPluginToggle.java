@@ -5,17 +5,17 @@ import org.jetbrains.annotations.NotNull;
 
 public interface SettingPluginToggle extends SettingPlugin<Boolean> {
 
-    @NotNull Icon getIcon();
+  @NotNull Icon getIcon();
 
-    @NotNull Icon getToggleIcon();
-    
-    @Override
-    default @NotNull Class<Boolean> getType() {
-        return Boolean.class;
-    }
+  @NotNull Icon getToggleIcon();
 
-    @Override
-    default @NotNull SettingType getSettingType() {
-        return SettingType.Toggle;
-    }
+  @Override
+  default @NotNull Class<Boolean> getType() {
+    return Boolean.class;
+  }
+
+  @Override
+  default @NotNull SettingType getSettingType() {
+    return SettingType.Toggle;
+  }
 }

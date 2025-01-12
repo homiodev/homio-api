@@ -1,12 +1,13 @@
 package org.homio.api.console;
 
-import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 public interface ConsolePluginLines extends ConsolePlugin<Collection<String>> {
 
-    @Override
-    default @NotNull RenderType getRenderType() {
-        return RenderType.string;
-    }
+  @Override
+  default @NotNull RenderType getRenderType() {
+    return RenderType.string;
+  }
 }

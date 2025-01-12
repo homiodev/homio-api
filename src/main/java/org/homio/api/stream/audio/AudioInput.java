@@ -11,16 +11,16 @@ import java.util.Set;
  */
 public interface AudioInput {
 
-    @NotNull
-    String getId();
+  @NotNull
+  String getId();
 
-    @NotNull
-    Set<AudioFormat> getSupportedFormats();
+  @NotNull
+  Set<AudioFormat> getSupportedFormats();
 
-    @Nullable
-    ContentStream getResource() throws Exception;
+  @Nullable
+  ContentStream getResource() throws Exception;
 
-    default boolean isAvailable() {
-        return true;
-    }
+  default boolean isAvailable() {
+    return true;
+  }
 }

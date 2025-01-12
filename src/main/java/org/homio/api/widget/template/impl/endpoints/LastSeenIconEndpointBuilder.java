@@ -6,10 +6,10 @@ import org.homio.api.ui.UI.Color;
 
 public class LastSeenIconEndpointBuilder implements IconEndpointBuilder {
 
-    @Override
-    public void build(HasIcon<?> iconWidgetBuilder) {
-        iconWidgetBuilder.setIconColor("#009688", colorBuilder ->
-            colorBuilder.setThreshold(Color.WARNING, 30, ValueCompare.gt)
-                        .setThreshold(Color.RED, 120, ValueCompare.gt));
-    }
+  @Override
+  public void build(HasIcon<?> iconWidgetBuilder) {
+    iconWidgetBuilder.setIconColor("#009688", colorBuilder ->
+      colorBuilder.setThreshold(Color.WARNING, 30, ValueCompare.gt)
+        .setThreshold(Color.RED, 120, ValueCompare.gt));
+  }
 }

@@ -14,19 +14,19 @@ import java.util.Objects;
 @Getter
 public class FileContentStream extends FileSystemResource implements ContentStream {
 
-    private final @NotNull StreamFormat streamFormat;
+  private final @NotNull StreamFormat streamFormat;
 
-    public FileContentStream(@NotNull File file) {
-        this(file, null);
-    }
+  public FileContentStream(@NotNull File file) {
+    this(file, null);
+  }
 
-    public FileContentStream(@NotNull File file, @Nullable StreamFormat streamFormat) {
-        super(file);
-        this.streamFormat = Objects.requireNonNullElseGet(streamFormat, () -> StreamFormat.evaluateFormat(file.getName()));
-    }
+  public FileContentStream(@NotNull File file, @Nullable StreamFormat streamFormat) {
+    super(file);
+    this.streamFormat = Objects.requireNonNullElseGet(streamFormat, () -> StreamFormat.evaluateFormat(file.getName()));
+  }
 
-    @Override
-    public @NotNull Resource getResource() {
-        return this;
-    }
+  @Override
+  public @NotNull Resource getResource() {
+    return this;
+  }
 }

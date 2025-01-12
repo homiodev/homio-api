@@ -12,11 +12,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIContextMenuUploadAction {
 
-    String value();
+  String value();
 
-    String icon() default "";
+  String icon() default "";
 
-    String iconColor() default "";
+  String iconColor() default "";
 
-    String[] supportedFormats();
+  String[] supportedFormats();
 }

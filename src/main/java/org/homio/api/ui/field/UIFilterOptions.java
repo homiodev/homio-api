@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFilterOptions {
 
-    /**
-     * @return Specify value as target item field name only if POJO has more 'Selection' than one
-     */
-    String value() default "";
+  /**
+   * @return Specify value as target item field name only if POJO has more 'Selection' than one
+   */
+  String value() default "";
 }

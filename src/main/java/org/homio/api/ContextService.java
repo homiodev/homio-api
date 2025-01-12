@@ -27,131 +27,131 @@ import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface ContextService {
 
-    // Require to select mqtt service on UI from addons
-    String MQTT_SERVICE = "MQTT";
+  // Require to select mqtt service on UI from addons
+  String MQTT_SERVICE = "MQTT";
 
-    @NotNull
-    Context context();
+  @NotNull
+  Context context();
 
-    @NotNull
-    String getPrimaryMqttEntity();
+  @NotNull
+  String getPrimaryMqttEntity();
 
-    void registerEntityTypeForSelection(@NotNull Class<? extends HasEntityIdentifier> entityClass, @NotNull String type);
+  void registerEntityTypeForSelection(@NotNull Class<? extends HasEntityIdentifier> entityClass, @NotNull String type);
 
-    default @Nullable MQTTEntityService getMQTTEntityService(@NotNull String entityID) {
-        return getService(entityID, MQTTEntityService.class);
+  default @Nullable MQTTEntityService getMQTTEntityService(@NotNull String entityID) {
+    return getService(entityID, MQTTEntityService.class);
+  }
+
+  @Nullable
+  EntityService.ServiceInstance getEntityService(@NotNull String entityID);
+
+  default boolean isHasService(@NotNull String entityID) {
+    return getEntityService(entityID) != null;
+  }
+
+  void addService(@NotNull String entityID, @NotNull BaseService service);
+
+  // return new url to uses as proxy
+  @NotNull
+  String registerUrlProxy(@NotNull String entityID, @NotNull String url, @NotNull Consumer<RouteProxyBuilder> builder);
+
+  boolean unRegisterUrlProxy(@NotNull String entityID);
+
+  @Nullable
+  BaseService removeService(@NotNull String entityID);
+
+  private <T> @Nullable T getService(@NotNull String entityID, @NotNull Class<T> serviceClass) {
+    BaseEntity entity = context().db().get(entityID);
+    if (entity != null && !serviceClass.isAssignableFrom(entity.getClass())) {
+      throw new IllegalStateException(format("Entity: '%s' has type: '%s' but require: '%s'", entityID, entity.getType(), serviceClass.getSimpleName()));
+    }
+    return (T) entity;
+  }
+
+  interface MQTTEntityService extends HasEntityIdentifier {
+
+    static @NotNull String buildMqttListenEvent(@NotNull String mqttEntityID, @NotNull String topic) {
+      return mqttEntityID + LIST_DELIMITER + topic;
     }
 
     @Nullable
-    EntityService.ServiceInstance getEntityService(@NotNull String entityID);
+    String getLastValue(@NotNull String topic);
 
-    default boolean isHasService(@NotNull String entityID) {
-        return getEntityService(entityID) != null;
-    }
-
-    void addService(@NotNull String entityID, @NotNull BaseService service);
-
-    // return new url to uses as proxy
     @NotNull
-    String registerUrlProxy(@NotNull String entityID, @NotNull String url, @NotNull Consumer<RouteProxyBuilder> builder);
+    String getUser();
 
-    boolean unRegisterUrlProxy(@NotNull String entityID);
+    @NotNull
+    SecureString getPassword();
 
-    @Nullable
-    BaseService removeService(@NotNull String entityID);
+    @NotNull
+    String getHostname();
 
-    private <T> @Nullable T getService(@NotNull String entityID, @NotNull Class<T> serviceClass) {
-        BaseEntity entity = context().db().get(entityID);
-        if (entity != null && !serviceClass.isAssignableFrom(entity.getClass())) {
-            throw new IllegalStateException(format("Entity: '%s' has type: '%s' but require: '%s'", entityID, entity.getType(), serviceClass.getSimpleName()));
-        }
-        return (T) entity;
+    int getPort();
+
+    default void publish(@NotNull String topic) {
+      publish(topic, new byte[0], 0, false);
     }
 
-    interface MQTTEntityService extends HasEntityIdentifier {
+    default void publish(@NotNull String topic, byte[] payload) {
+      publish(topic, payload, 0, false);
+    }
 
-        static @NotNull String buildMqttListenEvent(@NotNull String mqttEntityID, @NotNull String topic) {
-            return mqttEntityID + LIST_DELIMITER + topic;
-        }
+    void publish(@NotNull String topic, byte[] payload, int qos, boolean retained);
 
-        @Nullable
-        String getLastValue(@NotNull String topic);
+    default void addListener(@NotNull String topic, @NotNull String discriminator, @NotNull Consumer<String> listener) {
+      addListener(topic, discriminator, (s, value) -> listener.accept(value));
+    }
 
-        @NotNull
-        String getUser();
+    void addListener(@NotNull String topic, @NotNull String discriminator, @NotNull BiConsumer<String, String> listener);
 
-        @NotNull
-        SecureString getPassword();
+    // topic i.e.: +/tele/# or tele/#
+    default void addListener(@NotNull Set<String> topics, @NotNull String discriminator, @NotNull BiConsumer<String, String> listener) {
+      for (String topic : topics) {
+        addListener(topic, discriminator, listener);
+      }
+    }
 
-        @NotNull
-        String getHostname();
+    void removeListener(@Nullable String topic, @NotNull String discriminator);
 
-        int getPort();
+    default void removeListener(@NotNull String discriminator) {
+      removeListener(null, discriminator);
+    }
 
-        default void publish(@NotNull String topic) {
-            publish(topic, new byte[0], 0, false);
-        }
+    default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
+                                    @NotNull String entityID, @NotNull Logger log, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
+      addPayloadListener(topic, discriminator, entityID, log, Level.INFO, handler);
+    }
 
-        default void publish(@NotNull String topic, byte[] payload) {
-            publish(topic, payload, 0, false);
-        }
-
-        void publish(@NotNull String topic, byte[] payload, int qos, boolean retained);
-
-        default void addListener(@NotNull String topic, @NotNull String discriminator, @NotNull Consumer<String> listener) {
-            addListener(topic, discriminator, (s, value) -> listener.accept(value));
-        }
-
-        void addListener(@NotNull String topic, @NotNull String discriminator, @NotNull BiConsumer<String, String> listener);
-
-        // topic i.e.: +/tele/# or tele/#
-        default void addListener(@NotNull Set<String> topics, @NotNull String discriminator, @NotNull BiConsumer<String, String> listener) {
-            for (String topic : topics) {
-                addListener(topic, discriminator, listener);
+    default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
+                                    @NotNull String entityID, @NotNull Logger log, @NotNull Level logLevel, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
+      addListener(topic,
+        discriminator, (realTopic, value) -> {
+          log.log(logLevel, "[{}]: {} {}: {}", discriminator, entityID, realTopic, value);
+          String payload = value == null ? "" : value;
+          if (!payload.isEmpty()) {
+            ObjectNode node;
+            try {
+              node = OBJECT_MAPPER.readValue(payload, ObjectNode.class);
+            } catch (Exception ex) {
+              node = OBJECT_MAPPER.createObjectNode().put("raw", payload);
             }
-        }
-
-        void removeListener(@Nullable String topic, @NotNull String discriminator);
-
-        default void removeListener(@NotNull String discriminator) {
-            removeListener(null, discriminator);
-        }
-
-        default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
-                                        @NotNull String entityID, @NotNull Logger log, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
-            addPayloadListener(topic, discriminator, entityID, log, Level.INFO, handler);
-        }
-
-        default void addPayloadListener(@NotNull Set<String> topic, @NotNull String discriminator,
-                                        @NotNull String entityID, @NotNull Logger log, @NotNull Level logLevel, @NotNull ThrowingBiConsumer<String, ObjectNode, Exception> handler) {
-            addListener(topic,
-                    discriminator, (realTopic, value) -> {
-                        log.log(logLevel, "[{}]: {} {}: {}", discriminator, entityID, realTopic, value);
-                        String payload = value == null ? "" : value;
-                        if (!payload.isEmpty()) {
-                            ObjectNode node;
-                            try {
-                                node = OBJECT_MAPPER.readValue(payload, ObjectNode.class);
-                            } catch (Exception ex) {
-                                node = OBJECT_MAPPER.createObjectNode().put("raw", payload);
-                            }
-                            try {
-                                handler.accept(realTopic, node);
-                            } catch (Exception ex) {
-                                log.error("[{}]: Unable to handle mqtt payload: {}. Msg: {}", entityID, payload, getErrorMessage(ex));
-                            }
-                        }
-                    });
-        }
+            try {
+              handler.accept(realTopic, node);
+            } catch (Exception ex) {
+              log.error("[{}]: Unable to handle mqtt payload: {}. Msg: {}", entityID, payload, getErrorMessage(ex));
+            }
+          }
+        });
     }
+  }
 
-    interface RouteProxyBuilder {
+  interface RouteProxyBuilder {
 
-        void setUrlProducer(Function<HttpServletRequest, ProxyUrl> urlProducer);
+    void setUrlProducer(Function<HttpServletRequest, ProxyUrl> urlProducer);
 
-        void setResponseHeaders(Function<ProxyUrl, Map<String, String>> responseHeaderBuilder);
+    void setResponseHeaders(Function<ProxyUrl, Map<String, String>> responseHeaderBuilder);
 
-        record ProxyUrl(@NotNull String url, @Nullable Map<String, List<String>> headers) {
-        }
+    record ProxyUrl(@NotNull String url, @Nullable Map<String, List<String>> headers) {
     }
+  }
 }

@@ -11,19 +11,19 @@ import org.json.JSONObject;
  */
 public interface HasDynamicContextMenuActions {
 
-    void assembleActions(UIInputBuilder uiInputBuilder);
+  void assembleActions(UIInputBuilder uiInputBuilder);
 
-    default ActionResponseModel handleAction(Context context, String actionID, JSONObject params) throws Exception {
-        UIInputBuilder uiInputBuilder = context.ui().inputBuilder();
-        this.assembleActions(uiInputBuilder);
+  default ActionResponseModel handleAction(Context context, String actionID, JSONObject params) throws Exception {
+    UIInputBuilder uiInputBuilder = context.ui().inputBuilder();
+    this.assembleActions(uiInputBuilder);
 
-        UIActionHandler actionHandler = uiInputBuilder.findActionHandler(actionID);
-        if (actionHandler != null) {
-            if (!actionHandler.isEnabled(context)) {
-                throw new IllegalArgumentException("Unable to invoke disabled action");
-            }
-            return actionHandler.handleAction(context, params);
-        }
-        throw new IllegalArgumentException("Unable to find execution handler for action: <" + actionID + ">. Entity: " + this);
+    UIActionHandler actionHandler = uiInputBuilder.findActionHandler(actionID);
+    if (actionHandler != null) {
+      if (!actionHandler.isEnabled(context)) {
+        throw new IllegalArgumentException("Unable to invoke disabled action");
+      }
+      return actionHandler.handleAction(context, params);
     }
+    throw new IllegalArgumentException("Unable to find execution handler for action: <" + actionID + ">. Entity: " + this);
+  }
 }

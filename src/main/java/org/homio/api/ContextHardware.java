@@ -8,100 +8,107 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+
 public interface ContextHardware {
 
-    @NotNull
-    Context context();
+  @NotNull
+  Context context();
 
-    @NotNull
-    String execute(@NotNull String command);
+  @Nullable
+  String execute(@NotNull String command);
 
-    @NotNull
-    String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
-                               @Nullable ProgressBar progressBar);
+  @Nullable
+  default String execute(@NotNull String command, @Nullable String defaultValue) {
+    return defaultIfBlank(execute(command), defaultValue);
+  }
 
-    @NotNull
-    List<String> executeNoErrorThrowList(@NotNull String command, int maxSecondsTimeout,
-                                         @Nullable ProgressBar progressBar);
+  @NotNull
+  String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
+                             @Nullable ProgressBar progressBar);
 
-    @NotNull
-    String execute(@NotNull String command, @Nullable ProgressBar progressBar);
+  @NotNull
+  List<String> executeNoErrorThrowList(@NotNull String command, int maxSecondsTimeout,
+                                       @Nullable ProgressBar progressBar);
 
-    @NotNull
-    String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout);
+  @NotNull
+  String execute(@NotNull String command, @Nullable ProgressBar progressBar);
 
-    @NotNull
-    String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-                   @Nullable ProgressBar progressBar);
+  @NotNull
+  String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
-    boolean isSoftwareInstalled(@NotNull String soft);
+  @NotNull
+  String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+                 @Nullable ProgressBar progressBar);
 
-    @NotNull
-    ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
+  boolean isSoftwareInstalled(@NotNull String soft);
 
-    @NotNull
-    ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+  @NotNull
+  ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
+
+  @NotNull
+  ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+                                  @Nullable ProgressBar progressBar);
+
+  @NotNull
+  ContextHardware uninstallSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
                                     @Nullable ProgressBar progressBar);
 
-    @NotNull
-    ContextHardware uninstallSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-                                      @Nullable ProgressBar progressBar);
+  @NotNull
+  ContextHardware enableSystemCtl(@NotNull String soft);
 
-    @NotNull
-    ContextHardware enableSystemCtl(@NotNull String soft);
+  @NotNull
+  ContextHardware startSystemCtl(@NotNull String soft);
 
-    @NotNull
-    ContextHardware startSystemCtl(@NotNull String soft);
+  default boolean isSystemCtlExists(@NotNull String soft) {
+    return "active".equals(executeNoErrorThrow("systemctl is-active mosquitto", 60, null));
+  }
 
-    default boolean isSystemCtlExists(@NotNull String soft) {
-        return "active".equals(executeNoErrorThrow("systemctl is-active mosquitto", 60, null));
-    }
+  void stopSystemCtl(@NotNull String soft);
 
-    void stopSystemCtl(@NotNull String soft);
+  int getServiceStatus(@NotNull String serviceName);
 
-    int getServiceStatus(@NotNull String serviceName);
+  void reboot();
 
-    void reboot();
+  @NotNull
+  ProcessStat getProcessStat(long pid);
 
-    @NotNull
-    ProcessStat getProcessStat(long pid);
+  /**
+   * Enable and start soft
+   *
+   * @param soft - system service
+   * @return this
+   */
+  default @NotNull ContextHardware enableAndStartSystemCtl(@NotNull String soft) {
+    enableSystemCtl(soft);
+    startSystemCtl(soft);
+    return this;
+  }
 
-    /**
-     * Enable and start soft
-     *
-     * @param soft - system service
-     * @return this
-     */
-    default @NotNull ContextHardware enableAndStartSystemCtl(@NotNull String soft) {
-        enableSystemCtl(soft);
-        startSystemCtl(soft);
-        return this;
-    }
+  default @NotNull ContextHardware update() {
+    execute("$PM update");
+    return this;
+  }
 
-    default @NotNull ContextHardware update() {
-        execute("$PM update");
-        return this;
-    }
+  /**
+   * Add hardware info to UI console 'Machine info'
+   */
+  @NotNull
+  ContextHardware addHardwareInfo(@NotNull String name, @NotNull String value);
 
-    /**
-     * Add hardware info to UI console 'Machine info'
-     */
-    @NotNull
-    ContextHardware addHardwareInfo(@NotNull String name, @NotNull String value);
+  @NotNull
+  JsonNode findAssetByArchitecture(@NotNull JsonNode release);
 
-    @NotNull
-    JsonNode findAssetByArchitecture(@NotNull JsonNode release);
+  String getServerUrl();
 
-    String getServerUrl();
+  interface ProcessStat {
+    // get cpu usage in % by process
+    double getCpuUsage();
 
-    interface ProcessStat {
-        // get cpu usage in % by process
-        double getCpuUsage();
+    // get memory usage in % by process
+    double getMemUsage();
 
-        // get memory usage in % by process
-        double getMemUsage();
-
-        // get memory used in bytes
-        long getMem();
-    }
+    // get memory used in bytes
+    long getMem();
+  }
 }

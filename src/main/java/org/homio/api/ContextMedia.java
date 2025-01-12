@@ -4,229 +4,196 @@ import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
 import com.pivovarit.function.ThrowingRunnable;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.Level;
 import org.homio.api.model.Icon;
-import org.homio.api.model.OptionModel;
 import org.homio.api.stream.ContentStream;
 import org.homio.api.stream.audio.AudioInput;
 import org.homio.api.stream.audio.AudioPlayer;
-import org.homio.api.stream.video.VideoPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.openqa.selenium.WebDriver;
 
-import java.awt.*;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Date;
 import java.util.List;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 public interface ContextMedia {
 
-    @NotNull
-    Context context();
+  @NotNull
+  Context context();
 
-    boolean isWebDriverAvailable();
+  @NotNull
+  ContextMediaVideo video();
 
-    void fireSelenium(@NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
+  boolean isWebDriverAvailable();
 
-    // run with render content on UI
-    void fireSelenium(@NotNull String title, @NotNull String icon, @NotNull String iconColor, @NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
+  void fireSelenium(@NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
 
-    void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
+  // run with render content on UI
+  void fireSelenium(@NotNull String title, @NotNull String icon, @NotNull String iconColor, @NotNull ThrowingConsumer<WebDriver, Exception> driverHandler);
 
-    void registerVideoSource(@NotNull String path, @NotNull String source);
+  void fireFfmpeg(@NotNull String inputOptions, @NotNull String source, @NotNull String output, int maxWaitTimeout);
 
-    void unRegisterVideoSource(@NotNull String path);
+  @NonNull
+  String getFfmpegLocation();
 
-    void addVideoSourceInfo(@NotNull String path, @NotNull Map<String, OptionModel> videoSources);
+  void addAudioPlayer(@NotNull AudioPlayer player);
 
-    @NotNull
-    VideoInputDevice createVideoInputDevice(@NotNull String vfile);
+  void removeAudioPlayer(@NotNull AudioPlayer player);
 
-    void addAudioPlayer(@NotNull AudioPlayer player);
+  void addAudioInput(@NotNull AudioInput input);
 
-    void removeAudioPlayer(@NotNull AudioPlayer player);
+  void removeAudioInput(@NotNull AudioInput input);
 
-    void addVideoPlayer(@NotNull VideoPlayer player);
+  /**
+   * Create relative url .../stream to fetch data
+   */
+  @NotNull
+  String createStreamUrl(@NotNull ContentStream stream, @Nullable Duration ttl);
 
-    void removeVideoPlayer(@NotNull VideoPlayer player);
+  /**
+   * @return - Get audio devices
+   */
+  @NotNull
+  Set<String> getAudioDevices();
 
-    void addAudioInput(@NotNull AudioInput input);
+  @NotNull
+  FFMPEG buildFFMPEG(@NotNull String entityID,
+                     @NotNull String description,
+                     @NotNull FFMPEGHandler handler,
+                     @NotNull FFMPEGFormat format,
+                     @NotNull String inputArguments,
+                     @NotNull String input,
+                     @NotNull String outArguments,
+                     @NotNull String output,
+                     @NotNull String username,
+                     @NotNull String password);
 
-    void removeAudioInput(@NotNull AudioInput input);
+  @Getter
+  @RequiredArgsConstructor
+  enum FFMPEGFormat {
+    HLS("fas fa-square-rss", "#A62D79"),
+    GIF("fas fa-images", "#3B8C8B"),
+    RECORD("fas fa-microphone", "#B04B3E"),
+    RTSP_ALARMS("fas fa-bell", "#8A29AB"),
+    MJPEG("fas fa-photo-film", "#7FAEAA"),
+    SNAPSHOT("fas fa-camera", "#A2D154"),
+    RE("fas fa-kip-sign", "#3AB2BA"),
+    DASH("fas fa-panorama", "#91A63C"),
+    CUSTOM("fas fa-tower-cell", "#57A4D1");
+
+    private final String icon;
+    private final String color;
+
+    public @NotNull Icon getIconModel() {
+      return new Icon(icon, color);
+    }
+  }
+
+  interface FFMPEG {
+
+    @SneakyThrows
+    static void run(@Nullable FFMPEG ffmpeg, @NotNull ThrowingConsumer<FFMPEG, Exception> handler) {
+      if (ffmpeg != null) {
+        handler.accept(ffmpeg);
+      }
+    }
+
+    @SneakyThrows
+    static <T> T execute(@Nullable FFMPEG ffmpeg, @NotNull ThrowingFunction<FFMPEG, T, Exception> handler) {
+      if (ffmpeg != null) {
+        return handler.apply(ffmpeg);
+      }
+      return null;
+    }
+
+    @SneakyThrows
+    static <T> T check(
+      @Nullable FFMPEG ffmpeg,
+      @NotNull ThrowingFunction<FFMPEG, T, Exception> checkHandler,
+      @Nullable T defaultValue) {
+      if (ffmpeg != null) {
+        return checkHandler.apply(ffmpeg);
+      }
+      return defaultValue;
+    }
 
     /**
-     * Create relative url .../stream to fetch data
+     * @return if ffmpeg was started. return true even if thread is dead and getIsAlive() return false
      */
+    boolean isRunning();
+
     @NotNull
-    String createStreamUrl(@NotNull ContentStream stream, @Nullable Duration ttl);
+    FFMPEGFormat getFormat();
+
+    default void restartIfRequire() {
+      if (isRunning() && !getIsAlive()) {
+        stopProcessIfNoKeepAlive();
+        startConverting();
+      }
+    }
+
+    void setKeepAlive(int value);
+
+    // just keep key-value metadata for i.e. keep output path
+    @NotNull
+    JSONObject getMetadata();
+
+    boolean startConverting();
+
+    boolean getIsAlive();
+
+    @NotNull
+    Context.FileLogger getFileLogger();
 
     /**
-     * @return - Get usb camera
+     * @return true if process was alive and fired stop command, false if process wasn't alive already
      */
-    @NotNull
-    Set<String> getVideoDevices();
+    default boolean stopConverting() {
+      return stopConverting(null);
+    }
+
+    boolean stopConverting(@Nullable Duration waitTimeout);
 
     /**
-     * @return - Get audio devices
+     * @return true if process was running, alive and fired stop command, false if process wasn't alive already
      */
-    @NotNull
-    Set<String> getAudioDevices();
+    boolean stopProcessIfNoKeepAlive();
 
     @NotNull
-    FFMPEG buildFFMPEG(@NotNull String entityID,
-                       @NotNull String description,
-                       @NotNull FFMPEGHandler handler,
-                       @NotNull FFMPEGFormat format,
-                       @NotNull String inputArguments,
-                       @NotNull String input,
-                       @NotNull String outArguments,
-                       @NotNull String output,
-                       @NotNull String username,
-                       @NotNull String password);
+    List<String> getCommandArrayList();
 
-    @Getter
-    @RequiredArgsConstructor
-    enum FFMPEGFormat {
-        HLS("fas fa-square-rss", "#A62D79"),
-        GIF("fas fa-images", "#3B8C8B"),
-        RECORD("fas fa-microphone", "#B04B3E"),
-        RTSP_ALARMS("fas fa-bell", "#8A29AB"),
-        MJPEG("fas fa-photo-film", "#7FAEAA"),
-        SNAPSHOT("fas fa-camera", "#A2D154"),
-        RE("fas fa-kip-sign", "#3AB2BA"),
-        DASH("fas fa-panorama", "#91A63C"),
-        CUSTOM("fas fa-tower-cell", "#57A4D1");
+    @NotNull
+    Date getCreationDate();
 
-        private final String icon;
-        private final String color;
+    @NotNull
+    String getDescription();
 
-        public @NotNull Icon getIconModel() {
-            return new Icon(icon, color);
-        }
+    @NotNull
+    String getOutput();
+
+    @NotNull
+    Path getOutputFile();
+
+    FFMPEG setWorkingDirectory(@NotNull Path workingDirectory);
+
+    FFMPEG addDestroyListener(@NotNull String key, @NotNull ThrowingRunnable<Exception> destroyListener);
+  }
+
+  interface FFMPEGHandler {
+
+    default void ffmpegError(@NotNull String error) {
+
     }
 
-    interface VideoInputDevice {
+    default void ffmpegLog(@NotNull Level level, @NotNull String message) {
 
-        @NotNull
-        String getName();
-
-        @NotNull
-        VideoInputDevice setName(@NotNull String value);
-
-        @NotNull
-        Dimension[] getResolutions();
-
-        default @NotNull Set<String> getResolutionSet() {
-            Dimension[] resolutions = getResolutions();
-            return Arrays.stream(resolutions).sorted(Comparator.comparingInt(o -> o.width + o.height))
-                    .map(r -> String.format("%dx%d", r.width, r.height)).collect(Collectors.toCollection(LinkedHashSet::new));
-        }
     }
-
-    interface FFMPEG {
-
-        @SneakyThrows
-        static void run(@Nullable FFMPEG ffmpeg, @NotNull ThrowingConsumer<FFMPEG, Exception> handler) {
-            if (ffmpeg != null) {
-                handler.accept(ffmpeg);
-            }
-        }
-
-        @SneakyThrows
-        static <T> T execute(@Nullable FFMPEG ffmpeg, @NotNull ThrowingFunction<FFMPEG, T, Exception> handler) {
-            if (ffmpeg != null) {
-                return handler.apply(ffmpeg);
-            }
-            return null;
-        }
-
-        @SneakyThrows
-        static <T> T check(
-                @Nullable FFMPEG ffmpeg,
-                @NotNull ThrowingFunction<FFMPEG, T, Exception> checkHandler,
-                @Nullable T defaultValue) {
-            if (ffmpeg != null) {
-                return checkHandler.apply(ffmpeg);
-            }
-            return defaultValue;
-        }
-
-        /**
-         * @return if ffmpeg was started. return true even if thread is dead and getIsAlive() return false
-         */
-        boolean isRunning();
-
-        @NotNull
-        FFMPEGFormat getFormat();
-
-        default void restartIfRequire() {
-            if (isRunning() && !getIsAlive()) {
-                stopProcessIfNoKeepAlive();
-                startConverting();
-            }
-        }
-
-        void setKeepAlive(int value);
-
-        // just keep key-value metadata for i.e. keep output path
-        @NotNull
-        JSONObject getMetadata();
-
-        boolean startConverting();
-
-        boolean getIsAlive();
-
-        @NotNull
-        Context.FileLogger getFileLogger();
-
-        /**
-         * @return true if process was alive and fired stop command, false if process wasn't alive already
-         */
-        default boolean stopConverting() {
-            return stopConverting(null);
-        }
-
-        boolean stopConverting(@Nullable Duration waitTimeout);
-
-        /**
-         * @return true if process was running, alive and fired stop command, false if process wasn't alive already
-         */
-        boolean stopProcessIfNoKeepAlive();
-
-        @NotNull
-        List<String> getCommandArrayList();
-
-        @NotNull
-        Date getCreationDate();
-
-        @NotNull
-        String getDescription();
-
-        @NotNull
-        String getOutput();
-
-        @NotNull
-        Path getOutputFile();
-
-        FFMPEG setWorkingDirectory(@NotNull Path workingDirectory);
-
-        FFMPEG addDestroyListener(@NotNull String key, @NotNull ThrowingRunnable<Exception> destroyListener);
-    }
-
-    interface FFMPEGHandler {
-
-        default void ffmpegError(@NotNull String error) {
-
-        }
-
-        default void ffmpegLog(@NotNull Level level, @NotNull String message) {
-
-        }
-    }
+  }
 }

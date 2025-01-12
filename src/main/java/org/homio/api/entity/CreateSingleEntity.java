@@ -1,6 +1,10 @@
 package org.homio.api.entity;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * System creates exact single entity if not exists yet
@@ -9,7 +13,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CreateSingleEntity {
-    String name() default "";
+  String name() default "";
 
-    boolean disableDelete() default true;
+  boolean disableDelete() default true;
 }

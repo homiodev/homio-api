@@ -5,15 +5,15 @@ package org.homio.api.entity;
  */
 public interface HasOrder extends HasJsonData {
 
-    default int getOrder() {
-        return getJsonData("order", -1);
-    }
+  default int getOrder() {
+    return getJsonData("order", -1);
+  }
 
-    default void setOrder(int value) {
-        setJsonData("order", value);
-    }
+  default void setOrder(int value) {
+    setJsonData("order", value);
+  }
 
-    default boolean enableUiOrdering() {
-        return false;
-    }
+  default boolean enableUiOrdering() {
+    return false;
+  }
 }

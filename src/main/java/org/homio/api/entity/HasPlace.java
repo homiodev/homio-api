@@ -11,17 +11,17 @@ import org.homio.api.ui.field.selection.dynamic.UIFieldDynamicSelection;
 
 public interface HasPlace extends HasJsonData {
 
-    @Column(length = 64)
-    @UIField(order = 30, type = UIFieldType.SelectBox, color = "#538744")
-    @UIFieldGroup("GENERAL")
-    @UIFieldSelectConfig(selectOnEmptyLabel = "PLACEHOLDER.SELECT_PLACE")
-    @UIFieldDynamicSelection(SelectPlaceOptionLoader.class)
-    @UIFieldShowOnCondition("return !context.get('compactMode')")
-    default String getPlace() {
-        return getJsonData("order", "");
-    }
+  @Column(length = 64)
+  @UIField(order = 30, type = UIFieldType.SelectBox, color = "#538744")
+  @UIFieldGroup("GENERAL")
+  @UIFieldSelectConfig(selectOnEmptyLabel = "PLACEHOLDER.SELECT_PLACE")
+  @UIFieldDynamicSelection(SelectPlaceOptionLoader.class)
+  @UIFieldShowOnCondition("return !context.get('compactMode')")
+  default String getPlace() {
+    return getJsonData("order", "");
+  }
 
-    default void setPlace(String value) {
-        setJsonData("place", value);
-    }
+  default void setPlace(String value) {
+    setJsonData("place", value);
+  }
 }

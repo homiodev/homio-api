@@ -11,40 +11,40 @@ import org.jetbrains.annotations.Nullable;
 
 public interface CloudProviderService<T extends SshCloud> {
 
+  /**
+   * Method calls before start/stop
+   *
+   * @param sshEntity - current 'primary' entity
+   */
+  void setCurrentEntity(@NotNull T sshEntity);
+
+  // Method should wait forever until exception
+  void start(Runnable onSuccess) throws Exception;
+
+  void stop() throws Exception;
+
+  ActionResponseModel sync() throws Exception;
+
+  void updateNotificationBlock(@Nullable Exception ex);
+
+  default void updateNotificationBlock() {
+    updateNotificationBlock(null);
+  }
+
+  interface SshCloud<T extends SshCloud> extends HasEntityIdentifier, HasStatusAndMsg, HasJsonData {
+
     /**
-     * Method calls before start/stop
+     * Does this cloud is primary. Only one entity may be primary. Primary entity uses for cloud provider as tunnel
      *
-     * @param sshEntity - current 'primary' entity
+     * @return is entity primary
      */
-    void setCurrentEntity(@NotNull T sshEntity);
+    boolean isPrimary();
 
-    // Method should wait forever until exception
-    void start(Runnable onSuccess) throws Exception;
+    long getChangesHashCode();
 
-    void stop() throws Exception;
+    boolean isRestartOnFailure();
 
-    ActionResponseModel sync() throws Exception;
-
-    void updateNotificationBlock(@Nullable Exception ex);
-
-    default void updateNotificationBlock() {
-        updateNotificationBlock(null);
-    }
-
-    interface SshCloud<T extends SshCloud> extends HasEntityIdentifier, HasStatusAndMsg, HasJsonData {
-
-        /**
-         * Does this cloud is primary. Only one entity may be primary. Primary entity uses for cloud provider as tunnel
-         *
-         * @return is entity primary
-         */
-        boolean isPrimary();
-
-        long getChangesHashCode();
-
-        boolean isRestartOnFailure();
-
-        @Nullable
-        CloudProviderService<T> getCloudProviderService(@NotNull Context context);
-    }
+    @Nullable
+    CloudProviderService<T> getCloudProviderService(@NotNull Context context);
+  }
 }

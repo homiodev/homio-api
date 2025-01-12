@@ -6,18 +6,18 @@ import org.jetbrains.annotations.NotNull;
 
 public interface UIButtonItemBuilder extends UIEntityItemBuilder<UIButtonItemBuilder, String> {
 
-    UIButtonItemBuilder setText(@NotNull String text);
+  UIButtonItemBuilder setText(@NotNull String text);
 
-    // default - 32
-    UIButtonItemBuilder setHeight(int height);
+  // default - 32
+  UIButtonItemBuilder setHeight(int height);
 
-    UIButtonItemBuilder setPrimary(boolean primary);
+  UIButtonItemBuilder setPrimary(boolean primary);
 
-    UIButtonItemBuilder setConfirmMessage(String message);
+  UIButtonItemBuilder setConfirmMessage(String message);
 
-    UIButtonItemBuilder setConfirmMessageDialogColor(String color);
+  UIButtonItemBuilder setConfirmMessageDialogColor(String color);
 
-    UIButtonItemBuilder setConfirmMessageDialogTitle(String title);
+  UIButtonItemBuilder setConfirmMessageDialogTitle(String title);
 
-    UIButtonItemBuilder setConfirmMessageDialogIcon(Icon icon);
+  UIButtonItemBuilder setConfirmMessageDialogIcon(Icon icon);
 }

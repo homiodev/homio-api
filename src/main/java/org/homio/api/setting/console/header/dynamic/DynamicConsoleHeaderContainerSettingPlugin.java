@@ -7,13 +7,13 @@ import org.json.JSONObject;
 
 public interface DynamicConsoleHeaderContainerSettingPlugin extends ConsoleHeaderSettingPlugin<JSONObject> {
 
-    @Override
-    default @NotNull Class<JSONObject> getType() {
-        return JSONObject.class;
-    }
+  @Override
+  default @NotNull Class<JSONObject> getType() {
+    return JSONObject.class;
+  }
 
-    @Override
-    default @NotNull SettingType getSettingType() {
-        return SettingType.SelectBoxButton;
-    }
+  @Override
+  default @NotNull SettingType getSettingType() {
+    return SettingType.SelectBoxButton;
+  }
 }

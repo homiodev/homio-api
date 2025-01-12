@@ -9,9 +9,9 @@ import org.json.JSONObject;
  */
 public interface UIActionHandler {
 
-    ActionResponseModel handleAction(Context context, JSONObject params) throws Exception;
+  ActionResponseModel handleAction(Context context, JSONObject params) throws Exception;
 
-    default boolean isEnabled(Context context) {
-        return true;
-    }
+  default boolean isEnabled(Context context) {
+    return true;
+  }
 }

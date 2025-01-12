@@ -1,175 +1,176 @@
 package org.homio.api.widget;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import lombok.SneakyThrows;
 import org.homio.api.Context;
 import org.json.JSONObject;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 public interface JavaScriptBuilder {
 
-    static String wrapIntoString(String value) {
-        return "\"'\"+" + value + "+\"'\"";
-    }
+  static String wrapIntoString(String value) {
+    return "\"'\"+" + value + "+\"'\"";
+  }
 
-    static String buildBind(String bindKey) {
-        return "{{" + bindKey + "}}";
-    }
+  static String buildBind(String bindKey) {
+    return "{{" + bindKey + "}}";
+  }
 
-    void rawContent(String content);
+  void rawContent(String content);
 
-    JavaScriptBuilder css(String className, String... values);
+  JavaScriptBuilder css(String className, String... values);
 
-    void setJsonReadOnly();
+  void setJsonReadOnly();
 
-    JsMethod js(String methodName, String... params);
+  JsMethod js(String methodName, String... params);
 
-    JSContent jsContent();
+  JSContent jsContent();
 
-    void wsHandler(String[] params, Consumer<JsMethod> jsMethodConsumer);
+  void wsHandler(String[] params, Consumer<JsMethod> jsMethodConsumer);
 
-    JsMethod beforeFunc();
+  JsMethod beforeFunc();
 
-    JsMethod readyOnClient();
+  JsMethod readyOnClient();
 
-    JavaScriptBuilder jsonParam(String key, Object value);
+  JavaScriptBuilder jsonParam(String key, Object value);
 
-    interface JSStyle {
+  interface JSStyle {
 
-        JSStyle clazz(String clazz);
+    JSStyle clazz(String clazz);
 
-        JSStyle style(String style);
+    JSStyle style(String style);
 
-        JSStyle ngIf(String condition);
+    JSStyle ngIf(String condition);
 
-        JSStyle id(String id);
+    JSStyle id(String id);
 
-        JSStyle ngStyleIf(String condition, String style, String value, String otherValue);
+    JSStyle ngStyleIf(String condition, String style, String value, String otherValue);
 
-        JSStyle ngRepeat(String key, String value);
+    JSStyle ngRepeat(String key, String value);
 
-        JSStyle onClick(String content);
+    JSStyle onClick(String content);
 
-        JSStyle onClick(JsMethod jsMethod, String... params);
+    JSStyle onClick(JsMethod jsMethod, String... params);
 
-        JSStyle attr(String attr, String value);
-    }
+    JSStyle attr(String attr, String value);
+  }
 
-    interface JsCond extends Builder {
+  interface JsCond extends Builder {
 
-        JsCond eq(String cond1, String cond2, boolean escapeSecondCondition);
+    JsCond eq(String cond1, String cond2, boolean escapeSecondCondition);
 
-        JsCond bool(String cond);
+    JsCond bool(String cond);
 
-        JsCond and();
-    }
+    JsCond and();
+  }
 
-    interface JsCondBody extends Builder {
+  interface JsCondBody extends Builder {
 
-        void then(Consumer<JSCodeContext<JsCondBody>> jsCode);
-    }
+    void then(Consumer<JSCodeContext<JsCondBody>> jsCode);
+  }
 
-    interface JsMethod extends JSCodeContext<JsMethod> {
+  interface JsMethod extends JSCodeContext<JsMethod> {
 
-        void post(Consumer<JSAjaxPost> jsAjaxPostConsumer);
+    void post(Consumer<JSAjaxPost> jsAjaxPostConsumer);
 
-        @SneakyThrows
-        void post(String request, String params);
+    @SneakyThrows
+    void post(String request, String params);
 
-        JsMethod clientJs(String clientCode);
-    }
+    JsMethod clientJs(String clientCode);
+  }
 
-    interface IterContext extends Builder {
+  interface IterContext extends Builder {
 
-    }
+  }
 
-    interface JSWindow extends JSONParameterContext {
+  interface JSWindow extends JSONParameterContext {
 
-    }
+  }
 
-    interface EvaluableValue extends Supplier<String> {
+  interface EvaluableValue extends Supplier<String> {
 
-    }
+  }
 
-    interface ProxyEntityContextValue {
+  interface ProxyEntityContextValue {
 
-        void apply(Context context);
-    }
+    void apply(Context context);
+  }
 
-    interface JSONParameterContext {
+  interface JSONParameterContext {
 
-        JSONParameter obj(String name);
+    JSONParameter obj(String name);
 
-        JSONParameter array(String name);
-    }
+    JSONParameter array(String name);
+  }
 
-    interface JSONParameter {
+  interface JSONParameter {
 
-        JSONParameter obj(String key);
+    JSONParameter obj(String key);
 
-        JSONParameter array(String key);
+    JSONParameter array(String key);
 
-        JSONParameter value(String key, String value);
+    JSONParameter value(String key, String value);
 
-        JSONParameter value(String key, Consumer<JSONObject> consumer);
+    JSONParameter value(String key, Consumer<JSONObject> consumer);
 
-        JSONParameter value(String key, EvaluableValue value);
+    JSONParameter value(String key, EvaluableValue value);
 
-        JSONParameter value(String key, ProxyEntityContextValue proxyEntityContextValue);
+    JSONParameter value(String key, ProxyEntityContextValue proxyEntityContextValue);
 
-        String toString(int indentFactor);
-    }
+    String toString(int indentFactor);
+  }
 
-    interface JSCodeContext<T> extends Builder {
+  interface JSCodeContext<T> extends Builder {
 
-        JSCodeContext<T> raw(Supplier<String> jsStringBlock);
+    JSCodeContext<T> raw(Supplier<String> jsStringBlock);
 
-        void cond(Consumer<JsCond> jsCondConsumerContext, Consumer<JsCondBody> methodContext);
+    void cond(Consumer<JsCond> jsCondConsumerContext, Consumer<JsCondBody> methodContext);
 
-        void iter(String key, String array, Consumer<IterContext> iterContext);
+    void iter(String key, String array, Consumer<IterContext> iterContext);
 
-        JSCodeContext<T> window(Consumer<JSWindow> jsWindowConsumer);
+    JSCodeContext<T> window(Consumer<JSWindow> jsWindowConsumer);
 
-        JSCodeContext<T> addGlobalScript(String path);
+    JSCodeContext<T> addGlobalScript(String path);
 
-        JSCodeContext<T> addGlobalLink(String path);
-    }
+    JSCodeContext<T> addGlobalLink(String path);
+  }
 
-    interface JSAjaxPost extends Builder {
+  interface JSAjaxPost extends Builder {
 
-        void param(String paramKey, String paramValue);
-    }
+    void param(String paramKey, String paramValue);
+  }
 
-    interface JSContent {
+  interface JSContent {
 
-        JSContent add(JSInput jsInput);
+    JSContent add(JSInput jsInput);
 
-        void div(Consumer<JSInput> div);
+    void div(Consumer<JSInput> div);
 
-        void div(Consumer<JSStyle> jsStyle, Consumer<JSInput> div);
+    void div(Consumer<JSStyle> jsStyle, Consumer<JSInput> div);
 
-        void button(Consumer<JSStyle> jsStyle, Consumer<JSInput> button);
-    }
+    void button(Consumer<JSStyle> jsStyle, Consumer<JSInput> button);
+  }
 
-    interface JSInput extends Builder {
+  interface JSInput extends Builder {
 
-        void div(Consumer<JSInput> jsInput);
+    void div(Consumer<JSInput> jsInput);
 
-        void div(Consumer<JSStyle> jsStyle, Consumer<JSInput> jsInput);
+    void div(Consumer<JSStyle> jsStyle, Consumer<JSInput> jsInput);
 
-        void span(Consumer<JSInput> jsInput);
+    void span(Consumer<JSInput> jsInput);
 
-        void span(Consumer<JSStyle> jsStyle, Consumer<JSInput> jsInput);
+    void span(Consumer<JSStyle> jsStyle, Consumer<JSInput> jsInput);
 
-        void ngLabel(Consumer<JSStyle> jsStyle, Consumer<JSInput> jsInput);
+    void ngLabel(Consumer<JSStyle> jsStyle, Consumer<JSInput> jsInput);
 
-        JSInput innerHtml(String innerHtml);
+    JSInput innerHtml(String innerHtml);
 
-        JSInput bind(String bindKey);
-    }
+    JSInput bind(String bindKey);
+  }
 
-    interface Builder {
+  interface Builder {
 
-        String build();
-    }
+    String build();
+  }
 }

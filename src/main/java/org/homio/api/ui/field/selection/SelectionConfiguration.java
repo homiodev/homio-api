@@ -7,11 +7,11 @@ import org.jetbrains.annotations.Nullable;
 
 public interface SelectionConfiguration {
 
-    @JsonIgnore
-    @NotNull Icon getSelectionIcon();
+  @JsonIgnore
+  @NotNull Icon getSelectionIcon();
 
-    @JsonIgnore
-    default @Nullable String getSelectionDescription() {
-        return null;
-    }
+  @JsonIgnore
+  default @Nullable String getSelectionDescription() {
+    return null;
+  }
 }

@@ -7,11 +7,11 @@ import org.homio.api.stream.StreamPlayer;
 import org.jetbrains.annotations.NotNull;
 
 public interface BaseStreamEntity extends BaseEntityIdentifier {
-    @NotNull
-    @JsonIgnore
-    StreamPlayer getStreamPlayer();
+  @NotNull
+  @JsonIgnore
+  StreamPlayer getStreamPlayer();
 
-    @NotNull
-    @JsonIgnore
-    BaseEntity getStreamEntity();
+  @NotNull
+  @JsonIgnore
+  BaseEntity getStreamEntity();
 }

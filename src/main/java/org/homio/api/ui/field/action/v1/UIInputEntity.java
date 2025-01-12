@@ -4,18 +4,18 @@ import org.homio.api.ui.UIActionHandler;
 
 public interface UIInputEntity {
 
-    String getEntityID();
+  String getEntityID();
 
-    String getTitle();
+  String getTitle();
 
-    String getItemType();
+  String getItemType();
 
-    int getOrder();
+  int getOrder();
 
-    default UIActionHandler findAction(String actionEntityID) {
-        if (getEntityID().equals(actionEntityID) && this instanceof UIActionHandler) {
-            return (UIActionHandler) this;
-        }
-        return null;
+  default UIActionHandler findAction(String actionEntityID) {
+    if (getEntityID().equals(actionEntityID) && this instanceof UIActionHandler) {
+      return (UIActionHandler) this;
     }
+    return null;
+  }
 }

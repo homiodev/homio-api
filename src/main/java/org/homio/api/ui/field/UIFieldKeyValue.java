@@ -15,42 +15,42 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldKeyValue {
 
-    int maxSize() default Integer.MAX_VALUE;
+  int maxSize() default Integer.MAX_VALUE;
 
-    Option[] options() default {};
+  Option[] options() default {};
 
-    UIFieldType keyType() default UIFieldType.String;
+  UIFieldType keyType() default UIFieldType.String;
 
-    // show keys on UI
-    boolean showKey() default true;
+  // show keys on UI
+  boolean showKey() default true;
 
-    String defaultKey() default "";
+  String defaultKey() default "";
 
-    String keyPlaceholder() default "";
+  String keyPlaceholder() default "";
 
-    String keyFormat() default "{0}";
+  String keyFormat() default "{0}";
 
-    UIFieldType valueType() default UIFieldType.String;
+  UIFieldType valueType() default UIFieldType.String;
 
-    String defaultValue() default "";
+  String defaultValue() default "";
 
-    String valuePlaceholder() default "";
+  String valuePlaceholder() default "";
 
-    String valueFormat() default "{0}";
+  String valueFormat() default "{0}";
 
-    KeyValueType keyValueType() default KeyValueType.object;
+  KeyValueType keyValueType() default KeyValueType.object;
 
-    enum KeyValueType {
-        array, object
-    }
+  enum KeyValueType {
+    array, object
+  }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Option {
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface Option {
 
-        String key();
+    String key();
 
-        String icon() default "";
+    String icon() default "";
 
-        String[] values();
-    }
+    String[] values();
+  }
 }

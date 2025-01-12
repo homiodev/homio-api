@@ -12,11 +12,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldInlineGroup {
 
-    /**
-     * @return Condition when apply field
-     */
-    String value();
+  /**
+   * @return Condition when apply field
+   */
+  String value();
 
-    // If able to edit group
-    boolean editable() default false;
+  // If able to edit group
+  boolean editable() default false;
 }

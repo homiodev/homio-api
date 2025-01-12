@@ -6,7 +6,7 @@ import org.homio.api.ui.UISidebarMenu;
 
 @Entity
 @UISidebarMenu(order = 50, icon = "fas fa-microchip", parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
-        bg = "#7482d0", allowCreateNewItems = true, overridePath = "controllers")
+  bg = "#7482d0", allowCreateNewItems = true, overridePath = "controllers")
 public abstract class MicroControllerBaseEntity extends DeviceBaseEntity {
 
 }

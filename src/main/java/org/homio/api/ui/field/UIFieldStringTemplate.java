@@ -14,48 +14,48 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldStringTemplate {
 
-    boolean allowSuffix() default true;
+  boolean allowSuffix() default true;
 
-    boolean allowPrefix() default true;
+  boolean allowPrefix() default true;
 
-    boolean allowValueClickShowHistoryOption() default false;
+  boolean allowValueClickShowHistoryOption() default false;
 
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    class StringTemplate {
-        private String nvt;
+  @Getter
+  @Setter
+  @Accessors(chain = true)
+  class StringTemplate {
+    private String nvt;
 
-        // value
-        private String p;
-        private String s;
+    // value
+    private String p;
+    private String s;
 
-        // font size
-        private Double vfs;
-        private Double pfs;
-        private Double sfs;
+    // font size
+    private Double vfs;
+    private Double pfs;
+    private Double sfs;
 
-        // color
-        private String vc;
-        private String pc;
-        private String sc;
+    // color
+    private String vc;
+    private String pc;
+    private String sc;
 
-        // icon
-        private String vi;
-        private String pi;
-        private String si;
+    // icon
+    private String vi;
+    private String pi;
+    private String si;
 
-        // icon color
-        private String vic;
-        private String pic;
-        private String sic;
+    // icon color
+    private String vic;
+    private String pic;
+    private String sic;
 
-        // vertical align
-        private ContextWidget.VerticalAlign va;
-        private ContextWidget.VerticalAlign pa;
-        private ContextWidget.VerticalAlign sa;
+    // vertical align
+    private ContextWidget.VerticalAlign va;
+    private ContextWidget.VerticalAlign pa;
+    private ContextWidget.VerticalAlign sa;
 
-        // fire history dialog on value click
-        private Boolean hoc;
-    }
+    // fire history dialog on value click
+    private Boolean hoc;
+  }
 }

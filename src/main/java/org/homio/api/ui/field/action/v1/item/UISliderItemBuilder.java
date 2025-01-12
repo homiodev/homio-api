@@ -4,29 +4,29 @@ import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
 
 public interface UISliderItemBuilder extends UIEntityItemBuilder<UISliderItemBuilder, Float> {
 
-    Float getMin();
+  Float getMin();
 
-    Float getMax();
+  Float getMax();
 
-    Float getStep();
+  Float getStep();
 
-    UISliderItemBuilder setStep(Float step);
+  UISliderItemBuilder setStep(Float step);
 
-    UISliderItemBuilder setThumbLabel(String label);
+  UISliderItemBuilder setThumbLabel(String label);
 
-    boolean isHideThumbLabel();
+  boolean isHideThumbLabel();
 
-    UISliderItemBuilder setHideThumbLabel(boolean hideThumbLabel);
+  UISliderItemBuilder setHideThumbLabel(boolean hideThumbLabel);
 
-    UISliderItemBuilder setRequired(boolean required);
+  UISliderItemBuilder setRequired(boolean required);
 
-    SliderType getSliderType();
+  SliderType getSliderType();
 
-    UISliderItemBuilder setSliderType(SliderType sliderType);
+  UISliderItemBuilder setSliderType(SliderType sliderType);
 
-    UISliderItemBuilder setDefaultValue(Float defaultValue);
+  UISliderItemBuilder setDefaultValue(Float defaultValue);
 
-    enum SliderType {
-        Regular, Input
-    }
+  enum SliderType {
+    Regular, Input
+  }
 }

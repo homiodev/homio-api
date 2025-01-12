@@ -11,32 +11,32 @@ import org.jetbrains.annotations.Nullable;
 
 public interface DeviceContract extends HasJsonData, HasEntityIdentifier, BaseEntityIdentifier, HasStatusAndMsg {
 
-    String getIeeeAddress();
+  String getIeeeAddress();
 
-    void setIeeeAddress(String value);
+  void setIeeeAddress(String value);
 
-    default String getModel() {
-        return getJsonData("model", "");
+  default String getModel() {
+    return getJsonData("model", "");
+  }
+
+  default void setModel(String value) {
+    setJsonData("model", value);
+  }
+
+  /**
+   * Uses on UI to set png image with appropriate status and mark extra image if need
+   */
+  default @Nullable Status.EntityStatus getEntityStatus() {
+    Status status = getStatus();
+    return new EntityStatus(status);
+  }
+
+  // May be required for @UIFieldColorBgRef("statusColor")
+  default @NotNull String getStatusColor() {
+    EntityStatus entityStatus = getEntityStatus();
+    if (entityStatus == null || entityStatus.getValue().isOnline()) {
+      return "";
     }
-
-    default void setModel(String value) {
-        setJsonData("model", value);
-    }
-
-    /**
-     * Uses on UI to set png image with appropriate status and mark extra image if need
-     */
-    default @Nullable Status.EntityStatus getEntityStatus() {
-        Status status = getStatus();
-        return new EntityStatus(status);
-    }
-
-    // May be required for @UIFieldColorBgRef("statusColor")
-    default @NotNull String getStatusColor() {
-        EntityStatus entityStatus = getEntityStatus();
-        if (entityStatus == null || entityStatus.getValue().isOnline()) {
-            return "";
-        }
-        return entityStatus.getColor() + "30";
-    }
+    return entityStatus.getColor() + "30";
+  }
 }

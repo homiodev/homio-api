@@ -9,12 +9,12 @@ import org.springframework.core.io.Resource;
 @Getter
 public class ResourceContentStream implements ContentStream {
 
-    private final @NotNull StreamFormat streamFormat;
-    @Getter
-    private final Resource resource;
+  private final @NotNull StreamFormat streamFormat;
+  @Getter
+  private final Resource resource;
 
-    public ResourceContentStream(@NotNull Resource resource, @NotNull StreamFormat streamFormat) {
-        this.streamFormat = streamFormat;
-        this.resource = resource;
-    }
+  public ResourceContentStream(@NotNull Resource resource, @NotNull StreamFormat streamFormat) {
+    this.streamFormat = streamFormat;
+    this.resource = resource;
+  }
 }

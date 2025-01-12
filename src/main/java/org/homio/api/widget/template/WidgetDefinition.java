@@ -6,7 +6,11 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.homio.api.ContextVar.VariableType;
-import org.homio.api.ContextWidget.*;
+import org.homio.api.ContextWidget.Fill;
+import org.homio.api.ContextWidget.PulseColor;
+import org.homio.api.ContextWidget.Stepped;
+import org.homio.api.ContextWidget.ToggleType;
+import org.homio.api.ContextWidget.ValueCompare;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.endpoint.DeviceEndpoint;
@@ -29,258 +33,258 @@ import java.util.stream.Stream;
 @Setter
 public class WidgetDefinition {
 
-    private static final Pattern AUTO_DISCOVERY_REGEXP = Pattern.compile("^(state|switch).*");
-    // z-index
-    private Integer index;
-    // block height/width
-    private Integer blockWidth;
-    private Integer blockHeight;
-    // widget height inside layout
-    private Integer widgetHeight;
-    @Getter
-    private @NotNull WidgetType type;
-    @Getter
-    private @Nullable ColorPicker background;
-    @Getter
-    private boolean autoDiscovery;
-    @Getter
-    private @Nullable String leftEndpoint; // "none" special key to ignore any left endpoint
-    @Getter
-    private @Nullable String centerEndpoint;
-    @Getter
-    private @Nullable String rightEndpoint;
-    private @Nullable List<ItemDefinition> props;
-    @Getter
-    private @Nullable List<WidgetDefinition> compose;
-    private @Nullable String icon;
-    // specify ui label(useful in case of 'compose' widget type)
-    private @Nullable String name;
-    @Getter
-    private @Nullable String layout;
-    @Getter
-    private Options options = new Options();
-    @Getter
-    private @Nullable List<Requests> requests;
-    @Getter
-    private Margin margin;
+  private static final Pattern AUTO_DISCOVERY_REGEXP = Pattern.compile("^(state|switch).*");
+  // z-index
+  private Integer index;
+  // block height/width
+  private Integer blockWidth;
+  private Integer blockHeight;
+  // widget height inside layout
+  private Integer widgetHeight;
+  @Getter
+  private @NotNull WidgetType type;
+  @Getter
+  private @Nullable ColorPicker background;
+  @Getter
+  private boolean autoDiscovery;
+  @Getter
+  private @Nullable String leftEndpoint; // "none" special key to ignore any left endpoint
+  @Getter
+  private @Nullable String centerEndpoint;
+  @Getter
+  private @Nullable String rightEndpoint;
+  private @Nullable List<ItemDefinition> props;
+  @Getter
+  private @Nullable List<WidgetDefinition> compose;
+  private @Nullable String icon;
+  // specify ui label(useful in case of 'compose' widget type)
+  private @Nullable String name;
+  @Getter
+  private @Nullable String layout;
+  @Getter
+  private Options options = new Options();
+  @Getter
+  private @Nullable List<Requests> requests;
+  @Getter
+  private Margin margin;
 
-    @SneakyThrows
-    public static void replaceField(String path, Object value, WidgetDefinition widgetDefinition) {
-        String[] split = path.split("\\.");
-        if (split.length == 1) {
-            FieldUtils.writeDeclaredField(widgetDefinition, split[0], value);
-        }
-        Object parentObject = widgetDefinition;
-        Field cursor = FieldUtils.getDeclaredField(WidgetDefinition.class, split[0], true);
-        for (int i = 1; i < split.length; i++) {
-            parentObject = FieldUtils.readField(cursor, parentObject, true);
-            cursor = FieldUtils.getDeclaredField(parentObject.getClass(), split[i], true);
-        }
-        FieldUtils.writeField(cursor, parentObject, value, true);
+  @SneakyThrows
+  public static void replaceField(String path, Object value, WidgetDefinition widgetDefinition) {
+    String[] split = path.split("\\.");
+    if (split.length == 1) {
+      FieldUtils.writeDeclaredField(widgetDefinition, split[0], value);
     }
-
-    public @NotNull List<DeviceEndpoint> getEndpoints(DeviceEndpointsBehaviourContract entity) {
-        if (this.isAutoDiscovery()) {
-            if (type == WidgetType.toggle) {
-                return entity.getDeviceEndpoints().values().stream()
-                        .filter(p -> AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointName()).matches()
-                                     || AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointEntityID()).matches())
-                        .collect(Collectors.toList());
-            }
-        }
-        Stream<DeviceEndpoint> stream = Stream.empty();
-        if (props != null) {
-            stream = props.stream().map(p -> entity.getDeviceEndpoints().get(p.getName()));
-        }
-        if (type == WidgetType.compose) {
-            if (getCompose() == null) {
-                throw new IllegalArgumentException("compose type has to have compose array");
-            }
-            stream = getCompose().stream().flatMap(s -> s.getEndpoints(entity).stream());
-        }
-        return stream.filter(Objects::nonNull).collect(Collectors.toList());
+    Object parentObject = widgetDefinition;
+    Field cursor = FieldUtils.getDeclaredField(WidgetDefinition.class, split[0], true);
+    for (int i = 1; i < split.length; i++) {
+      parentObject = FieldUtils.readField(cursor, parentObject, true);
+      cursor = FieldUtils.getDeclaredField(parentObject.getClass(), split[i], true);
     }
+    FieldUtils.writeField(cursor, parentObject, value, true);
+  }
 
-    public String getName() {
-        return StringUtils.defaultIfEmpty(name, type.name());
+  public @NotNull List<DeviceEndpoint> getEndpoints(DeviceEndpointsBehaviourContract entity) {
+    if (this.isAutoDiscovery()) {
+      if (type == WidgetType.toggle) {
+        return entity.getDeviceEndpoints().values().stream()
+          .filter(p -> AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointName()).matches()
+                       || AUTO_DISCOVERY_REGEXP.matcher(p.getEndpointEntityID()).matches())
+          .collect(Collectors.toList());
+      }
     }
-
-    public String getIcon() {
-        if (icon != null) {
-            return icon;
-        }
-        return switch (type) {
-            case color -> "fas fa-palette";
-            case toggle -> "fas fa-toggle-on";
-            case display -> "fas fa-display";
-            default -> null;
-        };
+    Stream<DeviceEndpoint> stream = Stream.empty();
+    if (props != null) {
+      stream = props.stream().map(p -> entity.getDeviceEndpoints().get(p.getName()));
     }
-
-    public List<DeviceEndpoint> getIncludeEndpoints(MainWidgetRequest request) {
-        Set<String> topIncludeEndpoints = request.getWidgetRequest().includeEndpoints().stream()
-                .map(DeviceEndpoint::getEndpointEntityID).collect(Collectors.toSet());
-        List<DeviceEndpoint> allPossibleEndpoints = request.getItem().getEndpoints(request.getWidgetRequest().entity());
-        return allPossibleEndpoints.stream()
-                .filter(endpoint -> topIncludeEndpoints.contains(endpoint.getEndpointEntityID()))
-                .collect(Collectors.toList());
+    if (type == WidgetType.compose) {
+      if (getCompose() == null) {
+        throw new IllegalArgumentException("compose type has to have compose array");
+      }
+      stream = getCompose().stream().flatMap(s -> s.getEndpoints(entity).stream());
     }
+    return stream.filter(Objects::nonNull).collect(Collectors.toList());
+  }
 
-    public @Nullable WidgetDefinition.ItemDefinition getEndpoint(String key) {
-        return props == null ? null : props.stream().filter(f -> f.name.equals(key)).findAny().orElse(null);
+  public String getName() {
+    return StringUtils.defaultIfEmpty(name, type.name());
+  }
+
+  public String getIcon() {
+    if (icon != null) {
+      return icon;
     }
+    return switch (type) {
+      case color -> "fas fa-palette";
+      case toggle -> "fas fa-toggle-on";
+      case display -> "fas fa-display";
+      default -> null;
+    };
+  }
 
-    public int getBlockWidth(int defaultValue) {
-        return Math.max(1, blockWidth == null ? defaultValue : blockWidth);
-    }
+  public List<DeviceEndpoint> getIncludeEndpoints(MainWidgetRequest request) {
+    Set<String> topIncludeEndpoints = request.getWidgetRequest().includeEndpoints().stream()
+      .map(DeviceEndpoint::getEndpointEntityID).collect(Collectors.toSet());
+    List<DeviceEndpoint> allPossibleEndpoints = request.getItem().getEndpoints(request.getWidgetRequest().entity());
+    return allPossibleEndpoints.stream()
+      .filter(endpoint -> topIncludeEndpoints.contains(endpoint.getEndpointEntityID()))
+      .collect(Collectors.toList());
+  }
 
-    public int getBlockHeight(int defaultValue) {
-        return Math.max(1, blockHeight == null ? defaultValue : blockHeight);
-    }
+  public @Nullable WidgetDefinition.ItemDefinition getEndpoint(String key) {
+    return props == null ? null : props.stream().filter(f -> f.name.equals(key)).findAny().orElse(null);
+  }
 
-    public int getWidgetHeight(int defaultValue) {
-        return Math.max(1, widgetHeight == null ? defaultValue : widgetHeight);
-    }
+  public int getBlockWidth(int defaultValue) {
+    return Math.max(1, blockWidth == null ? defaultValue : blockWidth);
+  }
 
-    public int getZIndex(int defaultValue) {
-        return index == null ? defaultValue : index;
-    }
+  public int getBlockHeight(int defaultValue) {
+    return Math.max(1, blockHeight == null ? defaultValue : blockHeight);
+  }
 
-    public enum WidgetType {
-        color, toggle, display, compose, line, barTime
+  public int getWidgetHeight(int defaultValue) {
+    return Math.max(1, widgetHeight == null ? defaultValue : widgetHeight);
+  }
+
+  public int getZIndex(int defaultValue) {
+    return index == null ? defaultValue : index;
+  }
+
+  public enum WidgetType {
+    color, toggle, display, compose, line, barTime
+  }
+
+  @Getter
+  @Setter
+  public static class ItemDefinition {
+
+    private String name;
+    private IconPicker icon;
+    private ColorPicker iconColor;
+    private String valueConverter;
+    private String valueColor;
+    private boolean valueSourceClickHistory = true;
+    private int valueConverterRefreshInterval = 0;
+    private Chart chart;
+  }
+
+  @Getter
+  @Setter
+  public static class IconPicker {
+
+    private String value;
+    private List<Threshold> thresholds;
+  }
+
+  @Getter
+  @Setter
+  public static class ColorPicker {
+
+    private String value;
+    private List<Threshold> thresholds;
+    private List<Pulse> pulses;
+  }
+
+  @Getter
+  @Setter
+  public static class Margin {
+
+    private int top;
+    private int right;
+    private int bottom;
+    private int left;
+  }
+
+  @Getter
+  @Setter
+  public static class Options {
+
+    public Boolean showAllButton;
+    // For chart
+    private int pointsPerHour = 60;
+    private double pointRadius = 0D;
+    private int dynamicLineWidth = 0;
+    private String dynamicLineColor;
+    private String pointBorderColor;
+    private ToggleType toggleType = ToggleType.OnOff;
+    private boolean showAxisX = true;
+    private boolean showAxisY = true;
+    private boolean showChartFullScreenButton = true;
+    // for display fire push value
+    private Source pushSource;
+    private String valueOnClick;
+    private String valueOnDoubleClick;
+    private String valueOnHoldClick;
+    private String valueOnHoldReleaseClick;
+    private String pushConfirmMessage;
+    private Chart chart;
+
+    @Getter
+    @Setter
+    public static class Pulse {
+
+      private ValueCompare op;
+      private Object value;
+      private PulseColor color;
+      private Source source;
     }
 
     @Getter
     @Setter
-    public static class ItemDefinition {
+    public static class Threshold {
 
-        private String name;
-        private IconPicker icon;
-        private ColorPicker iconColor;
-        private String valueConverter;
-        private String valueColor;
-        private boolean valueSourceClickHistory = true;
-        private int valueConverterRefreshInterval = 0;
-        private Chart chart;
+      private ValueCompare op;
+      private Object value;
+      private String target;
+      private Source source;
     }
 
     @Getter
     @Setter
-    public static class IconPicker {
+    public static class Chart {
 
-        private String value;
-        private List<Threshold> thresholds;
+      private Source source;
+      private String color;
+      private Stepped stepped = Stepped.False;
+      private Fill fill = Fill.Origin;
+      private int lineBorderWidth = 2;
+      private AggregationType aggregateFunc = AggregationType.AverageNoZero;
+      private int opacity = 50;
+      private int height = 30;
+      private boolean smoothing = true;
+      private Integer min;
+      private Integer max;
+      private boolean fillEmptyValues;
     }
 
     @Getter
     @Setter
-    public static class ColorPicker {
+    public static class Source {
 
-        private String value;
-        private List<Threshold> thresholds;
-        private List<Pulse> pulses;
+      private SourceType kind;
+      private String value;
+      private VariableType variableType;
+
+      public enum SourceType {
+        broadcast, property, variable
+      }
     }
+  }
 
-    @Getter
-    @Setter
-    public static class Margin {
+  @Getter
+  @Setter
+  public static class Requests {
 
-        private int top;
-        private int right;
-        private int bottom;
-        private int left;
+    private String name;
+    private String value;
+    private RequestType type;
+    private String title;
+    private String target;
+    private float min = 0;
+    private float max = 255;
+
+    public enum RequestType {
+      number
     }
-
-    @Getter
-    @Setter
-    public static class Options {
-
-        public Boolean showAllButton;
-        // For chart
-        private int pointsPerHour = 60;
-        private double pointRadius = 0D;
-        private int dynamicLineWidth = 0;
-        private String dynamicLineColor;
-        private String pointBorderColor;
-        private ToggleType toggleType = ToggleType.OnOff;
-        private boolean showAxisX = true;
-        private boolean showAxisY = true;
-        private boolean showChartFullScreenButton = true;
-        // for display fire push value
-        private Source pushSource;
-        private String valueOnClick;
-        private String valueOnDoubleClick;
-        private String valueOnHoldClick;
-        private String valueOnHoldReleaseClick;
-        private String pushConfirmMessage;
-        private Chart chart;
-
-        @Getter
-        @Setter
-        public static class Pulse {
-
-            private ValueCompare op;
-            private Object value;
-            private PulseColor color;
-            private Source source;
-        }
-
-        @Getter
-        @Setter
-        public static class Threshold {
-
-            private ValueCompare op;
-            private Object value;
-            private String target;
-            private Source source;
-        }
-
-        @Getter
-        @Setter
-        public static class Chart {
-
-            private Source source;
-            private String color;
-            private Stepped stepped = Stepped.False;
-            private Fill fill = Fill.Origin;
-            private int lineBorderWidth = 2;
-            private AggregationType aggregateFunc = AggregationType.AverageNoZero;
-            private int opacity = 50;
-            private int height = 30;
-            private boolean smoothing = true;
-            private Integer min;
-            private Integer max;
-            private boolean fillEmptyValues;
-        }
-
-        @Getter
-        @Setter
-        public static class Source {
-
-            private SourceType kind;
-            private String value;
-            private VariableType variableType;
-
-            public enum SourceType {
-                broadcast, property, variable
-            }
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class Requests {
-
-        private String name;
-        private String value;
-        private RequestType type;
-        private String title;
-        private String target;
-        private float min = 0;
-        private float max = 255;
-
-        public enum RequestType {
-            number
-        }
-    }
+  }
 }

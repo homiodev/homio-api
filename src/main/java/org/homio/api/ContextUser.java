@@ -5,6 +5,7 @@ import org.homio.api.entity.UserEntity;
 import org.homio.api.exception.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -13,43 +14,46 @@ import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 public interface ContextUser {
 
-    @NotNull
-    Context context();
+  @NotNull
+  Context context();
 
-    /**
-     * Does device has primary user and user/password is set
-     */
-    boolean isRequireAuth();
+  /**
+   * Does device has primary user and user/password is set
+   */
+  boolean isRequireAuth();
 
-    void assertUserCredentials(String username, String password);
+  void assertUserCredentials(String username, String password);
 
-    default boolean isAdminLoggedUser() {
-        UserEntity user = getLoggedInUser();
-        return user != null && user.isAdmin();
+  default boolean isAdminLoggedUser() {
+    UserEntity user = getLoggedInUser();
+    return user != null && user.isAdmin();
+  }
+
+  @SneakyThrows
+  default void assertAdminAccess() {
+    if (!isAdminLoggedUser()) {
+      throw new IllegalAccessException();
     }
+  }
 
-    @SneakyThrows
-    default void assertAdminAccess() {
-        if (!isAdminLoggedUser()) {
-            throw new IllegalAccessException();
-        }
+  default @NotNull UserEntity getLoggedInUserRequire() {
+    UserEntity user = getLoggedInUser();
+    if (user == null) {
+      throw new NotFoundException("Unable to find authenticated user");
     }
+    return user;
+  }
 
-    default @NotNull UserEntity getLoggedInUserRequire() {
-        UserEntity user = getLoggedInUser();
-        if (user == null) {
-            throw new NotFoundException("Unable to find authenticated user");
-        }
-        return user;
-    }
-
-    default @Nullable UserEntity getLoggedInUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            User user = (User) authentication.getPrincipal();
-            String userEntityID = user.getUsername().split(LIST_DELIMITER)[0];
-            return context().db().get(userEntityID);
-        }
+  default @Nullable UserEntity getLoggedInUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null) {
+      if (authentication instanceof AnonymousAuthenticationToken) {
         return null;
+      }
+      User user = (User) authentication.getPrincipal();
+      String userEntityID = user.getUsername().split(LIST_DELIMITER)[0];
+      return context().db().get(userEntityID);
     }
+    return null;
+  }
 }

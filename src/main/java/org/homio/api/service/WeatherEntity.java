@@ -1,6 +1,5 @@
 package org.homio.api.service;
 
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.homio.api.entity.types.MiscEntity;
@@ -9,15 +8,17 @@ import org.homio.api.service.WeatherEntity.WeatherService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
 public abstract class WeatherEntity<T extends ServiceInstance & WeatherService> extends MiscEntity implements EntityService<T> {
+
+  public enum WeatherInfoType {
+    Temperature, WindSpeed, WindDegree, Visibility, FeelsLike, Humidity, Pressure, Clouds
+  }
 
   public interface WeatherService {
 
     @NotNull WeatherInfo readWeather(@NotNull String city, @Nullable Long timestamp);
-  }
-
-  public enum WeatherInfoType {
-    Temperature, WindSpeed, WindDegree, Visibility, FeelsLike, Humidity, Pressure, Clouds
   }
 
   @Setter

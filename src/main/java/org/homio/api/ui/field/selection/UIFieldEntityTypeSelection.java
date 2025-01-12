@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldEntityTypeSelection {
 
-    String type();
+  String type();
 
-    String[] staticParameters() default {};
+  String[] staticParameters() default {};
 }

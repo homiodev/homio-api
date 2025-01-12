@@ -10,15 +10,15 @@ import java.util.function.Consumer;
 
 public interface HasUpdateValueListener {
 
-    @NotNull
-    UpdateValueListener addUpdateValueListener(@NotNull Context context,
-                                               @NotNull String discriminator,
-                                               @NotNull Duration ttl,
-                                               @NotNull JSONObject dynamicParameters,
-                                               @NotNull Consumer<State> listener);
+  @NotNull
+  UpdateValueListener addUpdateValueListener(@NotNull Context context,
+                                             @NotNull String discriminator,
+                                             @NotNull Duration ttl,
+                                             @NotNull JSONObject dynamicParameters,
+                                             @NotNull Consumer<State> listener);
 
-    interface UpdateValueListener {
-        // refresh ttl to allow receiving events
-        void refresh();
-    }
+  interface UpdateValueListener {
+    // refresh ttl to allow receiving events
+    void refresh();
+  }
 }

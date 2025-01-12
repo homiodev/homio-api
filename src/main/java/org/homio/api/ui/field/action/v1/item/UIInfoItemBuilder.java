@@ -6,14 +6,14 @@ import org.jetbrains.annotations.Nullable;
 
 public interface UIInfoItemBuilder extends UIEntityItemBuilder<UIInfoItemBuilder, String> {
 
-    InfoType getInfoType();
+  InfoType getInfoType();
 
-    /**
-     * Set text clickable and navigate to entity
-     */
-    UIInfoItemBuilder linkToEntity(@Nullable BaseEntity entity);
+  /**
+   * Set text clickable and navigate to entity
+   */
+  UIInfoItemBuilder linkToEntity(@Nullable BaseEntity entity);
 
-    enum InfoType {
-        Text, HTML, Markdown
-    }
+  enum InfoType {
+    Text, HTML, Markdown
+  }
 }

@@ -12,15 +12,15 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIContextMenuAction {
 
-    String value();
+  String value();
 
-    String icon() default "";
+  String icon() default "";
 
-    String iconColor() default "";
+  String iconColor() default "";
 
-    String confirmMessage() default "";
+  String confirmMessage() default "";
 
-    String confirmMessageDialogColor() default "";
+  String confirmMessageDialogColor() default "";
 
-    UIActionInput[] inputs() default {};
+  UIActionInput[] inputs() default {};
 }

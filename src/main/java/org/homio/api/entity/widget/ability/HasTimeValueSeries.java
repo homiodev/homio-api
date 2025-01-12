@@ -16,66 +16,66 @@ import java.util.Objects;
  * {@link HasTimeValueSeries#getMultipleTimeValueSeries(PeriodRequest)}
  */
 public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueListener,
-        // we extend HasGetStatusValue for time-series values to be able to fetch last value in case
-        // if no data found in time range, but we need fill chart with empty values
-        HasGetStatusValue {
+  // we extend HasGetStatusValue for time-series values to be able to fetch last value in case
+  // if no data found in time range, but we need fill chart with empty values
+  HasGetStatusValue {
 
-    /**
-     * Return line chart series.
-     * <p>
-     * Usually getLineChartSeries should return only one chart, but sometimes it may be more than one)
-     *
-     * @param request -
-     * @return LineChartDescription and list of points. point[0] - Date or long, point[1] - Float, point[2] - description. point[2] - optional
-     */
-    default @NotNull Map<TimeValueDatasetDescription, List<Object[]>> getMultipleTimeValueSeries(@NotNull PeriodRequest request) {
-        Object params = request.getParameters();
-        int paramCode = (params == null ? "" : params).toString().hashCode();
-        return new HashMap<>(Map.of(new TimeValueDatasetDescription(getEntityID() + "_" + paramCode),
-                getTimeValueSeries(request)));
+  /**
+   * Return line chart series.
+   * <p>
+   * Usually getLineChartSeries should return only one chart, but sometimes it may be more than one)
+   *
+   * @param request -
+   * @return LineChartDescription and list of points. point[0] - Date or long, point[1] - Float, point[2] - description. point[2] - optional
+   */
+  default @NotNull Map<TimeValueDatasetDescription, List<Object[]>> getMultipleTimeValueSeries(@NotNull PeriodRequest request) {
+    Object params = request.getParameters();
+    int paramCode = (params == null ? "" : params).toString().hashCode();
+    return new HashMap<>(Map.of(new TimeValueDatasetDescription(getEntityID() + "_" + paramCode),
+      getTimeValueSeries(request)));
+  }
+
+  @NotNull
+  List<Object[]> getTimeValueSeries(@NotNull PeriodRequest request);
+
+  @Getter
+  class TimeValueDatasetDescription {
+
+    private final @NotNull String id;
+    private final @Nullable String name;
+    private final @Nullable String color;
+
+    public TimeValueDatasetDescription(@NotNull String id) {
+      this(id, null, null);
     }
 
-    @NotNull
-    List<Object[]> getTimeValueSeries(@NotNull PeriodRequest request);
-
-    @Getter
-    class TimeValueDatasetDescription {
-
-        private final @NotNull String id;
-        private final @Nullable String name;
-        private final @Nullable String color;
-
-        public TimeValueDatasetDescription(@NotNull String id) {
-            this(id, null, null);
-        }
-
-        public TimeValueDatasetDescription(@NotNull String id, @Nullable String name) {
-            this(id, name, null);
-        }
-
-        public TimeValueDatasetDescription(@NotNull String id, @Nullable String name, @Nullable String color) {
-            this.id = id;
-            this.name = name;
-            this.color = color;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            TimeValueDatasetDescription that = (TimeValueDatasetDescription) o;
-
-            return Objects.equals(id, that.id);
-        }
-
-        @Override
-        public int hashCode() {
-            return id.hashCode();
-        }
+    public TimeValueDatasetDescription(@NotNull String id, @Nullable String name) {
+      this(id, name, null);
     }
+
+    public TimeValueDatasetDescription(@NotNull String id, @Nullable String name, @Nullable String color) {
+      this.id = id;
+      this.name = name;
+      this.color = color;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      TimeValueDatasetDescription that = (TimeValueDatasetDescription) o;
+
+      return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+      return id.hashCode();
+    }
+  }
 }

@@ -6,21 +6,21 @@ import org.json.JSONObject;
 
 public interface ConsolePluginCommunicator extends ConsolePluginComplexLines {
 
-    @Override
-    default @NotNull RenderType getRenderType() {
-        return RenderType.comm;
-    }
+  @Override
+  default @NotNull RenderType getRenderType() {
+    return RenderType.comm;
+  }
 
-    ActionResponseModel commandReceived(String value);
+  ActionResponseModel commandReceived(String value);
 
-    void dataReceived(ComplexString data);
+  void dataReceived(ComplexString data);
 
-    default boolean hasRefreshIntervalSetting() {
-        return false;
-    }
+  default boolean hasRefreshIntervalSetting() {
+    return false;
+  }
 
-    @Override
-    default ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata) {
-        return commandReceived(entityID);
-    }
+  @Override
+  default ActionResponseModel executeAction(@NotNull String entityID, @NotNull JSONObject metadata) {
+    return commandReceived(entityID);
+  }
 }

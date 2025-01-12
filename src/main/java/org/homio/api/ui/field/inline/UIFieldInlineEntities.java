@@ -12,10 +12,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldInlineEntities {
 
-    /**
-     * @return Background color
-     */
-    String bg();
+  /**
+   * @return Background color
+   */
+  String bg();
 
-    String noContentTitle() default "W.ERROR.NO_CONTENT";
+  String noContentTitle() default "W.ERROR.NO_CONTENT";
+
+  /**
+   * Interface that has to be implemented by
+   * UIFieldInlineEntities
+   * List(... extends InlineEntity) items
+   */
+  interface InlineEntity {
+    String getEntityID();
+  }
 }

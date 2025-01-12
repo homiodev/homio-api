@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldValidationSize {
 
-    int min();
+  int min();
 
-    int max();
+  int max();
 }

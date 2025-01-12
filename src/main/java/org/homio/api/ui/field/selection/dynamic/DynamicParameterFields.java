@@ -5,11 +5,11 @@ package org.homio.api.ui.field.selection.dynamic;
  */
 public interface DynamicParameterFields {
 
-    default String getGroupName() {
-        return null;
-    }
+  default String getGroupName() {
+    return null;
+  }
 
-    default String getBorderColor() {
-        return null;
-    }
+  default String getBorderColor() {
+    return null;
+  }
 }

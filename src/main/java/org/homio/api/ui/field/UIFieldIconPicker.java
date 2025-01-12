@@ -12,33 +12,33 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldIconPicker {
 
-    /**
-     * @return Is save icon as simple string i.e. 'fas fa-icon' or as json string
-     */
-    boolean simple() default false;
+  /**
+   * @return Is save icon as simple string i.e. 'fas fa-icon' or as json string
+   */
+  boolean simple() default false;
 
-    /**
-     * @return Allow user to select no icon to hide icon at all
-     */
-    boolean allowEmptyIcon() default false;
+  /**
+   * @return Allow user to select no icon to hide icon at all
+   */
+  boolean allowEmptyIcon() default false;
 
-    /**
-     * @return Allow user to use threshold functionality for showing different icon depend on 'value'
-     */
-    boolean allowThreshold() default false;
+  /**
+   * @return Allow user to use threshold functionality for showing different icon depend on 'value'
+   */
+  boolean allowThreshold() default false;
 
-    /**
-     * @return Add Size selector to icon picker. Works only if allowThreshold is true
-     */
-    boolean allowSize() default true;
+  /**
+   * @return Add Size selector to icon picker. Works only if allowThreshold is true
+   */
+  boolean allowSize() default true;
 
-    /**
-     * @return Add Spin selector to icon picker. Works only if allowThreshold is true
-     */
-    boolean allowSpin() default true;
+  /**
+   * @return Add Spin selector to icon picker. Works only if allowThreshold is true
+   */
+  boolean allowSpin() default true;
 
-    /**
-     * @return Enable to select background shadow
-     */
-    boolean allowBackground() default false;
+  /**
+   * @return Enable to select background shadow
+   */
+  boolean allowBackground() default false;
 }

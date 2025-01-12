@@ -11,18 +11,18 @@ import org.homio.api.setting.SettingPlugin;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface ConsoleSettingPlugin<T> extends SettingPlugin<T> {
 
-    /**
-     * @return list of console page names where this setting enabled
-     */
-    default String[] pages() {
-        return null;
-    }
+  /**
+   * @return list of console page names where this setting enabled
+   */
+  default String[] pages() {
+    return null;
+  }
 
-    default RenderType[] renderTypes() {
-        return null;
-    }
+  default RenderType[] renderTypes() {
+    return null;
+  }
 
-    default boolean acceptConsolePluginPage(ConsolePlugin consolePlugin) {
-        return false;
-    }
+  default boolean acceptConsolePluginPage(ConsolePlugin consolePlugin) {
+    return false;
+  }
 }

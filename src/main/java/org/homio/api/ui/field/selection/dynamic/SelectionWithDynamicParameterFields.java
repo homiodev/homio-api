@@ -11,19 +11,19 @@ import org.json.JSONObject;
  */
 public interface SelectionWithDynamicParameterFields {
 
-    /**
-     * Return POJO class with @UIField(...) fields that shows on UI when user select entity
-     *
-     * @param request - request
-     * @return POJO
-     */
-    DynamicParameterFields getDynamicParameterFields(RequestDynamicParameter request);
+  /**
+   * Return POJO class with @UIField(...) fields that shows on UI when user select entity
+   *
+   * @param request - request
+   * @return POJO
+   */
+  DynamicParameterFields getDynamicParameterFields(RequestDynamicParameter request);
 
-    @Getter
-    @AllArgsConstructor
-    class RequestDynamicParameter {
+  @Getter
+  @AllArgsConstructor
+  class RequestDynamicParameter {
 
-        private @Nullable Object selectionHolder;
-        private @NotNull JSONObject metadata; // contains conditions if i.e. for some entities it requires one parameter but for other...
-    }
+    private @Nullable Object selectionHolder;
+    private @NotNull JSONObject metadata; // contains conditions if i.e. for some entities it requires one parameter but for other...
+  }
 }

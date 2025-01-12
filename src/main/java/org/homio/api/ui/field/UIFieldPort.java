@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldPort {
 
-    int min() default 1;
+  int min() default 1;
 
-    int max() default 65535;
+  int max() default 65535;
 }

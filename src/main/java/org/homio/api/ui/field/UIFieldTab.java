@@ -14,9 +14,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldTab {
 
-    String value();
+  String value();
 
-    @Nullable String color() default "";
+  @Nullable String color() default "";
 
-    int order() default 1;
+  int order() default 1;
 }

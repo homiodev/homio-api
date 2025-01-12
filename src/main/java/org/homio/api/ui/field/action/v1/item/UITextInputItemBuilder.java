@@ -5,18 +5,18 @@ import org.jetbrains.annotations.NotNull;
 
 public interface UITextInputItemBuilder extends UIEntityItemBuilder<UITextInputItemBuilder, String> {
 
-    /**
-     * Add apply button to input field. Default - false
-     *
-     * @param value on/off
-     * @return this
-     */
-    UITextInputItemBuilder setRequireApply(boolean value);
+  /**
+   * Add apply button to input field. Default - false
+   *
+   * @param value on/off
+   * @return this
+   */
+  UITextInputItemBuilder setRequireApply(boolean value);
 
-    @NotNull
-    UITextInputItemBuilder setRequired(boolean value);
+  @NotNull
+  UITextInputItemBuilder setRequired(boolean value);
 
-    enum InputType {
-        Text, TextArea, Password, JSON, Ip
-    }
+  enum InputType {
+    Text, TextArea, Password, JSON, Ip
+  }
 }

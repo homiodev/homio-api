@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorBooleanMatch {
 
-    String True() default "#1F8D2D";
+  String True() default "#1F8D2D";
 
-    String False() default "#B22020";
+  String False() default "#B22020";
 }

@@ -7,7 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,49 +19,49 @@ import static org.homio.api.entity.HasJsonData.LIST_DELIMITER;
 
 public interface SettingPluginOptionsEnumMulti<T extends Enum<T>> extends SettingPluginOptions<Set<T>> {
 
-    T[] defaultValue();
+  T[] defaultValue();
 
-    @Override
-    default @NotNull Class<Set<T>> getType() {
-        return (Class<Set<T>>) Collections.<T>emptySet().getClass();
+  @Override
+  default @NotNull Class<Set<T>> getType() {
+    return (Class<Set<T>>) Collections.<T>emptySet().getClass();
+  }
+
+  Class<T> getEnumType();
+
+  @Override
+  default @NotNull String getDefaultValue() {
+    Set<String> values = new HashSet<>();
+    for (T value : defaultValue()) {
+      values.add(value.name());
     }
+    return String.join(LIST_DELIMITER, values);
+  }
 
-    Class<T> getEnumType();
+  @Override
+  default @NotNull String serializeValue(@Nullable Set<T> value) {
+    return value == null ? "" : value.stream().map(Enum::name).collect(Collectors.joining(LIST_DELIMITER));
+  }
 
-    @Override
-    default @NotNull String getDefaultValue() {
-        Set<String> values = new HashSet<>();
-        for (T value : defaultValue()) {
-            values.add(value.name());
+  @Override
+  default Set<T> deserializeValue(Context context, String value) {
+    if (value == null) {
+      return Collections.emptySet();
+    }
+    return Stream.of(value.split(LIST_DELIMITER)).map(s -> {
+      for (T item : getEnumType().getEnumConstants()) {
+        if (s.equals(item.name())) {
+          return item;
         }
-        return String.join(LIST_DELIMITER, values);
-    }
+      }
+      return null;
+    }).filter(Objects::nonNull).collect(Collectors.toSet());
+  }
 
-    @Override
-    default @NotNull String serializeValue(@Nullable Set<T> value) {
-        return value == null ? "" : value.stream().map(Enum::name).collect(Collectors.joining(LIST_DELIMITER));
+  @Override
+  default @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params) {
+    if (KeyValueEnum.class.isAssignableFrom(getType())) {
+      return OptionModel.list((Class<? extends KeyValueEnum>) getEnumType());
     }
-
-    @Override
-    default Set<T> deserializeValue(Context context, String value) {
-        if (value == null) {
-            return Collections.emptySet();
-        }
-        return Stream.of(value.split(LIST_DELIMITER)).map(s -> {
-            for (T item : getEnumType().getEnumConstants()) {
-                if (s.equals(item.name())) {
-                    return item;
-                }
-            }
-            return null;
-        }).filter(Objects::nonNull).collect(Collectors.toSet());
-    }
-
-    @Override
-    default @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params) {
-        if (KeyValueEnum.class.isAssignableFrom(getType())) {
-            return OptionModel.list((Class<? extends KeyValueEnum>) getEnumType());
-        }
-        return OptionModel.enumList(getEnumType());
-    }
+    return OptionModel.enumList(getEnumType());
+  }
 }

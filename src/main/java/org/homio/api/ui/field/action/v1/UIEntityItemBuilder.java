@@ -5,27 +5,27 @@ import org.jetbrains.annotations.NotNull;
 
 public interface UIEntityItemBuilder<Owner, Value> extends UIEntityBuilder {
 
-    String getSeparatedText();
+  String getSeparatedText();
 
-    Owner setSeparatedText(String text);
+  Owner setSeparatedText(String text);
 
-    String getStyle();
+  String getStyle();
 
-    Owner setValue(Value value);
+  Owner setValue(Value value);
 
-    Owner setTitle(String title);
+  Owner setTitle(String title);
 
-    Owner setDisabled(boolean disabled);
+  Owner setDisabled(boolean disabled);
 
-    Owner setOrder(int order);
+  Owner setOrder(int order);
 
-    Owner setIcon(Icon icon);
+  Owner setIcon(Icon icon);
 
-    Owner setColor(String color);
+  Owner setColor(String color);
 
-    Owner appendStyle(@NotNull String style, @NotNull String value);
+  Owner appendStyle(@NotNull String style, @NotNull String value);
 
-    Owner setOuterClass(String outerClass);
+  Owner setOuterClass(String outerClass);
 
-    Owner addFetchValueHandler(String key, Runnable fetchValueHandler);
+  Owner addFetchValueHandler(String key, Runnable fetchValueHandler);
 }

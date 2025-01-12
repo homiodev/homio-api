@@ -5,7 +5,7 @@ import org.homio.api.model.OptionModel;
 
 public interface SettingPluginOptionsRemovable<T> extends SettingPluginOptions<T> {
 
-    boolean removableOption(OptionModel optionModel);
+  boolean removableOption(OptionModel optionModel);
 
-    void removeOption(Context context, String key) throws Exception;
+  void removeOption(Context context, String key) throws Exception;
 }

@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldInlineEntityEditWidth {
 
-    /**
-     * @return Width in edit mode
-     */
-    int value();
+  /**
+   * @return Width in edit mode
+   */
+  int value();
 }

@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldImage {
 
-    int maxWidth() default 100;
+  int maxWidth() default 100;
 
-    int maxHeight() default 100;
+  int maxHeight() default 100;
 }

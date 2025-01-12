@@ -115,11 +115,6 @@
             <groupId>org.apache.commons</groupId>
         </dependency>
         <dependency>
-            <artifactId>jakarta.validation-api</artifactId>
-            <groupId>jakarta.validation</groupId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <groupId>jakarta.xml.bind</groupId>
         </dependency>

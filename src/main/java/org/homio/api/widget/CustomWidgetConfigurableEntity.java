@@ -10,13 +10,13 @@ import org.jetbrains.annotations.NotNull;
  * Implement by entities that able to create CustomWidgetEntity
  */
 public interface CustomWidgetConfigurableEntity extends
-        HasDynamicContextMenuActions, HasEntityIdentifier {
+  HasDynamicContextMenuActions, HasEntityIdentifier {
 
-    void assembleUIFields(@NotNull HasDynamicUIFields.UIFieldBuilder uiFieldBuilder,
-                          @NotNull HasJsonData sourceEntity);
+  void assembleUIFields(@NotNull HasDynamicUIFields.UIFieldBuilder uiFieldBuilder,
+                        @NotNull HasJsonData sourceEntity);
 
-    /**
-     * Calls one or more times when load widget on UI
-     */
-    void setWidgetDataStore(CustomWidgetDataStore customWidgetDataStore);
+  /**
+   * Calls one or more times when load widget on UI
+   */
+  void setWidgetDataStore(CustomWidgetDataStore customWidgetDataStore);
 }

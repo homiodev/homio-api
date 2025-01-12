@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorBgRef {
 
-    String value();
+  String value();
 
-    boolean animate() default false;
+  boolean animate() default false;
 }

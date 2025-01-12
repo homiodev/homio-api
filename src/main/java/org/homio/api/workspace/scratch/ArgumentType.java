@@ -1,42 +1,42 @@
 package org.homio.api.workspace.scratch;
 
 public enum ArgumentType {
-    /**
-     * Boolean value with hexagonal placeholder
-     */
-    Boolean,
+  /**
+   * Boolean value with hexagonal placeholder
+   */
+  Boolean,
 
-    /**
-     * Numeric value with color picker
-     */
-    color,
+  /**
+   * Numeric value with color picker
+   */
+  color,
 
-    /**
-     * Numeric value with text field
-     */
-    number,
+  /**
+   * Numeric value with text field
+   */
+  number,
 
-    /**
-     * String value with text field
-     */
-    string,
+  /**
+   * String value with text field
+   */
+  string,
 
-    reference,
+  reference,
 
-    variable,
+  variable,
 
-    /**
-     * Boolean checkbox UI representation
-     */
-    checkbox,
+  /**
+   * Boolean checkbox UI representation
+   */
+  checkbox,
 
-    icon,
+  icon,
 
-    broadcast,
+  broadcast,
 
-    setting,
+  setting,
 
-    timer,
+  timer,
 
-    calendar
+  calendar
 }
