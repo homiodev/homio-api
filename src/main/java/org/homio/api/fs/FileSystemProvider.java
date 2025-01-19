@@ -1,5 +1,6 @@
 package org.homio.api.fs;
 
+import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.InputStreamResource;
@@ -66,6 +67,14 @@ public interface FileSystemProvider {
     return copy(Collections.singletonList(entry), targetId, uploadOption);
   }
 
+  // method has to search for files/folders in thread
+  default @Nullable SearchThread search(@NotNull SearchParameters searchParameters,
+                                        @NotNull SearchCallback searchCallback) {
+    return () -> {
+      // just ignore
+    };
+  }
+
   @Nullable
   default Set<TreeNode> loadTreeUpToChild(@NotNull String id) {
     return loadTreeUpToChild(null, id);
@@ -91,5 +100,29 @@ public interface FileSystemProvider {
 
   enum UploadOption {
     Replace, Append, Error, SkipExist
+  }
+
+  record SearchParameters(
+    // general configs
+    int maxResults, // max files return to ui
+    int subdirDepth, // folder depth to dive
+    boolean searchFolder, // search folders
+    boolean searchFiles, // search files
+    String searchFor, // file/folder name
+    String searchText, // text to search
+    boolean caseSensitive, // for text
+    boolean revertSearch, // return files that NOT contains text
+    boolean wholeWordsOnly, // for text
+    boolean searchInArchive) { // for text
+  }
+
+  interface SearchCallback {
+    void found(TreeNode treeNode);
+
+    void done();
+  }
+
+  interface SearchThread {
+    void cancel();
   }
 }

@@ -1,20 +1,22 @@
 package org.homio.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.Context;
 import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.fs.FileSystemProvider;
 import org.homio.api.fs.TreeConfiguration;
+import org.homio.api.fs.TreeNode;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
 import org.homio.api.ui.field.action.UIContextMenuAction;
-import org.homio.api.util.DataSourceUtil;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,16 +31,16 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
 
   Map<String, Map<Integer, FileSystemProvider>> fileSystemMap = new HashMap<>();
 
-  default @NotNull List<TreeConfiguration> buildFileSystemConfiguration(@NotNull Context context) {
+  default boolean createView(@NotNull List<TreeNode> sources, @NotNull String name, @NotNull Icon icon) {
+    throw new NotImplementedException("View not implemented for fileSystem");
+  }
+
+  @JsonIgnore
+  default @NotNull List<TreeConfiguration> buildFileSystemConfiguration() {
     List<TreeConfiguration> configurations = new ArrayList<>(3);
     configurations.add(new TreeConfiguration(this));
-    String pathAlias1 = DataSourceUtil.getSelection(getAliasOnePath()).getValue("");
-    if (!pathAlias1.isEmpty()) {
-      configurations.add(new TreeConfiguration(this, pathAlias1, new Icon(getAliasOneIcon(), getAliasOneIconColor())));
-    }
-    String pathAlias2 = DataSourceUtil.getSelection(getAliasTwoPath()).getValue("");
-    if (!pathAlias2.isEmpty()) {
-      configurations.add(new TreeConfiguration(this, pathAlias2, new Icon(getAliasTwoIcon(), getAliasTwoIconColor())));
+    for (Alias alias : getAliases()) {
+      configurations.add(new TreeConfiguration(this, alias.getName(), alias.getAlias(), alias.getIcon()));
     }
     for (TreeConfiguration configuration : configurations) {
       configuration.setDynamicUpdateId("tree-%s-%d".formatted(configuration.getId(), configuration.getAlias()));
@@ -118,4 +120,8 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
   default @NotNull Set<String> getSupportArchiveFormats() {
     return Collections.emptySet();
   }
+
+  @Nullable FileSystemSize requestDbSize();
+
+  record FileSystemSize(long totalSpace, long freeSpace) {}
 }

@@ -1,123 +1,62 @@
 package org.homio.api.entity.storage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.homio.api.entity.HasJsonData;
-import org.homio.api.ui.field.UIField;
-import org.homio.api.ui.field.UIFieldColorPicker;
-import org.homio.api.ui.field.UIFieldGroup;
-import org.homio.api.ui.field.UIFieldIconPicker;
-import org.homio.api.ui.field.UIFieldTab;
-import org.homio.api.ui.field.UIFieldType;
-import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
-import org.homio.api.util.DataSourceUtil;
-import org.springframework.util.StringUtils;
+import org.homio.api.fs.TreeNode;
+import org.homio.api.model.Icon;
+import org.jetbrains.annotations.NotNull;
 
-import static java.lang.String.format;
+import java.util.Set;
 
 public interface HasPathAlias extends HasJsonData {
 
-  default String getAliasPath(int alias) {
-    String value = DataSourceUtil.getSelection(getAliasOnePath()).getValue("");
-    if (Math.abs(value.hashCode()) == alias) {
-      return value;
+  @Getter
+  @Setter
+  @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class Alias {
+    private String path;
+    @EqualsAndHashCode.Include
+    private int alias;
+    private String name;
+    private Icon icon;
+  }
+
+  default boolean removeAlias(@NotNull int aliasCode) {
+    Set<Alias> aliases = getAliases();
+    if (aliases.removeIf(alias -> alias.alias == aliasCode)) {
+      setJsonDataObject("alias", aliases);
+      return true;
     }
-    value = DataSourceUtil.getSelection(getAliasTwoPath()).getValue("");
-    if (Math.abs(value.hashCode()) == alias) {
-      return value;
+    return false;
+  }
+
+  default boolean createAlias(@NotNull TreeNode path, @NotNull String name, @NotNull Icon icon) {
+    if (name.isEmpty()) {
+      throw new IllegalArgumentException("Alias name cannot be empty");
     }
-    throw new IllegalArgumentException("Unable to find alias with hashCode: " + alias);
-  }
-
-  @UIField(order = 500, type = UIFieldType.HTML, hideInEdit = true)
-  default String getAliasOne() {
-    if (StringUtils.hasLength(getAliasOnePath())) {
-      return format("<div class=\"it-group\"><i style=\"color:%s\" class=\"%s\"></i>%s</div>",
-        getAliasOneIconColor(),
-        getAliasOneIcon(),
-        DataSourceUtil.getSelection(getAliasOnePath()).getValue());
+    Set<Alias> aliases = getAliases();
+    if (aliases.add(new Alias(path.getId(), Math.abs(path.hashCode()), name, icon))) {
+      setJsonDataObject("alias", aliases);
+      return true;
     }
-    return "-";
+    return false;
   }
 
-  @UIField(order = 1, label = "path", hideInView = true)
-  @UIFieldGroup(value = "ALIAS_1", order = 100, borderColor = "#46B8C4")
-  @UIFieldTreeNodeSelection(dialogTitle = "DIALOG.SELECT_PATH", allowSelectFiles = false, allowSelectDirs = true)
-  @UIFieldTab("ALIASES")
-  default String getAliasOnePath() {
-    return getJsonData("a1p");
+  default Alias getAlias(int alias) {
+    Set<Alias> aliases = getAliases();
+    return aliases.stream().filter(a -> a.alias == alias).findAny()
+      .orElseThrow(() -> new IllegalArgumentException("Unable to find alias with hashCode: " + alias));
   }
 
-  default void setAliasOnePath(String value) {
-    setJsonData("a1p", value);
-  }
-
-  @UIField(order = 2, label = "icon", hideInView = true)
-  @UIFieldIconPicker(allowSize = false, simple = true)
-  @UIFieldGroup("ALIAS_1")
-  @UIFieldTab("ALIASES")
-  default String getAliasOneIcon() {
-    return getJsonData("a1i", "fas fa-hard-drive");
-  }
-
-  default void setAliasOneIcon(String value) {
-    setJsonData("a1i", value);
-  }
-
-  @UIField(order = 3, label = "iconColor", hideInView = true)
-  @UIFieldColorPicker
-  @UIFieldGroup("ALIAS_1")
-  @UIFieldTab("ALIASES")
-  default String getAliasOneIconColor() {
-    return getJsonData("a1c", "#ADB5BD");
-  }
-
-  default void setAliasOneIconColor(String value) {
-    setJsonData("a1c", value);
-  }
-
-  @UIField(order = 501, type = UIFieldType.HTML, hideInEdit = true)
-  default String getAliasTwo() {
-    if (StringUtils.hasLength(getAliasTwoPath())) {
-      return format("<div class=\"it-group\"><i style=\"color:%s\" class=\"%s\"></i>%s</div>",
-        getAliasTwoIconColor(),
-        getAliasTwoIcon(),
-        DataSourceUtil.getSelection(getAliasTwoPath()).getValue());
-    }
-    return "-";
-  }
-
-  @UIField(order = 1, label = "path", hideInView = true)
-  @UIFieldGroup(value = "ALIAS_2", order = 101, borderColor = "#46B8C4")
-  @UIFieldTreeNodeSelection(dialogTitle = "DIALOG.SELECT_PATH", allowSelectFiles = false, allowSelectDirs = true)
-  @UIFieldTab("ALIASES")
-  default String getAliasTwoPath() {
-    return getJsonData("a2p");
-  }
-
-  default void setAliasTwoPath(String value) {
-    setJsonData("a2p", value);
-  }
-
-  @UIField(order = 2, label = "icon", hideInView = true)
-  @UIFieldIconPicker(allowSize = false, simple = true)
-  @UIFieldGroup("ALIAS_2")
-  @UIFieldTab("ALIASES")
-  default String getAliasTwoIcon() {
-    return getJsonData("a2i", "fas fa-hard-drive");
-  }
-
-  default void setAliasTwoIcon(String value) {
-    setJsonData("a2i", value);
-  }
-
-  @UIField(order = 3, label = "iconColor", hideInView = true)
-  @UIFieldColorPicker
-  @UIFieldGroup("ALIAS_2")
-  @UIFieldTab("ALIASES")
-  default String getAliasTwoIconColor() {
-    return getJsonData("a2c", "#ADB5BD");
-  }
-
-  default void setAliasTwoIconColor(String value) {
-    setJsonData("a2c", value);
+  @JsonIgnore
+  default Set<Alias> getAliases() {
+    return getJsonDataSet("alias", Alias.class);
   }
 }

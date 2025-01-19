@@ -44,6 +44,7 @@ public class TreeNode implements Comparable<TreeNode> {
 
   private @NotNull String name;
   private @Nullable String id;
+  private int uuid;
   private @NotNull TreeNodeAttributes attributes = new TreeNodeAttributes();
 
   @JsonIgnore
@@ -60,8 +61,10 @@ public class TreeNode implements Comparable<TreeNode> {
 
   public TreeNode(boolean dir, boolean empty, @NotNull String name, @Nullable String id,
                   @Nullable Long size, @Nullable Long lastModifiedTime,
-                  @Nullable FileSystemProvider fileSystem, @Nullable String contentType) {
+                  @Nullable FileSystemProvider fileSystem, @Nullable String contentType,
+                  int uuid) {
     this.id = id;
+    this.uuid = uuid;
     this.name = name;
     this.fileSystem = fileSystem;
 
@@ -76,19 +79,19 @@ public class TreeNode implements Comparable<TreeNode> {
   @SneakyThrows
   public static TreeNode of(@NotNull MultipartFile file) {
     String name = StringUtils.defaultIfEmpty(file.getOriginalFilename(), file.getName());
-    return new TreeNode(false, false, name, name, file.getSize(), null, null, file.getContentType()).setInputStream(
+    return new TreeNode(false, false, name, name, file.getSize(), null, null, file.getContentType(), -1).setInputStream(
       file.getInputStream());
   }
 
   public static TreeNode of(@NotNull String name, byte[] content) {
-    return new TreeNode(false, false, name, name, (long) content.length, null, null, null).setInputStream(
+    return new TreeNode(false, false, name, name, (long) content.length, null, null, null, -1).setInputStream(
       new ByteArrayInputStream(content));
   }
 
   @SneakyThrows
   public static TreeNode of(@Nullable String id, @NotNull Path path, @NotNull FileSystemProvider fileSystem) {
     return new TreeNode(false, false, path.getFileName().toString(), id, Files.size(path),
-      Files.getLastModifiedTime(path).toMillis(), fileSystem, null);
+      Files.getLastModifiedTime(path).toMillis(), fileSystem, null, path.toString().hashCode());
   }
 
   /**
@@ -102,7 +105,8 @@ public class TreeNode implements Comparable<TreeNode> {
     TreeNode cursor = overRoot;
     for (Path path : treePath) {
       String name = path.getFileName().toString();
-      cursor = cursor.addChild(new TreeNode(true, false, name, name, null, null, null, null));
+      cursor = cursor.addChild(new TreeNode(true, false, name, name, null, null, null, null,
+        path.hashCode()));
     }
     return Pair.of(overRoot.getChildren().iterator().next(), cursor);
   }
@@ -164,7 +168,7 @@ public class TreeNode implements Comparable<TreeNode> {
   }
 
   public @Nullable TreeNode clone(boolean includeRelations) {
-    return new TreeNode(this.name, this.id, attributes, includeRelations ? this.parent : null,
+    return new TreeNode(this.name, this.id, this.uuid, attributes, includeRelations ? this.parent : null,
       includeRelations ? childrenMap : null, inputStream, fileSystem);
   }
 

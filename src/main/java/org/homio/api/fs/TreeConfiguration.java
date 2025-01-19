@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Setter
 @Getter
 @Accessors(chain = true)
 public class TreeConfiguration {
@@ -21,13 +22,13 @@ public class TreeConfiguration {
   private final String id;
   private final String name;
   private final int alias;
-  @Setter
   private Icon icon;
   private Boolean hasDelete;
   private Boolean hasRename;
   private Boolean hasUpload;
   private Boolean hasCreateFile;
   private Boolean hasCreateFolder;
+  private boolean supportAlias = true;
   private List<String> editableExtensions;
   private Set<String> zipOpenExtensions;
   private List<TreeNodeChip> chips;
@@ -35,10 +36,8 @@ public class TreeConfiguration {
   private long freeSize;
   private long totalSize;
 
-  @Setter
   private Set<TreeNode> children;
 
-  @Setter
   private String dynamicUpdateId; // unique id for dynamic update tree on UI
 
   public TreeConfiguration(String id, String name, Set<TreeNode> children) {
@@ -57,6 +56,14 @@ public class TreeConfiguration {
     this.icon = fs.getFileSystemIcon();
 
     makeDefaultFSConfiguration();
+
+    try {
+      var fsSize = fs.requestDbSize();
+      if (fsSize != null) {
+        setSize(fsSize.freeSpace(), fsSize.totalSpace());
+      }
+    } catch (Exception ignore) {
+    }
   }
 
   public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs, @NotNull String path, @NotNull Icon icon) {
@@ -79,6 +86,7 @@ public class TreeConfiguration {
     this.hasUpload = true;
     this.hasCreateFile = true;
     this.hasCreateFolder = true;
+    this.supportAlias = true;
   }
 
   public TreeConfiguration setSize(long freeSize, long totalSize) {

@@ -315,7 +315,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
 
   @SneakyThrows
   private @NotNull TreeNode buildRoot(@NotNull Collection<FSFile> result, boolean handleAttributes) {
-    TreeNode rootPath = new TreeNode(true, false, "", "", 0L, 0L, null, null);
+    TreeNode rootPath = new TreeNode(true, false, "", "", 0L, 0L, null, null, -1);
     for (FSFile ftpFile : result) {
       TreeNode cursor = rootPath;
 
@@ -344,7 +344,8 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
       handleAttributes ? file.getSize() : null,
       handleAttributes ? file.getModifiedDateTime() : null,
       this,
-      handleAttributes ? file.getContentType() : null);
+      handleAttributes ? file.getContentType() : null,
+      file.getAbsolutePath().hashCode());
     buildTreeNodeExternal(treeNode, file);
     return treeNode;
   }

@@ -14,6 +14,7 @@ import org.homio.api.ui.UISidebarChildren;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
+import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.inline.UIFieldInlineEntities;
@@ -82,6 +83,7 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
 
   @UIField(order = 9999)
   @UIFieldInlineEntities(bg = "#27FF0005", noContentTitle = "W.ERROR.NO_ENDPOINTS")
+  @UIFieldNoReadDefaultValue
   default List<DeviceEndpointUI> getEndpoints() {
     return DeviceEndpointUI.buildEndpoints(getDeviceEndpoints().values());
   }
