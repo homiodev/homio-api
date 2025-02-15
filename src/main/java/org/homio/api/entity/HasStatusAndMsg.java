@@ -7,6 +7,7 @@ import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
+import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.color.UIFieldColorStatusMatch;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
@@ -26,6 +27,7 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
   @UIFieldColorStatusMatch
   @UIFieldShowOnCondition("return !context.get('compactMode')")
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  @UIFieldNoReadDefaultValue
   default @NotNull Status getStatus() {
     return ContextSetting.getStatus(this, DISTINGUISH_KEY, Status.UNKNOWN);
   }
@@ -37,6 +39,7 @@ public interface HasStatusAndMsg extends HasEntityIdentifier {
   @UIField(order = 6, hideInEdit = true, hideOnEmpty = true, color = "#B22020", type = UIFieldType.HTML)
   @UIFieldShowOnCondition("return !context.get('compactMode')")
   @UIFieldGroup(value = "STATUS", order = 3, borderColor = "#7ACC2D")
+  @UIFieldNoReadDefaultValue
   default @Nullable String getStatusMessage() {
     return ContextSetting.getMessage(this, DISTINGUISH_KEY);
   }

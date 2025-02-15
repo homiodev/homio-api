@@ -6,6 +6,7 @@ import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.model.Status;
 import org.homio.api.model.Status.EntityStatus;
+import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,12 +27,14 @@ public interface DeviceContract extends HasJsonData, HasEntityIdentifier, BaseEn
   /**
    * Uses on UI to set png image with appropriate status and mark extra image if need
    */
+  @UIFieldNoReadDefaultValue
   default @Nullable Status.EntityStatus getEntityStatus() {
     Status status = getStatus();
     return new EntityStatus(status);
   }
 
   // May be required for @UIFieldColorBgRef("statusColor")
+  @UIFieldNoReadDefaultValue
   default @NotNull String getStatusColor() {
     EntityStatus entityStatus = getEntityStatus();
     if (entityStatus == null || entityStatus.getValue().isOnline()) {

@@ -25,9 +25,14 @@ public abstract class WeatherEntity<T extends ServiceInstance & WeatherService> 
   @Getter
   public static class WeatherInfo {
 
+    private String city;
+    private String info;
+    private Double rainSpeed;
     private Long sunrise;
     private Long sunset;
     private Double temperature;
+    private Double minTemperature;
+    private Double maxTemperature;
     private Double windSpeed;
     private Double windDegree;
     private Double visibility;

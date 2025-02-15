@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
@@ -187,7 +188,7 @@ public abstract class BaseEntity implements
         return value;
       }
     }
-    return this.getTitle().compareTo(o.getTitle());
+    return Comparator.nullsFirst(String::compareTo).compare(this.getTitle(), o.getTitle());
   }
 
   @JsonIgnore

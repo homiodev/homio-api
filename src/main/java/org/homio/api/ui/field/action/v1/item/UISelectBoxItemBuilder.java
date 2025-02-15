@@ -16,10 +16,16 @@ public interface UISelectBoxItemBuilder extends UIEntityItemBuilder<UISelectBoxI
 
   @NotNull UISelectBoxItemBuilder setRequired(boolean value);
 
+  @NotNull UISelectBoxItemBuilder setMultiSelect(boolean value);
+
   @NotNull UIButtonItemBuilder setAsButton(@Nullable Icon icon, @Nullable String text);
 
   // default - true
   @NotNull UISelectBoxItemBuilder setHighlightSelected(boolean value);
+
+  @NotNull UISelectBoxItemBuilder setLazyVariableGroup();
+
+  @NotNull UISelectBoxItemBuilder setLazyVariable();
 
   @NotNull UISelectBoxItemBuilder setLazyItemOptions(@NotNull Class<? extends BaseEntity> itemClass);
 

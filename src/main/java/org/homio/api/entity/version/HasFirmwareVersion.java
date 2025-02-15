@@ -2,6 +2,7 @@ package org.homio.api.entity.version;
 
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.OptionModel;
+import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 public interface HasFirmwareVersion {
 
+  @UIFieldNoReadDefaultValue
   @Nullable String getFirmwareVersion();
 
   default @Nullable String getFirmwareVersionColor() {

@@ -20,6 +20,7 @@ import org.homio.api.model.Status;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
+import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
 import org.homio.api.ui.field.action.HasDynamicUIFields;
 import org.homio.api.ui.field.color.UIFieldColorBgRef;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
@@ -73,6 +74,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
   @UIFieldShowOnCondition("return !context.get('compactMode')")
   @UIFieldColorBgRef(value = "statusColor", animate = true)
   @UIFieldGroup(value = "TOP", order = 1)
+  @UIFieldNoReadDefaultValue
   public String getDescription() {
     if (isCompactMode()) {
       return null;
@@ -93,6 +95,7 @@ public abstract class DeviceBaseEntity extends BaseEntity implements DeviceContr
   @UIFieldShowOnCondition("return context.get('compactMode')")
   @UIFieldColorBgRef(value = "statusColor", animate = true)
   @UIFieldGroup(value = "TOP", order = 1)
+  @UIFieldNoReadDefaultValue
   public String getCompactDescription() {
     if (!isCompactMode()) {
       return null;

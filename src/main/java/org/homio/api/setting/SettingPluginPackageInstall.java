@@ -83,7 +83,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     private Long updated;
     private Long size;
 
-    private boolean removable;
+    private boolean disableRemovable;
 
     private Set<String> tags;
 
