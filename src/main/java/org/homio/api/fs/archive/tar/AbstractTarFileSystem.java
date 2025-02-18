@@ -441,11 +441,11 @@ public abstract class AbstractTarFileSystem extends FileSystem {
     for (Entry<TarEntry, byte[]> entry : entriesToData.entrySet()) {
       byte[] header = new byte[TarConstants.HEADER_BLOCK];
       entry.getKey().writeEntryHeader(header);
-      System.arraycopy(header, 0, tar, offset + 0, header.length);
+      System.arraycopy(header, 0, tar, offset, header.length);
       offset += TarConstants.HEADER_BLOCK;
       int dataSize = (int) Math.ceil((double) entry.getKey().getSize()
                                      / TarConstants.DATA_BLOCK);
-      System.arraycopy(entry.getValue(), 0, tar, offset + 0, entry.getValue().length);
+      System.arraycopy(entry.getValue(), 0, tar, offset, entry.getValue().length);
       offset += dataSize * TarConstants.DATA_BLOCK;
     }
     return tar;

@@ -1,6 +1,7 @@
 package org.homio.api.ui.field.action.v1.layout;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.homio.api.Context;
 import org.homio.api.model.Icon;
 import org.homio.api.ui.UIActionHandler;
 import org.homio.api.ui.field.action.v1.UIEntityBuilder;
@@ -113,6 +114,10 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
   default UISelectBoxItemBuilder addSelectBox(@NotNull String name) {
     return addSelectBox(name, null, getNextOrder());
+  }
+
+  default UISelectBoxItemBuilder addSelectBoxWidgetTab(@NotNull Context context) {
+    return addSelectBox("tab").setOptions(context.widget().getDashboardTabs()).setRequired(true);
   }
 
   UISelectBoxItemBuilder addSelectBox(@NotNull String name, UIActionHandler action, int order);

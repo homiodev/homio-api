@@ -2,6 +2,7 @@ package org.homio.api;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.entity.widget.AggregationType;
 import org.homio.api.model.Icon;
@@ -22,8 +23,9 @@ public interface ContextWidget {
   @NotNull
   Context context();
 
-  void createCustomWidget(@NotNull String entityID,
-                          @NotNull Consumer<CustomWidgetBuilder> widgetBuilder);
+  @NotNull BaseEntity createCustomWidget(@NotNull String entityID,
+                                         @NotNull String widgetTab,
+                                         @NotNull Consumer<CustomWidgetBuilder> widgetBuilder);
 
   @Deprecated
   void createWidgetTemplate(@NotNull String entityID, @NotNull String name, @NotNull ParentWidget parent,

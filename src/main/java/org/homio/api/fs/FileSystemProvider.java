@@ -1,6 +1,5 @@
 package org.homio.api.fs;
 
-import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.InputStreamResource;
@@ -102,6 +101,16 @@ public interface FileSystemProvider {
     Replace, Append, Error, SkipExist
   }
 
+  interface SearchCallback {
+    void found(TreeNode treeNode);
+
+    void done();
+  }
+
+  interface SearchThread {
+    void cancel();
+  }
+
   record SearchParameters(
     // general configs
     int maxResults, // max files return to ui
@@ -114,15 +123,5 @@ public interface FileSystemProvider {
     boolean revertSearch, // return files that NOT contains text
     boolean wholeWordsOnly, // for text
     boolean searchInArchive) { // for text
-  }
-
-  interface SearchCallback {
-    void found(TreeNode treeNode);
-
-    void done();
-  }
-
-  interface SearchThread {
-    void cancel();
   }
 }

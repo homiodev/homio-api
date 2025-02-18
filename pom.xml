@@ -38,6 +38,10 @@
 
     <dependencies>
         <dependency>
+            <artifactId>Java-WebSocket</artifactId>
+            <groupId>org.java-websocket</groupId>
+        </dependency>
+        <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
         </dependency>

@@ -51,6 +51,9 @@ public abstract class DependencyExecutableInstaller {
 
   public void installDependency(@NotNull ProgressBar progressBar, @Nullable String version) throws Exception {
     installedVersion = null;
+    if (System.getProperty("spring.profiles.active").contains("offline")) {
+      throw new RuntimeException("Unable to install dependency. Offline mode");
+    }
     installDependencyInternal(progressBar, version);
     // check dependency installed
     if (getVersion() == null) {

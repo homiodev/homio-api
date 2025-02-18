@@ -222,10 +222,7 @@ public class AudioFormat implements StreamFormat {
     if ((null != getBitRate()) && (!getBitRate().equals(audioFormat.getBitRate()))) {
       return false;
     }
-    if ((null != getFrequency()) && (!getFrequency().equals(audioFormat.getFrequency()))) {
-      return false;
-    }
-    return true;
+    return (null == getFrequency()) || (getFrequency().equals(audioFormat.getFrequency()));
   }
 
   @Override

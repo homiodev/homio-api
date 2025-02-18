@@ -171,7 +171,7 @@ public class DecimalType implements State, Comparable<DecimalType> {
   }
 
   public @NotNull String toUIString() {
-    return toString() + StringUtils.trimToEmpty(unit);
+    return this + StringUtils.trimToEmpty(unit);
   }
 
   public @NotNull String toUIString(int scale) {

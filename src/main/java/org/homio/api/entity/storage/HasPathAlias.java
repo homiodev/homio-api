@@ -15,19 +15,6 @@ import java.util.Set;
 
 public interface HasPathAlias extends HasJsonData {
 
-  @Getter
-  @Setter
-  @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-  @NoArgsConstructor
-  @AllArgsConstructor
-  class Alias {
-    private String path;
-    @EqualsAndHashCode.Include
-    private int alias;
-    private String name;
-    private Icon icon;
-  }
-
   default boolean removeAlias(@NotNull int aliasCode) {
     Set<Alias> aliases = getAliases();
     if (aliases.removeIf(alias -> alias.alias == aliasCode)) {
@@ -58,5 +45,18 @@ public interface HasPathAlias extends HasJsonData {
   @JsonIgnore
   default Set<Alias> getAliases() {
     return getJsonDataSet("alias", Alias.class);
+  }
+
+  @Getter
+  @Setter
+  @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class Alias {
+    private String path;
+    @EqualsAndHashCode.Include
+    private int alias;
+    private String name;
+    private Icon icon;
   }
 }

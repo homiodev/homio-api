@@ -38,7 +38,7 @@ public @interface UIFieldProgress {
   @RequiredArgsConstructor
   class Progress {
 
-    private static DecimalFormat FORMAT = new DecimalFormat("#.##");
+    private static final DecimalFormat FORMAT = new DecimalFormat("#.##");
 
     private final int value;
     private final int max;

@@ -19,14 +19,13 @@ import java.util.regex.Pattern;
 
 import static org.homio.api.util.JsonUtils.putOpt;
 
-// TODO:  ???????????????
 @Getter
 @Setter
 @Accessors(chain = true)
 @RequiredArgsConstructor
 public class ActionInputParameter {
 
-  public static Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_.]+");
+  public static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_.]+");
 
   private final @NotNull String name;
   private final @NotNull UIActionInput.Type type;

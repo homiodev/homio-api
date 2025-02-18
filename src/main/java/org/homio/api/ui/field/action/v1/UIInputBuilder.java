@@ -39,13 +39,11 @@ public interface UIInputBuilder extends UILayoutBuilder {
                                                    @Nullable UIActionHandler action, int order);
 
   default @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Icon icon,
-                                                                                   @Nullable Integer dialogWidth,
                                                                                    @NotNull UIActionHandler action) {
-    return addOpenDialogSelectableButton(name, icon, dialogWidth, action, getNextOrder());
+    return addOpenDialogSelectableButton(name, icon, action, getNextOrder());
   }
 
   @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Icon icon,
-                                                                           @Nullable Integer dialogWidth,
                                                                            @NotNull UIActionHandler action, int order);
 
   void addOpenDialogSelectableButtonFromClass(@NotNull String name,
@@ -53,19 +51,20 @@ public interface UIInputBuilder extends UILayoutBuilder {
                                               @NotNull Class<?> entityClass,
                                               @NotNull UIActionHandler action);
 
-  default @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
-                                                                                   @NotNull UIActionHandler action) {
-    return addOpenDialogSelectableButton(name, null, dialogWidth, action);
+  default @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @NotNull UIActionHandler action) {
+    return addOpenDialogSelectableButton(name, null, action);
   }
 
-  default @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name, @Nullable Integer dialogWidth,
+  default @NotNull DialogEntity<UIButtonItemBuilder> addOpenDialogSelectableButton(@NotNull String name,
                                                                                    @NotNull UIActionHandler action, int order) {
-    return addOpenDialogSelectableButton(name, null, dialogWidth, action, order);
+    return addOpenDialogSelectableButton(name, null, action, order);
   }
 
   interface DialogEntity<T> {
 
     @NotNull UIInputBuilder up();
+
+    @NotNull DialogEntity<T> dialogWidth(int dialogWidth);
 
     @NotNull UIInputBuilder edit(Consumer<T> editHandler);
 

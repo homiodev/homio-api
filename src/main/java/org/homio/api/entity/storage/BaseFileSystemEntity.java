@@ -123,5 +123,6 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
 
   @Nullable FileSystemSize requestDbSize();
 
-  record FileSystemSize(long totalSpace, long freeSpace) {}
+  record FileSystemSize(long totalSpace, long freeSpace) {
+  }
 }
