@@ -15,7 +15,7 @@ public @interface UIFieldIconPicker {
   /**
    * @return Is save icon as simple string i.e. 'fas fa-icon' or as json string
    */
-  boolean simple() default false;
+  boolean simple() default true;
 
   /**
    * @return Allow user to select no icon to hide icon at all

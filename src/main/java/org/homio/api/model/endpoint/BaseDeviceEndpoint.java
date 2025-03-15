@@ -422,6 +422,11 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     return "Entity: " + getEntityID() + ". Order: " + getOrder();
   }
 
+  // drop existed variable if i..e variableType changed dynamically
+  public void deleteVariableID() {
+    variableID = null;
+  }
+
   public @Nullable String getOrCreateVariable() {
     if (stateless) {
       return null;

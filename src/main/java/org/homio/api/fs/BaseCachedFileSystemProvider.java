@@ -59,7 +59,7 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
     this.condition = lock.newCondition();
 
     this.fileCache = CacheBuilder.newBuilder().
-      expireAfterWrite(1, TimeUnit.HOURS).build(new CacheLoader<>() {
+      expireAfterWrite(entity.getFileSystemCacheTimeout(), TimeUnit.MINUTES).build(new CacheLoader<>() {
         public @NotNull List<FSFile> load(@NotNull String id) {
           try {
             return service.readChildren(id);
@@ -85,13 +85,13 @@ public abstract class BaseCachedFileSystemProvider<Entity extends BaseFileSystem
   }
 
   @Override
-  public long getTotalSpace() {
-    return 0;
+  public Long getTotalSpace() {
+    return null;
   }
 
   @Override
-  public long getUsedSpace() {
-    return 0;
+  public Long getUsedSpace() {
+    return null;
   }
 
   @Override

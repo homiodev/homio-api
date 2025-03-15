@@ -2,11 +2,10 @@ package org.homio.api.util;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -34,27 +33,23 @@ public enum Lang {
   }
 
   public static String getServerMessage(@Nullable String message, @Nullable String value) {
-    return getServerMessage(message, "VALUE", value);
-  }
-
-  public static String getServerMessage(@Nullable String message, @Nullable FlowMap messageParam) {
-    return getServerMessage(message, messageParam == null ? null : messageParam.getParams());
+    return getServerMessage(message, "VALUE", StringUtils.defaultIfEmpty(value, ""));
   }
 
   public static String getServerMessage(@Nullable String message) {
-    return getServerMessage(message, (Map<String, String>) null);
+    return getServerMessage(message, (Map<String, Object>) null);
   }
 
   public static Optional<String> getServerMessageOptional(@Nullable String message) {
-    String result = getServerMessage(message, (Map<String, String>) null);
+    String result = getServerMessage(message, (Map<String, Object>) null);
     return Optional.ofNullable(Objects.equals(result, message) ? null : result);
   }
 
-  public static String getServerMessage(@Nullable String message, @Nullable String param0, @Nullable String value0) {
-    return getServerMessage(message, Collections.singletonMap(param0, value0));
+  public static String getServerMessage(@Nullable String message, @NotNull String param0, @NotNull String value0) {
+    return getServerMessage(message, Map.of(param0, value0));
   }
 
-  public static String getServerMessage(@Nullable String message, @Nullable Map<String, String> params) {
+  public static String getServerMessage(@Nullable String message, @Nullable Map<String, Object> params) {
     if (StringUtils.isEmpty(message)) {
       return message;
     }
@@ -65,10 +60,10 @@ public enum Lang {
     return result;
   }
 
-  public static String getServerMessage(@NotNull String language, @NotNull String message, @Nullable Map<String, String> params) {
+  public static String getServerMessage(@NotNull String language, @NotNull String message, @Nullable Map<String, Object> params) {
     ObjectNode langJson = getJson(language, true);
     String text = StringUtils.defaultIfEmpty(langJson.at("/" + message.replaceAll("\\.", "/")).textValue(), message);
-    return params == null ? text : StrSubstitutor.replace(text, params, "{{", "}}");
+    return params == null ? text : StringSubstitutor.replace(text, params, "{{", "}}");
   }
 
   private static ObjectNode getJson(@Nullable String lang, boolean isServer) {

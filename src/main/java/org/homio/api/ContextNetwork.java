@@ -46,6 +46,9 @@ public interface ContextNetwork {
   String getHostname();
 
   @NotNull
+  String getOuterIpAddress();
+
+  @NotNull
   List<ServiceInfo> scanMDNS(@NotNull String serviceType);
 
   void addNetworkAddressChanged(@NotNull String key, @NotNull BiConsumer<List<CidrAddress>, List<CidrAddress>> listener);

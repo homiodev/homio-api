@@ -1,10 +1,10 @@
 package org.homio.api.exception;
 
-import org.homio.api.util.FlowMap;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 public class NotFoundException extends ServerException {
 
@@ -13,7 +13,7 @@ public class NotFoundException extends ServerException {
     setHttpStatus(HttpStatus.NOT_FOUND);
   }
 
-  public NotFoundException(@NotNull String message, @NotNull FlowMap messageParam) {
+  public NotFoundException(@NotNull String message, @NotNull Map<String, Object> messageParam) {
     super(message, messageParam);
     setHttpStatus(HttpStatus.NOT_FOUND);
   }

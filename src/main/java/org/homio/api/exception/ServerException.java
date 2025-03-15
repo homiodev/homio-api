@@ -4,11 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.homio.api.model.Status;
-import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpStatus;
+
+import java.util.Map;
 
 @Getter
 @Setter
@@ -37,12 +38,12 @@ public class ServerException extends RuntimeException {
     super(Lang.getServerMessage(message), ex);
   }
 
-  public ServerException(@NotNull String message, @NotNull FlowMap messageParam) {
+  public ServerException(@NotNull String message, @NotNull Map<String, Object> messageParam) {
     super(Lang.getServerMessage(message, messageParam));
   }
 
   public ServerException(@NotNull String message, @NotNull String param0, @NotNull Object value0) {
-    this(message, FlowMap.of(param0, value0));
+    this(message, Map.of(param0, value0));
   }
 
   public ServerException(@NotNull String message, @NotNull Object value0) {

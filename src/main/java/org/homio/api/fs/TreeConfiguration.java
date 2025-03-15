@@ -53,7 +53,7 @@ public class TreeConfiguration {
     this.zipOpenExtensions = fs.getSupportArchiveFormats();
     DeviceBaseEntity entity = (DeviceBaseEntity) fs;
     this.name = StringUtils.left(entity.getTitle(), 20);
-    this.icon = fs.getFileSystemIcon();
+    this.icon = new Icon(fs.getFileSystemIcon(), fs.getFileSystemIconColor());
 
     makeDefaultFSConfiguration();
 

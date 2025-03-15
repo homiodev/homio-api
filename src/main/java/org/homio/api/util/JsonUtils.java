@@ -56,7 +56,7 @@ public class JsonUtils {
   @SneakyThrows
   public static <T> T readAndMergeJSON(String resource, T targetObject) {
     ObjectReader updater = OBJECT_MAPPER.readerForUpdating(targetObject);
-    for (URL url : Collections.list(CommonUtils.class.getClassLoader().getResources(resource))) {
+    for (URL url : Collections.list(CommonUtils.getClassLoader().getResources(resource))) {
       updater.readValue(url);
     }
     return targetObject;
@@ -64,7 +64,7 @@ public class JsonUtils {
 
   @SneakyThrows
   public static <T> List<T> readJSON(String resource, Class<T> targetClass) {
-    Enumeration<URL> resources = CommonUtils.class.getClassLoader().getResources(resource);
+    Enumeration<URL> resources = CommonUtils.getClassLoader().getResources(resource);
     List<T> list = new ArrayList<>();
     while (resources.hasMoreElements()) {
       list.add(OBJECT_MAPPER.readValue(resources.nextElement(), targetClass));

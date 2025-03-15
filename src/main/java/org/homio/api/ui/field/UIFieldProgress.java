@@ -2,7 +2,6 @@ package org.homio.api.ui.field;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +10,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.text.DecimalFormat;
+import java.util.Map;
 
 /**
  * Progress bar. Must return int or UIFieldProgress.Progress Max value is 100!
@@ -20,8 +20,6 @@ import java.text.DecimalFormat;
 public @interface UIFieldProgress {
 
   @Nullable String color() default "";
-
-  @Nullable String fillColor() default "";
 
   @Nullable UIFieldProgressColorChange[] colorChange() default {};
 
@@ -58,7 +56,7 @@ public @interface UIFieldProgress {
     }
 
     public static Progress of(int value, int maxValue, boolean showMessage) {
-      return Progress.of(value, maxValue, Lang.getServerMessage("USED_QUOTA", FlowMap.of(
+      return Progress.of(value, maxValue, Lang.getServerMessage("USED_QUOTA", Map.of(
         "PC", FORMAT.format(value / (double) maxValue * 100), "VAL", value, "MAX", maxValue)), showMessage);
     }
   }

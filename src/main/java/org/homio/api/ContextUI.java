@@ -26,7 +26,6 @@ import org.homio.api.ui.field.action.ActionInputParameter;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.homio.api.ui.field.action.v1.layout.UIFlexLayoutBuilder;
 import org.homio.api.ui.field.action.v1.layout.UILayoutBuilder;
-import org.homio.api.util.FlowMap;
 import org.homio.api.util.Lang;
 import org.homio.api.util.NotificationLevel;
 import org.homio.hquery.ProgressBar;
@@ -35,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -141,7 +141,7 @@ public interface ContextUI {
     sendJsonMessage(title, json, null);
   }
 
-  void sendJsonMessage(@Nullable String title, @NotNull Object json, @Nullable FlowMap messageParam);
+  void sendJsonMessage(@Nullable String title, @NotNull Object json, @Nullable Map<String, Object> messageParam);
 
   enum DialogResponseType {
     Cancelled, Timeout, Accepted
@@ -229,7 +229,7 @@ public interface ContextUI {
     default @NotNull NotificationBlockBuilder setDevices(@Nullable Collection<? extends DeviceBaseEntity> devices) {
       if (devices != null) {
         addInfo("sum", new Icon("fas fa-mountain-city", "#CDDC39"), Lang.getServerMessage("TITLE.DEVICES_STAT",
-          FlowMap.of("ONLINE", devices.stream().filter(d -> d.getStatus().isOnline()).count(), "TOTAL", devices.size())));
+          Map.of("ONLINE", devices.stream().filter(d -> d.getStatus().isOnline()).count(), "TOTAL", devices.size())));
         if (devices.isEmpty()) {
           return this;
         }
@@ -616,15 +616,15 @@ public interface ContextUI {
       error(title, message, null, ex);
     }
 
-    default void error(@NotNull String message, @NotNull FlowMap messageParam, @NotNull Exception ex) {
+    default void error(@NotNull String message, @NotNull Map<String, Object> messageParam, @NotNull Exception ex) {
       error(null, message, messageParam, ex);
     }
 
-    default void error(@NotNull String message, @NotNull FlowMap messageParam) {
+    default void error(@NotNull String message, @NotNull Map<String, Object> messageParam) {
       error(null, message, messageParam, null);
     }
 
-    default void error(@Nullable String title, @Nullable String message, @Nullable FlowMap messageParam,
+    default void error(@Nullable String title, @Nullable String message, @Nullable Map<String, Object> messageParam,
                        @Nullable Exception ex) {
       sendMessage(title, message, NotificationLevel.error, messageParam, ex, null);
     }
@@ -637,11 +637,11 @@ public interface ContextUI {
       info(title, message, null);
     }
 
-    default void info(@NotNull String message, @NotNull FlowMap messageParam) {
+    default void info(@NotNull String message, @NotNull Map<String, Object> messageParam) {
       info(null, message, messageParam);
     }
 
-    default void info(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
+    default void info(@Nullable String title, @NotNull String message, @Nullable Map<String, Object> messageParam) {
       sendMessage(title, message, NotificationLevel.info, messageParam, null, null);
     }
 
@@ -653,11 +653,11 @@ public interface ContextUI {
       success(title, message, null);
     }
 
-    default void success(@NotNull String message, @NotNull FlowMap messageParam) {
+    default void success(@NotNull String message, @NotNull Map<String, Object> messageParam) {
       success(null, message, messageParam);
     }
 
-    default void success(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
+    default void success(@Nullable String title, @NotNull String message, @Nullable Map<String, Object> messageParam) {
       sendMessage(title, message, NotificationLevel.success, messageParam, null, null);
     }
 
@@ -669,16 +669,16 @@ public interface ContextUI {
       warn(title, message, null);
     }
 
-    default void warn(@NotNull String message, @NotNull FlowMap messageParam) {
+    default void warn(@NotNull String message, @NotNull Map<String, Object> messageParam) {
       warn(null, message, messageParam);
     }
 
-    default void warn(@Nullable String title, @NotNull String message, @Nullable FlowMap messageParam) {
+    default void warn(@Nullable String title, @NotNull String message, @Nullable Map<String, Object> messageParam) {
       sendMessage(title, message, NotificationLevel.warning, messageParam, null, null);
     }
 
     default void sendMessage(@Nullable String title, @Nullable String message, @Nullable NotificationLevel level,
-                             @Nullable FlowMap messageParam, @Nullable Exception ex, @Nullable Integer timeout) {
+                             @Nullable Map<String, Object> messageParam, @Nullable Exception ex, @Nullable Integer timeout) {
       title = title == null ? null : Lang.getServerMessage(title, messageParam);
       String text;
       if (ex instanceof ServerException) {

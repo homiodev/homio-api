@@ -38,10 +38,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +63,8 @@ import static org.homio.api.util.JsonUtils.YAML_OBJECT_MAPPER;
 @RequiredArgsConstructor
 public class GitHubProject {
 
-  private static final SimpleDateFormat PUBLISHED_AT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+  private static final DateTimeFormatter PUBLISHED_AT_DATE_FORMAT =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
 
   private final @NotNull
   @Getter String repo;
@@ -89,9 +90,10 @@ public class GitHubProject {
           }
           releases.sort((o1, o2) -> {
             try {
-              return Long.compare(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()).getTime(),
-                PUBLISHED_AT_DATE_FORMAT.parse(o2.get("published_at").asText()).getTime());
-            } catch (ParseException e) {
+              Instant release1Time = Instant.from(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()));
+              Instant release2Time = Instant.from(PUBLISHED_AT_DATE_FORMAT.parse(o1.get("published_at").asText()));
+              return Long.compare(release1Time.toEpochMilli(), release2Time.toEpochMilli());
+            } catch (Exception e) {
               throw new RuntimeException(e);
             }
           });

@@ -38,6 +38,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-all</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.api</groupId>
+            <artifactId>api-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <artifactId>Java-WebSocket</artifactId>
             <groupId>org.java-websocket</groupId>
         </dependency>

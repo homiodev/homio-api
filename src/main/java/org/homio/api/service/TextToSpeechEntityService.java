@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.homio.api.Context;
 import org.homio.api.exception.ServerException;
 import org.homio.api.util.CommonUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -19,25 +21,28 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Interface for entities who have ability to convert text to sound
+ * Interface for entities who have an ability to convert text to sound
  */
 @Getter
 @Log4j2
-public abstract class TextToSpeechEntityService {
+public abstract class TextToSpeechEntityService<E extends EntityService<?>> extends EntityService.ServiceInstance<E> {
 
-  private final Path cacheFolder;
-  private final Integer maxQuota;
-  public long lastTimeCleanOldCache = 0;
+  protected final @NotNull Path cacheFolder;
+  protected final @Nullable Integer maxQuota;
+  protected final @NotNull Map<String, List<String>> cacheVoices = new ConcurrentHashMap<>();
+  protected long lastTimeCleanOldCache = 0;
 
   /**
    * @param folderName - cache folder name
    * @param maxQuota   if null - no quota
    */
-  @SneakyThrows
-  public TextToSpeechEntityService(String folderName, @Nullable Integer maxQuota) {
+  public TextToSpeechEntityService(Context context, E entity, String folderName, @Nullable Integer maxQuota, @NotNull String name) {
+    super(context, entity, true, name);
     this.cacheFolder = CommonUtils.createDirectoriesIfNotExists(CommonUtils.getAudioPath().resolve(folderName));
     this.maxQuota = maxQuota;
     cleanOldCache();
@@ -112,10 +117,6 @@ public abstract class TextToSpeechEntityService {
     }
   }
 
-  public void destroy() {
-    cleanOldCache();
-  }
-
   protected String getCharactersFilePrefix(Calendar cal) {
     return cal.get(Calendar.MONTH) + "_" + cal.get(Calendar.YEAR);
   }
@@ -147,5 +148,15 @@ public abstract class TextToSpeechEntityService {
     log.debug("Caching audio file {}", cacheFile.getFileName());
     CommonUtils.writeToFile(getCharacters(), text, true);
     return CommonUtils.writeToFile(cacheFile, audio, false);
+  }
+
+  @Override
+  public void destroy(boolean forRestart, @Nullable Exception ex) {
+    cleanOldCache();
+  }
+
+  @Override
+  public void testService() {
+    synthesizeSpeech("Hello world", false);
   }
 }

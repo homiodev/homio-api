@@ -343,6 +343,10 @@ public interface EntityService<S extends EntityService.ServiceInstance>
     private void fireWithSetStatus(ThrowingRunnable<Exception> handler) {
       try {
         handler.run();
+        // if forget to change status
+        if (entity.getStatus() == Status.INITIALIZE) {
+          entity.setStatusOnline();
+        }
       } catch (Exception ex) {
         entity.setStatusError(ex);
         log.error("[{}]: Unable to initialize service: {}", entityID, entity.getTitle());

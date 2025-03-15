@@ -15,6 +15,10 @@ public interface SettingPluginOptions<T> extends SettingPlugin<T> {
     return false;
   }
 
+  default boolean rawInput() {
+    return false;
+  }
+
   @Override
   default @NotNull SettingType getSettingType() {
     return viewAsButton() ? SettingType.SelectBoxButton : SettingType.SelectBox;

@@ -13,11 +13,13 @@ import java.util.Set;
 
 public interface FileSystemProvider {
 
-  long getTotalSpace();
+  @Nullable Long getTotalSpace();
 
-  long getUsedSpace();
+  @Nullable Long getUsedSpace();
 
-  int getFileSystemAlias();
+  default int getFileSystemAlias() {
+    return 0;
+  }
 
   @NotNull String getFileSystemId();
 

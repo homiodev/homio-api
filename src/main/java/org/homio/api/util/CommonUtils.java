@@ -110,6 +110,11 @@ public final class CommonUtils {
     STATIC_FILES = GitHubProject.of("homiodev", "static-files");
   }
 
+  public static ClassLoader getClassLoader() {
+    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+    return (contextClassLoader != null) ? contextClassLoader : CommonUtils.class.getClassLoader();
+  }
+
   public static String generateUUID() {
     return Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
   }

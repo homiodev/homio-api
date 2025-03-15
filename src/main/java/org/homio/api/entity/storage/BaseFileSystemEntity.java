@@ -10,14 +10,22 @@ import org.homio.api.fs.TreeConfiguration;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
+import org.homio.api.ui.UISidebarChildren;
 import org.homio.api.ui.field.UIField;
+import org.homio.api.ui.field.UIFieldColorPicker;
+import org.homio.api.ui.field.UIFieldGroup;
+import org.homio.api.ui.field.UIFieldIconPicker;
+import org.homio.api.ui.field.UIFieldProgress;
 import org.homio.api.ui.field.UIFieldType;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
 import org.homio.api.ui.field.action.UIContextMenuAction;
+import org.homio.api.ui.field.selection.SelectionConfiguration;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +38,18 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
   HasPathAlias {
 
   Map<String, Map<Integer, FileSystemProvider>> fileSystemMap = new HashMap<>();
+
+  static String humanReadableByteCountSI(long bytes) {
+    if (-1000 < bytes && bytes < 1000) {
+      return bytes + " B";
+    }
+    CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    while (bytes <= -999_950 || bytes >= 999_950) {
+      bytes /= 1000;
+      ci.next();
+    }
+    return String.format("%.1f %cB", bytes / 1000.0, ci.current());
+  }
 
   default boolean createView(@NotNull List<TreeNode> sources, @NotNull String name, @NotNull Icon icon) {
     throw new NotImplementedException("View not implemented for fileSystem");
@@ -51,6 +71,11 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
 
   @NotNull String getFileSystemRoot();
 
+  // in minutes
+  default int getFileSystemCacheTimeout() {
+    return 1;
+  }
+
   /**
    * @return Short FS alias
    */
@@ -63,8 +88,64 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
   @JsonIgnore
   boolean isShowInFileManager();
 
-  @JsonIgnore
-  @NotNull Icon getFileSystemIcon();
+  @UIField(order = 1)
+  @UIFieldIconPicker(allowEmptyIcon = true)
+  @UIFieldGroup(value = "FS", order = 20, borderColor = "#329DBA")
+  default String getFileSystemIcon() {
+    return getJsonData("fsi", getDefaultFileSystemIcon());
+  }
+
+  default void setFileSystemIcon(String value) {
+    setJsonData("fsi", value);
+  }
+
+  default String getDefaultFileSystemIcon() {
+    if (this instanceof SelectionConfiguration sc) {
+      return sc.getSelectionIcon().getIcon();
+    }
+    var annotation = getClass().getDeclaredAnnotation(UISidebarChildren.class);
+    if (annotation != null) {
+      return annotation.icon();
+    }
+    return "fas fa-computer";
+  }
+
+  @UIField(order = 2)
+  @UIFieldColorPicker
+  @UIFieldGroup("FS")
+  default String getFileSystemIconColor() {
+    return getJsonData("fsic", getDefaultFileSystemIconColor());
+  }
+
+  default void setFileSystemIconColor(String value) {
+    setJsonData("fsic", value);
+  }
+
+  default String getDefaultFileSystemIconColor() {
+    if (this instanceof SelectionConfiguration sc) {
+      return sc.getSelectionIcon().getColor();
+    }
+    var annotation = getClass().getDeclaredAnnotation(UISidebarChildren.class);
+    if (annotation != null) {
+      return annotation.color();
+    }
+    return "#B32317";
+  }
+
+  @UIField(order = 40, hideInEdit = true, hideOnEmpty = true)
+  @UIFieldProgress
+  default UIFieldProgress.Progress getSpace() {
+    try {
+      FileSystemSize dbSize = requestDbSize();
+      if (dbSize != null && dbSize.totalSpace > 0) {
+        int usedPercentage = (int) ((dbSize.totalSpace - dbSize.freeSpace) * 100 / dbSize.totalSpace);
+        String msg = humanReadableByteCountSI(dbSize.freeSpace) + " free of " + humanReadableByteCountSI(dbSize.totalSpace);
+        return new UIFieldProgress.Progress(usedPercentage, 100, msg, true);
+      }
+    } catch (Exception ignore) {
+    }
+    return null;
+  }
 
   @JsonIgnore
   boolean requireConfigure();
@@ -121,8 +202,20 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
     return Collections.emptySet();
   }
 
-  @Nullable FileSystemSize requestDbSize();
+  default @Nullable FileSystemSize requestDbSize() {
+    try {
+      FS fileSystem = getFileSystem(context(), 0);
+      Long totalSpace = fileSystem.getTotalSpace();
+      Long usedSpace = fileSystem.getUsedSpace();
+      if (totalSpace != null && usedSpace != null) {
+        return new FileSystemSize(totalSpace, totalSpace - usedSpace);
+      }
+    } catch (Exception ignore) {
+    }
+    return null;
+  }
 
   record FileSystemSize(long totalSpace, long freeSpace) {
   }
+
 }

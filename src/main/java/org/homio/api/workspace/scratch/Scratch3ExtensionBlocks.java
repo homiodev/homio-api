@@ -7,7 +7,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.homio.api.AddonEntrypoint;
 import org.homio.api.Context;
-import org.homio.api.entity.BaseEntity;
+import org.homio.api.entity.BaseEntityIdentifier;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -191,17 +191,18 @@ public abstract class Scratch3ExtensionBlocks {
     return addMenu(new MenuBlock.ServerMenuBlock(name, url, firstKey, firstValue, null, true));
   }
 
+  @Deprecated
   protected @NotNull MenuBlock.ServerMenuBlock menuServerServiceItems(@NotNull String name, @NotNull Class<?> entityServiceClass, @NotNull String firstKey) {
     return addMenu(new MenuBlock.ServerMenuBlock(name, "rest/item/service/" + entityServiceClass.getSimpleName(), firstKey,
       "-", null, true));
   }
 
-  protected @NotNull MenuBlock.ServerMenuBlock menuServerItems(@NotNull String name, @NotNull Class<? extends BaseEntity> itemClass,
+  protected @NotNull MenuBlock.ServerMenuBlock menuServerItems(@NotNull String name, @NotNull Class<? extends BaseEntityIdentifier> itemClass,
                                                                @NotNull String firstKey) {
     return menuServerItems(name, itemClass, firstKey, "-");
   }
 
-  protected @NotNull MenuBlock.ServerMenuBlock menuServerItems(@NotNull String name, @NotNull Class<? extends BaseEntity> itemClass, @NotNull String firstKey,
+  protected @NotNull MenuBlock.ServerMenuBlock menuServerItems(@NotNull String name, @NotNull Class<? extends BaseEntityIdentifier> itemClass, @NotNull String firstKey,
                                                                @NotNull String firstValue) {
     return addMenu(
       new MenuBlock.ServerMenuBlock(name, "rest/item/type/%s/options".formatted(itemClass.getSimpleName()), firstKey, firstValue, null,
