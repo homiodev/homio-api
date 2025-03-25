@@ -17,6 +17,17 @@ public interface SettingPluginOptionsInteger extends SettingPluginInteger, Setti
   }
 
   @Override
+  @NotNull
+  default JSONObject getParameters(Context context, String value) {
+    JSONObject parameters = SettingPluginInteger.super.getParameters(context, value);
+    JSONObject optionParameters = SettingPluginOptions.super.getParameters(context, value);
+    for (String opKey : optionParameters.keySet()) {
+      parameters.put(opKey, optionParameters.get(opKey));
+    }
+    return parameters;
+  }
+
+  @Override
   default @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params) {
     List<OptionModel> optionModels = new ArrayList<>();
     for (int value : availableValues()) {

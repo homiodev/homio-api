@@ -2,7 +2,9 @@ package org.homio.api;
 
 import com.pivovarit.function.ThrowingRunnable;
 import org.homio.api.entity.BaseEntityIdentifier;
+import org.homio.api.entity.HasStatusAndMsg;
 import org.homio.api.state.State;
+import org.homio.api.state.StringType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,6 +93,11 @@ public interface ContextEvent {
    */
   @NotNull
   ContextEvent fireEvent(@NotNull String key, @Nullable State value);
+
+  @NotNull
+  default ContextEvent fireDeviceStatus(@NotNull String key, @NotNull HasStatusAndMsg entity) {
+    return fireEvent(key + "-status-" + entity.getEntityID(), new StringType(entity.getStatus().name()));
+  }
 
   /**
    * Fire event with key and value only if previous saved value is null or value != previousValue

@@ -17,12 +17,4 @@ public interface SettingPluginOptionsEnum<T extends Enum<T>> extends SettingPlug
     }
     return allowEmpty() ? OptionModel.enumWithEmpty(getType()) : OptionModel.enumList(getType());
   }
-
-  default boolean allowEmpty() {
-    return false;
-  }
-
-  default boolean multiSelect() {
-    return false;
-  }
 }

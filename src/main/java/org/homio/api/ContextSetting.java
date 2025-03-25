@@ -79,14 +79,7 @@ public interface ContextSetting {
    */
   void reloadSettings(@NotNull Class<? extends SettingPluginOptions> settingPlugin);
 
-  /**
-   * Update setting components on ui. Uses for updating dynamic settings
-   *
-   * @param dynamicSettingPluginClass -
-   * @param dynamicSettings           -
-   */
-  void reloadSettings(@NotNull Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass,
-                      @NotNull List<? extends DynamicConsoleHeaderSettingPlugin> dynamicSettings);
+  void reloadDynamicSettings(@NotNull Class<? extends DynamicConsoleHeaderContainerSettingPlugin> dynamicSettingPluginClass);
 
   /**
    * Get setting value by class name
@@ -105,6 +98,9 @@ public interface ContextSetting {
    * @return raw value
    */
   <T> String getRawValue(@NotNull Class<? extends SettingPlugin<T>> settingClass);
+
+  <T> BaseEntity createDynamicSetting(/*@NotNull DynamicConsoleHeaderContainerSettingPlugin dynamicSettingPluginClass,*/
+    @NotNull DynamicConsoleHeaderSettingPlugin<T> dynamicSetting);
 
   /**
    * Get setting value by class name or default value if null

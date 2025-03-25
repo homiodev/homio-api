@@ -90,6 +90,11 @@ public class OptionModel implements Comparable<OptionModel> {
     return OptionModel.key("~~~sep~~~");
   }
 
+  // case when we are unable to show options on some circumstances
+  public static @NotNull OptionModel error(String message) {
+    return OptionModel.of("~~~err~~~", message);
+  }
+
   public static @NotNull OptionModel of(@NotNull String key) {
     return new OptionModel(key, key);
   }
@@ -285,6 +290,11 @@ public class OptionModel implements Comparable<OptionModel> {
 
   public static @Nullable OptionModel getByKey(@NotNull Collection<OptionModel> optionModels, @NotNull String key) {
     return optionModels.stream().filter(o -> o.getKey().equals(key)).findAny().orElse(null);
+  }
+
+  public OptionModel setRemovable(boolean removable) {
+    json(json -> json.put("removable", removable));
+    return this;
   }
 
   public @NotNull OptionModel setDisabled(Boolean disabled) {

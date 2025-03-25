@@ -3,6 +3,7 @@ package org.homio.api.ui.field;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.util.Lang;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.ElementType;
@@ -27,7 +28,7 @@ public @interface UIFieldProgress {
   @Retention(RetentionPolicy.RUNTIME)
   @interface UIFieldProgressColorChange {
 
-    String color();
+    @NotNull String color();
 
     int whenMoreThan();
   }
@@ -40,14 +41,14 @@ public @interface UIFieldProgress {
 
     private final int value;
     private final int max;
-    private final String message;
+    private final @Nullable String message;
     private final boolean showMessage;
 
-    public static Progress of(int value, int maxValue, String message) {
+    public static Progress of(int value, int maxValue, @Nullable String message) {
       return Progress.of(value, maxValue, message, false);
     }
 
-    public static Progress of(int value, int maxValue, String message, boolean showMessage) {
+    public static Progress of(int value, int maxValue, @Nullable String message, boolean showMessage) {
       return new Progress((int) Math.ceil(value * 100f / maxValue), maxValue, message, showMessage);
     }
 

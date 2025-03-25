@@ -7,6 +7,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
 import org.homio.hquery.hardware.network.NetworkHardwareRepository;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +30,7 @@ public class HardwareUtils {
    * Loads native library from the jar file (storing it in the temp dir)
    * @param library JNI library name
    */
-  public static void loadLibrary(String library) {
+  public static void loadLibrary(@NotNull String library) {
     String filename = System.mapLibraryName(library);
     String fullFilename = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + filename;
     try {
@@ -53,16 +55,17 @@ public class HardwareUtils {
     }
   }
 
-  public static SerialPort getSerialPort(String value) {
+  public static SerialPort getSerialPort(@Nullable String value) {
     return StringUtils.isEmpty(value) ? null :
       Stream.of(SerialPort.getCommPorts())
         .filter(p -> p.getSystemPortName().equals(value)).findAny().orElse(null);
   }
 
   // Simple utility for scan for ip range
-  public static void scanForDevice(Context context, int devicePort, String deviceName,
-                                   ThrowingFunction<String, Boolean, Exception> testDevice,
-                                   Consumer<String> createDeviceHandler) {
+  public static void scanForDevice(@NotNull Context context, int devicePort,
+                                   @NotNull String deviceName,
+                                   @NotNull ThrowingFunction<String, Boolean, Exception> testDevice,
+                                   @NotNull Consumer<String> createDeviceHandler) {
     Consumer<String> deviceHandler = (ip) -> {
       try {
         if (testDevice.apply("127.0.0.1")) {

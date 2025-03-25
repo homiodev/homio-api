@@ -16,7 +16,6 @@ import org.json.JSONObject;
 import java.nio.file.Paths;
 
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-import static org.homio.api.util.JsonUtils.putOpt;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPlugin<T> {
@@ -32,11 +31,6 @@ public interface SettingPlugin<T> {
 
   @NotNull
   Class<T> getType();
-
-  // specify max width of rendered ui item. Uses with SelectBox/SelectBoxDynamic
-  default @Nullable Integer getMaxWidth() {
-    return null;
-  }
 
   default @Nullable Icon getIcon() {
     return null;
@@ -62,10 +56,8 @@ public interface SettingPlugin<T> {
   }
 
   // min/max/step (Slider)
-  default @NotNull JSONObject getParameters(Context context, String value) {
-    JSONObject parameters = new JSONObject();
-    putOpt(parameters, "maxWidth", getMaxWidth());
-    return parameters;
+  default @NotNull JSONObject getParameters(@NotNull Context context, String value) {
+    return new JSONObject();
   }
 
   @NotNull

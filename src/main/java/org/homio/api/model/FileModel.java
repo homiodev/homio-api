@@ -35,19 +35,14 @@ public class FileModel implements Comparable<FileModel> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+    if (o == null || getClass() != o.getClass()) return false;
     FileModel fileModel = (FileModel) o;
-    return name.equals(fileModel.name);
+    return contentType == fileModel.contentType && Objects.equals(name, fileModel.name) && Objects.equals(content, fileModel.content);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name);
+    return Objects.hash(name, content, contentType);
   }
 
   public boolean isReadOnly() {

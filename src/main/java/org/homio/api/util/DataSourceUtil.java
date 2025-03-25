@@ -7,12 +7,18 @@ import org.homio.api.Context;
 import org.homio.api.entity.BaseEntity;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 import static org.homio.api.entity.HasJsonData.LEVEL_DELIMITER;
 import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public class DataSourceUtil {
+
+  public static Path getPath(Path basePath, String value) {
+    String[] items = value.split(LEVEL_DELIMITER);
+    return basePath.resolve(Path.of("", items));
+  }
 
   public static SelectionSource getSelection(String value) {
     String[] items = value.split("###");

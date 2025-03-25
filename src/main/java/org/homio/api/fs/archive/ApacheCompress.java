@@ -89,6 +89,7 @@ public class ApacheCompress {
                                          @NotNull ArchiveUtil.UnzipFileIssueHandler fileResolveHandler,
                                          double fileSize, @Nullable ProgressBar progressBar) {
     List<Path> paths = new ArrayList<>();
+    int totalReadLength = 0;
     int maxMb = (int) (fileSize / ONE_MB_BI.intValue());
     byte[] oneMBBuff = new byte[ONE_MB_BI.intValue()];
     OpenOption[] openOptions = fileResolveHandler == ArchiveUtil.UnzipFileIssueHandler.replace ?
@@ -136,11 +137,12 @@ public class ApacheCompress {
         try (OutputStream out = Files.newOutputStream(entryPath, openOptions)) {
           while ((readLength = stream.read(oneMBBuff)) != -1) {
             out.write(oneMBBuff, 0, readLength);
+            totalReadLength += readLength;
             if (progressBar != null) {
-              if (readLength / ONE_MB_BI.doubleValue() > nextStep) {
+              if (totalReadLength / ONE_MB_BI.doubleValue() > nextStep) {
                 nextStep++;
-                progressBar.progress((readLength / fileSize * 100) * 0.99, // max 99%
-                  "Extract " + readLength / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
+                progressBar.progress((totalReadLength / fileSize * 100) * 0.99, // max 99%
+                  "Extract " + totalReadLength / ONE_MB_BI.intValue() + "Mb. of " + maxMb + " Mb.");
               }
               if (progressBar.isCancelled()) {
                 throw new ServerException("Unarchive task cancelled");

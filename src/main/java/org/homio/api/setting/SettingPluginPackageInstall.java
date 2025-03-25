@@ -12,7 +12,6 @@ import org.homio.api.model.Icon;
 import org.homio.hquery.ProgressBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,30 +20,25 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPluginPackageInstall extends SettingPluginButton {
 
+  String BUILT_IN_TAG = "Built-in";
+
   @Override
   default @Nullable Icon getIcon() {
     return new Icon("fas fa-book");
   }
 
-  @Override
-  default @NotNull Class<JSONObject> getType() {
-    return JSONObject.class;
-  }
+  PackageContext allPackages(@NotNull Context context) throws Exception;
+
+  PackageContext installedPackages(@NotNull Context context) throws Exception;
+
+  void installPackage(@NotNull Context context, @NotNull PackageRequest packageRequest,
+                      @NotNull ProgressBar progressBar) throws Exception;
+
+  void unInstallPackage(@NotNull Context context, @NotNull PackageRequest packageRequest,
+                        @NotNull ProgressBar progressBar) throws Exception;
 
   @Override
-  default @NotNull SettingType getSettingType() {
-    return SettingType.Button;
-  }
-
-  PackageContext allPackages(Context context) throws Exception;
-
-  PackageContext installedPackages(Context context) throws Exception;
-
-  void installPackage(Context context, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
-
-  void unInstallPackage(Context context, PackageRequest packageRequest, ProgressBar progressBar) throws Exception;
-
-  @Override
+  @Nullable
   default String getConfirmMsg() {
     return null;
   }
@@ -71,7 +65,7 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
 
     private String icon;
     private String readme;
-    private boolean readmeLazyLoading;
+    private Boolean readmeLazyLoading;
     private String author;
     private String website;
     private String category;
@@ -83,13 +77,16 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
     private Long updated;
     private Long size;
 
-    private boolean disableRemovable;
+    private Boolean disableRemovable;
 
     private Set<String> tags;
 
     // current status
     private Boolean installing;
     private Boolean removing;
+
+    // last release date
+    private Long lastUpdated;
   }
 
   @Data

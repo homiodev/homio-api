@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.homio.api.ContextSetting.setMemValue;
+
 @Log4j2
 @MappedSuperclass
 public abstract class BaseEntity implements
@@ -39,7 +41,6 @@ public abstract class BaseEntity implements
   @Transient
   @Setter
   private Context context;
-
   @Id
   @Getter
   @JsonIgnore // serialized by Bean2MixIn
@@ -47,26 +48,26 @@ public abstract class BaseEntity implements
   @GeneratedValue(generator = "id-generator")
   @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.generator.HomioIdGenerator")
   private String entityID;
-
   @Getter
   @Version
   @JsonIgnore
   private int version;
-
   @Getter
   private String name;
-
   @Getter
   @JsonIgnore
   @Column(nullable = false)
   @CreationTimestamp
   private Date creationTime;
-
   @Getter
   @JsonIgnore
   @Column(nullable = false)
   @UpdateTimestamp
   private Date updateTime;
+
+  public void setInMemoryKV(@NotNull String key, @Nullable Object value) {
+    setMemValue(this, key, "", value);
+  }
 
   /**
    * Configure OptionModel for show it in select box

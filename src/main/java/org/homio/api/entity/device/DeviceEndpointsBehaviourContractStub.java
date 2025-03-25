@@ -1,6 +1,7 @@
 package org.homio.api.entity.device;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.homio.api.entity.BaseEntity;
 import org.homio.api.model.device.ConfigDeviceDefinition;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,6 +14,9 @@ public interface DeviceEndpointsBehaviourContractStub extends DeviceEndpointsBeh
 
   @JsonIgnore
   default @NotNull String getDeviceFullName() {
+    if (this instanceof BaseEntity be) {
+      return be.getTitle();
+    }
     return "-";
   }
 

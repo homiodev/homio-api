@@ -39,6 +39,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -47,6 +48,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -113,6 +115,45 @@ public final class ArchiveUtil {
     List<Path> files = ArchiveUtil.unzip(archivePath, targetFolder, null, false, progressBar, UnzipFileIssueHandler.replace);
     Files.delete(archivePath);
     return files;
+  }
+
+  /**
+   * Special case for unzip from internal jars
+   */
+  @SneakyThrows
+  public static List<Path> unzip(@NotNull URL url,
+                                 @NotNull String urlFileName,
+                                 @NotNull Path destination,
+                                 @Nullable String password,
+                                 boolean createArchiveNameDirectory,
+                                 @Nullable ProgressBar progressBar,
+                                 @NotNull UnzipFileIssueHandler handler) {
+    InputStream stream = ArchiveUtil.class.getClassLoader().getResourceAsStream(url.toString());
+    FileSystem fileSystem = null;
+    if (stream == null) {
+      fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
+      Path filesPath = fileSystem.getPath(urlFileName);
+      stream = Files.exists(filesPath) ? Files.newInputStream(filesPath) : null;
+    }
+    if (stream != null) {
+      String addonJar = url.getFile().replaceAll(".jar!/", "_");
+      addonJar = addonJar.substring(addonJar.lastIndexOf("/") + 1);
+      Path targetPath = destination.resolve(destination.resolve(addonJar));
+      if (!Files.exists(targetPath) || Files.size(targetPath) != stream.available()) {
+        // copy files
+        log.info("Copy resource <{}>", url);
+        Files.createDirectories(targetPath.getParent());
+        Files.copy(stream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        log.info("Unzip resource <{}>", targetPath);
+        ArchiveUtil.unzip(targetPath, targetPath.getParent(), password, createArchiveNameDirectory, progressBar, handler);
+        log.info("Done copy resource <{}>", url);
+      }
+      stream.close();
+      if (fileSystem != null) {
+        fileSystem.close();
+      }
+    }
+    return null;
   }
 
   @SneakyThrows

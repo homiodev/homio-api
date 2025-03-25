@@ -50,7 +50,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
     if (this instanceof BaseEntity be) {
       Set<String> missingMandatoryFields = be.getMissingMandatoryFields();
       if (!missingMandatoryFields.isEmpty()) {
-        return missingMandatoryFields.stream().map(f -> "ERROR.NO_" + f.toUpperCase()).collect(Collectors.toSet());
+        return missingMandatoryFields.stream().map(f -> "W.ERROR.NO_" + f.toUpperCase()).collect(Collectors.toSet());
       }
     }
     return null;

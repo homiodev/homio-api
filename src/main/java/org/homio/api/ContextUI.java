@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingBiFunction;
 import com.pivovarit.function.ThrowingConsumer;
 import com.pivovarit.function.ThrowingFunction;
+import com.pivovarit.function.ThrowingSupplier;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.console.ConsolePlugin;
@@ -396,6 +397,10 @@ public interface ContextUI {
       return createProgressBar(key, dummy, null);
     }
 
+    default ProgressBar createProgressBar(@NotNull String key, boolean dummy, @Nullable Runnable onCancel) {
+      return createProgressBar(key, dummy, onCancel, false);
+    }
+
     /**
      * Create simple progress bar
      *
@@ -404,7 +409,7 @@ public interface ContextUI {
      * @param onCancel - create cancellable progress bar if not null
      * @return progress bar
      */
-    ProgressBar createProgressBar(@NotNull String key, boolean dummy, @Nullable Runnable onCancel);
+    ProgressBar createProgressBar(@NotNull String key, boolean dummy, @Nullable Runnable onCancel, boolean logOnConsole);
 
     void update(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
 
@@ -706,6 +711,8 @@ public interface ContextUI {
      * @param name - plugin name
      */
     void registerPluginName(@NotNull String name);
+
+    <T> T streamInlineConsole(String name, ThrowingSupplier<T, Exception> throwingRunnable, Runnable finallyBlock);
 
     <T extends ConsolePlugin> void registerPlugin(@NotNull String name, @NotNull T plugin);
 

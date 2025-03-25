@@ -15,7 +15,7 @@ public enum UIFieldType {
 
   // Just a text
   Text,
-  HTML, // Draw as html
+  HTML, // Draw as HTML
   Markdown, // Draw as Markdown
 
   // Button that fires server action
@@ -24,7 +24,7 @@ public enum UIFieldType {
   Upload,
   TextInput,
 
-  // return type must be enum. Handle as buttons instead of select box
+  // Return type must be enum. Handle as buttons instead of select box
   EnumButtons,
   // must contains @UIFieldXXXSelection annotation
   EnumMultiButtons,
@@ -37,11 +37,12 @@ public enum UIFieldType {
   Password, // shows *** for users without admin rights
 
   Duration,
+  DurationDowntime,
   StaticDate,
 
   String,
 
-  // special type (default for detect field type by java type)
+  // special type (default for detect a field type by java type)
   AutoDetect,
 
   // Slider with min/max/step parameters
