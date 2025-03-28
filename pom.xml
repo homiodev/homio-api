@@ -257,4 +257,11 @@
             <groupId>org.apache.commons</groupId>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/homiodev/homio-api</url>
+        </repository>
+    </distributionManagement>
 </project>
