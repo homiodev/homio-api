@@ -67,24 +67,7 @@ jobs:
         run: |
           REPOS=(
             "homiodev/homio-primary-addons"
-            "homiodev/addon-tasmota"
-            "homiodev/addon-esphome"
-            "homiodev/addon-imou"
-            "homiodev/addon-tuya"
-            "homiodev/addon-firmata"
-            "homiodev/addon-serial"
-            "homiodev/addon-gcloud_tts"
-            "homiodev/addon-gdrive"
-            "homiodev/addon-gpio"
-            "homiodev/addon-influxdb"
-            "homiodev/addon-mongodb"
-            "homiodev/addon-rabbitmq"
-            "homiodev/addon-ipscanner"
-            "homiodev/addon-ibkr"
-            "homiodev/addon-mail"
-            "homiodev/addon-mediamtx"
-            "homiodev/addon-dropbox"
-            "homiodev/addon-openweathermap"
+            "homiodev/addon-parent"
           )
           for REPO in "${REPOS[@]}"; do
             echo "Triggering build for $REPO"
