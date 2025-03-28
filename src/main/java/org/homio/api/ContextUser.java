@@ -24,10 +24,7 @@ public interface ContextUser {
 
   void assertUserCredentials(String username, String password);
 
-  default boolean isAdminLoggedUser() {
-    UserEntity user = getLoggedInUser();
-    return user != null && user.isAdmin();
-  }
+  boolean isAdminLoggedUser();
 
   @SneakyThrows
   default void assertAdminAccess() {

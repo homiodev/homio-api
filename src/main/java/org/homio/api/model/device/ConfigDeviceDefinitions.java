@@ -1,20 +1,22 @@
 package org.homio.api.model.device;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Set;
 
+@Setter
 @Getter
 public class ConfigDeviceDefinitions {
 
   // not uses for now
   private int version;
-  private List<ConfigDeviceDefinition> devices;
+  private List<ConfigDeviceDefinition> devices = List.of();
   // full list of all possible endpoints that contains endpoint icon/color/etc...
-  private List<ConfigDeviceEndpoint> endpoints;
+  private List<ConfigDeviceEndpoint> endpoints = List.of();
   // set of endpoints hide from UI
-  private Set<String> hiddenEndpoints;
+  private Set<String> hiddenEndpoints = Set.of();
   // set of endpoints that should be fully ignored
   private Set<String> ignoreEndpoints;
 }

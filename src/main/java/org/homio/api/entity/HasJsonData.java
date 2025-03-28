@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,24 +64,36 @@ public interface HasJsonData {
     return true;
   }
 
+  default void setJsonDataAsSet(@NotNull String key, @Nullable String value) {
+    if (value == null || value.isEmpty()) {
+      getJsonData().remove(key);
+    } else {
+      value = String.join(LIST_DELIMITER, new HashSet<>(Arrays.asList(value.split(LIST_DELIMITER))));
+      getJsonData().put(key, value);
+    }
+  }
+
   default <P> void setJsonData(@NotNull String key, @Nullable P value) {
     if (value == null || value.toString().isEmpty()) {
       getJsonData().remove(key);
+    } else {
+      getJsonData().put(key, value);
     }
-    getJsonData().put(key, value);
   }
 
   @SneakyThrows
   default <P> void setJsonDataObject(@NotNull String key, @Nullable P value) {
     if (value == null || value.toString().isEmpty()) {
       getJsonData().remove(key);
+    } else {
+      getJsonData().put(key, OBJECT_MAPPER.writeValueAsString(value));
     }
-    getJsonData().put(key, OBJECT_MAPPER.writeValueAsString(value));
   }
 
   default <P> void setJsonDataSecure(@NotNull String key, @Nullable P value) {
     if (value == null || value.toString().isEmpty()) {
       getJsonData().remove(key);
+      return;
     }
     // ignore if editing and pass 'Secure:XXXXX' to save
     if ("Secure:XXXXX".equals(value)) {

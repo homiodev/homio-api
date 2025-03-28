@@ -47,13 +47,13 @@ public interface UILayoutBuilder extends UIEntityBuilder {
 
   UILayoutBuilder removeStyle(@NotNull String style);
 
-  void addRawUIEntityBuilder(@NotNull String name, UIEntityBuilder source);
+  void addRawUIEntityBuilder(@NotNull String name, @NotNull UIEntityBuilder source);
 
   default UIFlexLayoutBuilder addFlex(@NotNull String name) {
     return addFlex(name, getNextOrder());
   }
 
-  default UIFlexLayoutBuilder addFlex(@NotNull String name, Consumer<UIFlexLayoutBuilder> flexConsumer) {
+  default UIFlexLayoutBuilder addFlex(@NotNull String name, @NotNull Consumer<UIFlexLayoutBuilder> flexConsumer) {
     UIFlexLayoutBuilder flex = addFlex(name, getNextOrder());
     flexConsumer.accept(flex);
     return flex;
@@ -69,11 +69,11 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     return addInfo(name, UIInfoItemBuilder.InfoType.Text, order);
   }
 
-  default UIInfoItemBuilder addInfo(@NotNull String name, UIInfoItemBuilder.InfoType infoType) {
+  default UIInfoItemBuilder addInfo(@NotNull String name, @NotNull UIInfoItemBuilder.InfoType infoType) {
     return addInfo(name, infoType, getNextOrder());
   }
 
-  UIInfoItemBuilder addInfo(@NotNull String name, UIInfoItemBuilder.InfoType infoType, int order);
+  UIInfoItemBuilder addInfo(@NotNull String name, @NotNull UIInfoItemBuilder.InfoType infoType, int order);
 
   /**
    * Add read-only duration that incremets on UI
@@ -88,24 +88,20 @@ public interface UILayoutBuilder extends UIEntityBuilder {
    *
    * @param name   -
    * @param color  -
-   * @param action -
    * @return -
    */
-  UIColorPickerItemBuilder addColorPicker(@NotNull String name, String color, UIActionHandler action);
+  UIColorPickerItemBuilder addColorPicker(@NotNull String name, @Nullable String color);
 
-  default UIColorPickerItemBuilder addColorPicker(@NotNull String name, String color) {
-    return addColorPicker(name, color, null);
-  }
+  UIIconPickerItemBuilder addIconPicker(@NotNull String name, @Nullable String icon);
 
-  UIIconPickerItemBuilder addIconPicker(@NotNull String name, String icon);
+  UITextInputItemBuilder addInput(@NotNull String name,
+                                  @Nullable String defaultValue,
+                                  @NotNull UITextInputItemBuilder.InputType inputType);
 
-  UITextInputItemBuilder addInput(@NotNull String name, String defaultValue,
-                                  UITextInputItemBuilder.InputType inputType,
-                                  boolean required);
-
-  default UITextInputItemBuilder addTextInput(@NotNull String name, String defaultValue,
+  default UITextInputItemBuilder addTextInput(@NotNull String name,
+                                              @Nullable String defaultValue,
                                               boolean required) {
-    return addInput(name, defaultValue, UITextInputItemBuilder.InputType.Text, required);
+    return addInput(name, defaultValue, UITextInputItemBuilder.InputType.Text).setRequired(required);
   }
 
   default UISelectBoxItemBuilder addSelectBox(@NotNull String name, @Nullable UIActionHandler action) {
@@ -120,21 +116,21 @@ public interface UILayoutBuilder extends UIEntityBuilder {
     return addSelectBox("tab").setOptions(context.widget().getDashboardTabs()).setRequired(true);
   }
 
-  UISelectBoxItemBuilder addSelectBox(@NotNull String name, UIActionHandler action, int order);
+  UISelectBoxItemBuilder addSelectBox(@NotNull String name, @Nullable UIActionHandler action, int order);
 
-  default UICheckboxItemBuilder addCheckbox(@NotNull String name, boolean value, UIActionHandler action) {
+  default UICheckboxItemBuilder addCheckbox(@NotNull String name, boolean value, @Nullable UIActionHandler action) {
     return addCheckbox(name, value, action, getNextOrder());
   }
 
-  UICheckboxItemBuilder addCheckbox(@NotNull String name, boolean value, UIActionHandler action, int order);
+  UICheckboxItemBuilder addCheckbox(@NotNull String name, boolean value, @Nullable UIActionHandler action, int order);
 
-  default UIMultiButtonItemBuilder addMultiButton(String name, UIActionHandler action) {
+  default UIMultiButtonItemBuilder addMultiButton(@NotNull String name, @Nullable UIActionHandler action) {
     return addMultiButton(name, action, getNextOrder());
   }
 
-  UIMultiButtonItemBuilder addMultiButton(String name, UIActionHandler action, int order);
+  UIMultiButtonItemBuilder addMultiButton(@NotNull String name, @Nullable UIActionHandler action, int order);
 
-  default UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max, UIActionHandler action) {
+  default UISliderItemBuilder addSlider(@NotNull String name, float value, float min, float max, @Nullable UIActionHandler action) {
     return addSlider(name, value, min, max, action, UISliderItemBuilder.SliderType.Regular, getNextOrder());
   }
 
@@ -147,24 +143,27 @@ public interface UILayoutBuilder extends UIEntityBuilder {
   UISliderItemBuilder addSlider(@NotNull String name, Float value, Float min, Float max,
                                 UIActionHandler action, UISliderItemBuilder.SliderType sliderType, int order);
 
-  default UIButtonItemBuilder addButton(@NotNull String name, @Nullable Icon icon, UIActionHandler action) {
+  default UIButtonItemBuilder addButton(@NotNull String name, @Nullable Icon icon, @Nullable UIActionHandler action) {
     return addButton(name, icon, action, getNextOrder());
   }
 
   UIButtonItemBuilder addButton(@NotNull String name, @Nullable Icon icon,
-                                UIActionHandler action, int order);
+                                @Nullable UIActionHandler action, int order);
 
   UIButtonItemBuilder addTableLayoutButton(@NotNull String name, int maxRows, int maxColumns, String value,
                                            @Nullable Icon icon,
-                                           UIActionHandler action, int order);
+                                           @Nullable UIActionHandler action, int order);
 
   default UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable Icon icon,
-                                                    String[] supportedFormats, UIActionHandler action) {
+                                                    String[] supportedFormats,
+                                                    @Nullable UIActionHandler action) {
     return addSimpleUploadButton(name, icon, supportedFormats, action, getNextOrder());
   }
 
-  UIButtonItemBuilder addSimpleUploadButton(@NotNull String name, @Nullable Icon icon,
-                                            String[] supportedFormats, UIActionHandler action, int order);
+  UIButtonItemBuilder addSimpleUploadButton(@NotNull String name,
+                                            @Nullable Icon icon,
+                                            String[] supportedFormats,
+                                            @Nullable UIActionHandler action, int order);
 
   default DialogEntity<UIStickyDialogItemBuilder> addStickyDialogButton(@NotNull String name, @Nullable Icon icon) {
     return addStickyDialogButton(name, icon, getNextOrder());

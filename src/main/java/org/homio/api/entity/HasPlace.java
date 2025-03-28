@@ -18,7 +18,7 @@ public interface HasPlace extends HasJsonData {
   @UIFieldDynamicSelection(SelectPlaceOptionLoader.class)
   @UIFieldShowOnCondition("return !context.get('compactMode')")
   default String getPlace() {
-    return getJsonData("order", "");
+    return getJsonData("place", "");
   }
 
   default void setPlace(String value) {

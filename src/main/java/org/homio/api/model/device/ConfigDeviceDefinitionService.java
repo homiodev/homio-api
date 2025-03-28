@@ -81,7 +81,7 @@ public class ConfigDeviceDefinitionService {
       throw new ServerException("Config resource: " + fileName + " not found");
     }
     Path configFileLocation = localFilePath;
-    if (isRequireCopyJarFileToFIleSystem(configFileLocation, localZdFile)) {
+    if (isRequireCopyJarFileToFileSystem(configFileLocation, localZdFile)) {
       log.info("Copy file: {} to {}", fileName, configFileLocation.toAbsolutePath());
       PathUtils.copy(localZdFile::openStream, configFileLocation, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -90,7 +90,7 @@ public class ConfigDeviceDefinitionService {
   }
 
   @SneakyThrows
-  private static boolean isRequireCopyJarFileToFIleSystem(Path configFileLocation, URL localZdFile) {
+  private static boolean isRequireCopyJarFileToFileSystem(Path configFileLocation, URL localZdFile) {
     if (!Files.exists(configFileLocation) || IS_DEV_ENVIRONMENT) {
       return true;
     }
@@ -111,6 +111,14 @@ public class ConfigDeviceDefinitionService {
 
   public boolean isHideEndpoint(@NotNull String endpoint) {
     return hiddenEndpoints.contains(endpoint);
+  }
+
+  public @NotNull Map<Integer, ConfigDeviceDefinition.Pin> findDevicePin(@NotNull String model) {
+    ConfigDeviceDefinition device = deviceDefinitions.get(model);
+    if (device != null && device.getPins() != null) {
+      return device.getPins().stream().collect(Collectors.toMap(ConfigDeviceDefinition.Pin::getIndex, Function.identity()));
+    }
+    return Map.of();
   }
 
   public @NotNull List<ConfigDeviceDefinition> findDeviceDefinitionModels(
@@ -186,7 +194,6 @@ public class ConfigDeviceDefinitionService {
         }
       }
     }
-
     var endpointDefinitions = new HashMap<EndpointMatch, List<ConfigDeviceDefinition>>();
     for (ConfigDeviceDefinition node : deviceConfigurations.getDevices()) {
       if (node.getEndpoints() != null) {

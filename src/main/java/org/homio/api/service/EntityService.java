@@ -12,9 +12,12 @@ import org.homio.api.Context;
 import org.homio.api.JSDisableMethod;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.HasStatusAndMsg;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.exception.NotFoundException;
 import org.homio.api.model.Icon;
 import org.homio.api.model.Status;
+import org.homio.api.model.endpoint.BaseDeviceEndpoint;
+import org.homio.api.model.endpoint.DeviceEndpoint;
 import org.homio.api.ui.UISidebarChildren;
 import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.util.Lang;
@@ -23,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -140,6 +144,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
     String isRequireRestartService();
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Getter
   abstract class ServiceInstance<E extends EntityService<?>> implements WatchdogService, BaseService {
 
@@ -240,6 +245,22 @@ public interface EntityService<S extends EntityService.ServiceInstance>
 
       if (requestedEntityHashCode != entityHashCode && !initializing.get()) {
         startInitialization();
+      }
+      hideConfiguredEndpoints();
+    }
+
+    private void hideConfiguredEndpoints() {
+      if (entity instanceof DeviceEndpointsBehaviourContract dc && entity.getStatus().isOnline()) {
+        var deviceEndpoints = new ArrayList<>(dc.getDeviceEndpoints().values());
+        for (DeviceEndpoint deviceEndpoint : deviceEndpoints) {
+          if (deviceEndpoint instanceof BaseDeviceEndpoint generalDeviceEndpoint) {
+            try {
+              generalDeviceEndpoint.setDevice(dc);
+            } catch (Exception ex) {
+              log.error("Unable to set device to endpoint", ex);
+            }
+          }
+        }
       }
     }
 
@@ -346,6 +367,7 @@ public interface EntityService<S extends EntityService.ServiceInstance>
         // if forget to change status
         if (entity.getStatus() == Status.INITIALIZE) {
           entity.setStatusOnline();
+          hideConfiguredEndpoints();
         }
       } catch (Exception ex) {
         entity.setStatusError(ex);

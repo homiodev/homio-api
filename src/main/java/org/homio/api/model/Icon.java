@@ -1,6 +1,7 @@
 package org.homio.api.model;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 @Accessors(chain = true)
 @RequiredArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class Icon {
 
   private @Nullable String icon;

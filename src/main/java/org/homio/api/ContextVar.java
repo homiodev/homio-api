@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.homio.api.model.Icon;
 import org.homio.api.model.JSON;
+import org.homio.api.model.endpoint.BaseDeviceEndpoint;
 import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -185,6 +186,13 @@ public interface ContextVar {
    * @return if group was removed
    */
   boolean removeGroup(@NotNull String groupId);
+
+  /**
+   * Ignore if variable not exists
+   * Allow remove variable if calls from 'owner' service. Also method owner has to have 'org.homio.addon' endpoint
+   * Determine owner by stacktrace if owner is null
+   */
+  <T extends BaseDeviceEndpoint<?>> void removeVariable(@NotNull String variableId, @Nullable T owner);
 
   /**
    * Build full data source path to variable

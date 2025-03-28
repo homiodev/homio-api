@@ -9,9 +9,7 @@ import org.homio.api.Context;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.exception.NotFoundException;
-import org.homio.api.model.Status;
 import org.homio.api.model.endpoint.DeviceEndpoint;
-import org.homio.api.workspace.Lock;
 import org.homio.api.workspace.WorkspaceBlock;
 import org.homio.api.workspace.scratch.MenuBlock.ServerMenuBlock;
 import org.homio.api.workspace.scratch.MenuBlock.StaticMenuBlock;
@@ -19,11 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import static java.lang.String.format;
 
 /**
  * Base parent for all devices that exposes some endpoints
@@ -82,6 +77,12 @@ public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> exten
     DeviceEndpoint endpoint = getDeviceEndpoint(ieeeAddress, endpointID);
 
     if (endpoint == null) {
+      workspaceBlock.logErrorAndThrow("Unable to find endpoint: {}/{}", ieeeAddress, endpointID);
+      throw new NotImplementedException();
+    }
+    return endpoint;
+
+    /*if (endpoint == null) {
       // wait for endpoint to be online at most 10 minutes
       Lock onlineStatus = workspaceBlock.getLockManager().getLock(workspaceBlock,
         format("endpoint-%s-%s", ieeeAddress, endpointID), Status.ONLINE);
@@ -94,7 +95,7 @@ public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> exten
     }
 
     workspaceBlock.logErrorAndThrow("Unable to find endpoint: {}/{}", ieeeAddress, endpointID);
-    throw new NotImplementedException();
+    throw new NotImplementedException();*/
   }
 
   protected @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String ieeeAddress, @NotNull String endpointID) {
@@ -114,9 +115,9 @@ public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> exten
   }
 
   @SneakyThrows
-  protected <T> T executeWhenDeviceReady(@NotNull WorkspaceBlock workspaceBlock,
-                                         @NotNull Consumer<D> consumer) {
-    return executeWhenDeviceReady(workspaceBlock, entity -> {
+  protected void executeWhenDeviceReady(@NotNull WorkspaceBlock workspaceBlock,
+                                        @NotNull Consumer<D> consumer) {
+    executeWhenDeviceReady(workspaceBlock, (Function<D, Void>) entity -> {
       consumer.accept(entity);
       return null;
     });
@@ -128,13 +129,13 @@ public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> exten
     String deviceId = workspaceBlock.getMenuValue(DEVICE, deviceMenu);
     D entity = context.db().getRequire(deviceId);
     if (!entity.getStatus().isOnline()) {
-      var readyLock = workspaceBlock.getLockManager().getLock(workspaceBlock, "firmata-ready-" + entity.getIeeeAddress());
-      if (readyLock.await(workspaceBlock, 60, TimeUnit.SECONDS)) {
+      var readyLock = workspaceBlock.getLockManager().getLock(workspaceBlock, "device-ready-" + entity.getIeeeAddress());
+      if (readyLock.await(workspaceBlock)) {
         entity = context.db().getRequire(deviceId);
         if (entity.getStatus().isOnline()) {
           return consumer.apply(entity);
         } else {
-          log.error("Unable to execute step for firmata entity: <{}>. Waited for ready status but got: <{}>", entity.getTitle(), entity.getStatus());
+          log.error("Unable to execute step for device: <{}>. Waited for ready status but got: <{}>", entity.getTitle(), entity.getStatus());
         }
       }
     } else {

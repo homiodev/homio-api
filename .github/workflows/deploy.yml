@@ -1,0 +1,60 @@
+name: Build homio-api
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Import GPG Key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --reload gpg-agent
+        env:
+          GPG_TTY: /dev/tty
+
+      - name: Build & Sign with Maven
+        run: mvn clean verify -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Trigger Project Builds for All Repositories
+        run: |
+          REPOS=(
+            "homiodev/homio-primary-addons"
+            "homiodev/addon-tasmota"
+            "homiodev/addon-esphome"
+            "homiodev/addon-imou"
+            "homiodev/addon-tuya"
+            "homiodev/addon-firmata"
+            "homiodev/addon-serial"
+            "homiodev/addon-gcloud_tts"
+            "homiodev/addon-gdrive"
+            "homiodev/addon-gpio"
+            "homiodev/addon-influxdb"
+            "homiodev/addon-mongodb"
+            "homiodev/addon-rabbitmq"
+            "homiodev/addon-ipscanner"
+            "homiodev/addon-ibkr"
+            "homiodev/addon-mail"
+            "homiodev/addon-mediamtx"
+            "homiodev/addon-dropbox"
+            "homiodev/addon-openweathermap"
+          )
+          for REPO in "${REPOS[@]}"; do
+            echo "Triggering build for $REPO"
+            curl -X POST https://api.github.com/repos/$REPO/dispatches \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -d '{"event_type": "trigger-build"}'
+          done

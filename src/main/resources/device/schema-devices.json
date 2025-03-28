@@ -3,7 +3,7 @@
   "properties": {
     "version": {
       "description": "Specify file version",
-      "type": "string"
+      "type": "number"
     },
     "devices": {
       "type": "array",
@@ -14,6 +14,24 @@
           "name": {
             "title": "Uses only in json file to distinguish devices by functionality",
             "type": "string"
+          },
+          "pins": {
+            "title": "List of pins",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "endpoints": {
             "title": "List of 'or' endpoints to apply widget for",
@@ -183,6 +201,9 @@
       ]
     }
   },
+  "required": [
+    "version"
+  ],
   "title": "JSON schema for the devices widget configuration file",
   "type": "object"
 }

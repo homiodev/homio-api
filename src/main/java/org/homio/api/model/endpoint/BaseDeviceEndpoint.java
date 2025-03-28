@@ -13,6 +13,7 @@ import org.homio.api.ContextVar.VariableMetaBuilder;
 import org.homio.api.ContextVar.VariableType;
 import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
+import org.homio.api.entity.device.HasExcludeEndpoints;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
@@ -46,66 +47,118 @@ import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 @RequiredArgsConstructor
 public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContract> implements DeviceEndpoint {
 
-  private final @NotNull Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
-  private final @NotNull
-  @Getter String group;
-  private final @Getter
+  @NotNull
+  private final Map<String, Consumer<State>> changeListeners = new ConcurrentHashMap<>();
+
+  @NotNull
+  @Getter
+  private final String group;
+
+  @Getter
   @Accessors(fluent = true)
-  @NotNull Context context;
+  @NotNull
+  private final Context context;
 
-  private @Getter
-  @Setter Icon icon;
-  private @Getter
-  @Setter String endpointEntityID;
+  @Getter
+  @Setter
+  private Icon icon;
+  @Getter
+  @Setter
+  private String endpointEntityID;
 
-  private @Getter D device;
+  @Getter
+  private D device;
 
-  private @Getter
+  @Getter
   @Setter
-  @Nullable String unit;
-  private @Getter long updated = System.currentTimeMillis();
-  private @Getter
-  @NotNull State value = new StringType("N/A");
-  private @Nullable Object dbValue;
-  private @Nullable
-  @Getter String variableID;
-  private @Getter
-  @Setter boolean readable = true;
-  private @Getter
-  @Setter boolean writable = false;
-  private @Getter
-  @Setter String endpointName;
-  private @Getter
-  @Setter EndpointType endpointType;
-  private @Getter
-  @Setter int order = -1;
+  @Nullable
+  private String unit;
 
-  private @Nullable ConfigDeviceDefinitionService configService;
-  private @Getter
+  @Getter
+  private long updated = System.currentTimeMillis();
+
+  @Getter
+  @NotNull
+  private State value = new StringType("N/A");
+
+  @Nullable
+  private Object dbValue;
+
+  @Nullable
+  @Getter
+  private String variableID;
+
+  @Getter
   @Setter
-  @Nullable Float min;
-  private @Getter
+  private boolean readable = true;
+
+  @Getter
   @Setter
-  @Nullable Float max;
-  private @Getter
+  private boolean writable = false;
+
+  @Getter
   @Setter
-  @Nullable List<OptionModel> range;
-  private @Getter
+  private String endpointName;
+
+  @Getter
   @Setter
-  @Nullable Object defaultValue;
-  private @JsonIgnore
-  @Nullable Set<String> alternateEndpoints;
-  private @Setter
-  @Nullable ConfigDeviceEndpoint configEndpoint;
-  private @Getter
-  @Setter boolean visibleEndpoint = true;
-  private @Getter
-  @Setter Supplier<Boolean> visibleEndpointHandler;
-  private @Setter boolean ignoreDuplicates = true;
-  private @Getter
-  @Setter boolean stateless;
-  private @Nullable ThrowingConsumer<State, Exception> updateHandler;
-  private @Setter boolean dbValueStorable;
+  private EndpointType endpointType;
+
+  @Getter
+  @Setter
+  private int order = -1;
+
+  @Nullable
+  private ConfigDeviceDefinitionService configService;
+
+  @Getter
+  @Setter
+  @Nullable
+  private Float min;
+
+  @Getter
+  @Setter
+  @Nullable
+  private Float max;
+
+  @Getter
+  @Setter
+  @Nullable
+  private List<OptionModel> range;
+
+  @Getter
+  @Setter
+  @Nullable
+  private Object defaultValue;
+
+  @JsonIgnore
+  @Nullable
+  private Set<String> alternateEndpoints;
+
+  @Setter
+  @Nullable
+  private ConfigDeviceEndpoint configEndpoint;
+
+  @Setter
+  private boolean visibleEndpoint = true;
+
+  @Getter
+  @Setter
+  @Nullable
+  private Supplier<Boolean> visibleEndpointHandler;
+
+  @Setter
+  private boolean ignoreDuplicates = true;
+
+  @Setter
+  @Getter
+  private boolean stateless;
+
+  @Nullable
+  private ThrowingConsumer<State, Exception> updateHandler;
+
+  @Setter
+  private boolean dbValueStorable;
   private Integer scale;
 
   public BaseDeviceEndpoint(@NotNull Icon icon, @NotNull String group, @NotNull Context context) {
@@ -319,7 +372,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     this.value = value;
   }
 
-  public void setValue(@Nullable State value, boolean externalUpdate) {
+  public void setValue(@Nullable State value, boolean fireUpdateUI) {
     if (value == null || value.rawValue() == null) {
       return;
     }
@@ -341,7 +394,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     } else {
       context.event().fireEventIfNotSame(getEntityID(), value);
     }
-    if (externalUpdate) {
+    if (fireUpdateUI) {
       updateUI();
     }
   }
@@ -374,10 +427,16 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     if (!visibleEndpoint) {
       return false;
     }
+    if (isEndpointExcluded()) {
+      return false;
+    }
+    if (getHiddenEndpoints().contains(getEndpointEntityID())) {
+      return false;
+    }
     if (visibleEndpointHandler != null) {
       return visibleEndpointHandler.get();
     }
-    return !getHiddenEndpoints().contains(getEndpointEntityID());
+    return true;
   }
 
   public @NotNull Set<String> getHiddenEndpoints() {
@@ -423,12 +482,13 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
   }
 
   // drop existed variable if i..e variableType changed dynamically
-  public void deleteVariableID() {
+  public @Nullable String recreateVariable() {
     variableID = null;
+    return getOrCreateVariable();
   }
 
   public @Nullable String getOrCreateVariable() {
-    if (stateless) {
+    if (stateless || isEndpointExcluded()) {
       return null;
     }
     if (variableID == null) {
@@ -472,7 +532,11 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
     return variableID;
   }
 
-  private String buildVariableID() {
+  private boolean isEndpointExcluded() {
+    return device instanceof HasExcludeEndpoints hee && hee.getExcludeEndpoints().contains(getName(true));
+  }
+
+  public String buildVariableID() {
     String id = getEntityID();
     if (id.toLowerCase().startsWith(group.toLowerCase())) {
       return id;
@@ -611,5 +675,18 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
   @Override
   public int hashCode() {
     return endpointEntityID != null ? endpointEntityID.hashCode() : 0;
+  }
+
+  /**
+   * This method fires even if modified non-mandatory fields
+   */
+  public void setDevice(D device) {
+    this.device = device;
+    if (isEndpointExcluded()) {
+      // maybe variable was created earlier
+      context.var().removeVariable(buildVariableID(), this);
+    } else {
+      getOrCreateVariable();
+    }
   }
 }
