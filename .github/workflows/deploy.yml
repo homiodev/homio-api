@@ -18,6 +18,27 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Configure Maven settings.xml
+        run: |
+          mkdir -p ~/.m2
+          echo '<settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+            </servers>
+            <mirrors>
+              <mirror>
+                <id>github-mirror</id>
+                <mirrorOf>github</mirrorOf>
+                <url>https://maven.pkg.github.com/homiodev/*</url>
+                <layout>default</layout>
+              </mirror>
+            </mirrors>
+          </settings>' > ~/.m2/settings.xml
+
       - name: Import GPG Key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
@@ -27,7 +48,7 @@ jobs:
           GPG_TTY: /dev/tty
 
       - name: Build & Sign with Maven
-        run: mvn clean verify -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
 
       - name: Trigger Project Builds for All Repositories
         run: |
