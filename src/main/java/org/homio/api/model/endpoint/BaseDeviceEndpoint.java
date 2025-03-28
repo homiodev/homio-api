@@ -139,6 +139,7 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
   @Nullable
   private ConfigDeviceEndpoint configEndpoint;
 
+  @Getter
   @Setter
   private boolean visibleEndpoint = true;
 
