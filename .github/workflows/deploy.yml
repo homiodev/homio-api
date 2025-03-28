@@ -17,37 +17,28 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          server-id: github
+          server-username: ${{ github.actor }}
+          server-password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up settings.xml
+      - name: Simplified Maven Settings
         run: |
           mkdir -p ~/.m2
           echo '<settings>
             <servers>
-               <server>
+              <server>
                 <id>github</id>
-                <username>${{ secrets.MAVEN_USERNAME }}</username>
-                <password>${{ secrets.GITHUB_TOKEN }}</password>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
               </server>
+              <!-- Wildcard server for dependencies -->
               <server>
-                <id>github-homio-dependency</id>
-                <username>${{ github.actor }}</username>
-                <password>${{ secrets.GITHUB_TOKEN }}</password>
-              </server>
-              <server>
-                <id>github-homio-hquery</id>
-                <username>${{ github.actor }}</username>
-                <password>${{ secrets.GITHUB_TOKEN }}</password>
+                <id>github-*</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
               </server>
             </servers>
-            <mirrors>
-              <mirror>
-                <id>github-mirror</id>
-                <mirrorOf>github-homio-dependency, github-homio-hquery</mirrorOf>
-                <url>https://maven.pkg.github.com/homiodev/</url>
-                <layout>default</layout>
-              </mirror>
-            </mirrors>
-          </settings>' > ~/.m2/settings.xml 
+          </settings>' > ~/.m2/settings.xml
 
       - name: Import GPG Key
         run: |
