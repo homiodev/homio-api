@@ -87,6 +87,8 @@ public interface SettingPluginPackageInstall extends SettingPluginButton {
 
     // last release date
     private Long lastUpdated;
+
+    private boolean disabled; // in case if unable to install package for any reason
   }
 
   @Data

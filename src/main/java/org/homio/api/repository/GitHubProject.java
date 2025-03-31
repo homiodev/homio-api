@@ -436,7 +436,7 @@ public class GitHubProject {
       .findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find release: " + version));
   }
 
-  // Helper method to execute some process i.e. download from GitHub, backup, etc...
+  // Helper method to execute some process i.e., download from GitHub, backup, etc...
   public @NotNull ActionResponseModel updateProject(
     @NotNull String name,
     @NotNull ProgressBar progressBar,

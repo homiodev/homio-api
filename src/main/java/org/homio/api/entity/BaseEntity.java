@@ -245,7 +245,7 @@ public abstract class BaseEntity implements
 
   }
 
-  protected boolean tryUpdateEntity(Runnable handler) {
+  public boolean tryUpdateEntity(Runnable handler) {
     long entityHashCode = getEntityHashCode();
     handler.run();
     return getEntityHashCode() != entityHashCode;
