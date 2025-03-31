@@ -244,4 +244,10 @@ public abstract class BaseEntity implements
   protected void assembleMissingMandatoryFields(@NotNull Set<String> fields) {
 
   }
+
+  protected boolean tryUpdateEntity(Runnable handler) {
+    long entityHashCode = getEntityHashCode();
+    handler.run();
+    return getEntityHashCode() != entityHashCode;
+  }
 }

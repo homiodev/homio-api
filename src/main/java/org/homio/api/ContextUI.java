@@ -393,23 +393,20 @@ public interface ContextUI {
 
   interface ContextUIProgress {
 
-    default ProgressBar createProgressBar(@NotNull String key, boolean dummy) {
-      return createProgressBar(key, dummy, null);
-    }
-
-    default ProgressBar createProgressBar(@NotNull String key, boolean dummy, @Nullable Runnable onCancel) {
-      return createProgressBar(key, dummy, onCancel, false);
-    }
+    /**
+     * Create progress bur, but not submit to UI
+     */
+    ProgressBar progressBarDummy(@NotNull String key);
 
     /**
-     * Create simple progress bar
+     * Create simple progress bar.
+     * Defaults: log to console: true
+     * Cancellable: false
      *
      * @param key      - progress bar unique key
-     * @param dummy    - is submitted progress on UI
-     * @param onCancel - create cancellable progress bar if not null
      * @return progress bar
      */
-    ProgressBar createProgressBar(@NotNull String key, boolean dummy, @Nullable Runnable onCancel, boolean logOnConsole);
+    ProgressBar progressBar(@NotNull String key);
 
     void update(@NotNull String key, double progress, @Nullable String message, boolean cancellable);
 

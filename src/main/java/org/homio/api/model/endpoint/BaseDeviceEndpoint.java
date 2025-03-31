@@ -594,7 +594,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
       description.add("(range:%s)".formatted(range.stream().map(OptionModel::getTitleOrKey).collect(Collectors.joining(";"))));
     }
     if (min != null && max != null) {
-      description.add("(min-max:%S...%s)".formatted(min, max));
+      String minStr = new BigDecimal(min).stripTrailingZeros().toPlainString();
+      String maxStr = new BigDecimal(max).stripTrailingZeros().toPlainString();
+      description.add("(min-max: %s...%s)".formatted(minStr, maxStr));
     }
     return String.join(" ", description);
   }

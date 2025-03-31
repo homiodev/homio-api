@@ -30,13 +30,13 @@ public class DialogModel {
   private final List<DialogButton> buttons = new ArrayList<>();
   @JsonIgnore
   private final Date creationTime = new Date();
-  @JsonIgnore
   private int maxTimeoutInSec = 0;
   private String headerButtonAttachTo;
   private Icon icon;
   private String dialogColor;
-  // if need keep dialog on ui on refresh and attach to special header button
   private boolean keepOnUi = true;
+  private Boolean sendCancelOnLeaveDialog;
+  private Boolean disableCloseDialogOutsideArea;
 
   @SneakyThrows
   public DialogModel group(String name, ThrowingConsumer<DialogGroup, Exception> consumer) {
@@ -53,8 +53,27 @@ public class DialogModel {
     return this;
   }
 
+  /**
+   * Do not keep dialog on ui on refresh page and attach to special header button
+   */
   public DialogModel disableKeepOnUi() {
     this.keepOnUi = false;
+    return this;
+  }
+
+  /**
+   * Send cancel action to server if user close dialog on press x or click outside dialog
+   */
+  public DialogModel sendCancelOnLeaveDialog() {
+    this.sendCancelOnLeaveDialog = true;
+    return this;
+  }
+
+  /**
+   * Disable close dialog if click outside dialog area
+   */
+  public DialogModel disableCloseDialogOutsideArea() {
+    this.disableCloseDialogOutsideArea = true;
     return this;
   }
 
