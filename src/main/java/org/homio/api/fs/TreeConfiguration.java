@@ -1,5 +1,9 @@
 package org.homio.api.fs;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -9,96 +13,91 @@ import org.homio.api.entity.storage.BaseFileSystemEntity;
 import org.homio.api.model.Icon;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 @Setter
 @Getter
 @Accessors(chain = true)
 public class TreeConfiguration {
 
-  private final String id;
-  private final String name;
-  private final int alias;
-  private Icon icon;
-  private Boolean hasDelete;
-  private Boolean hasRename;
-  private Boolean hasUpload;
-  private Boolean hasCreateFile;
-  private Boolean hasCreateFolder;
-  private boolean supportAlias = true;
-  private List<String> editableExtensions;
-  private Set<String> zipOpenExtensions;
-  private List<TreeNodeChip> chips;
+    private final String id;
+    private final String name;
+    private final int alias;
+    private Icon icon;
+    private Boolean hasDelete;
+    private Boolean hasRename;
+    private Boolean hasUpload;
+    private Boolean hasCreateFile;
+    private Boolean hasCreateFolder;
+    private boolean supportAlias = true;
+    private List<String> editableExtensions;
+    private Set<String> zipOpenExtensions;
+    private List<TreeNodeChip> chips;
 
-  private long freeSize;
-  private long totalSize;
+    private long freeSize;
+    private long totalSize;
 
-  private Set<TreeNode> children;
+    private Set<TreeNode> children;
 
-  private String dynamicUpdateId; // unique id for dynamic update tree on UI
+    private String dynamicUpdateId; // unique id for dynamic update tree on UI
 
-  public TreeConfiguration(String id, String name, Set<TreeNode> children) {
-    this.id = id;
-    this.alias = -1;
-    this.name = name;
-    this.children = children;
-  }
-
-  public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs) {
-    this.id = fs.getEntityID();
-    this.alias = -1;
-    this.zipOpenExtensions = fs.getSupportArchiveFormats();
-    DeviceBaseEntity entity = (DeviceBaseEntity) fs;
-    this.name = StringUtils.left(entity.getTitle(), 20);
-    this.icon = new Icon(fs.getFileSystemIcon(), fs.getFileSystemIconColor());
-
-    makeDefaultFSConfiguration();
-
-    try {
-      var fsSize = fs.requestDbSize();
-      if (fsSize != null) {
-        setSize(fsSize.freeSpace(), fsSize.totalSpace());
-      }
-    } catch (Exception ignore) {
+    public TreeConfiguration(String id, String name, Set<TreeNode> children) {
+        this.id = id;
+        this.alias = -1;
+        this.name = name;
+        this.children = children;
     }
-  }
 
-  public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs, @NotNull String path, @NotNull Icon icon) {
-    this(fs, Path.of(path).getFileName().toString(), Math.abs(path.hashCode()), icon);
-  }
+    public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs) {
+        this.id = fs.getEntityID();
+        this.alias = -1;
+        this.zipOpenExtensions = fs.getSupportArchiveFormats();
+        DeviceBaseEntity entity = (DeviceBaseEntity) fs;
+        this.name = StringUtils.left(entity.getTitle(), 20);
+        this.icon = new Icon(fs.getFileSystemIcon(), fs.getFileSystemIconColor());
 
-  public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs, @NotNull String name, int alias, @NotNull Icon icon) {
-    this.id = fs.getEntityID();
-    this.alias = alias;
-    this.zipOpenExtensions = fs.getSupportArchiveFormats();
-    this.name = name;
-    this.icon = icon;
+        makeDefaultFSConfiguration();
 
-    makeDefaultFSConfiguration();
-  }
-
-  private void makeDefaultFSConfiguration() {
-    this.hasDelete = true;
-    this.hasRename = true;
-    this.hasUpload = true;
-    this.hasCreateFile = true;
-    this.hasCreateFolder = true;
-    this.supportAlias = true;
-  }
-
-  public TreeConfiguration setSize(long freeSize, long totalSize) {
-    this.freeSize = freeSize;
-    this.totalSize = totalSize;
-    return this;
-  }
-
-  public void addChip(TreeNodeChip treeNodeChip) {
-    if (chips == null) {
-      chips = new ArrayList<>();
+        try {
+            var fsSize = fs.requestDbSize();
+            if (fsSize != null) {
+                setSize(fsSize.freeSpace(), fsSize.totalSpace());
+            }
+        } catch (Exception ignore) {
+        }
     }
-    chips.add(treeNodeChip);
-  }
+
+    public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs, @NotNull String path, @NotNull Icon icon) {
+        this(fs, Path.of(path).getFileName().toString(), Math.abs(path.hashCode()), icon);
+    }
+
+    public TreeConfiguration(@NotNull BaseFileSystemEntity<?> fs, @NotNull String name, int alias, @NotNull Icon icon) {
+        this.id = fs.getEntityID();
+        this.alias = alias;
+        this.zipOpenExtensions = fs.getSupportArchiveFormats();
+        this.name = name;
+        this.icon = icon;
+
+        makeDefaultFSConfiguration();
+    }
+
+    private void makeDefaultFSConfiguration() {
+        this.hasDelete = true;
+        this.hasRename = true;
+        this.hasUpload = true;
+        this.hasCreateFile = true;
+        this.hasCreateFolder = true;
+        this.supportAlias = true;
+    }
+
+    public TreeConfiguration setSize(long freeSize, long totalSize) {
+        this.freeSize = freeSize;
+        this.totalSize = totalSize;
+        return this;
+    }
+
+    public void addChip(TreeNodeChip treeNodeChip) {
+        if (chips == null) {
+            chips = new ArrayList<>();
+        }
+        chips.add(treeNodeChip);
+    }
 }

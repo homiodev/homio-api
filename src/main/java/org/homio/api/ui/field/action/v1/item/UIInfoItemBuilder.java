@@ -8,12 +8,12 @@ public interface UIInfoItemBuilder extends UIEntityItemBuilder<UIInfoItemBuilder
 
   InfoType getInfoType();
 
-  /**
-   * Set text clickable and navigate to entity
-   */
+  /** Set text clickable and navigate to entity */
   UIInfoItemBuilder linkToEntity(@Nullable BaseEntity entity);
 
   enum InfoType {
-    Text, HTML, Markdown
+    Text,
+    HTML,
+    Markdown
   }
 }

@@ -16,9 +16,7 @@ public class TarDirectoryStream implements DirectoryStream<Path> {
   private volatile boolean isClosed;
   private volatile Iterator<Path> itr;
 
-  TarDirectoryStream(TarPath tarPath,
-                     Filter<? super Path> filter)
-    throws IOException {
+  TarDirectoryStream(TarPath tarPath, Filter<? super Path> filter) throws IOException {
     tarfs = tarPath.getFileSystem();
     path = tarPath.getResolvedPath();
     this.filter = filter;
@@ -72,6 +70,4 @@ public class TarDirectoryStream implements DirectoryStream<Path> {
   public synchronized void close() throws IOException {
     isClosed = true;
   }
-
-
 }

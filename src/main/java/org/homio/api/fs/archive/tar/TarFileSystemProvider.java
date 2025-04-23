@@ -13,9 +13,7 @@ public class TarFileSystemProvider extends AbstractTarFileSystemProvider {
 
   @Override
   protected AbstractTarFileSystem newInstance(
-    AbstractTarFileSystemProvider provider, Path path,
-    Map<String, ?> env) throws IOException {
+      AbstractTarFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException {
     return new TarFileSystem(provider, path, env);
   }
-
 }

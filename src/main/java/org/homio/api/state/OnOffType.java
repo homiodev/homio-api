@@ -1,11 +1,10 @@
 package org.homio.api.state;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
 
 @Getter
 public class OnOffType implements State {
@@ -15,9 +14,7 @@ public class OnOffType implements State {
 
   private final boolean value;
 
-  @Getter
-  @Setter
-  private Boolean oldValue;
+  @Getter @Setter private Boolean oldValue;
 
   private OnOffType(boolean value) {
     this(value, value);
@@ -35,7 +32,8 @@ public class OnOffType implements State {
   public static OnOffType of(@Nullable String value) {
     if (value != null) {
       String lowerCase = value.toLowerCase();
-      return OnOffType.of(lowerCase.equals("1") || lowerCase.equals("on") || lowerCase.equals("true"));
+      return OnOffType.of(
+          lowerCase.equals("1") || lowerCase.equals("on") || lowerCase.equals("true"));
     }
     return OnOffType.OFF;
   }
@@ -117,7 +115,8 @@ public class OnOffType implements State {
   }
 
   public enum OnOffTypeEnum {
-    Off, On;
+    Off,
+    On;
 
     public boolean boolValue() {
       return this == On;

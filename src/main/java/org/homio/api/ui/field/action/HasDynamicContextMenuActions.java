@@ -6,14 +6,13 @@ import org.homio.api.ui.UIActionHandler;
 import org.homio.api.ui.field.action.v1.UIInputBuilder;
 import org.json.JSONObject;
 
-/**
- * For BaseItems that wants dynamic context menu items
- */
+/** For BaseItems that wants dynamic context menu items */
 public interface HasDynamicContextMenuActions {
 
   void assembleActions(UIInputBuilder uiInputBuilder);
 
-  default ActionResponseModel handleAction(Context context, String actionID, JSONObject params) throws Exception {
+  default ActionResponseModel handleAction(Context context, String actionID, JSONObject params)
+      throws Exception {
     UIInputBuilder uiInputBuilder = context.ui().inputBuilder();
     this.assembleActions(uiInputBuilder);
 
@@ -24,6 +23,7 @@ public interface HasDynamicContextMenuActions {
       }
       return actionHandler.handleAction(context, params);
     }
-    throw new IllegalArgumentException("Unable to find execution handler for action: <" + actionID + ">. Entity: " + this);
+    throw new IllegalArgumentException(
+        "Unable to find execution handler for action: <" + actionID + ">. Entity: " + this);
   }
 }

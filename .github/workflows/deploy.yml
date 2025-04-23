@@ -6,7 +6,7 @@ on:
     branches:
       - master
   repository_dispatch:
-    types: [trigger-build]
+    types: [ trigger-build ]
 
 jobs:
   build:

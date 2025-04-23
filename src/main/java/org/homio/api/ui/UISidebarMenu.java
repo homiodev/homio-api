@@ -39,6 +39,9 @@ public @interface UISidebarMenu {
   String overridePath() default "";
 
   enum TopSidebarMenu {
-    HARDWARE, ITEMS, MEDIA, DEVICES
+    HARDWARE,
+    ITEMS,
+    MEDIA,
+    DEVICES
   }
 }

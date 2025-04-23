@@ -1,12 +1,10 @@
 package org.homio.api.entity;
 
+import static org.homio.api.ContextSetting.setMemValue;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Transient;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -23,42 +21,31 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import static org.homio.api.ContextSetting.setMemValue;
-
 @Log4j2
 @MappedSuperclass
-public abstract class BaseEntity implements
-  BaseEntityIdentifier,
-  Comparable<BaseEntity> {
+public abstract class BaseEntity implements BaseEntityIdentifier, Comparable<BaseEntity> {
 
-  @JsonIgnore
-  @Transient
-  @Setter
-  private Context context;
+  @JsonIgnore @Transient @Setter private Context context;
+
   @Id
   @Getter
   @JsonIgnore // serialized by Bean2MixIn
   @Column(length = 128, nullable = false, unique = true)
   @GeneratedValue(generator = "id-generator")
-  @GenericGenerator(name = "id-generator", strategy = "org.homio.app.repository.generator.HomioIdGenerator")
+  @GenericGenerator(
+      name = "id-generator",
+      strategy = "org.homio.app.repository.generator.HomioIdGenerator")
   private String entityID;
-  @Getter
-  @Version
-  @JsonIgnore
-  private int version;
-  @Getter
-  private String name;
+
+  @Getter @Version @JsonIgnore private int version;
+  @Getter private String name;
+
   @Getter
   @JsonIgnore
   @Column(nullable = false)
   @CreationTimestamp
   private Date creationTime;
+
   @Getter
   @JsonIgnore
   @Column(nullable = false)
@@ -75,8 +62,7 @@ public abstract class BaseEntity implements
    * @param optionModel model to configure
    * @param context
    */
-  public void configureOptionModel(@NotNull OptionModel optionModel, @NotNull Context context) {
-  }
+  public void configureOptionModel(@NotNull OptionModel optionModel, @NotNull Context context) {}
 
   public void setName(@Nullable String name) {
     this.name = name;
@@ -94,9 +80,7 @@ public abstract class BaseEntity implements
     return Objects.equals(entityID, that.entityID);
   }
 
-  /**
-   * Method return default name to store when persist entity
-   */
+  /** Method return default name to store when persist entity */
   @JsonIgnore
   @Nullable
   public abstract String getDefaultName();
@@ -166,8 +150,7 @@ public abstract class BaseEntity implements
    *
    * @param set -
    */
-  public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {
-  }
+  public void getAllRelatedEntities(@NotNull Set<BaseEntity> set) {}
 
   public @Nullable String getAddonID() {
     return AddonEntrypoint.getAddonID(getClass());
@@ -212,15 +195,19 @@ public abstract class BaseEntity implements
   /**
    * Calls only in case if field return 'string' value that has link with attributes name="link"
    *
-   * @param field    target field
+   * @param field target field
    * @param metadata has all attached values 'data-xxx="value"'
    * @return response
    */
   public @Nullable ActionResponseModel handleTextFieldAction(
-    @NotNull String field,
-    @NotNull JSONObject metadata) {
-    throw new NotImplementedException("Method 'handleTextFieldAction' must be implemented in class: " + getClass().getSimpleName()
-                                      + " if calls by UI. Field: " + field + ". Meta: " + metadata);
+      @NotNull String field, @NotNull JSONObject metadata) {
+    throw new NotImplementedException(
+        "Method 'handleTextFieldAction' must be implemented in class: "
+            + getClass().getSimpleName()
+            + " if calls by UI. Field: "
+            + field
+            + ". Meta: "
+            + metadata);
   }
 
   @JsonIgnore
@@ -238,12 +225,8 @@ public abstract class BaseEntity implements
     return set;
   }
 
-  /**
-   * List of mandatory fields for entity
-   */
-  protected void assembleMissingMandatoryFields(@NotNull Set<String> fields) {
-
-  }
+  /** List of mandatory fields for entity */
+  protected void assembleMissingMandatoryFields(@NotNull Set<String> fields) {}
 
   public boolean tryUpdateEntity(Runnable handler) {
     long entityHashCode = getEntityHashCode();

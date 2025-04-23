@@ -7,7 +7,7 @@ public interface LockManager {
   /**
    * Signal to all broadcast locks with specified key and value
    *
-   * @param key   -
+   * @param key -
    * @param value -
    */
   void signalAll(String key, Object value);
@@ -29,17 +29,18 @@ public interface LockManager {
    * Create lock.
    *
    * @param workspaceBlock -
-   * @param key            -
-   * @param expectedValue  - any value. If Pattern - than checks if value match pattern
+   * @param key -
+   * @param expectedValue - any value. If Pattern - than checks if value match pattern
    * @return -
    */
   Lock getLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
 
   /**
-   * Creates BroadcastLock and attach it to thread that check supplier once per second If supplier return true - signal broadcast lock
+   * Creates BroadcastLock and attach it to thread that check supplier once per second If supplier
+   * return true - signal broadcast lock
    *
    * @param workspaceBlock -
-   * @param supplier       -
+   * @param supplier -
    * @return - BroadcastLock
    */
   Lock listenEvent(WorkspaceBlock workspaceBlock, Supplier<Boolean> supplier);

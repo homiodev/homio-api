@@ -16,7 +16,5 @@ public interface ConsolePluginFrame extends ConsolePlugin<FrameConfiguration> {
     return new JSONObject().put("host", getValue().host());
   }
 
-  record FrameConfiguration(@NotNull String host) {
-
-  }
+  record FrameConfiguration(@NotNull String host) {}
 }

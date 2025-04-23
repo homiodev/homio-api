@@ -13,22 +13,23 @@ import java.lang.annotation.Target;
 import java.text.DecimalFormat;
 import java.util.Map;
 
-/**
- * Progress bar. Must return int or UIFieldProgress.Progress Max value is 100!
- */
+/** Progress bar. Must return int or UIFieldProgress.Progress Max value is 100! */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldProgress {
 
-  @Nullable String color() default "";
+  @Nullable
+  String color() default "";
 
-  @Nullable UIFieldProgressColorChange[] colorChange() default {};
+  @Nullable
+  UIFieldProgressColorChange[] colorChange() default {};
 
   @Target({ElementType.FIELD})
   @Retention(RetentionPolicy.RUNTIME)
   @interface UIFieldProgressColorChange {
 
-    @NotNull String color();
+    @NotNull
+    String color();
 
     int whenMoreThan();
   }
@@ -48,7 +49,8 @@ public @interface UIFieldProgress {
       return Progress.of(value, maxValue, message, false);
     }
 
-    public static Progress of(int value, int maxValue, @Nullable String message, boolean showMessage) {
+    public static Progress of(
+        int value, int maxValue, @Nullable String message, boolean showMessage) {
       return new Progress((int) Math.ceil(value * 100f / maxValue), maxValue, message, showMessage);
     }
 
@@ -57,8 +59,19 @@ public @interface UIFieldProgress {
     }
 
     public static Progress of(int value, int maxValue, boolean showMessage) {
-      return Progress.of(value, maxValue, Lang.getServerMessage("USED_QUOTA", Map.of(
-        "PC", FORMAT.format(value / (double) maxValue * 100), "VAL", value, "MAX", maxValue)), showMessage);
+      return Progress.of(
+          value,
+          maxValue,
+          Lang.getServerMessage(
+              "USED_QUOTA",
+              Map.of(
+                  "PC",
+                  FORMAT.format(value / (double) maxValue * 100),
+                  "VAL",
+                  value,
+                  "MAX",
+                  maxValue)),
+          showMessage);
     }
   }
 }

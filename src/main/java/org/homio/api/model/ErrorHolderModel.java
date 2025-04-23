@@ -4,7 +4,6 @@ import lombok.Getter;
 import org.homio.api.util.CommonUtils;
 import org.homio.api.util.Lang;
 
-
 @Getter
 public class ErrorHolderModel {
 

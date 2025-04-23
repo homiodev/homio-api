@@ -8,7 +8,8 @@ import org.jetbrains.annotations.Nullable;
 public interface SelectionConfiguration {
 
   @JsonIgnore
-  @NotNull Icon getSelectionIcon();
+  @NotNull
+  Icon getSelectionIcon();
 
   @JsonIgnore
   default @Nullable String getSelectionDescription() {

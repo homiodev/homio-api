@@ -55,8 +55,8 @@ public class TarFileAttributeView implements BasicFileAttributeView {
   }
 
   @Override
-  public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime,
-                       FileTime createTime) throws IOException {
+  public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime)
+      throws IOException {
     path.setTimes(lastModifiedTime, lastAccessTime, createTime);
   }
 
@@ -69,8 +69,8 @@ public class TarFileAttributeView implements BasicFileAttributeView {
     } catch (IllegalArgumentException e) {
       e.printStackTrace();
     }
-    throw new UnsupportedOperationException("'" + attribute
-                                            + "' is unknown or read-only attribute");
+    throw new UnsupportedOperationException(
+        "'" + attribute + "' is unknown or read-only attribute");
   }
 
   Map<String, Object> readAttributes(String attributes) throws IOException {
@@ -112,6 +112,8 @@ public class TarFileAttributeView implements BasicFileAttributeView {
   }
 
   private enum AttrID {
-    size, lastModifiedTime, isDirectory,
+    size,
+    lastModifiedTime,
+    isDirectory,
   }
 }

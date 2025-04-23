@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Annotation for field/method with return type as 'String' to handle field as 'icon' type
- */
+/** Annotation for field/method with return type as 'String' to handle field as 'icon' type */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldIconPicker {

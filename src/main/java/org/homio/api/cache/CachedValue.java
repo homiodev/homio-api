@@ -2,13 +2,10 @@ package org.homio.api.cache;
 
 import com.pivovarit.function.ThrowingFunction;
 import com.pivovarit.function.ThrowingSupplier;
+import java.time.Duration;
 import lombok.SneakyThrows;
 
-import java.time.Duration;
-
-/**
- * Store cached value. Fetch new value on ttl
- */
+/** Store cached value. Fetch new value on ttl */
 public class CachedValue<T, P> {
 
   private final ThrowingFunction<P, T, Exception> fetchHandler;

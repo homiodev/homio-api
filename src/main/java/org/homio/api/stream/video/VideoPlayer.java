@@ -1,8 +1,7 @@
 package org.homio.api.stream.video;
 
-import org.homio.api.stream.StreamPlayer;
-
 import java.util.Set;
+import org.homio.api.stream.StreamPlayer;
 
 public interface VideoPlayer extends StreamPlayer {
   default Set<VideoFormat> getVideoSupportedFormats() {

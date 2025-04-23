@@ -17,14 +17,10 @@ public class SourceHistory {
   private Float min;
   private Float max;
   private Float median;
-  @Setter
-  private Icon icon;
-  @Setter
-  private String name;
-  @Setter
-  private String description;
-  @Setter
-  private List<String> attributes;
+  @Setter private Icon icon;
+  @Setter private String name;
+  @Setter private String description;
+  @Setter private List<String> attributes;
 
   public SourceHistory(int count, Float min, Float max, Float median) {
     this.count = count;

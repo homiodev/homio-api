@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Annotation on Boolean field for showing color depend on true/false value
- */
+/** Annotation on Boolean field for showing color depend on true/false value */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldColorBooleanMatch {

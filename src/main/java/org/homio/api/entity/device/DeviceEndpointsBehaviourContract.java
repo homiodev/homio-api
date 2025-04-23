@@ -29,10 +29,12 @@ import java.util.Map;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.homio.api.model.endpoint.DeviceEndpoint.ENDPOINT_LAST_SEEN;
 
-public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDynamicContextMenuActions {
+public interface DeviceEndpointsBehaviourContract
+    extends DeviceContract, HasDynamicContextMenuActions {
 
   @JsonIgnore
-  @NotNull String getDeviceFullName();
+  @NotNull
+  String getDeviceFullName();
 
   @UIFieldGroup("GENERAL")
   default Date getUpdateTime() {
@@ -40,7 +42,8 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
   }
 
   @Override
-  default ActionResponseModel handleAction(Context context, String actionID, JSONObject params) throws Exception {
+  default ActionResponseModel handleAction(Context context, String actionID, JSONObject params)
+      throws Exception {
     for (DeviceEndpointUI endpoint : getEndpoints()) {
       if (actionID.startsWith(endpoint.getEntityID())) {
         UIInputBuilder actionBuilder = endpoint.getEndpoint().createActionBuilder();
@@ -63,13 +66,15 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
   }
 
   @JsonIgnore
-  @NotNull Map<String, ? extends DeviceEndpoint> getDeviceEndpoints();
+  @NotNull
+  Map<String, ? extends DeviceEndpoint> getDeviceEndpoints();
 
   default @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String endpoint) {
     return getDeviceEndpoints().get(endpoint);
   }
 
-  @Nullable String getDescription();
+  @Nullable
+  String getDescription();
 
   /**
    * Last item updated
@@ -112,5 +117,6 @@ public interface DeviceEndpointsBehaviourContract extends DeviceContract, HasDyn
   }
 
   @JsonIgnore
-  @NotNull List<ConfigDeviceDefinition> findMatchDeviceConfigurations();
+  @NotNull
+  List<ConfigDeviceDefinition> findMatchDeviceConfigurations();
 }

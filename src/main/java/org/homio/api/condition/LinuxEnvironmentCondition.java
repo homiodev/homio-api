@@ -8,6 +8,6 @@ public class LinuxEnvironmentCondition implements Condition {
 
   public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
     return (context.getEnvironment().getProperty("os.name").indexOf("nux") >= 0
-            || context.getEnvironment().getProperty("os.name").indexOf("aix") >= 0);
+        || context.getEnvironment().getProperty("os.name").indexOf("aix") >= 0);
   }
 }

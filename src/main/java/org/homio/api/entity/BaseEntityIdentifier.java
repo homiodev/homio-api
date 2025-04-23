@@ -21,7 +21,8 @@ public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable 
     return defaultIfBlank(getName(), defaultIfBlank(getDefaultName(), getEntityID()));
   }
 
-  @Nullable String getName();
+  @Nullable
+  String getName();
 
   @JsonIgnore
   default @Nullable String refreshName() {
@@ -29,11 +30,10 @@ public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable 
   }
 
   @JsonIgnore
-  @NotNull String getEntityPrefix();
+  @NotNull
+  String getEntityPrefix();
 
-  /**
-   * Specify entity font awesome icon for UI purposes
-   */
+  /** Specify entity font awesome icon for UI purposes */
   default @Nullable Icon getEntityIcon() {
     return null;
   }
@@ -48,40 +48,24 @@ public interface BaseEntityIdentifier extends EntityFieldMetadata, Serializable 
     return getType();
   }
 
-  default void afterFetch() {
+  default void afterFetch() {}
 
-  }
+  default void beforeDelete() {}
 
-  default void beforeDelete() {
-
-  }
-
-  default void afterDelete() {
-
-  }
+  default void afterDelete() {}
 
   // fires before persist/update
-  default void validate() {
-
-  }
+  default void validate() {}
 
   // calls before entity inserted into db
-  default void beforePersist() {
-
-  }
+  default void beforePersist() {}
 
   // calls after entity inserted into db
-  default void afterPersist() {
-
-  }
+  default void afterPersist() {}
 
   // calls before update updated into db
-  default void beforeUpdate() {
-
-  }
+  default void beforeUpdate() {}
 
   // calls after update updated into db
-  default void afterUpdate() {
-
-  }
+  default void afterUpdate() {}
 }

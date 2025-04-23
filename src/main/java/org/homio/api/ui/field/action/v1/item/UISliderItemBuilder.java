@@ -27,6 +27,7 @@ public interface UISliderItemBuilder extends UIEntityItemBuilder<UISliderItemBui
   UISliderItemBuilder setDefaultValue(Float defaultValue);
 
   enum SliderType {
-    Regular, Input
+    Regular,
+    Input
   }
 }

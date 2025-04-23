@@ -7,7 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 /**
- * Entity interface that responsible for fetching additional dynamic entity parameters when user select it from select-box
+ * Entity interface that responsible for fetching additional dynamic entity parameters when user
+ * select it from select-box
  */
 public interface SelectionWithDynamicParameterFields {
 
@@ -24,6 +25,8 @@ public interface SelectionWithDynamicParameterFields {
   class RequestDynamicParameter {
 
     private @Nullable Object selectionHolder;
-    private @NotNull JSONObject metadata; // contains conditions if i.e. for some entities it requires one parameter but for other...
+    private @NotNull JSONObject
+        metadata; // contains conditions if i.e. for some entities it requires one parameter but for
+                  // other...
   }
 }

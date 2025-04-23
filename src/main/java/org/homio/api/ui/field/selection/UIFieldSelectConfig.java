@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * List of common fields to configure select box
- */
+/** List of common fields to configure select box */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldSelectConfig {
@@ -33,6 +31,7 @@ public @interface UIFieldSelectConfig {
 
   /**
    * Annotation on selected field to show text when no values available from server
+   *
    * @return Text to show when no options available
    */
   String selectNoValue() default "";

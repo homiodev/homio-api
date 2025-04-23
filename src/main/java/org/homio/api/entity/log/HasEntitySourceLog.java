@@ -15,8 +15,9 @@ public interface HasEntitySourceLog extends HasJsonData {
    *
    * @return List of sources
    */
-  @NotNull List<OptionModel> getLogSources();
+  @NotNull
+  List<OptionModel> getLogSources();
 
-  @Nullable InputStream getSourceLogInputStream(@NotNull String sourceID) throws Exception;
+  @Nullable
+  InputStream getSourceLogInputStream(@NotNull String sourceID) throws Exception;
 }
-

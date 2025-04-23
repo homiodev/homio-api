@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.homio.api.model.OptionModel.KeyValueEnum;
 
-/**
- * Uses for styling html input element position
- */
+/** Uses for styling html input element position */
 @Getter
 @RequiredArgsConstructor
 public enum StylePosition implements KeyValueEnum {
@@ -22,7 +20,6 @@ public enum StylePosition implements KeyValueEnum {
   MiddleRight("Middle Right");
 
   private final String textValue;
-
 
   @Override
   public String getValue() {

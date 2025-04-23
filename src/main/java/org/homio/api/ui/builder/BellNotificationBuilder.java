@@ -20,5 +20,6 @@ public interface BellNotificationBuilder {
     notification(NotificationLevel.success, entityID, title, value);
   }
 
-  void notification(NotificationLevel notificationLevel, String entityID, String title, String value);
+  void notification(
+      NotificationLevel notificationLevel, String entityID, String title, String value);
 }

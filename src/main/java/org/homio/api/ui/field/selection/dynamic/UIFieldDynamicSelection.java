@@ -1,13 +1,8 @@
 package org.homio.api.ui.field.selection.dynamic;
 
+import java.lang.annotation.*;
 import org.homio.api.ui.field.selection.dynamic.UIFieldDynamicSelection.UIFieldDynamicListSelection;
 import org.jetbrains.annotations.NotNull;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -25,10 +20,12 @@ public @interface UIFieldDynamicSelection {
   /**
    * @return Target class for selection(for enums). see: ItemController.loadSelectOptions
    */
-  @NotNull Class<? extends DynamicOptionLoader> value();
+  @NotNull
+  Class<? extends DynamicOptionLoader> value();
 
   /**
-   * @return In case of same DynamicOptionLoader uses for few different fields, this parameter may distinguish business handling
+   * @return In case of same DynamicOptionLoader uses for few different fields, this parameter may
+   *     distinguish business handling
    */
   String[] staticParameters() default {};
 
@@ -37,9 +34,7 @@ public @interface UIFieldDynamicSelection {
    */
   String[] dependencyFields() default {};
 
-  /**
-   * Just for able to have many 'UIFieldDynamicSelection(...)'
-   */
+  /** Just for able to have many 'UIFieldDynamicSelection(...)' */
   @Target({ElementType.FIELD, ElementType.METHOD})
   @Retention(RetentionPolicy.RUNTIME)
   @interface UIFieldDynamicListSelection {

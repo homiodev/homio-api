@@ -66,8 +66,7 @@ public class TarFileAttributes implements BasicFileAttributes {
   public String toString() {
     StringBuilder sb = new StringBuilder(1024);
     try (Formatter fm = new Formatter(sb)) {
-      fm.format("    lastModifiedTime: %tc%n", lastModifiedTime()
-        .toMillis());
+      fm.format("    lastModifiedTime: %tc%n", lastModifiedTime().toMillis());
       fm.format("    isDirectory     : %b%n", isDirectory());
       fm.format("    size            : %d%n", size());
     }

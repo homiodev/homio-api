@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Represents an interface for managing exclude endpoints from device
- * Core lib manages for removing variables on startup, etc...
+ * Represents an interface for managing exclude endpoints from device Core lib manages for removing
+ * variables on startup, etc...
  */
 public interface HasExcludeEndpoints extends DeviceEndpointsBehaviourContract {
 
@@ -26,5 +26,4 @@ public interface HasExcludeEndpoints extends DeviceEndpointsBehaviourContract {
   default void setExcludeEndpoints(String value) {
     setJsonDataAsSet("excludeEp", value);
   }
-
 }

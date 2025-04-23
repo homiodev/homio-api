@@ -15,9 +15,7 @@ public enum SettingType {
   Toggle,
   Upload,
   TextInput,
-  /**
-   * return type must be enum. Handle as buttons instead of select box
-   */
+  /** return type must be enum. Handle as buttons instead of select box */
   EnumButtons,
   ColorPicker,
   Chips,

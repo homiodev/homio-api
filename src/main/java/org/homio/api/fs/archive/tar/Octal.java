@@ -68,5 +68,4 @@ public class Octal {
     System.arraycopy(temp, 0, buf, offset, length);
     return offset + length;
   }
-
 }

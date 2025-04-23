@@ -1,7 +1,6 @@
 package org.homio.api.ui.field.action;
 
 import jakarta.validation.constraints.Pattern;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,6 +33,16 @@ public @interface UIActionInput {
   Pattern pattern() default @Pattern(regexp = ".*");
 
   enum Type {
-    text, json, textarea, password, number, info, bool, ip, select, IconPicker, ColorPicker
+    text,
+    json,
+    textarea,
+    password,
+    number,
+    info,
+    bool,
+    ip,
+    select,
+    IconPicker,
+    ColorPicker
   }
 }

@@ -1,8 +1,7 @@
 package org.homio.api.stream.audio;
 
-import org.homio.api.stream.StreamPlayer;
-
 import java.util.Set;
+import org.homio.api.stream.StreamPlayer;
 
 public interface AudioPlayer extends StreamPlayer {
 

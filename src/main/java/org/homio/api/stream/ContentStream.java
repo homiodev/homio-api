@@ -1,22 +1,21 @@
 package org.homio.api.stream;
 
-import org.jetbrains.annotations.NotNull;
-import org.springframework.core.io.Resource;
-
 import java.io.Closeable;
 import java.io.IOException;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.core.io.Resource;
 
 // fires when timeout is reached
 public interface ContentStream extends Closeable {
 
-  @NotNull
-  Resource getResource();
+    @NotNull
+    Resource getResource();
 
-  @NotNull
-  StreamFormat getStreamFormat();
+    @NotNull
+    StreamFormat getStreamFormat();
 
-  @Override
-  default void close() throws IOException {
-    // do nothing
-  }
+    @Override
+    default void close() throws IOException {
+        // do nothing
+    }
 }

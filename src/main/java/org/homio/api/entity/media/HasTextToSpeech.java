@@ -8,11 +8,8 @@ import org.homio.api.service.TextToSpeechEntityService;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldProgress;
 
-public interface HasTextToSpeech<T extends TextToSpeechEntityService<?>> extends
-  EntityService<T>,
-  HasJsonData,
-  BaseEntityIdentifier,
-  HasStatusAndMsg {
+public interface HasTextToSpeech<T extends TextToSpeechEntityService<?>>
+    extends EntityService<T>, HasJsonData, BaseEntityIdentifier, HasStatusAndMsg {
 
   @UIField(order = 40, hideInEdit = true)
   @UIFieldProgress(color = "#8f8359")
@@ -42,5 +39,4 @@ public interface HasTextToSpeech<T extends TextToSpeechEntityService<?>> extends
   default void setDisableTranslateAfterQuota(boolean value) {
     setJsonData("disOverQuota", value);
   }
-
 }

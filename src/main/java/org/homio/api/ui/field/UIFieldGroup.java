@@ -1,16 +1,13 @@
 package org.homio.api.ui.field;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-/**
- * Uses to grouping fields. Grouped fields has border
- */
+/** Uses to grouping fields. Grouped fields has border */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIFieldGroup {
@@ -18,7 +15,8 @@ public @interface UIFieldGroup {
   /**
    * @return Group name
    */
-  @NotNull String value();
+  @NotNull
+  String value();
 
   /**
    * @return Specify custom group order, otherwise ordering by group name
@@ -28,5 +26,6 @@ public @interface UIFieldGroup {
   /**
    * @return Define border color
    */
-  @Nullable String borderColor() default "";
+  @Nullable
+  String borderColor() default "";
 }

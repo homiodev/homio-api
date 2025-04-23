@@ -9,7 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 /**
- * Represent [Chip] block element on right side of tree. Must specify at least icon or text to be visible on UI.
+ * Represent [Chip] block element on right side of tree. Must specify at least icon or text to be
+ * visible on UI.
  */
 @Getter
 @Setter
@@ -17,12 +18,9 @@ import org.json.JSONObject;
 @RequiredArgsConstructor
 public class TreeNodeChip {
 
-  @Nullable
-  private final Icon icon;
-  @Nullable
-  private final String text;
-  @Nullable
-  private String bgColor;
+  @Nullable private final Icon icon;
+  @Nullable private final String text;
+  @Nullable private String bgColor;
 
   private boolean clickable; // if Chip not only info but communicate with server
   private JSONObject metadata; // require if clickable and need handle Chip on server side

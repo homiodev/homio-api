@@ -8,21 +8,8 @@ import java.net.URISyntaxException;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.AccessMode;
-import java.nio.file.CopyOption;
-import java.nio.file.DirectoryStream;
+import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileStore;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystemAlreadyExistsException;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.ProviderMismatchException;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
@@ -36,8 +23,7 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
 
   protected final Map<Path, AbstractTarFileSystem> filesystems = new HashMap<>();
 
-  public AbstractTarFileSystemProvider() {
-  }
+  public AbstractTarFileSystemProvider() {}
 
   // Checks that the given file is a UnixPath
   static final TarPath toTarPath(Path path) {
@@ -51,8 +37,7 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public FileSystem newFileSystem(URI uri, Map<String, ?> env)
-    throws IOException {
+  public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
     Path path = uriToPath(uri);
     synchronized (filesystems) {
       Path realPath = null;
@@ -70,8 +55,7 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public FileSystem newFileSystem(Path path, Map<String, ?> env)
-    throws IOException {
+  public FileSystem newFileSystem(Path path, Map<String, ?> env) throws IOException {
     if (path.getFileSystem() != FileSystems.getDefault()) {
       throw new UnsupportedOperationException();
     }
@@ -86,9 +70,7 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
     int sep = spec.indexOf("!/");
     if (sep == -1) {
       throw new IllegalArgumentException(
-        "URI: "
-        + uri
-        + " does not contain path info ex. tar:file:/c:/foo.tar!/BAR");
+          "URI: " + uri + " does not contain path info ex. tar:file:/c:/foo.tar!/BAR");
     }
     return getFileSystem(uri).getPath(spec.substring(sep + 1));
   }
@@ -115,15 +97,13 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public void copy(Path src, Path target, CopyOption... options)
-    throws IOException {
-    AbstractTarFileSystemProvider.toTarPath(src).copy(
-      AbstractTarFileSystemProvider.toTarPath(target), options);
+  public void copy(Path src, Path target, CopyOption... options) throws IOException {
+    AbstractTarFileSystemProvider.toTarPath(src)
+        .copy(AbstractTarFileSystemProvider.toTarPath(target), options);
   }
 
   @Override
-  public void createDirectory(Path path, FileAttribute<?>... attrs)
-    throws IOException {
+  public void createDirectory(Path path, FileAttribute<?>... attrs) throws IOException {
     AbstractTarFileSystemProvider.toTarPath(path).createDirectory(attrs);
   }
 
@@ -133,10 +113,9 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public <V extends FileAttributeView> V getFileAttributeView(Path path,
-                                                              Class<V> type, LinkOption... options) {
-    return TarFileAttributeView.get(
-      AbstractTarFileSystemProvider.toTarPath(path), type);
+  public <V extends FileAttributeView> V getFileAttributeView(
+      Path path, Class<V> type, LinkOption... options) {
+    return TarFileAttributeView.get(AbstractTarFileSystemProvider.toTarPath(path), type);
   }
 
   @Override
@@ -155,73 +134,60 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public void move(Path src, Path target, CopyOption... options)
-    throws IOException {
-    AbstractTarFileSystemProvider.toTarPath(src).move(
-      AbstractTarFileSystemProvider.toTarPath(target), options);
+  public void move(Path src, Path target, CopyOption... options) throws IOException {
+    AbstractTarFileSystemProvider.toTarPath(src)
+        .move(AbstractTarFileSystemProvider.toTarPath(target), options);
   }
 
   @Override
-  public AsynchronousFileChannel newAsynchronousFileChannel(Path path,
-                                                            Set<? extends OpenOption> options, ExecutorService exec,
-                                                            FileAttribute<?>... attrs) throws IOException {
+  public AsynchronousFileChannel newAsynchronousFileChannel(
+      Path path, Set<? extends OpenOption> options, ExecutorService exec, FileAttribute<?>... attrs)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SeekableByteChannel newByteChannel(Path path,
-                                            Set<? extends OpenOption> options, FileAttribute<?>... attrs)
-    throws IOException {
-    return AbstractTarFileSystemProvider.toTarPath(path).newByteChannel(
-      options, attrs);
+  public SeekableByteChannel newByteChannel(
+      Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    return AbstractTarFileSystemProvider.toTarPath(path).newByteChannel(options, attrs);
   }
 
   @Override
-  public DirectoryStream<Path> newDirectoryStream(Path path,
-                                                  Filter<? super Path> filter) throws IOException {
-    return AbstractTarFileSystemProvider.toTarPath(path)
-      .newDirectoryStream(filter);
+  public DirectoryStream<Path> newDirectoryStream(Path path, Filter<? super Path> filter)
+      throws IOException {
+    return AbstractTarFileSystemProvider.toTarPath(path).newDirectoryStream(filter);
   }
 
   @Override
-  public FileChannel newFileChannel(Path path,
-                                    Set<? extends OpenOption> options, FileAttribute<?>... attrs)
-    throws IOException {
-    return AbstractTarFileSystemProvider.toTarPath(path).newFileChannel(
-      options, attrs);
+  public FileChannel newFileChannel(
+      Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    return AbstractTarFileSystemProvider.toTarPath(path).newFileChannel(options, attrs);
   }
 
   @Override
-  public InputStream newInputStream(Path path, OpenOption... options)
-    throws IOException {
-    return AbstractTarFileSystemProvider.toTarPath(path).newInputStream(
-      options);
+  public InputStream newInputStream(Path path, OpenOption... options) throws IOException {
+    return AbstractTarFileSystemProvider.toTarPath(path).newInputStream(options);
   }
 
   @Override
-  public OutputStream newOutputStream(Path path, OpenOption... options)
-    throws IOException {
-    return AbstractTarFileSystemProvider.toTarPath(path).newOutputStream(
-      options);
+  public OutputStream newOutputStream(Path path, OpenOption... options) throws IOException {
+    return AbstractTarFileSystemProvider.toTarPath(path).newOutputStream(options);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public <A extends BasicFileAttributes> A readAttributes(Path path,
-                                                          Class<A> type, LinkOption... options) throws IOException {
-    if (type == BasicFileAttributes.class
-        || type == TarFileAttributes.class) {
-      return (A) AbstractTarFileSystemProvider.toTarPath(path)
-        .getAttributes();
+  public <A extends BasicFileAttributes> A readAttributes(
+      Path path, Class<A> type, LinkOption... options) throws IOException {
+    if (type == BasicFileAttributes.class || type == TarFileAttributes.class) {
+      return (A) AbstractTarFileSystemProvider.toTarPath(path).getAttributes();
     }
     return null;
   }
 
   @Override
-  public Map<String, Object> readAttributes(Path path, String attribute,
-                                            LinkOption... options) throws IOException {
-    return AbstractTarFileSystemProvider.toTarPath(path).readAttributes(
-      attribute, options);
+  public Map<String, Object> readAttributes(Path path, String attribute, LinkOption... options)
+      throws IOException {
+    return AbstractTarFileSystemProvider.toTarPath(path).readAttributes(attribute, options);
   }
 
   @Override
@@ -230,14 +196,12 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public void setAttribute(Path path, String attribute, Object value,
-                           LinkOption... options) throws IOException {
-    AbstractTarFileSystemProvider.toTarPath(path).setAttribute(attribute,
-      value, options);
+  public void setAttribute(Path path, String attribute, Object value, LinkOption... options)
+      throws IOException {
+    AbstractTarFileSystemProvider.toTarPath(path).setAttribute(attribute, value, options);
   }
 
-  void removeFileSystem(Path tfpath, AbstractTarFileSystem tfs)
-    throws IOException {
+  void removeFileSystem(Path tfpath, AbstractTarFileSystem tfs) throws IOException {
     synchronized (filesystems) {
       Path realPath = tfpath.toRealPath();
       if (filesystems.get(realPath) == tfs) {
@@ -249,8 +213,7 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   protected Path uriToPath(URI uri) {
     String scheme = uri.getScheme();
     if (scheme == null || !scheme.equalsIgnoreCase(getScheme())) {
-      throw new IllegalArgumentException("URI scheme is not '"
-                                         + getScheme() + "'");
+      throw new IllegalArgumentException("URI scheme is not '" + getScheme() + "'");
     }
     try {
       String spec = uri.getRawSchemeSpecificPart();
@@ -265,8 +228,7 @@ public abstract class AbstractTarFileSystemProvider extends FileSystemProvider {
   }
 
   protected abstract AbstractTarFileSystem newInstance(
-    AbstractTarFileSystemProvider provider, Path path,
-    Map<String, ?> env) throws IOException;
+      AbstractTarFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException;
 
   protected boolean ensureFile(Path path) {
     try {

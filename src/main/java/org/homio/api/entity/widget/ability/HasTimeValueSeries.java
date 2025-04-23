@@ -1,38 +1,44 @@
 package org.homio.api.entity.widget.ability;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.Getter;
 import org.homio.api.entity.widget.PeriodRequest;
 import org.homio.api.model.HasEntityIdentifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 /**
- * Implementation must override either {@link HasTimeValueSeries#getTimeValueSeries(PeriodRequest)} or
- * {@link HasTimeValueSeries#getMultipleTimeValueSeries(PeriodRequest)}
+ * Implementation must override either {@link HasTimeValueSeries#getTimeValueSeries(PeriodRequest)}
+ * or {@link HasTimeValueSeries#getMultipleTimeValueSeries(PeriodRequest)}
  */
-public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueListener,
-  // we extend HasGetStatusValue for time-series values to be able to fetch last value in case
-  // if no data found in time range, but we need fill chart with empty values
-  HasGetStatusValue {
+public interface HasTimeValueSeries
+    extends HasEntityIdentifier,
+        HasUpdateValueListener,
+        // we extend HasGetStatusValue for time-series values to be able to fetch last value in case
+        // if no data found in time range, but we need fill chart with empty values
+        HasGetStatusValue {
 
   /**
    * Return line chart series.
-   * <p>
-   * Usually getLineChartSeries should return only one chart, but sometimes it may be more than one)
+   *
+   * <p>Usually getLineChartSeries should return only one chart, but sometimes it may be more than
+   * one)
    *
    * @param request -
-   * @return LineChartDescription and list of points. point[0] - Date or long, point[1] - Float, point[2] - description. point[2] - optional
+   * @return LineChartDescription and list of points. point[0] - Date or long, point[1] - Float,
+   *     point[2] - description. point[2] - optional
    */
-  default @NotNull Map<TimeValueDatasetDescription, List<Object[]>> getMultipleTimeValueSeries(@NotNull PeriodRequest request) {
+  default @NotNull Map<TimeValueDatasetDescription, List<Object[]>> getMultipleTimeValueSeries(
+      @NotNull PeriodRequest request) {
     Object params = request.getParameters();
     int paramCode = (params == null ? "" : params).toString().hashCode();
-    return new HashMap<>(Map.of(new TimeValueDatasetDescription(getEntityID() + "_" + paramCode),
-      getTimeValueSeries(request)));
+    return new HashMap<>(
+        Map.of(
+            new TimeValueDatasetDescription(getEntityID() + "_" + paramCode),
+            getTimeValueSeries(request)));
   }
 
   @NotNull
@@ -53,7 +59,8 @@ public interface HasTimeValueSeries extends HasEntityIdentifier, HasUpdateValueL
       this(id, name, null);
     }
 
-    public TimeValueDatasetDescription(@NotNull String id, @Nullable String name, @Nullable String color) {
+    public TimeValueDatasetDescription(
+        @NotNull String id, @Nullable String name, @Nullable String color) {
       this.id = id;
       this.name = name;
       this.color = color;

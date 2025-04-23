@@ -5,7 +5,8 @@ import org.jetbrains.annotations.NotNull;
 
 public interface ContextWorkspace {
 
-  @NotNull Context context();
+  @NotNull
+  Context context();
 
   /**
    * Register custom Scratch3Extension

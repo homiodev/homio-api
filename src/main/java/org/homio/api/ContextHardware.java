@@ -1,114 +1,113 @@
 package org.homio.api;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.List;
 import org.homio.hquery.ProgressBar;
 import org.homio.hquery.api.HQueryMaxWaitTimeout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
-import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
-
 public interface ContextHardware {
 
-  @NotNull
-  Context context();
+    @NotNull
+    Context context();
 
-  @Nullable
-  String execute(@NotNull String command);
+    @Nullable
+    String execute(@NotNull String command);
 
-  @Nullable
-  default String execute(@NotNull String command, @Nullable String defaultValue) {
-    return defaultIfBlank(execute(command), defaultValue);
-  }
+    @Nullable
+    default String execute(@NotNull String command, @Nullable String defaultValue) {
+        return defaultIfBlank(execute(command), defaultValue);
+    }
 
-  @NotNull
-  String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
-                             @Nullable ProgressBar progressBar);
+    @NotNull
+    String executeNoErrorThrow(@NotNull String command, int maxSecondsTimeout,
+                               @Nullable ProgressBar progressBar);
 
-  @NotNull
-  List<String> executeNoErrorThrowList(@NotNull String command, int maxSecondsTimeout,
-                                       @Nullable ProgressBar progressBar);
+    @NotNull
+    List<String> executeNoErrorThrowList(@NotNull String command, int maxSecondsTimeout,
+                                         @Nullable ProgressBar progressBar);
 
-  @NotNull
-  String execute(@NotNull String command, @Nullable ProgressBar progressBar);
+    @NotNull
+    String execute(@NotNull String command, @Nullable ProgressBar progressBar);
 
-  @NotNull
-  String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout);
+    @NotNull
+    String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
-  @NotNull
-  String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-                 @Nullable ProgressBar progressBar);
+    @NotNull
+    String execute(@NotNull String command, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+                   @Nullable ProgressBar progressBar);
 
-  boolean isSoftwareInstalled(@NotNull String soft);
+    boolean isSoftwareInstalled(@NotNull String soft);
 
-  @NotNull
-  ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
+    @NotNull
+    ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout);
 
-  @NotNull
-  ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
-                                  @Nullable ProgressBar progressBar);
-
-  @NotNull
-  ContextHardware uninstallSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+    @NotNull
+    ContextHardware installSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
                                     @Nullable ProgressBar progressBar);
 
-  @NotNull
-  ContextHardware enableSystemCtl(@NotNull String soft);
+    @NotNull
+    ContextHardware uninstallSoftware(@NotNull String soft, @HQueryMaxWaitTimeout int maxSecondsTimeout,
+                                      @Nullable ProgressBar progressBar);
 
-  @NotNull
-  ContextHardware startSystemCtl(@NotNull String soft);
+    @NotNull
+    ContextHardware enableSystemCtl(@NotNull String soft);
 
-  default boolean isSystemCtlExists(@NotNull String soft) {
-    return "active".equals(executeNoErrorThrow("systemctl is-active mosquitto", 60, null));
-  }
+    @NotNull
+    ContextHardware startSystemCtl(@NotNull String soft);
 
-  void stopSystemCtl(@NotNull String soft);
+    default boolean isSystemCtlExists(@NotNull String soft) {
+        return "active".equals(executeNoErrorThrow("systemctl is-active mosquitto", 60, null));
+    }
 
-  int getServiceStatus(@NotNull String serviceName);
+    void stopSystemCtl(@NotNull String soft);
 
-  void reboot();
+    int getServiceStatus(@NotNull String serviceName);
 
-  @NotNull
-  ProcessStat getProcessStat(long pid);
+    void reboot();
 
-  /**
-   * Enable and start soft
-   *
-   * @param soft - system service
-   * @return this
-   */
-  default @NotNull ContextHardware enableAndStartSystemCtl(@NotNull String soft) {
-    enableSystemCtl(soft);
-    startSystemCtl(soft);
-    return this;
-  }
+    @NotNull
+    ProcessStat getProcessStat(long pid);
 
-  default @NotNull ContextHardware update() {
-    execute("$PM update");
-    return this;
-  }
+    /**
+     * Enable and start soft
+     *
+     * @param soft - system service
+     * @return this
+     */
+    default @NotNull ContextHardware enableAndStartSystemCtl(@NotNull String soft) {
+        enableSystemCtl(soft);
+        startSystemCtl(soft);
+        return this;
+    }
 
-  /**
-   * Add hardware info to UI console 'Machine info'
-   */
-  @NotNull
-  ContextHardware addHardwareInfo(@NotNull String name, @NotNull String value);
+    default @NotNull ContextHardware update() {
+        execute("$PM update");
+        return this;
+    }
 
-  @NotNull
-  JsonNode findAssetByArchitecture(@NotNull JsonNode release);
+    /**
+     * Add hardware info to UI console 'Machine info'
+     */
+    @NotNull
+    ContextHardware addHardwareInfo(@NotNull String name, @NotNull String value);
 
-  String getServerUrl();
+    @NotNull
+    JsonNode findAssetByArchitecture(@NotNull JsonNode release);
 
-  interface ProcessStat {
-    // get cpu usage in % by process
-    double getCpuUsage();
+    String getServerUrl();
 
-    // get memory usage in % by process
-    double getMemUsage();
+    interface ProcessStat {
+        // get cpu usage in % by process
+        double getCpuUsage();
 
-    // get memory used in bytes
-    long getMem();
-  }
+        // get memory usage in % by process
+        double getMemUsage();
+
+        // get memory used in bytes
+        long getMem();
+    }
 }

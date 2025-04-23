@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specify for entities to select entities by 'type'. Every 'Entrypoint' may register 'options' with type
+ * Specify for entities to select entities by 'type'. Every 'Entrypoint' may register 'options' with
+ * type
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

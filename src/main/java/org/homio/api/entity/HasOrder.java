@@ -1,8 +1,6 @@
 package org.homio.api.entity;
 
-/**
- * Able to ordering entities
- */
+/** Able to ordering entities */
 public interface HasOrder extends HasJsonData {
 
   default int getOrder() {

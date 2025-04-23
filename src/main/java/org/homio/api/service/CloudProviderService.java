@@ -34,7 +34,8 @@ public interface CloudProviderService<T extends SshCloud> {
   interface SshCloud<T extends SshCloud> extends HasEntityIdentifier, HasStatusAndMsg, HasJsonData {
 
     /**
-     * Does this cloud is primary. Only one entity may be primary. Primary entity uses for cloud provider as tunnel
+     * Does this cloud is primary. Only one entity may be primary. Primary entity uses for cloud
+     * provider as tunnel
      *
      * @return is entity primary
      */

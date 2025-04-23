@@ -6,44 +6,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.AccessMode;
-import java.nio.file.CopyOption;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileStore;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 public abstract class AbstractTarFileSystem extends FileSystem {
 
-  private static final Set<String> supportedFileAttributeViews = Collections
-    .unmodifiableSet(new HashSet<String>(Arrays.asList("basic", "tar")));
+  private static final Set<String> supportedFileAttributeViews =
+      Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("basic", "tar")));
   private static final String GLOB_SYNTAX = "glob";
   private static final String REGEX_SYNTAX = "regex";
   private final AbstractTarFileSystemProvider provider;
@@ -58,12 +35,11 @@ public abstract class AbstractTarFileSystem extends FileSystem {
   private boolean readOnly = false;
   private volatile boolean isOpen = true;
 
-  protected AbstractTarFileSystem(AbstractTarFileSystemProvider provider,
-                                  Path tfpath, Map<String, ?> env) throws IOException {
+  protected AbstractTarFileSystem(
+      AbstractTarFileSystemProvider provider, Path tfpath, Map<String, ?> env) throws IOException {
     // configurable env setup
     createNew = "true".equals(env.get("create"));
-    defaultDir = env.containsKey("default.dir") ? (String) env
-      .get("default.dir") : "/";
+    defaultDir = env.containsKey("default.dir") ? (String) env.get("default.dir") : "/";
     entriesToData = new HashMap<>();
     if (defaultDir.charAt(0) != '/') {
       throw new IllegalArgumentException("default dir should be absolute");
@@ -108,7 +84,7 @@ public abstract class AbstractTarFileSystem extends FileSystem {
   @Override
   public Iterable<Path> getRootDirectories() {
     ArrayList<Path> pathArr = new ArrayList<>();
-    pathArr.add(new TarPath(this, new byte[]{'/'}));
+    pathArr.add(new TarPath(this, new byte[] {'/'}));
     return pathArr;
   }
 
@@ -146,7 +122,7 @@ public abstract class AbstractTarFileSystem extends FileSystem {
   @Override
   public Iterable<FileStore> getFileStores() {
     ArrayList<FileStore> list = new ArrayList<>(1);
-    list.add(new TarFileStore(new TarPath(this, new byte[]{'/'})));
+    list.add(new TarFileStore(new TarPath(this, new byte[] {'/'})));
     return list;
   }
 
@@ -175,8 +151,7 @@ public abstract class AbstractTarFileSystem extends FileSystem {
       if (syntax.equals(AbstractTarFileSystem.REGEX_SYNTAX)) {
         expr = input;
       } else {
-        throw new UnsupportedOperationException("Syntax '" + syntax
-                                                + "' not recognized");
+        throw new UnsupportedOperationException("Syntax '" + syntax + "' not recognized");
       }
     }
     // return matcher
@@ -221,9 +196,8 @@ public abstract class AbstractTarFileSystem extends FileSystem {
     provider.removeFileSystem(tfpath, this);
   }
 
-  public Iterator<Path> iteratorOf(byte[] path,
-                                   DirectoryStream.Filter<? super Path> filter)
-    throws IOException {
+  public Iterator<Path> iteratorOf(byte[] path, DirectoryStream.Filter<? super Path> filter)
+      throws IOException {
     Collection<Path> subPaths = new ArrayList<>();
     String pathString = new String(path);
     for (TarEntry te : entriesToData.keySet()) {
@@ -241,8 +215,8 @@ public abstract class AbstractTarFileSystem extends FileSystem {
   }
 
   public void createDirectory(byte[] resolvedPath, FileAttribute<?>[] attrs) {
-    TarHeader th = TarHeader.createHeader(new String(resolvedPath), 0,
-      System.currentTimeMillis(), true);
+    TarHeader th =
+        TarHeader.createHeader(new String(resolvedPath), 0, System.currentTimeMillis(), true);
     TarEntry te = new TarEntry(th);
     addEntry(te, new byte[0]);
   }
@@ -258,8 +232,7 @@ public abstract class AbstractTarFileSystem extends FileSystem {
     return new ByteArrayInputStream(data);
   }
 
-  public void deleteFile(byte[] resolvedPath, boolean failIfNotExists)
-    throws NoSuchFileException {
+  public void deleteFile(byte[] resolvedPath, boolean failIfNotExists) throws NoSuchFileException {
     TarEntry te = getTarEntryFromPath(resolvedPath);
     if (failIfNotExists && te == null) {
       throw new NoSuchFileException(new String(resolvedPath));
@@ -271,22 +244,20 @@ public abstract class AbstractTarFileSystem extends FileSystem {
     return new TarFileAttributes(getTarEntryFromPath(resolvedPath));
   }
 
-  public void setTimes(byte[] resolvedPath, FileTime mtime, FileTime atime,
-                       FileTime ctime) {
+  public void setTimes(byte[] resolvedPath, FileTime mtime, FileTime atime, FileTime ctime) {
     TarEntry te = getTarEntryFromPath(resolvedPath);
     te.setModTime(mtime.toMillis());
   }
 
-  public SeekableByteChannel newByteChannel(byte[] resolvedPath,
-                                            Set<? extends OpenOption> options, FileAttribute<?>[] attrs) {
-    boolean write = options.contains(StandardOpenOption.WRITE)
-                    || options.contains(StandardOpenOption.APPEND);
-    return new TarSeekableByteChannel(getTarEntryFromPath(resolvedPath),
-      write);
+  public SeekableByteChannel newByteChannel(
+      byte[] resolvedPath, Set<? extends OpenOption> options, FileAttribute<?>[] attrs) {
+    boolean write =
+        options.contains(StandardOpenOption.WRITE) || options.contains(StandardOpenOption.APPEND);
+    return new TarSeekableByteChannel(getTarEntryFromPath(resolvedPath), write);
   }
 
-  public FileChannel newFileChannel(byte[] resolvedPath,
-                                    Set<? extends OpenOption> options, FileAttribute<?>[] attrs) {
+  public FileChannel newFileChannel(
+      byte[] resolvedPath, Set<? extends OpenOption> options, FileAttribute<?>[] attrs) {
     throw new UnsupportedOperationException();
   }
 
@@ -294,8 +265,8 @@ public abstract class AbstractTarFileSystem extends FileSystem {
     return getTarEntryFromPath(resolvedPath) != null;
   }
 
-  public OutputStream newOutputStream(final byte[] resolvedPath,
-                                      OpenOption... options) throws IOException {
+  public OutputStream newOutputStream(final byte[] resolvedPath, OpenOption... options)
+      throws IOException {
     final ArrayList<Byte> bytesWritten = new ArrayList<>();
     List<OpenOption> opts = Arrays.asList(options);
     if (exists(resolvedPath)) {
@@ -314,41 +285,45 @@ public abstract class AbstractTarFileSystem extends FileSystem {
         throw new NoSuchFileException(new String(resolvedPath));
       }
     }
-    OutputStream os = new OutputStream() {
+    OutputStream os =
+        new OutputStream() {
 
-      @Override
-      public void write(int b) throws IOException {
-        bytesWritten.add((byte) b);
-      }
+          @Override
+          public void write(int b) throws IOException {
+            bytesWritten.add((byte) b);
+          }
 
-      @Override
-      public void close() throws IOException {
-        byte[] data = new byte[bytesWritten.size()];
-        TarEntry
-          e = new TarEntry(TarHeader.createHeader(new String(
-          resolvedPath), bytesWritten.size(), System
-          .currentTimeMillis(), false));
-        for (int i = 0; i < bytesWritten.size(); i++) {
-          data[i] = bytesWritten.get(i);
-        }
-        if (exists(resolvedPath)) {
-          deleteFile(resolvedPath, true);
-        }
-        addEntry(e, data);
-      }
-    };
+          @Override
+          public void close() throws IOException {
+            byte[] data = new byte[bytesWritten.size()];
+            TarEntry e =
+                new TarEntry(
+                    TarHeader.createHeader(
+                        new String(resolvedPath),
+                        bytesWritten.size(),
+                        System.currentTimeMillis(),
+                        false));
+            for (int i = 0; i < bytesWritten.size(); i++) {
+              data[i] = bytesWritten.get(i);
+            }
+            if (exists(resolvedPath)) {
+              deleteFile(resolvedPath, true);
+            }
+            addEntry(e, data);
+          }
+        };
     outputStreams.add(os);
     return os;
   }
 
-  public void copyFile(boolean deleteSourceFile, byte[] srcPath,
-                       byte[] targetPath, CopyOption... options) throws IOException {
+  public void copyFile(
+      boolean deleteSourceFile, byte[] srcPath, byte[] targetPath, CopyOption... options)
+      throws IOException {
     List<CopyOption> opts = Arrays.asList(options);
     if (!exists(srcPath)) {
       throw new NoSuchFileException(new String(srcPath));
     }
-    if (exists(targetPath)
-        && !opts.contains(StandardCopyOption.REPLACE_EXISTING)) {
+    if (exists(targetPath) && !opts.contains(StandardCopyOption.REPLACE_EXISTING)) {
       System.out.println("Its me");
       throw new FileAlreadyExistsException(new String(targetPath));
     }
@@ -359,9 +334,13 @@ public abstract class AbstractTarFileSystem extends FileSystem {
       if (exists(targetPath)) {
         deleteFile(targetPath, true);
       }
-      TarEntry targetEntry = new TarEntry(TarHeader.createHeader(
-        new String(targetPath), data.length, srcEntry.getModTime()
-          .getTime(), srcEntry.isDirectory()));
+      TarEntry targetEntry =
+          new TarEntry(
+              TarHeader.createHeader(
+                  new String(targetPath),
+                  data.length,
+                  srcEntry.getModTime().getTime(),
+                  srcEntry.isDirectory()));
       addEntry(targetEntry, data);
     } finally {
       endWrite();
@@ -382,8 +361,7 @@ public abstract class AbstractTarFileSystem extends FileSystem {
 
   protected abstract byte[] readFile(Path path) throws IOException;
 
-  protected abstract void writeFile(byte[] tarBytes, Path outPath)
-    throws IOException;
+  protected abstract void writeFile(byte[] tarBytes, Path outPath) throws IOException;
 
   @Override
   protected void finalize() throws IOException {
@@ -400,23 +378,28 @@ public abstract class AbstractTarFileSystem extends FileSystem {
       } else {
         tfByteArray = readFile(tfpath);
       }
-      int numOfBlocks = (int) Math.ceil((double) tfByteArray.length
-                                        / TarConstants.DATA_BLOCK) - 1; // discard the EOF block
+      int numOfBlocks =
+          (int) Math.ceil((double) tfByteArray.length / TarConstants.DATA_BLOCK)
+              - 1; // discard the EOF block
       for (int i = 0; i < numOfBlocks; i++) {
-        byte[] block = Arrays.copyOfRange(tfByteArray, i
-                                                       * TarConstants.DATA_BLOCK, i * TarConstants.DATA_BLOCK
-                                                                                  + TarConstants.DATA_BLOCK);
-        byte[] magic = Arrays.copyOfRange(block, TarConstants.MAGICOFF,
-          TarConstants.MAGICOFF + TarConstants.MAGICLEN - 1);
+        byte[] block =
+            Arrays.copyOfRange(
+                tfByteArray,
+                i * TarConstants.DATA_BLOCK,
+                i * TarConstants.DATA_BLOCK + TarConstants.DATA_BLOCK);
+        byte[] magic =
+            Arrays.copyOfRange(
+                block, TarConstants.MAGICOFF, TarConstants.MAGICOFF + TarConstants.MAGICLEN - 1);
         if (new String(magic).equals("ustar")) {
           TarEntry te = new TarEntry(block);
-          byte[] data = Arrays.copyOfRange(tfByteArray, (i + 1)
-                                                        * TarConstants.DATA_BLOCK, (int) ((i + 1)
-                                                                                          * TarConstants.DATA_BLOCK + te.getSize()));
+          byte[] data =
+              Arrays.copyOfRange(
+                  tfByteArray,
+                  (i + 1) * TarConstants.DATA_BLOCK,
+                  (int) ((i + 1) * TarConstants.DATA_BLOCK + te.getSize()));
           te.file = data;
           entriesToData.put(te, data);
-          int blocksNeeded = (int) Math.ceil((double) te.getSize()
-                                             / TarConstants.DATA_BLOCK);
+          int blocksNeeded = (int) Math.ceil((double) te.getSize() / TarConstants.DATA_BLOCK);
           for (int j = 0; j < blocksNeeded; j++) {
             i++;
           }
@@ -431,8 +414,7 @@ public abstract class AbstractTarFileSystem extends FileSystem {
     int bytesNeeded = 0;
     for (Entry<TarEntry, byte[]> entry : entriesToData.entrySet()) {
       bytesNeeded += TarConstants.HEADER_BLOCK;
-      int dataBlocks = (int) Math.ceil((double) entry.getKey().getSize()
-                                       / TarConstants.DATA_BLOCK);
+      int dataBlocks = (int) Math.ceil((double) entry.getKey().getSize() / TarConstants.DATA_BLOCK);
       bytesNeeded += TarConstants.DATA_BLOCK * dataBlocks;
     }
     bytesNeeded += TarConstants.DATA_BLOCK;
@@ -443,8 +425,7 @@ public abstract class AbstractTarFileSystem extends FileSystem {
       entry.getKey().writeEntryHeader(header);
       System.arraycopy(header, 0, tar, offset, header.length);
       offset += TarConstants.HEADER_BLOCK;
-      int dataSize = (int) Math.ceil((double) entry.getKey().getSize()
-                                     / TarConstants.DATA_BLOCK);
+      int dataSize = (int) Math.ceil((double) entry.getKey().getSize() / TarConstants.DATA_BLOCK);
       System.arraycopy(entry.getValue(), 0, tar, offset, entry.getValue().length);
       offset += dataSize * TarConstants.DATA_BLOCK;
     }
@@ -499,5 +480,4 @@ public abstract class AbstractTarFileSystem extends FileSystem {
     TarEntry te = getTarEntryFromPath(path);
     return entriesToData.get(te);
   }
-
 }

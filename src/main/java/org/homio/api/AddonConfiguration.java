@@ -1,13 +1,7 @@
 package org.homio.api;
 
+import java.lang.annotation.*;
 import org.springframework.context.annotation.Configuration;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /**
  * Defines entry root for loading addon spring context
@@ -19,12 +13,12 @@ import java.lang.annotation.Target;
 @Configuration
 public @interface AddonConfiguration {
 
-  AddonConfiguration.Env[] env() default {}; // defines env variables.
+    AddonConfiguration.Env[] env() default {}; // defines env variables.
 
-  @interface Env {
+    @interface Env {
 
-    String key();
+        String key();
 
-    String value();
-  }
+        String value();
+    }
 }

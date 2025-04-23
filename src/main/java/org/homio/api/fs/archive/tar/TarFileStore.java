@@ -34,8 +34,7 @@ public class TarFileStore extends FileStore {
 
   @Override
   public boolean supportsFileAttributeView(Class<? extends FileAttributeView> type) {
-    return (type == BasicFileAttributeView.class ||
-            type == TarFileAttributeView.class);
+    return (type == BasicFileAttributeView.class || type == TarFileAttributeView.class);
   }
 
   @Override
@@ -85,8 +84,7 @@ public class TarFileStore extends FileStore {
     final FileStore fstore;
     final long size;
 
-    public TarFileStoreAttributes(TarFileStore fileStore)
-      throws IOException {
+    public TarFileStoreAttributes(TarFileStore fileStore) throws IOException {
       Path path = FileSystems.getDefault().getPath(fileStore.name());
       size = Files.size(path);
       fstore = Files.getFileStore(path);

@@ -1,23 +1,22 @@
 package org.homio.api.ui;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.jetbrains.annotations.NotNull;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UISidebarChildren {
 
-  @NotNull String icon();
+    @NotNull String icon();
 
-  int order() default 1000;
+    int order() default 1000;
 
-  String color();
+    String color();
 
-  boolean allowCreateItem() default true;
+    boolean allowCreateItem() default true;
 
-  int maxAllowCreateItem() default -1;
+    int maxAllowCreateItem() default -1;
 }

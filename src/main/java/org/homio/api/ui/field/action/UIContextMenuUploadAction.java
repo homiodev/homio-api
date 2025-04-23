@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Upload action to be available via UI context menu/regular menu
- */
+/** Upload action to be available via UI context menu/regular menu */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIContextMenuUploadAction {

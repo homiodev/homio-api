@@ -10,8 +10,7 @@ import org.springframework.core.io.Resource;
 public class ResourceContentStream implements ContentStream {
 
   private final @NotNull StreamFormat streamFormat;
-  @Getter
-  private final Resource resource;
+  @Getter private final Resource resource;
 
   public ResourceContentStream(@NotNull Resource resource, @NotNull StreamFormat streamFormat) {
     this.streamFormat = streamFormat;

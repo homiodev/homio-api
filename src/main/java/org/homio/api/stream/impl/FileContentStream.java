@@ -22,7 +22,9 @@ public class FileContentStream extends FileSystemResource implements ContentStre
 
   public FileContentStream(@NotNull File file, @Nullable StreamFormat streamFormat) {
     super(file);
-    this.streamFormat = Objects.requireNonNullElseGet(streamFormat, () -> StreamFormat.evaluateFormat(file.getName()));
+    this.streamFormat =
+        Objects.requireNonNullElseGet(
+            streamFormat, () -> StreamFormat.evaluateFormat(file.getName()));
   }
 
   @Override

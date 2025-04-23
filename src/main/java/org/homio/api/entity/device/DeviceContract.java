@@ -10,7 +10,8 @@ import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface DeviceContract extends HasJsonData, HasEntityIdentifier, BaseEntityIdentifier, HasStatusAndMsg {
+public interface DeviceContract
+    extends HasJsonData, HasEntityIdentifier, BaseEntityIdentifier, HasStatusAndMsg {
 
   String getIeeeAddress();
 
@@ -24,9 +25,7 @@ public interface DeviceContract extends HasJsonData, HasEntityIdentifier, BaseEn
     setJsonData("model", value);
   }
 
-  /**
-   * Uses on UI to set png image with appropriate status and mark extra image if need
-   */
+  /** Uses on UI to set png image with appropriate status and mark extra image if need */
   @UIFieldNoReadDefaultValue
   default @Nullable Status.EntityStatus getEntityStatus() {
     Status status = getStatus();
