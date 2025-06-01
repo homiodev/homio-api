@@ -20,94 +20,106 @@ import org.jetbrains.annotations.Nullable;
 @RequiredArgsConstructor
 public abstract class DependencyExecutableInstaller {
 
-    protected final Context context;
-    protected @Getter String executable;
-    private String installedVersion;
+  protected final Context context;
+  protected @Getter String executable;
+  private String installedVersion;
 
-    public abstract String getName();
+  public abstract String getName();
 
-    public @Nullable String getExecutablePath(@NotNull Path execName) {
-        if (getVersion() == null) {
-            return null;
-        }
-        if (Files.exists(CommonUtils.getInstallPath().resolve(getName()))) {
-            return CommonUtils.getInstallPath().resolve(getName()).resolve(execName).toString();
-        }
-        // in case if installed externally
-        return execName.getFileName().toString();
+  public @Nullable String getExecutablePath(@NotNull Path execName) {
+    if (getVersion() == null) {
+      return null;
     }
-
-    public final @Nullable String getVersion() {
-        if (installedVersion == null) {
-            try {
-                installedVersion = trimToNull(getInstalledVersion());
-            } catch (Exception ex) {
-                log.warn("Unable to fetch {} installed version", getName());
-            }
-        }
-        return installedVersion;
+    if (Files.exists(CommonUtils.getInstallPath().resolve(getName()))) {
+      return CommonUtils.getInstallPath().resolve(getName()).resolve(execName).toString();
     }
+    // in case if installed externally
+    return execName.getFileName().toString();
+  }
 
-    public void installDependency(@NotNull ProgressBar progressBar, @Nullable String version) throws Exception {
-        installedVersion = null;
-        if (System.getProperty("spring.profiles.active").contains("offline")) {
-            throw new RuntimeException("Unable to install dependency. Offline mode");
-        }
-        installDependencyInternal(progressBar, version);
-        // check dependency installed
-        if (getVersion() == null) {
-            throw new RuntimeException("Something went wrong after install dependency. Executable file still required");
-        }
-        progressBar.progress(99, "Installing finished");
-        afterDependencyInstalled();
-        context.event().fireEvent(getName() + "-dependency-installed", OnOffType.of(true));
+  public final @Nullable String getVersion() {
+    if (installedVersion == null) {
+      try {
+        installedVersion = trimToNull(getInstalledVersion());
+      } catch (Exception ex) {
+        log.warn("Unable to fetch {} installed version", getName());
+      }
     }
+    return installedVersion;
+  }
 
-    public String installLatest() throws ExecutionException, InterruptedException {
-        String version = getInstalledVersion();
-        if (version != null) {
-            return version;
-        }
-        CompletableFuture<String> future = new CompletableFuture<>();
-        installDependency(future);
-        return future.get();
+  public void installDependency(@NotNull ProgressBar progressBar, @Nullable String version)
+      throws Exception {
+    installedVersion = null;
+    if (context.setting().hasProfile("offline")) {
+      throw new RuntimeException("Unable to install dependency. Offline mode");
     }
-
-    public CompletableFuture<String> installLatestAsync() {
-        String version = getInstalledVersion();
-        if (version != null) {
-            return CompletableFuture.completedFuture(version);
-        }
-        CompletableFuture<String> future = new CompletableFuture<>();
-        context.event().runOnceOnInternetUp("wait-inet-for-install-" + getName(), () -> {
-            installDependency(future);
-        });
-
-        return future;
+    installDependencyInternal(progressBar, version);
+    // check dependency installed
+    if (getVersion() == null) {
+      throw new RuntimeException(
+          "Something went wrong after install dependency. Executable file still required");
     }
+    progressBar.progress(99, "Installing finished");
+    afterDependencyInstalled();
+    context.event().fireEvent(getName() + "-dependency-installed", OnOffType.of(true));
+  }
 
-    private void installDependency(CompletableFuture<String> future) {
-        log.info("Installing dependency: {}", getName());
-        context.bgp().runWithProgress("install-" + getName()).onFinally(ex -> {
-            if (ex != null) {
+  public String installLatest() throws ExecutionException, InterruptedException {
+    String version = getInstalledVersion();
+    if (version != null) {
+      return version;
+    }
+    CompletableFuture<String> future = new CompletableFuture<>();
+    installDependency(future);
+    return future.get();
+  }
+
+  public CompletableFuture<String> installLatestAsync() {
+    String version = getInstalledVersion();
+    if (version != null) {
+      return CompletableFuture.completedFuture(version);
+    }
+    CompletableFuture<String> future = new CompletableFuture<>();
+    context
+        .event()
+        .runOnceOnInternetUp(
+            "wait-inet-for-install-" + getName(),
+            () -> {
+              installDependency(future);
+            });
+
+    return future;
+  }
+
+  private void installDependency(CompletableFuture<String> future) {
+    log.info("Installing dependency: {}", getName());
+    context
+        .bgp()
+        .runWithProgress("install-" + getName())
+        .onFinally(
+            ex -> {
+              if (ex != null) {
                 log.error("Unable to install {}", getName(), ex);
                 future.completeExceptionally(ex);
-            } else {
+              } else {
                 log.info("{} service successfully installed", getName());
                 future.complete(getVersion());
-            }
-        }).execute(progressBar -> {
-            installDependency(progressBar, null);
-        });
-    }
+              }
+            })
+        .execute(
+            progressBar -> {
+              installDependency(progressBar, null);
+            });
+  }
 
-    /**
-     * @return installed version or null
-     */
-    protected abstract @Nullable String getInstalledVersion();
+  /**
+   * @return installed version or null
+   */
+  protected abstract @Nullable String getInstalledVersion();
 
-    protected abstract void installDependencyInternal(@NotNull ProgressBar progressBar, String version) throws Exception;
+  protected abstract void installDependencyInternal(
+      @NotNull ProgressBar progressBar, String version) throws Exception;
 
-    protected void afterDependencyInstalled() {
-    }
+  protected void afterDependencyInstalled() {}
 }

@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.homio.api.entity.device.DeviceBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
 import org.homio.api.model.Icon;
 import org.homio.api.model.JSON;
 import org.homio.api.model.endpoint.BaseDeviceEndpoint;
@@ -229,6 +231,114 @@ public interface ContextVar {
         private final Object defaultValue;
     }
 
+    enum VarDescription {
+        General,
+        ToggleSwitch,
+        PushButton,
+        Status,
+        AirQuality,
+        BatteryChargingState,
+        BatteryLevel,
+        BatteryLowStatus,
+        Brightness,
+        CarbonDioxideDetectedState,
+        CarbonDioxideLevel,
+        CarbonDioxidePeakLevel,
+        CarbonMonoxideDetectedState,
+        CarbonMonoxideLevel,
+        CarbonMonoxidePeakLevel,
+        ClosedCaptions,
+        ColorTemperature,
+        Configured,
+        ConfiguredName,
+        ContactSensorState,
+        CoolingThresholdTemperature,
+        CurrentDoorState,
+        CurrentFanState,
+        CurrentHeaterCoolerState,
+        CurrentHeatingCoolingState,
+        CurrentHorizontalTiltAngle,
+        CurrentMediaState,
+        CurrentPosition,
+        CurrentSlatState,
+        CurrentTemperature,
+        CurrentTiltAngle,
+        CurrentVerticalTiltAngle,
+        CurrentVisibility,
+        Duration,
+        FaultStatus,
+        FilterChangeIndication,
+        FilterLifeLevel,
+        FilterResetIndication,
+        FirmwareRevision,
+        HardwareRevision,
+        HeatingThresholdTemperature,
+        HoldPosition,
+        Hue,
+        Identifier,
+        Identify,
+        InputDeviceType,
+        InputSourceType,
+        InuseStatus,
+        IsConfigured,
+        LeakDetectedState,
+        LightLevel,
+        LockControl,
+        LockCurrentState,
+        LockTargetState,
+        Manufacturer,
+        Model,
+        MotionDetectedState,
+        Mute,
+        Name,
+        NitrogenDioxideDensity,
+        ObstructionStatus,
+        OccupancyDetectedState,
+        OnState,
+        OzoneDensity,
+        PictureMode,
+        Pm10Density,
+        Pm25Density,
+        PositionState,
+        PowerMode,
+        ProgramMode,
+        ProgrammableSwitchEvent,
+        RelativeHumidity,
+        RemainingDuration,
+        RemoteKey,
+        RotationDirection,
+        RotationSpeed,
+        Saturation,
+        SecuritySystemCurrentState,
+        SecuritySystemTargetState,
+        SerialNumber,
+        ServiceIndex,
+        ServiceLabel,
+        SleepDiscoveryMode,
+        SmokeDetectedState,
+        SulphurDioxideDensity,
+        SwingMode,
+        TamperedStatus,
+        TargetDoorState,
+        TargetFanState,
+        TargetHeaterCoolerState,
+        TargetHeatingCoolingState,
+        TargetHorizontalTiltAngle,
+        TargetMediaState,
+        TargetPosition,
+        TargetRelativeHumidity,
+        TargetTemperature,
+        TargetTiltAngle,
+        TargetVerticalTiltAngle,
+        TargetVisibilityState,
+        TemperatureUnit,
+        Version,
+        VocDensity,
+        Volume,
+        VolumeControlType,
+        VolumeSelector
+    }
+
     interface VariableMetaBuilder extends GeneralVariableMetaBuilder {
 
         /**
@@ -246,10 +356,26 @@ public interface ContextVar {
          * @param values list of available options
          */
         @NotNull
-        VariableMetaBuilder setValues(Set<String> values);
+        VariableMetaBuilder setValues(@NotNull Set<String> values);
 
         @NotNull
         VariableMetaBuilder setRange(float min, float max);
+
+        @NotNull
+        VariableMetaBuilder setStep(float step);
+
+        @NotNull
+        VariableMetaBuilder setDescription(@NotNull String description);
+
+
+        @NotNull
+        VariableMetaBuilder setVarDescription(@NotNull VarDescription description);
+
+        @NotNull
+        VariableMetaBuilder setOwner(@NotNull DeviceBaseEntity owner);
+
+        @NotNull
+        VariableMetaBuilder setOwner(@NotNull DeviceEndpointsBehaviourContract owner);
     }
 
     interface TransformVariableMetaBuilder extends GeneralVariableMetaBuilder {
@@ -341,6 +467,24 @@ public interface ContextVar {
         JSON getJsonData();
 
         void set(Object value);
+
+        double getMinValue(double defValue);
+
+        double getMaxValue(double defValue);
+
+        double getStep(double defValue);
+
+        String getUnit();
+
+        String getDescription();
+
+        VariableType getRestriction();
+
+        VarDescription getVarDescription();
+
+        default boolean isPercentType() {
+            return getMinValue(-1) == 0 && getMaxValue(-1) == 100;
+        }
     }
 
     @Getter
