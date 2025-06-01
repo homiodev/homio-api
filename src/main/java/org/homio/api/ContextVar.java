@@ -365,7 +365,7 @@ public interface ContextVar {
         VariableMetaBuilder setStep(float step);
 
         @NotNull
-        VariableMetaBuilder setDescription(@NotNull String description);
+        VariableMetaBuilder setDescription(@Nullable String description);
 
 
         @NotNull
