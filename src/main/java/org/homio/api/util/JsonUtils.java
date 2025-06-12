@@ -1,7 +1,5 @@
 package org.homio.api.util;
 
-import static org.apache.commons.lang3.StringUtils.trimToNull;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +9,14 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -22,18 +28,13 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class JsonUtils {
 
-    public static final ObjectMapper OBJECT_MAPPER;
     public static final ObjectMapper YAML_OBJECT_MAPPER;
+    public static ObjectMapper OBJECT_MAPPER;
 
     static {
         OBJECT_MAPPER = new ObjectMapper()

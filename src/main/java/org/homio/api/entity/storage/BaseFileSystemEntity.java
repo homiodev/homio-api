@@ -1,9 +1,6 @@
 package org.homio.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
-import java.util.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.Context;
 import org.homio.api.entity.BaseEntityIdentifier;
@@ -13,14 +10,18 @@ import org.homio.api.fs.TreeConfiguration;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.model.ActionResponseModel;
 import org.homio.api.model.Icon;
-import org.homio.api.ui.UISidebarChildren;
 import org.homio.api.ui.field.*;
 import org.homio.api.ui.field.action.HasDynamicContextMenuActions;
 import org.homio.api.ui.field.action.UIContextMenuAction;
 import org.homio.api.ui.field.selection.SelectionConfiguration;
+import org.homio.api.util.CommonUtils;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
+import java.util.*;
 
 public interface BaseFileSystemEntity<FS extends FileSystemProvider>
         extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg,
@@ -58,7 +59,8 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
         return configurations;
     }
 
-    @NotNull String getFileSystemRoot();
+    @NotNull
+    String getFileSystemRoot();
 
     // in minutes
     default int getFileSystemCacheTimeout() {
@@ -69,7 +71,8 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
      * @return Short FS alias
      */
     @JsonIgnore
-    @NotNull String getFileSystemAlias();
+    @NotNull
+    String getFileSystemAlias();
 
     /**
      * @return Does show fs in file manager console tab
@@ -92,9 +95,9 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
         if (this instanceof SelectionConfiguration sc) {
             return sc.getSelectionIcon().getIcon();
         }
-        var annotation = getClass().getDeclaredAnnotation(UISidebarChildren.class);
-        if (annotation != null) {
-            return annotation.icon();
+        var route = CommonUtils.getClassRoute(getClass());
+        if (route != null) {
+            return route.icon();
         }
         return "fas fa-computer";
     }
@@ -114,9 +117,9 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
         if (this instanceof SelectionConfiguration sc) {
             return sc.getSelectionIcon().getColor();
         }
-        var annotation = getClass().getDeclaredAnnotation(UISidebarChildren.class);
-        if (annotation != null) {
-            return annotation.color();
+        var route = CommonUtils.getClassRoute(getClass());
+        if (route != null) {
+            return route.color();
         }
         return "#B32317";
     }
@@ -148,7 +151,8 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
         return (FS) fsMap.get(alias);
     }
 
-    @NotNull FS buildFileSystem(@NotNull Context context, int alias);
+    @NotNull
+    FS buildFileSystem(@NotNull Context context, int alias);
 
     @JsonIgnore
     long getConnectionHashCode();

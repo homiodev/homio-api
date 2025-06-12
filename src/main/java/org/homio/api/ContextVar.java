@@ -1,24 +1,27 @@
 package org.homio.api;
 
 import com.pivovarit.function.ThrowingConsumer;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.homio.api.entity.device.DeviceBaseEntity;
+import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
+import org.homio.api.model.HasEntityIdentifier;
+import org.homio.api.model.Icon;
+import org.homio.api.model.JSON;
+import org.homio.api.model.endpoint.BaseDeviceEndpoint;
+import org.homio.api.model.endpoint.DeviceEndpoint;
+import org.homio.api.state.State;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.homio.api.entity.device.DeviceBaseEntity;
-import org.homio.api.entity.device.DeviceEndpointsBehaviourContract;
-import org.homio.api.model.Icon;
-import org.homio.api.model.JSON;
-import org.homio.api.model.endpoint.BaseDeviceEndpoint;
-import org.homio.api.state.State;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 
 public interface ContextVar {
 
@@ -124,6 +127,8 @@ public interface ContextVar {
 
     Set<Variable> getVariables();
 
+    Variable getVariable(@NotNull String variableId);
+
     /**
      * Does variable exists in system
      *
@@ -207,7 +212,7 @@ public interface ContextVar {
     @Getter
     @RequiredArgsConstructor
     enum VariableType {
-        Any(o -> true, 0),
+        Any(o -> true, 0, DeviceEndpoint.EndpointType.string),
         Json(o -> {
             try {
                 new JSONObject(o.toString());
@@ -215,128 +220,23 @@ public interface ContextVar {
             } catch (Exception ex) {
                 return false;
             }
-        }, "{}"),
+        }, "{}", DeviceEndpoint.EndpointType.string),
         Color(o -> {
             if (o instanceof String) {
                 String str = o.toString();
                 return (str.length() == 7 || str.length() == 9) && str.startsWith("#");
             }
             return false;
-        }, false),
-        Enum(o -> o instanceof String, null),
-        Bool(o -> o instanceof Boolean, false),
-        Float(o -> o instanceof Number, 0F);
+        }, false, DeviceEndpoint.EndpointType.color),
+        Enum(o -> o instanceof String, null, DeviceEndpoint.EndpointType.select),
+        Text(o -> o instanceof String, null, DeviceEndpoint.EndpointType.string),
+        Bool(o -> o instanceof Boolean, false, DeviceEndpoint.EndpointType.bool),
+        Float(o -> o instanceof Number, 0F, DeviceEndpoint.EndpointType.number),
+        Percentage(o -> o instanceof Number num && num.intValue() >= 0 && num.intValue() <= 100, 0F, DeviceEndpoint.EndpointType.number);
 
         private final Predicate<Object> validate;
         private final Object defaultValue;
-    }
-
-    enum VarDescription {
-        General,
-        ToggleSwitch,
-        PushButton,
-        Status,
-        AirQuality,
-        BatteryChargingState,
-        BatteryLevel,
-        BatteryLowStatus,
-        Brightness,
-        CarbonDioxideDetectedState,
-        CarbonDioxideLevel,
-        CarbonDioxidePeakLevel,
-        CarbonMonoxideDetectedState,
-        CarbonMonoxideLevel,
-        CarbonMonoxidePeakLevel,
-        ClosedCaptions,
-        ColorTemperature,
-        Configured,
-        ConfiguredName,
-        ContactSensorState,
-        CoolingThresholdTemperature,
-        CurrentDoorState,
-        CurrentFanState,
-        CurrentHeaterCoolerState,
-        CurrentHeatingCoolingState,
-        CurrentHorizontalTiltAngle,
-        CurrentMediaState,
-        CurrentPosition,
-        CurrentSlatState,
-        CurrentTemperature,
-        CurrentTiltAngle,
-        CurrentVerticalTiltAngle,
-        CurrentVisibility,
-        Duration,
-        FaultStatus,
-        FilterChangeIndication,
-        FilterLifeLevel,
-        FilterResetIndication,
-        FirmwareRevision,
-        HardwareRevision,
-        HeatingThresholdTemperature,
-        HoldPosition,
-        Hue,
-        Identifier,
-        Identify,
-        InputDeviceType,
-        InputSourceType,
-        InuseStatus,
-        IsConfigured,
-        LeakDetectedState,
-        LightLevel,
-        LockControl,
-        LockCurrentState,
-        LockTargetState,
-        Manufacturer,
-        Model,
-        MotionDetectedState,
-        Mute,
-        Name,
-        NitrogenDioxideDensity,
-        ObstructionStatus,
-        OccupancyDetectedState,
-        OnState,
-        OzoneDensity,
-        PictureMode,
-        Pm10Density,
-        Pm25Density,
-        PositionState,
-        PowerMode,
-        ProgramMode,
-        ProgrammableSwitchEvent,
-        RelativeHumidity,
-        RemainingDuration,
-        RemoteKey,
-        RotationDirection,
-        RotationSpeed,
-        Saturation,
-        SecuritySystemCurrentState,
-        SecuritySystemTargetState,
-        SerialNumber,
-        ServiceIndex,
-        ServiceLabel,
-        SleepDiscoveryMode,
-        SmokeDetectedState,
-        SulphurDioxideDensity,
-        SwingMode,
-        TamperedStatus,
-        TargetDoorState,
-        TargetFanState,
-        TargetHeaterCoolerState,
-        TargetHeatingCoolingState,
-        TargetHorizontalTiltAngle,
-        TargetMediaState,
-        TargetPosition,
-        TargetRelativeHumidity,
-        TargetTemperature,
-        TargetTiltAngle,
-        TargetVerticalTiltAngle,
-        TargetVisibilityState,
-        TemperatureUnit,
-        Version,
-        VocDensity,
-        Volume,
-        VolumeControlType,
-        VolumeSelector
+        private final DeviceEndpoint.EndpointType endpointType;
     }
 
     interface VariableMetaBuilder extends GeneralVariableMetaBuilder {
@@ -366,10 +266,6 @@ public interface ContextVar {
 
         @NotNull
         VariableMetaBuilder setDescription(@Nullable String description);
-
-
-        @NotNull
-        VariableMetaBuilder setVarDescription(@NotNull VarDescription description);
 
         @NotNull
         VariableMetaBuilder setOwner(@NotNull DeviceBaseEntity owner);
@@ -452,21 +348,46 @@ public interface ContextVar {
         GroupMetaBuilder setIcon(@Nullable Icon icon);
     }
 
-    interface Variable {
+    interface Variable extends HasEntityIdentifier {
 
+        @Override
+        default @NotNull String getEntityID() {
+            return getId();
+        }
+
+        @Override
+        @NotNull
+        default String getType() {
+            return getName();
+        }
+
+        @NotNull
+        String getIcon();
+
+        @NotNull
+        String getIconColor();
+
+        default @NotNull Icon getIconModel() {
+            return new Icon(getIcon(), getIconColor());
+        }
+
+        @NotNull
         String getId();
 
+        @NotNull
         String getName();
 
+        @Nullable
         Object getRawValue();
 
-        default State getValue() {
+        default @NotNull State getValue() {
             return State.of(getRawValue());
         }
 
+        @NotNull
         JSON getJsonData();
 
-        void set(Object value);
+        void set(@Nullable Object value);
 
         double getMinValue(double defValue);
 
@@ -474,17 +395,23 @@ public interface ContextVar {
 
         double getStep(double defValue);
 
+        @Nullable
         String getUnit();
 
+        @Nullable
         String getDescription();
 
+        @NotNull
         VariableType getRestriction();
-
-        VarDescription getVarDescription();
 
         default boolean isPercentType() {
             return getMinValue(-1) == 0 && getMaxValue(-1) == 100;
         }
+
+        // set or remove(if value is null) listener
+        void addListener(@NotNull String key, @NotNull ThrowingConsumer<State, Exception> callback);
+
+        void removeListener(@NotNull String key);
     }
 
     @Getter

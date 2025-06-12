@@ -1,35 +1,7 @@
 package org.homio.api.util;
 
-import static java.lang.String.format;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.nio.file.StandardOpenOption.*;
-
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.FileSystem;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -42,6 +14,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.tika.Tika;
 import org.homio.api.fs.TreeNode;
 import org.homio.api.repository.GitHubProject;
+import org.homio.api.ui.route.UIRouteMenu;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.InputStreamResource;
@@ -53,6 +26,36 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static java.lang.String.format;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.*;
 
 @Getter
 @Log4j2
@@ -110,11 +113,13 @@ public final class CommonUtils {
 
     public static Set<Path> removeFileOrDirectory(Path path) {
         Set<Path> removedItems = new HashSet<>();
-        walkFileOrDirectory(path, item -> {
-            if (Files.deleteIfExists(item)) {
-                removedItems.add(item);
-            }
-        });
+        walkFileOrDirectory(
+                path,
+                item -> {
+                    if (Files.deleteIfExists(item)) {
+                        removedItems.add(item);
+                    }
+                });
         return removedItems;
     }
 
@@ -127,36 +132,38 @@ public final class CommonUtils {
             return;
         }
         Set<Path> visitedFiles = new HashSet<>();
-        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+        Files.walkFileTree(
+                path,
+                new SimpleFileVisitor<>() {
 
-            @Override
-            @SneakyThrows
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if (visitedFiles.add(file)) {
-                    pathHandler.accept(file);
-                }
-                return FileVisitResult.CONTINUE;
-            }
+                    @Override
+                    @SneakyThrows
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                        if (visitedFiles.add(file)) {
+                            pathHandler.accept(file);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
 
-            @Override
-            @SneakyThrows
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                pathHandler.accept(file);
-                return FileVisitResult.CONTINUE;
-            }
+                    @Override
+                    @SneakyThrows
+                    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                        pathHandler.accept(file);
+                        return FileVisitResult.CONTINUE;
+                    }
 
-            @Override
-            @SneakyThrows
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-                if (exc != null) {
-                    throw exc;
-                }
-                if (visitedFiles.add(dir)) {
-                    pathHandler.accept(dir);
-                }
-                return FileVisitResult.CONTINUE;
-            }
-        });
+                    @Override
+                    @SneakyThrows
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                        if (exc != null) {
+                            throw exc;
+                        }
+                        if (visitedFiles.add(dir)) {
+                            pathHandler.accept(dir);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
     }
 
     public static String getErrorMessage(Throwable ex) {
@@ -210,7 +217,8 @@ public final class CommonUtils {
         return map;
     }
 
-    public static @NotNull <T> Predicate<T> distinctByKey(@NotNull Function<? super T, ?> keyExtractor) {
+    public static @NotNull <T> Predicate<T> distinctByKey(
+            @NotNull Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
     }
@@ -222,7 +230,6 @@ public final class CommonUtils {
             }
         } catch (Exception ex) {
             log.error(getErrorMessage(ex), ex);
-
         }
         return Collections.emptyList();
     }
@@ -246,7 +253,8 @@ public final class CommonUtils {
         if (urls.size() == 1) {
             resourceURL = urls.get(0);
         } else if (urls.size() > 1 && addonID != null) {
-            resourceURL = urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
+            resourceURL =
+                    urls.stream().filter(url -> url.getFile().contains(addonID)).findAny().orElse(null);
         }
         return resourceURL;
     }
@@ -257,11 +265,13 @@ public final class CommonUtils {
         if (constructor != null) {
             return constructor.newInstance(parameters);
         }
-        throw new IllegalArgumentException("Class " + clazz.getSimpleName() + " has to have empty constructor");
+        throw new IllegalArgumentException(
+                "Class " + clazz.getSimpleName() + " has to have empty constructor");
     }
 
     /**
-     * Find constructor. Not well implemented because not find fine-grain constructor. But satisfy app requirements
+     * Find constructor. Not well implemented because not find fine-grain constructor. But satisfy app
+     * requirements
      *
      * @param clazz          class
      * @param parameterTypes - types
@@ -269,7 +279,8 @@ public final class CommonUtils {
      * @return constructor or null
      */
     @SneakyThrows
-    public static <T> @Nullable Constructor<T> findObjectConstructor(@NotNull Class<T> clazz, Class<?>... parameterTypes) {
+    public static <T> @Nullable Constructor<T> findObjectConstructor(
+            @NotNull Class<T> clazz, Class<?>... parameterTypes) {
         for (Constructor<?> constructor : clazz.getConstructors()) {
             if (isMatchConstructor(constructor, parameterTypes)) {
                 constructor.setAccessible(true);
@@ -308,7 +319,9 @@ public final class CommonUtils {
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        transformer.transform(new DOMSource(document), new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
+        transformer.transform(
+                new DOMSource(document),
+                new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
         return out.toString();
     }
 
@@ -331,18 +344,25 @@ public final class CommonUtils {
         return false;
     }
 
-    public static void addFiles(@NotNull Path tmpPath, @NotNull Collection<TreeNode> files,
-                                @NotNull BiFunction<Path, TreeNode, Path> pathResolver) {
-        addFiles(tmpPath, files, pathResolver,
+    public static void addFiles(
+            @NotNull Path tmpPath,
+            @NotNull Collection<TreeNode> files,
+            @NotNull BiFunction<Path, TreeNode, Path> pathResolver) {
+        addFiles(
+                tmpPath,
+                files,
+                pathResolver,
                 (treeNode, path) -> Files.copy(treeNode.getInputStream(), path, REPLACE_EXISTING),
                 (treeNode, path) -> Files.createDirectories(path));
     }
 
     @SneakyThrows
-    public static void addFiles(@NotNull Path tmpPath, @Nullable Collection<TreeNode> files,
-                                @NotNull BiFunction<Path, TreeNode, Path> pathResolver,
-                                @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
-                                @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
+    public static void addFiles(
+            @NotNull Path tmpPath,
+            @Nullable Collection<TreeNode> files,
+            @NotNull BiFunction<Path, TreeNode, Path> pathResolver,
+            @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> fileWriteResolver,
+            @NotNull ThrowingBiConsumer<TreeNode, Path, Exception> folderWriteResolver) {
         if (files != null) {
             for (TreeNode treeNode : files) {
                 Path filePath = pathResolver.apply(tmpPath, treeNode);
@@ -350,7 +370,11 @@ public final class CommonUtils {
                     fileWriteResolver.accept(treeNode, filePath);
                 } else {
                     folderWriteResolver.accept(treeNode, filePath);
-                    addFiles(filePath, treeNode.getChildren(true), pathResolver, fileWriteResolver,
+                    addFiles(
+                            filePath,
+                            treeNode.getChildren(true),
+                            pathResolver,
+                            fileWriteResolver,
                             folderWriteResolver);
                 }
             }
@@ -469,13 +493,13 @@ public final class CommonUtils {
     public static String splitNameToReadableFormat(@NotNull String name) {
         String[] items = name.split("_");
         if (items.length == 1) {
-            name = name.replaceAll(
-                    format("%s|%s|%s",
-                            "(?<=[A-Z])(?=[A-Z][a-z])",
-                            "(?<=[a-z])(?=[A-Z])",
-                            "(?<=[A-Za-z])(?=[0-9])"
-                    ), "_"
-            ).toLowerCase();
+            name =
+                    name.replaceAll(
+                                    format(
+                                            "%s|%s|%s",
+                                            "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[a-z])(?=[A-Z])", "(?<=[A-Za-z])(?=[0-9])"),
+                                    "_")
+                            .toLowerCase();
         }
         items = name.split("_");
         return StringUtils.capitalize(String.join(" ", items));
@@ -508,6 +532,56 @@ public final class CommonUtils {
         return DATE_TIME_FORMAT.format(date);
     }
 
+    @SneakyThrows
+    public static @Nullable Route getClassRoute(Class<?> clazz) {
+        for (Annotation classSpecificAnnotationInstance : clazz.getDeclaredAnnotations()) {
+            Class<? extends Annotation> specificAnnotationType =
+                    classSpecificAnnotationInstance.annotationType();
+            UIRouteMenu menuConfig = UIRouteMenu.class.isAssignableFrom(specificAnnotationType) ?
+                    clazz.getDeclaredAnnotation(UIRouteMenu.class) : specificAnnotationType.getAnnotation(UIRouteMenu.class);
+            if (menuConfig != null) {
+                Method itemIconMethod = specificAnnotationType.getDeclaredMethod("icon");
+                String itemSpecificIcon = (String) itemIconMethod.invoke(classSpecificAnnotationInstance);
+
+                Method itemColorMethod = specificAnnotationType.getDeclaredMethod("color");
+                String itemSpecificColor = (String) itemColorMethod.invoke(classSpecificAnnotationInstance);
+
+                Method itemAllowCreateMethod = specificAnnotationType.getDeclaredMethod("allowCreateItem");
+                boolean itemSpecificAllowCreate =
+                        (boolean) itemAllowCreateMethod.invoke(classSpecificAnnotationInstance);
+
+                UIRouteMenu.TopSidebarMenu parent = menuConfig.parent();
+                int order = menuConfig.order();
+                String[] sort = menuConfig.sort();
+                String[] filter = menuConfig.filter();
+                String filterPlaceholder = menuConfig.filterPlaceholder();
+                String path = menuConfig.overridePath();
+
+                String finalIcon =
+                        (itemSpecificIcon != null && !itemSpecificIcon.isEmpty())
+                                ? itemSpecificIcon
+                                : menuConfig.icon();
+
+                String finalBg =
+                        (itemSpecificColor != null && !itemSpecificColor.isEmpty())
+                                ? itemSpecificColor
+                                : menuConfig.color();
+
+                return new Route(
+                        parent,
+                        finalIcon,
+                        finalBg,
+                        itemSpecificAllowCreate,
+                        order,
+                        sort,
+                        filter,
+                        filterPlaceholder,
+                        path);
+            }
+        }
+        return null;
+    }
+
     public static class TemplateBuilder {
 
         private final Context context = new Context();
@@ -532,5 +606,17 @@ public final class CommonUtils {
             templateEngine.process("templates/" + templateName, context, stringWriter);
             return stringWriter.toString();
         }
+    }
+
+    public record Route(
+            UIRouteMenu.TopSidebarMenu parent,
+            String icon,
+            String color,
+            boolean allowCreateNewItems, // For this specific item/route type
+            int order,
+            String[] sort,
+            String[] filter,
+            String filterPlaceholder,
+            String path) {
     }
 }

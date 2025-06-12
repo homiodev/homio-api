@@ -1,13 +1,9 @@
 package org.homio.api.setting;
 
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fazecast.jSerialComm.SerialPort;
-import java.nio.file.Paths;
 import org.homio.api.Context;
-import org.homio.api.entity.BaseEntity;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel.KeyValueEnum;
@@ -16,15 +12,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import java.nio.file.Paths;
+
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPlugin<T> {
 
     /**
      * If want to show setting direct on top header panel instead of settings
-     *
-     * @return Base entity which setting available to
      */
-    default @Nullable Class<? extends BaseEntity> availableForEntity() {
+    default @Nullable String availableForRoute() {
         return null;
     }
 

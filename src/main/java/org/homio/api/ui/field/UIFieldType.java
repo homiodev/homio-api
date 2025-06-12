@@ -1,8 +1,9 @@
 package org.homio.api.ui.field;
 
-import java.util.function.Function;
 import lombok.Getter;
 import org.homio.api.state.State;
+
+import java.util.function.Function;
 
 @Getter
 public enum UIFieldType {
@@ -40,6 +41,8 @@ public enum UIFieldType {
     StaticDate,
 
     String,
+
+    ImageBase64,
 
     // special type (default for detect a field type by java type)
     AutoDetect,

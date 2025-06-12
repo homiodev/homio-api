@@ -1,14 +1,15 @@
 package org.homio.api.ui;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
-import lombok.Getter;
-import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public final class UI {
 
@@ -72,12 +73,19 @@ public final class UI {
         public static final String RED = "#BD3500";
         public static final String GREEN = "#17A328";
         public static final String WHITE = "#999999";
-        private static final String[] RANDOM_COLORS = new String[]{"#49738C", "#D18456",
-                "#7f7635", "#D054A1", "#D05362", "#AE7F84",
-                "#7F83AE", "#577674", "#009688", "#50216A", "#6A2121", "#215A6A", "#999999"};
+        private static final String[] RANDOM_COLORS = new String[]{
+                "#49738C", "#D18456", "#7f7635",
+                "#D054A1", "#D05362", "#AE7F84",
+                "#7F83AE", "#577674", "#009688",
+                "#50216A", "#6A2121", "#215A6A",
+                WHITE, RED, WARNING, BLUE, PRIMARY_COLOR, GREEN};
+
+        public static String random(int hashCode) {
+            return RANDOM_COLORS[hashCode % RANDOM_COLORS.length];
+        }
 
         public static String random() {
-            return RANDOM_COLORS[(int) (System.currentTimeMillis() % 10)];
+            return RANDOM_COLORS[(int) (System.currentTimeMillis() % RANDOM_COLORS.length)];
         }
 
         public static String darker(@Nullable String color, float factor) {

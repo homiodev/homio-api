@@ -1,13 +1,8 @@
 package org.homio.api.entity.device;
 
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static org.homio.api.ui.field.UIFieldType.HTML;
-import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
-
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +12,6 @@ import org.homio.api.entity.HasPermissions;
 import org.homio.api.entity.UserEntity;
 import org.homio.api.model.JSON;
 import org.homio.api.model.Status;
-import org.homio.api.ui.UISidebarMenu;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
@@ -25,16 +19,23 @@ import org.homio.api.ui.field.action.HasDynamicUIFields;
 import org.homio.api.ui.field.color.UIFieldColorBgRef;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
+import org.homio.api.ui.route.UIRouteMenu;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
+
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.homio.api.ui.field.UIFieldType.HTML;
+import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
 
 @Getter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@UISidebarMenu(order = 700,
+@UIRouteMenu(order = 700,
         icon = "fas fa-shapes",
-        parent = UISidebarMenu.TopSidebarMenu.HARDWARE,
-        bg = "#FFFFFF",
+        parent = UIRouteMenu.TopSidebarMenu.HARDWARE,
+        color = "#FFFFFF",
         overridePath = "devices",
         filter = {"*:fas fa-filter:#8DBA73", "status:fas fa-heart-crack:#C452C4"},
         sort = {
