@@ -8,57 +8,63 @@ import org.jetbrains.annotations.Nullable;
 
 public interface AddonEntrypoint extends Comparable<AddonEntrypoint> {
 
-    String ADDON_PREFIX = "org.homio.addon.";
+  String ADDON_PREFIX = "org.homio.addon.";
 
-    static @Nullable String getAddonID(Class clazz) {
-        String name = clazz.getName();
-        if (name.startsWith(ADDON_PREFIX)) {
-            return name.substring(ADDON_PREFIX.length(), name.indexOf('.', ADDON_PREFIX.length()));
-        }
-        return null;
+  static @Nullable String getAddonID(Class clazz) {
+    String name = clazz.getName();
+    if (name.startsWith(ADDON_PREFIX)) {
+      return name.substring(ADDON_PREFIX.length(), name.indexOf('.', ADDON_PREFIX.length()));
     }
+    return null;
+  }
 
-    // run once app started
-    void init();
+  // run once app started
+  void init();
 
-    // run when app started and every time when added/removed new addons
-    default void onContextRefresh() {
+  // run when app started and every time when added/removed new addons
+  default void onContextRefresh() {}
 
+  default void destroy() {}
+
+  default @Nullable String getSettingDescription() {
+    return null;
+  }
+
+  @SneakyThrows
+  default URL getAddonImageURL() {
+    return getResource("images/image.png");
+  }
+
+  // a-z or at most one '-' and nothing else
+  default @Nullable String getAddonID() {
+    return AddonEntrypoint.getAddonID(getClass());
+  }
+
+  default @NotNull AddonImageColorIndex getAddonImageColorIndex() {
+    return AddonImageColorIndex.ZERO;
+  }
+
+  @Override
+  default int compareTo(@NotNull AddonEntrypoint o) {
+    if (this.getAddonID() == null) {
+      throw new IllegalStateException("Unable to evaluate addon id for addon: " + o);
     }
-
-    default void destroy() {
-
+    if (o.getAddonID() == null) {
+      throw new IllegalStateException("Unable to evaluate addon id for addon: " + o);
     }
+    return this.getAddonID().compareTo(o.getAddonID());
+  }
 
-    default @Nullable String getSettingDescription() {
-        return null;
-    }
+  @SneakyThrows
+  default @Nullable URL getResource(String resource) {
+    return CommonUtils.getResource(getAddonID(), resource);
+  }
 
-    @SneakyThrows
-    default @NotNull URL getAddonImageURL() {
-        return getResource("images/image.png");
-    }
-
-    // a-z or at most one '-' and nothing else
-    default @Nullable String getAddonID() {
-        return AddonEntrypoint.getAddonID(getClass());
-    }
-
-    default @NotNull AddonImageColorIndex getAddonImageColorIndex() {
-        return AddonImageColorIndex.ZERO;
-    }
-
-    @Override
-    default int compareTo(@NotNull AddonEntrypoint o) {
-        return this.getAddonID().compareTo(o.getAddonID());
-    }
-
-    @SneakyThrows
-    default @Nullable URL getResource(String resource) {
-        return CommonUtils.getResource(getAddonID(), resource);
-    }
-
-    enum AddonImageColorIndex {
-        ZERO, ONE, TWO, THREE, FOUR
-    }
+  enum AddonImageColorIndex {
+    ZERO,
+    ONE,
+    TWO,
+    THREE,
+    FOUR
+  }
 }

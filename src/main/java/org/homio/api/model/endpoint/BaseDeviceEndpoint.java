@@ -1,7 +1,17 @@
 package org.homio.api.model.endpoint;
 
+import static java.util.Objects.requireNonNull;
+import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pivovarit.function.ThrowingConsumer;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,17 +36,6 @@ import org.homio.api.state.State;
 import org.homio.api.state.StringType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.requireNonNull;
-import static org.homio.api.util.CommonUtils.splitNameToReadableFormat;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -395,9 +394,9 @@ public abstract class BaseDeviceEndpoint<D extends DeviceEndpointsBehaviourContr
         }
         pushVariable();
         if (ignoreDuplicates) {
-            context.event().fireEvent(getEntityID(), value);
-        } else {
             context.event().fireEventIfNotSame(getEntityID(), value);
+        } else {
+            context.event().fireEvent(getEntityID(), value);
         }
         if (fireUpdateUI) {
             updateUI();

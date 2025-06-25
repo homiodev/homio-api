@@ -1,7 +1,36 @@
 package org.homio.api.util;
 
+import static java.lang.String.format;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.*;
+
 import com.pivovarit.function.ThrowingBiConsumer;
 import com.pivovarit.function.ThrowingConsumer;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -26,36 +55,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.w3c.dom.Document;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import static java.lang.String.format;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.nio.file.StandardOpenOption.*;
 
 @Getter
 @Log4j2
@@ -176,6 +175,9 @@ public final class CommonUtils {
         }
 
         if (cause instanceof NullPointerException) {
+            if(cause.getMessage() != null) {
+                return cause.getMessage();
+            }
             log.error("Unexpected NPE: <{}>", ex.getMessage(), ex);
             return "Unexpected NullPointerException at line: " + ex.getStackTrace()[0].toString();
         }
@@ -530,6 +532,16 @@ public final class CommonUtils {
 
     private static String getTimestampString(Date date) {
         return DATE_TIME_FORMAT.format(date);
+    }
+
+    public static String getMethodTrimName(Method method) {
+        String name = method.getName();
+        if(name.startsWith("get") || name.startsWith("set")) {
+            name = name.substring(3);
+        } else if(name.startsWith("is")) {
+            name = name.substring(2);
+        }
+        return StringUtils.uncapitalize(name);
     }
 
     @SneakyThrows

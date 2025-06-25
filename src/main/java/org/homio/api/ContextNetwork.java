@@ -4,12 +4,10 @@ import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import java.net.ConnectException;
-import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.*;
 import java.util.List;
 import java.util.function.BiConsumer;
+import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface ContextNetwork {
 
-    static String ping(String host, int port) throws ConnectException {
+    static String ping(@NotNull String host, int port) throws ConnectException {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), 5000);
             return socket.getLocalAddress().getHostAddress();
@@ -31,15 +29,12 @@ public interface ContextNetwork {
 
     /**
      * Listen upd on host/port. default host is wildcard listener accept DatagramPacket and string value
-     *
-     * @param listener -
-     * @param host     -
-     * @param key      -
-     * @param port     -
      */
-    void listenUdp(String key, @Nullable String host, int port, BiConsumer<DatagramPacket, String> listener);
+    void listenUdp(@NotNull String key, @Nullable String host, int port, @NotNull BiConsumer<DatagramPacket, String> listener);
 
-    void stopListenUdp(String key);
+    void stopListenUdp(@NotNull String key);
+
+    @Nullable JmDNS getPrimaryMDNS(@Nullable InetAddress address);
 
     @NotNull
     String getHostname();

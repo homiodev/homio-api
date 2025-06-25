@@ -21,4 +21,7 @@ public @interface UIContextMenuAction {
   String confirmMessageDialogColor() default "";
 
   UIActionInput[] inputs() default {};
+
+  /** Attach action button to specific field */
+  String attachToField() default "";
 }

@@ -1,6 +1,12 @@
 package org.homio.api;
 
 import com.pivovarit.function.ThrowingConsumer;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -15,13 +21,6 @@ import org.homio.api.state.State;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 public interface ContextVar {
 
@@ -213,6 +212,7 @@ public interface ContextVar {
     @RequiredArgsConstructor
     enum VariableType {
         Any(o -> true, 0, DeviceEndpoint.EndpointType.string),
+        Broadcast(o -> true, 0, DeviceEndpoint.EndpointType.string),
         Json(o -> {
             try {
                 new JSONObject(o.toString());
@@ -355,12 +355,6 @@ public interface ContextVar {
             return getId();
         }
 
-        @Override
-        @NotNull
-        default String getType() {
-            return getName();
-        }
-
         @NotNull
         String getIcon();
 
@@ -394,6 +388,8 @@ public interface ContextVar {
         double getMaxValue(double defValue);
 
         double getStep(double defValue);
+
+        boolean isWritable();
 
         @Nullable
         String getUnit();

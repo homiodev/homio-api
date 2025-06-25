@@ -1,12 +1,11 @@
 package org.homio.api.entity.device;
 
 import jakarta.persistence.*;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import org.homio.api.entity.validation.MaxItems;
 import org.homio.api.ui.field.UIField;
-
-import java.util.Set;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -22,7 +21,7 @@ public abstract class DeviceEntityAndSeries<S extends DeviceSeriesEntity> extend
 
     @Override
     protected long getChildEntityHashCode() {
-        long code = super.getChildEntityHashCode();
+        long code = 0;
         for (S s : series) {
             code += s.getEntityHashCode();
         }

@@ -37,7 +37,7 @@ public interface HasEntityLog extends HasJsonData {
     }
 
     default void addTopicFilterByEntityID(@NotNull Class<?> entityClass) {
-      addTopicFilterByEntityID(entityClass.getName());
+      addTopicFilterByEntityID(entityClass.getPackage().getName());
     }
 
     default void addTopicFilterByEntityID(@NotNull Package pack) {

@@ -1,8 +1,15 @@
 package org.homio.api.entity;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.pivovarit.function.ThrowingConsumer;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.Context;
@@ -11,14 +18,6 @@ import org.homio.api.util.CommonUtils;
 import org.homio.api.util.SecureString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface HasJsonData {
 
@@ -141,6 +140,11 @@ public interface HasJsonData {
 
     @SneakyThrows
     default <T> @NotNull Set<T> getJsonDataSet(@NotNull String key, @NotNull Class<T> classType) {
+        return getJsonDataSet(key, classType, null);
+    }
+
+    @SneakyThrows
+    default <T> @NotNull Set<T> getJsonDataSet(@NotNull String key, @NotNull Class<T> classType, @Nullable T[] defaultValues) {
         if (getJsonData().has(key)) {
             try {
                 return OBJECT_MAPPER.readValue(
@@ -149,7 +153,7 @@ public interface HasJsonData {
             } catch (Exception ignore) {
             }
         }
-        return new HashSet<>();
+        return defaultValues == null ? new HashSet<>() : Set.of(defaultValues);
     }
 
     @SneakyThrows

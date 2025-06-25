@@ -1,6 +1,9 @@
 package org.homio.api.entity.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
+import java.util.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.homio.api.Context;
 import org.homio.api.entity.BaseEntityIdentifier;
@@ -18,10 +21,6 @@ import org.homio.api.util.CommonUtils;
 import org.homio.api.util.Lang;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
-import java.util.*;
 
 public interface BaseFileSystemEntity<FS extends FileSystemProvider>
         extends BaseEntityIdentifier, HasDynamicContextMenuActions, HasStatusAndMsg,
@@ -75,7 +74,7 @@ public interface BaseFileSystemEntity<FS extends FileSystemProvider>
     String getFileSystemAlias();
 
     /**
-     * @return Does show fs in file manager console tab
+     * @return Does show fs in the file manager console tab
      */
     @JsonIgnore
     boolean isShowInFileManager();

@@ -1,17 +1,16 @@
 package org.homio.api.state;
 
+import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Objects;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.homio.api.util.CommonUtils;
 import org.jetbrains.annotations.NotNull;
-
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.homio.api.util.JsonUtils.OBJECT_MAPPER;
 
 public interface State {
 
@@ -39,6 +38,11 @@ public interface State {
         @Override
         public void setAsNode(ObjectNode node, String key) {
 
+        }
+
+        @Override
+        public String toString() {
+            return "N/A";
         }
     };
 
