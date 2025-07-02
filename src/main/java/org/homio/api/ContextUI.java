@@ -228,8 +228,8 @@ public interface ContextUI {
 
         default @NotNull NotificationBlockBuilder setDevices(@Nullable Collection<? extends DeviceBaseEntity> devices) {
             if (devices != null) {
-                addInfo("sum", new Icon("fas fa-mountain-city", "#CDDC39"), Lang.getServerMessage("TITLE.DEVICES_STAT",
-                        Map.of("ONLINE", devices.stream().filter(d -> d.getStatus().isOnline()).count(), "TOTAL", devices.size())));
+                addInfo("sum", new Icon("fas fa-mountain-city", "#CDDC39"), "TITLE.DEVICES_STAT",
+                        Map.of("ONLINE", devices.stream().filter(d -> d.getStatus().isOnline()).count(), "TOTAL", devices.size()));
                 if (devices.isEmpty()) {
                     return this;
                 }
@@ -326,6 +326,16 @@ public interface ContextUI {
 
         @NotNull
         NotificationInfoLineBuilder addInfo(@NotNull String key, @Nullable Icon icon, @NotNull String info);
+
+        @NotNull
+        default NotificationInfoLineBuilder addInfo(@NotNull String key, @Nullable Icon icon, @NotNull String info, @NotNull String param0) {
+            return addInfo(key, icon, Lang.getServerMessage(info, param0));
+        }
+
+        @NotNull
+        default NotificationInfoLineBuilder addInfo(@NotNull String key, @Nullable Icon icon, @NotNull String info, @NotNull Map<String, Object> param0) {
+            return addInfo(key, icon, Lang.getServerMessage(info, param0));
+        }
 
         @NotNull
         NotificationBlockBuilder addEntityInfo(@NotNull BaseEntity entity);
@@ -535,6 +545,8 @@ public interface ContextUI {
     }
 
     interface ContextUINotification {
+
+        void sendPushNotification(@NotNull String title, @NotNull String message);
 
         /**
          * Remove notification block if it has no rows anymore
