@@ -110,7 +110,7 @@ public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> exten
         if (entities.size() > 1) {
             throw new NotFoundException("Found multiple entities with id: " + ieeeAddress);
         }
-        return entities.get(0);
+        return entities.getFirst();
     }
 
     @SneakyThrows
@@ -128,7 +128,7 @@ public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> exten
         String deviceId = workspaceBlock.getMenuValue(DEVICE, deviceMenu);
         D entity = context.db().getRequire(deviceId);
         if (!entity.getStatus().isOnline()) {
-            var readyLock = workspaceBlock.getLockManager().getLock(workspaceBlock, "device-ready-" + entity.getIeeeAddress());
+            var readyLock = workspaceBlock.getLockManager().createLock(workspaceBlock, "device-ready-" + entity.getIeeeAddress());
             if (readyLock.await(workspaceBlock)) {
                 entity = context.db().getRequire(deviceId);
                 if (entity.getStatus().isOnline()) {

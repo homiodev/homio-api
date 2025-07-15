@@ -322,6 +322,9 @@ public interface ContextVar {
         GeneralVariableMetaBuilder setIcon(@Nullable Icon icon);
 
         @NotNull
+        GeneralVariableMetaBuilder setDecimalScale(int scale);
+
+        @NotNull
         GeneralVariableMetaBuilder setAttributes(@Nullable List<String> attributes);
 
         /**

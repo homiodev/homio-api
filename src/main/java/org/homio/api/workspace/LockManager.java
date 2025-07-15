@@ -21,9 +21,23 @@ public interface LockManager {
     signalAll(key, null);
   }
 
-  Lock getLock(WorkspaceBlock workspaceBlock);
+  default Lock createLock(WorkspaceBlock workspaceBlock) {
+    return createLock(workspaceBlock, workspaceBlock.getId(), null);
+  }
+
+  default Lock createLock(WorkspaceBlock workspaceBlock, String key) {
+    return createLock(workspaceBlock, key, null);
+  }
 
   Lock getLock(WorkspaceBlock workspaceBlock, String key);
+
+  default Lock getLockRequired(WorkspaceBlock workspaceBlock, String key) {
+    Lock lock = getLock(workspaceBlock, key);
+    if (lock == null) {
+      throw new IllegalArgumentException("No such lock: " + key);
+    }
+    return lock;
+  }
 
   /**
    * Create lock.
@@ -33,7 +47,7 @@ public interface LockManager {
    * @param expectedValue - any value. If Pattern - than checks if value match pattern
    * @return -
    */
-  Lock getLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
+  Lock createLock(WorkspaceBlock workspaceBlock, String key, Object expectedValue);
 
   /**
    * Creates BroadcastLock and attach it to thread that check supplier once per second If supplier

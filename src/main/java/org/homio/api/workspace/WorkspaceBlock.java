@@ -346,6 +346,14 @@ public interface WorkspaceBlock {
 
     WorkspaceBlock getParent();
 
+    default WorkspaceBlock getTop() {
+        WorkspaceBlock parent = getParent();
+        if(parent != null) {
+            return parent.getTop();
+        }
+        return this;
+    }
+
     boolean isTopLevel();
 
     boolean isShadow();

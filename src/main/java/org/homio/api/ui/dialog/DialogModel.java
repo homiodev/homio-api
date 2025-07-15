@@ -1,6 +1,7 @@
 package org.homio.api.ui.dialog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pivovarit.function.ThrowingConsumer;
 import java.util.*;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Getter
 @RequiredArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DialogModel {
 
     private final String entityID;
@@ -32,6 +34,8 @@ public class DialogModel {
     private boolean keepOnUi = true;
     private Boolean sendCancelOnLeaveDialog;
     private Boolean disableCloseDialogOutsideArea;
+    @JsonIgnore
+    private Object entityInstance;
 
     @SneakyThrows
     public DialogModel group(String name, ThrowingConsumer<DialogGroup, Exception> consumer) {
@@ -46,6 +50,15 @@ public class DialogModel {
         groups.add(dialogGroup);
         dialogGroup.inputs(inputs);
         return this;
+    }
+
+    public DialogModel generateFieldsFromInstance(Object entityInstance) {
+        this.entityInstance = entityInstance;
+        return this;
+    }
+
+    public String getActionReferenceV2() {
+        return entityInstance == null ? null : entityInstance.getClass().getSimpleName();
     }
 
     /**
