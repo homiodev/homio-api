@@ -19,67 +19,65 @@ import org.homio.api.workspace.scratch.MenuBlock.StaticMenuBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Base parent for all devices that exposes some endpoints
- */
+/** Base parent for all devices that exposes some endpoints */
 @SuppressWarnings("unused")
 @Log4j2
 @Getter
-public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> extends Scratch3ExtensionBlocks {
+public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity>
+    extends Scratch3ExtensionBlocks {
 
-    public static final String DEVICE = "DEVICE";
-    public static final String ENDPOINT = "ENDPOINT";
-    public static final String DEVICE__BASE_URL = "rest/device";
+  public static final String DEVICE = "DEVICE";
+  public static final String ENDPOINT = "ENDPOINT";
+  public static final String DEVICE__BASE_URL = "rest/device";
 
-    @NotNull
-    protected final ServerMenuBlock deviceMenu;
-    private final String devicePrefix;
-    private ServerMenuBlock deviceReadMenu;
-    private ServerMenuBlock deviceWriteMenu;
-    private ServerMenuBlock endpointMenu;
-    private ServerMenuBlock readEndpointMenu;
-    private ServerMenuBlock writeEndpointMenu;
-    private StaticMenuBlock<OnOff> onOffMenu;
-    private ServerMenuBlock deviceWriteBoolMenu;
-    private ServerMenuBlock writeBoolEndpointMenu;
+  @NotNull protected final ServerMenuBlock deviceMenu;
+  private final String devicePrefix;
+  private ServerMenuBlock deviceReadMenu;
+  private ServerMenuBlock deviceWriteMenu;
+  private ServerMenuBlock endpointMenu;
+  private ServerMenuBlock readEndpointMenu;
+  private ServerMenuBlock writeEndpointMenu;
+  private StaticMenuBlock<OnOff> onOffMenu;
+  private ServerMenuBlock deviceWriteBoolMenu;
+  private ServerMenuBlock writeBoolEndpointMenu;
 
-    public Scratch3BaseDeviceBlocks(
-            @Nullable String color,
-            @NotNull Context context,
-            @Nullable AddonEntrypoint addonEntrypoint,
-            @NotNull String devicePrefix) {
-        super(color, context, addonEntrypoint);
-        setParent(ScratchParent.devices);
-        this.devicePrefix = devicePrefix;
-        this.deviceMenu = menuServer("deviceMenu",
-                "%s?prefix=%s".formatted(DEVICE__BASE_URL, devicePrefix),
-                "Device", "-");
+  public Scratch3BaseDeviceBlocks(
+      @Nullable String color,
+      @NotNull Context context,
+      @Nullable AddonEntrypoint addonEntrypoint,
+      @NotNull String devicePrefix) {
+    super(color, context, addonEntrypoint);
+    setParent(ScratchParent.devices);
+    this.devicePrefix = devicePrefix;
+    this.deviceMenu =
+        menuServer(
+            "deviceMenu", "%s?prefix=%s".formatted(DEVICE__BASE_URL, devicePrefix), "Device", "-");
+  }
+
+  protected @NotNull DeviceEndpoint getDeviceEndpoint(
+      @NotNull WorkspaceBlock workspaceBlock,
+      @NotNull ServerMenuBlock deviceMenu,
+      @NotNull ServerMenuBlock endpointMenu) {
+    String endpointID = workspaceBlock.getMenuValue(ENDPOINT, endpointMenu);
+    return getDeviceEndpoint(workspaceBlock, deviceMenu, endpointID);
+  }
+
+  protected @NotNull DeviceEndpoint getDeviceEndpoint(@NotNull WorkspaceBlock workspaceBlock) {
+    return getDeviceEndpoint(workspaceBlock, deviceMenu, endpointMenu);
+  }
+
+  protected @NotNull DeviceEndpoint getDeviceEndpoint(
+      @NotNull WorkspaceBlock workspaceBlock,
+      @NotNull ServerMenuBlock deviceMenu,
+      @NotNull String endpointID) {
+    String ieeeAddress = workspaceBlock.getMenuValue(DEVICE, deviceMenu);
+    DeviceEndpoint endpoint = getDeviceEndpoint(ieeeAddress, endpointID);
+
+    if (endpoint == null) {
+      workspaceBlock.logErrorAndThrow("Unable to find endpoint: {}/{}", ieeeAddress, endpointID);
+      throw new NotImplementedException();
     }
-
-    protected @NotNull DeviceEndpoint getDeviceEndpoint(
-            @NotNull WorkspaceBlock workspaceBlock,
-            @NotNull ServerMenuBlock deviceMenu,
-            @NotNull ServerMenuBlock endpointMenu) {
-        String endpointID = workspaceBlock.getMenuValue(ENDPOINT, endpointMenu);
-        return getDeviceEndpoint(workspaceBlock, deviceMenu, endpointID);
-    }
-
-    protected @NotNull DeviceEndpoint getDeviceEndpoint(@NotNull WorkspaceBlock workspaceBlock) {
-        return getDeviceEndpoint(workspaceBlock, deviceMenu, endpointMenu);
-    }
-
-    protected @NotNull DeviceEndpoint getDeviceEndpoint(
-            @NotNull WorkspaceBlock workspaceBlock,
-            @NotNull ServerMenuBlock deviceMenu,
-            @NotNull String endpointID) {
-        String ieeeAddress = workspaceBlock.getMenuValue(DEVICE, deviceMenu);
-        DeviceEndpoint endpoint = getDeviceEndpoint(ieeeAddress, endpointID);
-
-        if (endpoint == null) {
-            workspaceBlock.logErrorAndThrow("Unable to find endpoint: {}/{}", ieeeAddress, endpointID);
-            throw new NotImplementedException();
-        }
-        return endpoint;
+    return endpoint;
 
     /*if (endpoint == null) {
       // wait for endpoint to be online at most 10 minutes
@@ -95,127 +93,159 @@ public abstract class Scratch3BaseDeviceBlocks<D extends DeviceBaseEntity> exten
 
     workspaceBlock.logErrorAndThrow("Unable to find endpoint: {}/{}", ieeeAddress, endpointID);
     throw new NotImplementedException();*/
-    }
+  }
 
-    protected @Nullable DeviceEndpoint getDeviceEndpoint(@NotNull String ieeeAddress, @NotNull String endpointID) {
-        DeviceBaseEntity entity = getDevice(ieeeAddress);
-        return ((DeviceEndpointsBehaviourContract) entity).getDeviceEndpoint(endpointID);
-    }
+  protected @Nullable DeviceEndpoint getDeviceEndpoint(
+      @NotNull String ieeeAddress, @NotNull String endpointID) {
+    DeviceBaseEntity entity = getDevice(ieeeAddress);
+    return ((DeviceEndpointsBehaviourContract) entity).getDeviceEndpoint(endpointID);
+  }
 
-    protected @NotNull DeviceBaseEntity getDevice(@NotNull String ieeeAddress) {
-        List<DeviceBaseEntity> entities = context.db().getDeviceEntity(ieeeAddress, devicePrefix);
-        if (entities.isEmpty()) {
-            throw new NotFoundException("Unable to find entity: " + ieeeAddress);
-        }
-        if (entities.size() > 1) {
-            throw new NotFoundException("Found multiple entities with id: " + ieeeAddress);
-        }
-        return entities.getFirst();
+  protected @NotNull DeviceBaseEntity getDevice(@NotNull String ieeeAddress) {
+    List<DeviceBaseEntity> entities = context.db().getDeviceEntity(ieeeAddress, devicePrefix);
+    if (entities.isEmpty()) {
+      throw new NotFoundException("Unable to find entity: " + ieeeAddress);
     }
-
-    @SneakyThrows
-    protected void executeWhenDeviceReady(@NotNull WorkspaceBlock workspaceBlock,
-                                          @NotNull Consumer<D> consumer) {
-        executeWhenDeviceReady(workspaceBlock, (Function<D, Void>) entity -> {
-            consumer.accept(entity);
-            return null;
-        });
+    if (entities.size() > 1) {
+      throw new NotFoundException("Found multiple entities with id: " + ieeeAddress);
     }
+    return entities.getFirst();
+  }
 
-    @SneakyThrows
-    protected <T> T executeWhenDeviceReady(@NotNull WorkspaceBlock workspaceBlock,
-                                           @NotNull Function<D, T> consumer) {
-        String deviceId = workspaceBlock.getMenuValue(DEVICE, deviceMenu);
-        D entity = context.db().getRequire(deviceId);
-        if (!entity.getStatus().isOnline()) {
-            var readyLock = workspaceBlock.getLockManager().createLock(workspaceBlock, "device-ready-" + entity.getIeeeAddress());
-            if (readyLock.await(workspaceBlock)) {
-                entity = context.db().getRequire(deviceId);
-                if (entity.getStatus().isOnline()) {
-                    return consumer.apply(entity);
-                } else {
-                    log.error("Unable to execute step for device: <{}>. Waited for ready status but got: <{}>", entity.getTitle(), entity.getStatus());
-                }
-            }
+  @SneakyThrows
+  protected void executeWhenDeviceReady(
+      @NotNull WorkspaceBlock workspaceBlock, @NotNull Consumer<D> consumer) {
+    executeWhenDeviceReady(
+        workspaceBlock,
+        (Function<D, Void>)
+            entity -> {
+              consumer.accept(entity);
+              return null;
+            });
+  }
+
+  @SneakyThrows
+  protected <T> T executeWhenDeviceReady(
+      @NotNull WorkspaceBlock workspaceBlock, @NotNull Function<D, T> consumer) {
+    String deviceId = workspaceBlock.getMenuValue(DEVICE, deviceMenu);
+    D entity = context.db().getRequire(deviceId);
+    if (!entity.getStatus().isOnline()) {
+      var readyLock =
+          workspaceBlock
+              .getLockManager()
+              .createLock(workspaceBlock, "device-ready-" + entity.getIeeeAddress());
+      if (readyLock.await(workspaceBlock)) {
+        entity = context.db().getRequire(deviceId);
+        if (entity.getStatus().isOnline()) {
+          return consumer.apply(entity);
         } else {
-            if (entity.getStatus().isOnline()) {
-                return consumer.apply(entity);
-            }
+          log.error(
+              "Unable to execute step for device: <{}>. Waited for ready status but got: <{}>",
+              entity.getTitle(),
+              entity.getStatus());
         }
-        return null;
+      }
+    } else {
+      if (entity.getStatus().isOnline()) {
+        return consumer.apply(entity);
+      }
     }
+    return null;
+  }
 
-    public ServerMenuBlock getDeviceReadMenu() {
-        if (deviceReadMenu == null) {
-            deviceReadMenu = menuServer("deviceReadMenu",
-                    "%s?prefix=%s&access=read".formatted(DEVICE__BASE_URL, devicePrefix),
-                    "Device", "-");
-        }
-        return deviceReadMenu;
+  public ServerMenuBlock getDeviceReadMenu() {
+    if (deviceReadMenu == null) {
+      deviceReadMenu =
+          menuServer(
+              "deviceReadMenu",
+              "%s?prefix=%s&access=read".formatted(DEVICE__BASE_URL, devicePrefix),
+              "Device",
+              "-");
     }
+    return deviceReadMenu;
+  }
 
-    public ServerMenuBlock getDeviceWriteMenu() {
-        if (deviceWriteMenu == null) {
-            deviceWriteMenu = menuServer("deviceWriteMenu",
-                    "%s?prefix=%s&access=write".formatted(DEVICE__BASE_URL, devicePrefix),
-                    "Device", "-");
-        }
-        return deviceWriteMenu;
+  public ServerMenuBlock getDeviceWriteMenu() {
+    if (deviceWriteMenu == null) {
+      deviceWriteMenu =
+          menuServer(
+              "deviceWriteMenu",
+              "%s?prefix=%s&access=write".formatted(DEVICE__BASE_URL, devicePrefix),
+              "Device",
+              "-");
     }
+    return deviceWriteMenu;
+  }
 
-    public ServerMenuBlock getEndpointMenu() {
-        if (endpointMenu == null) {
-            endpointMenu = menuServer("endpointMenu",
-                    "%s/endpoints".formatted(DEVICE__BASE_URL),
-                    "Endpoint", "-").setDependency(deviceMenu);
-        }
-        return endpointMenu;
+  public ServerMenuBlock getEndpointMenu() {
+    if (endpointMenu == null) {
+      endpointMenu =
+          menuServer("endpointMenu", "%s/endpoints".formatted(DEVICE__BASE_URL), "Endpoint", "-")
+              .setDependency(deviceMenu);
     }
+    return endpointMenu;
+  }
 
-    public ServerMenuBlock getReadEndpointMenu() {
-        if (readEndpointMenu == null) {
-            readEndpointMenu = menuServer("readEndpointMenu",
-                    "%s/endpoints?access=read".formatted(DEVICE__BASE_URL),
-                    "Endpoint", "-").setDependency(getDeviceReadMenu());
-        }
-        return readEndpointMenu;
+  public ServerMenuBlock getReadEndpointMenu() {
+    if (readEndpointMenu == null) {
+      readEndpointMenu =
+          menuServer(
+                  "readEndpointMenu",
+                  "%s/endpoints?access=read".formatted(DEVICE__BASE_URL),
+                  "Endpoint",
+                  "-")
+              .setDependency(getDeviceReadMenu());
     }
+    return readEndpointMenu;
+  }
 
-    public ServerMenuBlock getWriteEndpointMenu() {
-        if (writeEndpointMenu == null) {
-            writeEndpointMenu = menuServer("writeEndpointMenu",
-                    "%s/endpoints?access=write".formatted(DEVICE__BASE_URL),
-                    "Endpoint", "-").setDependency(getDeviceWriteMenu());
-        }
-        return writeEndpointMenu;
+  public ServerMenuBlock getWriteEndpointMenu() {
+    if (writeEndpointMenu == null) {
+      writeEndpointMenu =
+          menuServer(
+                  "writeEndpointMenu",
+                  "%s/endpoints?access=write".formatted(DEVICE__BASE_URL),
+                  "Endpoint",
+                  "-")
+              .setDependency(getDeviceWriteMenu());
     }
+    return writeEndpointMenu;
+  }
 
-    public ServerMenuBlock getDeviceWriteBoolMenu() {
-        if (deviceWriteBoolMenu == null) {
-            deviceWriteBoolMenu = menuServer("deviceWriteBoolMenu",
-                    "%s?prefix=%s&access=write&type=bool".formatted(DEVICE__BASE_URL, devicePrefix),
-                    "Device", "-");
-        }
-        return deviceWriteBoolMenu;
+  public ServerMenuBlock getDeviceWriteBoolMenu() {
+    if (deviceWriteBoolMenu == null) {
+      deviceWriteBoolMenu =
+          menuServer(
+              "deviceWriteBoolMenu",
+              "%s?prefix=%s&access=write&type=bool".formatted(DEVICE__BASE_URL, devicePrefix),
+              "Device",
+              "-");
     }
+    return deviceWriteBoolMenu;
+  }
 
-    public ServerMenuBlock getWriteBoolEndpointMenu() {
-        if (writeBoolEndpointMenu == null) {
-            writeBoolEndpointMenu = menuServer("writeBoolEndpointMenu",
-                    "%s/endpoints?access=write&type=bool".formatted(DEVICE__BASE_URL),
-                    "Endpoint", "-").setDependency(getDeviceWriteMenu());
-        }
-        return writeBoolEndpointMenu;
+  public ServerMenuBlock getWriteBoolEndpointMenu() {
+    if (writeBoolEndpointMenu == null) {
+      writeBoolEndpointMenu =
+          menuServer(
+                  "writeBoolEndpointMenu",
+                  "%s/endpoints?access=write&type=bool".formatted(DEVICE__BASE_URL),
+                  "Endpoint",
+                  "-")
+              .setDependency(getDeviceWriteMenu());
     }
+    return writeBoolEndpointMenu;
+  }
 
-    public StaticMenuBlock<OnOff> getOnOffMenu() {
-        if (onOffMenu == null) {
-            onOffMenu = menuStatic("onOffMenu", OnOff.class, OnOff.off);
-        }
-        return onOffMenu;
+  public StaticMenuBlock<OnOff> getOnOffMenu() {
+    if (onOffMenu == null) {
+      onOffMenu = menuStatic("onOffMenu", OnOff.class, OnOff.off);
     }
+    return onOffMenu;
+  }
 
-    public enum OnOff {
-        on, off
-    }
+  public enum OnOff {
+    on,
+    off
+  }
 }

@@ -1,17 +1,16 @@
 package org.homio.api.ui.field;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.homio.api.util.Lang;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.text.DecimalFormat;
 import java.util.Map;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.homio.api.util.Lang;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /** Progress bar. Must return int or UIFieldProgress.Progress Max value is 100! */
 @Target({ElementType.METHOD, ElementType.FIELD})

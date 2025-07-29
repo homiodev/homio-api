@@ -12,13 +12,15 @@ import org.apache.commons.lang3.StringUtils;
 @Converter
 public class StringSetConverter implements AttributeConverter<Set<String>, String> {
 
-    @Override
-    public String convertToDatabaseColumn(Set<String> set) {
-        return set == null ? "" : String.join(LIST_DELIMITER, set);
-    }
+  @Override
+  public String convertToDatabaseColumn(Set<String> set) {
+    return set == null ? "" : String.join(LIST_DELIMITER, set);
+  }
 
-    @Override
-    public Set<String> convertToEntityAttribute(String data) {
-        return StringUtils.isEmpty(data) ? new HashSet<>() : new HashSet<>(Arrays.asList(data.split(LIST_DELIMITER)));
-    }
+  @Override
+  public Set<String> convertToEntityAttribute(String data) {
+    return StringUtils.isEmpty(data)
+        ? new HashSet<>()
+        : new HashSet<>(Arrays.asList(data.split(LIST_DELIMITER)));
+  }
 }

@@ -14,50 +14,50 @@ import org.jetbrains.annotations.NotNull;
 
 public class DataSourceUtil {
 
-    public static Path getPath(Path basePath, String value) {
-        String[] items = value.split(LEVEL_DELIMITER);
-        return basePath.resolve(Path.of("", items));
+  public static Path getPath(Path basePath, String value) {
+    String[] items = value.split(LEVEL_DELIMITER);
+    return basePath.resolve(Path.of("", items));
+  }
+
+  public static SelectionSource getSelection(String value) {
+    String[] items = value.split("###");
+    return new SelectionSource(items[0], items.length > 1 ? items[1] : null);
+  }
+
+  @Getter
+  public static class SelectionSource {
+
+    private static final JsonNode EMPTY_METADATA = OBJECT_MAPPER.createObjectNode();
+
+    private final @NotNull String value;
+    private @NotNull JsonNode metadata = EMPTY_METADATA;
+
+    public SelectionSource(String value, String metadata) {
+      this.value = Objects.toString(value, "");
+      if (StringUtils.isNotEmpty(metadata)) {
+        try {
+          this.metadata = OBJECT_MAPPER.readValue(metadata, JsonNode.class);
+        } catch (Exception ignore) {
+        }
+      }
     }
 
-    public static SelectionSource getSelection(String value) {
-        String[] items = value.split("###");
-        return new SelectionSource(items[0], items.length > 1 ? items[1] : null);
+    public String getValue(String defaultValue) {
+      return StringUtils.defaultIfEmpty(value, defaultValue);
     }
 
-    @Getter
-    public static class SelectionSource {
-
-        private static final JsonNode EMPTY_METADATA = OBJECT_MAPPER.createObjectNode();
-
-        private final @NotNull String value;
-        private @NotNull JsonNode metadata = EMPTY_METADATA;
-
-        public SelectionSource(String value, String metadata) {
-            this.value = Objects.toString(value, "");
-            if (StringUtils.isNotEmpty(metadata)) {
-                try {
-                    this.metadata = OBJECT_MAPPER.readValue(metadata, JsonNode.class);
-                } catch (Exception ignore) {
-                }
-            }
-        }
-
-        public String getValue(String defaultValue) {
-            return StringUtils.defaultIfEmpty(value, defaultValue);
-        }
-
-        public String getEntityValue() {
-            String[] items = value.split(LEVEL_DELIMITER);
-            return items[items.length - 1];
-        }
-
-        public String getEntityID() {
-            return this.value.split("-->")[0];
-        }
-
-        public <T extends BaseEntity> T getValue(Context context) {
-            String[] items = value.split(LEVEL_DELIMITER);
-            return context.db().get(items[items.length - 1]);
-        }
+    public String getEntityValue() {
+      String[] items = value.split(LEVEL_DELIMITER);
+      return items[items.length - 1];
     }
+
+    public String getEntityID() {
+      return this.value.split("-->")[0];
+    }
+
+    public <T extends BaseEntity> T getValue(Context context) {
+      String[] items = value.split(LEVEL_DELIMITER);
+      return context.db().get(items[items.length - 1]);
+    }
+  }
 }

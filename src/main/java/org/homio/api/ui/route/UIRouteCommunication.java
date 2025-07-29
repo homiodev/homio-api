@@ -8,17 +8,17 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @UIRouteMenu(
-        order = 200,
-        icon = "fab fa-facebook-messenger",
-        color = "#A16427",
-        allowCreateItem = true,
-        overridePath = UIRouteCommunication.ROUTE)
+    order = 200,
+    icon = "fab fa-facebook-messenger",
+    color = "#A16427",
+    allowCreateItem = true,
+    overridePath = UIRouteCommunication.ROUTE)
 public @interface UIRouteCommunication {
-    String ROUTE = "comm";
+  String ROUTE = "comm";
 
-    String icon() default "";
+  String icon() default "";
 
-    String color() default "";
+  String color() default "";
 
-    boolean allowCreateItem() default true;
+  boolean allowCreateItem() default true;
 }

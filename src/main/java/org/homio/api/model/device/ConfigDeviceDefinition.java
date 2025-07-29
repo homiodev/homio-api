@@ -13,41 +13,41 @@ import org.jetbrains.annotations.Nullable;
 @Setter
 public class ConfigDeviceDefinition {
 
-    // for description inside json file only
-    private @Nullable String name;
-    private @Nullable String icon;
-    private @Nullable String iconColor;
-    private @Nullable Set<String> models;
-    private @Nullable Set<String> endpoints;
-    private @Nullable Set<Pin> pins;
-    private @Nullable List<WidgetDefinition> widgets;
-    private @Nullable JsonNode options;
+  // for description inside json file only
+  private @Nullable String name;
+  private @Nullable String icon;
+  private @Nullable String iconColor;
+  private @Nullable Set<String> models;
+  private @Nullable Set<String> endpoints;
+  private @Nullable Set<Pin> pins;
+  private @Nullable List<WidgetDefinition> widgets;
+  private @Nullable JsonNode options;
 
-    @Getter
-    @Setter
-    public static class ModelGroups {
+  @Getter
+  @Setter
+  public static class ModelGroups {
 
-        private String name;
-        private Set<String> models;
+    private String name;
+    private Set<String> models;
+  }
+
+  @Getter
+  @Setter
+  public static class Pin {
+    private int index;
+    private String name;
+    private String description;
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == null || getClass() != o.getClass()) return false;
+      Pin pin1 = (Pin) o;
+      return index == pin1.index;
     }
 
-    @Getter
-    @Setter
-    public static class Pin {
-        private int index;
-        private String name;
-        private String description;
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass()) return false;
-            Pin pin1 = (Pin) o;
-            return index == pin1.index;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(index);
-        }
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(index);
     }
+  }
 }

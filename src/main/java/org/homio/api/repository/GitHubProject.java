@@ -384,7 +384,7 @@ public class GitHubProject {
                     OptionModel model = OptionModel.of(r.tagName, r.name);
                     String description =
                         r.created.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                    if(r.name.contains(description)) {
+                    if (r.name.contains(description)) {
                       description = "";
                     }
                     if (r.preRelease) {

@@ -1,12 +1,11 @@
 package org.homio.api.ui.field.action.v1.item;
 
+import java.util.Collection;
 import org.homio.api.model.Icon;
 import org.homio.api.model.OptionModel;
 import org.homio.api.ui.field.action.v1.UIEntityItemBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Collection;
 
 public interface UIMultiButtonItemBuilder
     extends UIEntityItemBuilder<UIMultiButtonItemBuilder, String> {

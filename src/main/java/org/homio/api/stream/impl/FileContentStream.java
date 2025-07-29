@@ -1,5 +1,7 @@
 package org.homio.api.stream.impl;
 
+import java.io.File;
+import java.util.Objects;
 import lombok.Getter;
 import org.homio.api.stream.ContentStream;
 import org.homio.api.stream.StreamFormat;
@@ -7,9 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-
-import java.io.File;
-import java.util.Objects;
 
 @Getter
 public class FileContentStream extends FileSystemResource implements ContentStream {

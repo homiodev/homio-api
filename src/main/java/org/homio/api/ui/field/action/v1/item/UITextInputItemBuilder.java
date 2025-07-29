@@ -25,6 +25,7 @@ public interface UITextInputItemBuilder
   enum InputType {
     Text,
     TextArea,
+    TextAreaFile,
     Password,
     JSON,
     Ip

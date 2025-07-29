@@ -27,6 +27,6 @@ public interface SelectionWithDynamicParameterFields {
     private @Nullable Object selectionHolder;
     private @NotNull JSONObject
         metadata; // contains conditions if i.e. for some entities it requires one parameter but for
-                  // other...
+    // other...
   }
 }

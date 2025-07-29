@@ -14,5 +14,4 @@ import org.homio.api.ui.route.UIRouteIdentity;
 @UIRouteIdentity
 public abstract class SshBaseEntity<
         T extends SshBaseEntity, S extends EntityService.ServiceInstance & SshProviderService<T>>
-        extends DeviceBaseEntity implements EntityService<S> {
-}
+    extends DeviceBaseEntity implements EntityService<S> {}

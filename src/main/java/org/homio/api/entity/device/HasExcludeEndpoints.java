@@ -1,12 +1,11 @@
 package org.homio.api.entity.device;
 
+import java.util.List;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldNoReadDefaultValue;
 import org.homio.api.ui.field.condition.UIFieldShowOnCondition;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Represents an interface for managing exclude endpoints from device Core lib manages for removing

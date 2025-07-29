@@ -14,43 +14,41 @@ import org.springframework.security.core.userdetails.User;
 
 public interface ContextUser {
 
-    @NotNull
-    Context context();
+  @NotNull
+  Context context();
 
-    /**
-     * Does device has primary user and user/password is set
-     */
-    boolean isRequireAuth();
+  /** Does device has primary user and user/password is set */
+  boolean isRequireAuth();
 
-    void assertUserCredentials(String username, String password);
+  void assertUserCredentials(String username, String password);
 
-    boolean isAdminLoggedUser();
+  boolean isAdminLoggedUser();
 
-    @SneakyThrows
-    default void assertAdminAccess() {
-        if (!isAdminLoggedUser()) {
-            throw new IllegalAccessException();
-        }
+  @SneakyThrows
+  default void assertAdminAccess() {
+    if (!isAdminLoggedUser()) {
+      throw new IllegalAccessException();
     }
+  }
 
-    default @NotNull UserEntity getLoggedInUserRequire() {
-        UserEntity user = getLoggedInUser();
-        if (user == null) {
-            throw new NotFoundException("Unable to find authenticated user");
-        }
-        return user;
+  default @NotNull UserEntity getLoggedInUserRequire() {
+    UserEntity user = getLoggedInUser();
+    if (user == null) {
+      throw new NotFoundException("Unable to find authenticated user");
     }
+    return user;
+  }
 
-    default @Nullable UserEntity getLoggedInUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            if (authentication instanceof AnonymousAuthenticationToken) {
-                return null;
-            }
-            User user = (User) authentication.getPrincipal();
-            String userEntityID = user.getUsername().split(LIST_DELIMITER)[0];
-            return context().db().get(userEntityID);
-        }
+  default @Nullable UserEntity getLoggedInUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null) {
+      if (authentication instanceof AnonymousAuthenticationToken) {
         return null;
+      }
+      User user = (User) authentication.getPrincipal();
+      String userEntityID = user.getUsername().split(LIST_DELIMITER)[0];
+      return context().db().get(userEntityID);
     }
+    return null;
+  }
 }

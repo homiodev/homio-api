@@ -10,51 +10,55 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-public interface DynamicConsoleHeaderContainerSettingPlugin extends ConsoleHeaderSettingPlugin<JSONObject> {
+public interface DynamicConsoleHeaderContainerSettingPlugin
+    extends ConsoleHeaderSettingPlugin<JSONObject> {
 
-    @Override
-    default @NotNull Class<JSONObject> getType() {
-        return JSONObject.class;
-    }
+  @Override
+  default @NotNull Class<JSONObject> getType() {
+    return JSONObject.class;
+  }
 
-    @Override
-    default @NotNull SettingType getSettingType() {
-        return SettingType.SelectBoxButton;
-    }
+  @Override
+  default @NotNull SettingType getSettingType() {
+    return SettingType.SelectBoxButton;
+  }
 
-    /**
-     * Hide button on UI if no dynamicOptions
-     */
-    default boolean hideIfNoDynamicSettings() {
-        return true;
-    }
+  /** Hide button on UI if no dynamicOptions */
+  default boolean hideIfNoDynamicSettings() {
+    return true;
+  }
 
-    @Override
-    @NotNull
-    default JSONObject getParameters(@NotNull Context context, String value) {
-        var params = ConsoleHeaderSettingPlugin.super.getParameters(context, value);
-        List<BaseEntity> dynamicSettings = new ArrayList<>();
-        DynamicSettingConsumer consumer = new DynamicSettingConsumer() {
-            @Override
-            public <T> void addDynamicSetting(@NotNull DynamicConsoleHeaderSettingPlugin<T> dynamicSetting) {
-                dynamicSettings.add(context.setting().createDynamicSetting(dynamicSetting));
-                setValue(context, dynamicSetting, dynamicSetting.getDefaultValue());
-            }
+  @Override
+  @NotNull
+  default JSONObject getParameters(@NotNull Context context, String value) {
+    var params = ConsoleHeaderSettingPlugin.super.getParameters(context, value);
+    List<BaseEntity> dynamicSettings = new ArrayList<>();
+    DynamicSettingConsumer consumer =
+        new DynamicSettingConsumer() {
+          @Override
+          public <T> void addDynamicSetting(
+              @NotNull DynamicConsoleHeaderSettingPlugin<T> dynamicSetting) {
+            dynamicSettings.add(context.setting().createDynamicSetting(dynamicSetting));
+            setValue(context, dynamicSetting, dynamicSetting.getDefaultValue());
+          }
         };
-        assembleDynamicSettings(context, consumer);
-        params.put("dynamicOptions", dynamicSettings);
-        if (hideIfNoDynamicSettings()) {
-            params.put("hideIfEmptyOptions", true);
-        }
-        return params;
+    assembleDynamicSettings(context, consumer);
+    params.put("dynamicOptions", dynamicSettings);
+    if (hideIfNoDynamicSettings()) {
+      params.put("hideIfEmptyOptions", true);
     }
+    return params;
+  }
 
-    /* Fires when user change value for any dynamic option */
-    void setValue(@NotNull Context context, @NotNull DynamicConsoleHeaderSettingPlugin<?> setting, @Nullable String value);
+  /* Fires when user change value for any dynamic option */
+  void setValue(
+      @NotNull Context context,
+      @NotNull DynamicConsoleHeaderSettingPlugin<?> setting,
+      @Nullable String value);
 
-    void assembleDynamicSettings(@NotNull Context context, @NotNull DynamicSettingConsumer consumer);
+  void assembleDynamicSettings(@NotNull Context context, @NotNull DynamicSettingConsumer consumer);
 
-    interface DynamicSettingConsumer {
-        <T> void addDynamicSetting(@NotNull DynamicConsoleHeaderSettingPlugin<T> dynamicSetting);
-    }
+  interface DynamicSettingConsumer {
+    <T> void addDynamicSetting(@NotNull DynamicConsoleHeaderSettingPlugin<T> dynamicSetting);
+  }
 }

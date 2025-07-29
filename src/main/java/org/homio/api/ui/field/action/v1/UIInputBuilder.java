@@ -57,7 +57,8 @@ public interface UIInputBuilder extends UILayoutBuilder {
       @Nullable Icon icon,
       @NotNull Class<?> entityClass,
       @NotNull UIActionHandler action) {
-    addOpenDialogSelectableButtonFromClassInstance(name, icon, CommonUtils.newInstance(entityClass), action);
+    addOpenDialogSelectableButtonFromClassInstance(
+        name, icon, CommonUtils.newInstance(entityClass), action);
   }
 
   void addOpenDialogSelectableButtonFromClassInstance(

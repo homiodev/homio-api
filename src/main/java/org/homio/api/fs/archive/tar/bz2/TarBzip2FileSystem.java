@@ -13,26 +13,26 @@ import org.homio.api.fs.archive.tar.TarUtils;
 
 class TarBzip2FileSystem extends AbstractTarFileSystem {
 
-    protected TarBzip2FileSystem(AbstractTarFileSystemProvider provider,
-                                 Path tfpath, Map<String, ?> env) throws IOException {
-        super(provider, tfpath, env);
-    }
+  protected TarBzip2FileSystem(
+      AbstractTarFileSystemProvider provider, Path tfpath, Map<String, ?> env) throws IOException {
+    super(provider, tfpath, env);
+  }
 
-    @Override
-    protected byte[] readFile(Path path) throws IOException {
-        return TarUtils.readAllBytes(new BZip2CompressorInputStream(Files
-                .newInputStream(path, StandardOpenOption.READ)));
-    }
+  @Override
+  protected byte[] readFile(Path path) throws IOException {
+    return TarUtils.readAllBytes(
+        new BZip2CompressorInputStream(Files.newInputStream(path, StandardOpenOption.READ)));
+  }
 
-    @Override
-    protected void writeFile(byte[] tarBytes, Path path) throws IOException {
-        try (BZip2CompressorOutputStream outputStream = new BZip2CompressorOutputStream(
-                Files.newOutputStream(path,
-                        StandardOpenOption.TRUNCATE_EXISTING,
-                        StandardOpenOption.WRITE))) {
-            outputStream.write(tarBytes, 0, tarBytes.length);
-            outputStream.flush();
-            outputStream.finish();
-        }
+  @Override
+  protected void writeFile(byte[] tarBytes, Path path) throws IOException {
+    try (BZip2CompressorOutputStream outputStream =
+        new BZip2CompressorOutputStream(
+            Files.newOutputStream(
+                path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))) {
+      outputStream.write(tarBytes, 0, tarBytes.length);
+      outputStream.flush();
+      outputStream.finish();
     }
+  }
 }

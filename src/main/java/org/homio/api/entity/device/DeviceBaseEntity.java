@@ -1,8 +1,13 @@
 package org.homio.api.entity.device;
 
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.homio.api.ui.field.UIFieldType.HTML;
+import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
+
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,12 +27,6 @@ import org.homio.api.ui.field.selection.UIFieldTreeNodeSelection;
 import org.homio.api.ui.route.UIRouteMenu;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Set;
-
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static org.homio.api.ui.field.UIFieldType.HTML;
-import static org.homio.api.ui.field.selection.UIFieldTreeNodeSelection.IMAGE_PATTERN;
 
 @Getter
 @Entity

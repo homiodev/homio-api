@@ -16,68 +16,72 @@ import org.jetbrains.annotations.Nullable;
 
 @Getter
 @NoArgsConstructor
-public class DeviceEndpointUI implements Comparable<DeviceEndpointUI>, UIFieldInlineEntities.InlineEntity {
+public class DeviceEndpointUI
+    implements Comparable<DeviceEndpointUI>, UIFieldInlineEntities.InlineEntity {
 
-    @JsonIgnore
-    private DeviceEndpoint endpoint;
+  @JsonIgnore private DeviceEndpoint endpoint;
 
-    public DeviceEndpointUI(@NotNull DeviceEndpoint endpoint) {
-        this.endpoint = endpoint;
+  public DeviceEndpointUI(@NotNull DeviceEndpoint endpoint) {
+    this.endpoint = endpoint;
+  }
+
+  public static @NotNull List<DeviceEndpointUI> buildEndpoints(
+      @NotNull Collection<? extends DeviceEndpoint> entities) {
+    return entities.stream()
+        .filter(DeviceEndpoint::isVisible)
+        .map(DeviceEndpointUI::new)
+        .sorted()
+        .collect(Collectors.toList());
+  }
+
+  public @Nullable String getVarSource() {
+    if (endpoint.isStateless()) {
+      return null;
     }
-
-    public static @NotNull List<DeviceEndpointUI> buildEndpoints(@NotNull Collection<? extends DeviceEndpoint> entities) {
-        return entities.stream()
-                .filter(DeviceEndpoint::isVisible)
-                .map(DeviceEndpointUI::new)
-                .sorted()
-                .collect(Collectors.toList());
+    try {
+      return endpoint.getVariableID() == null
+          ? null
+          : endpoint.context().var().buildDataSource(endpoint.getVariableID());
+    } catch (
+        Exception
+            ignore) { // in case if we deleted entity and variables but still send updates to ui
+      return null;
     }
+  }
 
-    public @Nullable String getVarSource() {
-        if (endpoint.isStateless()) {
-            return null;
-        }
-        try {
-            return endpoint.getVariableID() == null ? null :
-                    endpoint.context().var().buildDataSource(endpoint.getVariableID());
-        } catch (Exception ignore) { // in case if we deleted entity and variables but still send updates to ui
-            return null;
-        }
-    }
+  @Override
+  public @NotNull String getEntityID() {
+    return endpoint.getEntityID();
+  }
 
-    @Override
-    public @NotNull String getEntityID() {
-        return endpoint.getEntityID();
-    }
+  public @NotNull Icon getIcon() {
+    return endpoint.getIcon();
+  }
 
-    public @NotNull Icon getIcon() {
-        return endpoint.getIcon();
-    }
+  public @Nullable VariableType getVarType() {
+    return endpoint.getVariableType();
+  }
 
-    public @Nullable VariableType getVarType() {
-        return endpoint.getVariableType();
-    }
+  public @NotNull String getTitle() {
+    return endpoint.getName(false);
+  }
 
-    public @NotNull String getTitle() {
-        return endpoint.getName(false);
-    }
+  public @Nullable String getDescription() {
+    return endpoint.getDescription();
+  }
 
-    public @Nullable String getDescription() {
-        return endpoint.getDescription();
-    }
+  public @Nullable Collection<UIInputEntity> getActions() {
+    UIInputBuilder builder = endpoint.createActionBuilder();
+    return builder == null ? null : builder.buildAll();
+  }
 
-    public @Nullable Collection<UIInputEntity> getActions() {
-        UIInputBuilder builder = endpoint.createActionBuilder();
-        return builder == null ? null : builder.buildAll();
-    }
+  public @Nullable Collection<UIInputEntity> getSettings() {
+    UIInputBuilder builder = endpoint.createSettingsBuilder();
+    return builder == null ? null : builder.buildAll();
+  }
 
-    public @Nullable Collection<UIInputEntity> getSettings() {
-        UIInputBuilder builder = endpoint.createSettingsBuilder();
-        return builder == null ? null : builder.buildAll();
-    }
-
-    @Override
-    public int compareTo(@NotNull DeviceEndpointUI o) {
-        return endpoint.compareTo(o.endpoint);
-    }
+  @Override
+  public int compareTo(@NotNull DeviceEndpointUI o) {
+    return endpoint.compareTo(o.endpoint);
+  }
 }

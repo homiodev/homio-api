@@ -5,11 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Disable call by js engine
- */
+/** Disable call by js engine */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface JSDisableMethod {
-
-}
+public @interface JSDisableMethod {}

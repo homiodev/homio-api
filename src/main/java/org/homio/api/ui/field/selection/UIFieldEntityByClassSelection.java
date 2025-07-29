@@ -1,9 +1,8 @@
 package org.homio.api.ui.field.selection;
 
+import java.lang.annotation.*;
 import org.homio.api.model.HasEntityIdentifier;
 import org.homio.api.ui.field.selection.UIFieldEntityByClassSelection.UIFieldEntityByClassListSelection;
-
-import java.lang.annotation.*;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

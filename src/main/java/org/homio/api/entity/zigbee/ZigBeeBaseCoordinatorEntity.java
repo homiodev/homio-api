@@ -20,76 +20,82 @@ import org.homio.api.util.HardwareUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface ZigBeeBaseCoordinatorEntity<T extends ZigBeeBaseCoordinatorEntity, S extends EntityService.ServiceInstance>
-        extends
-        HasJsonData,
+public interface ZigBeeBaseCoordinatorEntity<
+        T extends ZigBeeBaseCoordinatorEntity, S extends EntityService.ServiceInstance>
+    extends HasJsonData,
         HasEntityLog,
         HasEntityIdentifier,
         HasFirmwareVersion,
         HasStatusAndMsg,
         EntityService<S> {
 
-    @UIField(order = 1, inlineEdit = true)
-    @UIFieldGroup("GENERAL")
-    default boolean isStart() {
-        return getJsonData("start", true);
+  @UIField(order = 1, inlineEdit = true)
+  @UIFieldGroup("GENERAL")
+  default boolean isStart() {
+    return getJsonData("start", true);
+  }
+
+  default T setStart(boolean start) {
+    setJsonData("start", start);
+    return (T) this;
+  }
+
+  @UIField(order = 3, required = true)
+  @UIFieldDevicePortSelection
+  @UIFieldSelectConfig(
+      selectNoValue = "W.ERROR.NO_PORT",
+      selectOnEmptyLabel = "PLACEHOLDER.SELECT_PORT",
+      selectOnEmptyIcon = "fas fa-door-open")
+  @UIFieldGroup(value = "CONNECTION", order = 5, borderColor = "#29A397")
+  default String getPort() {
+    return getJsonData("port", "");
+  }
+
+  default T setPort(String value) {
+    SerialPort serialPort = HardwareUtils.getSerialPort(value);
+    if (serialPort != null) {
+      setSerialPort(serialPort);
     }
+    return (T) this;
+  }
 
-    default T setStart(boolean start) {
-        setJsonData("start", start);
-        return (T) this;
-    }
+  @JsonIgnore
+  default String getPortD() {
+    return getJsonData("port_d", "");
+  }
 
-    @UIField(order = 3, required = true)
-    @UIFieldDevicePortSelection
-    @UIFieldSelectConfig(selectNoValue = "W.ERROR.NO_PORT", selectOnEmptyLabel = "PLACEHOLDER.SELECT_PORT", selectOnEmptyIcon = "fas fa-door-open")
-    @UIFieldGroup(value = "CONNECTION", order = 5, borderColor = "#29A397")
-    default String getPort() {
-        return getJsonData("port", "");
-    }
+  default T setSerialPort(SerialPort serialPort) {
+    setJsonData("port", serialPort.getSystemPortName());
+    setJsonData("port_d", serialPort.getDescriptivePortName());
+    return (T) this;
+  }
 
-    default T setPort(String value) {
-        SerialPort serialPort = HardwareUtils.getSerialPort(value);
-        if (serialPort != null) {
-            setSerialPort(serialPort);
-        }
-        return (T) this;
-    }
+  @UIField(order = 5)
+  @UIFieldSlider(min = 60, max = 254)
+  @UIFieldGroup("CONNECTION")
+  default int getDiscoveryDuration() {
+    return getJsonData("dd", 254);
+  }
 
-    @JsonIgnore
-    default String getPortD() {
-        return getJsonData("port_d", "");
-    }
+  default void setDiscoveryDuration(int value) {
+    setJsonData("dd", value);
+  }
 
-    default T setSerialPort(SerialPort serialPort) {
-        setJsonData("port", serialPort.getSystemPortName());
-        setJsonData("port_d", serialPort.getDescriptivePortName());
-        return (T) this;
-    }
+  /**
+   * @return all available properties Key - device's ieeeAddress Value - Map[propertyName, property]
+   */
+  @JsonIgnore
+  @NotNull
+  Map<String, Map<String, ? extends DeviceEndpoint>> getCoordinatorTree();
 
-    @UIField(order = 5)
-    @UIFieldSlider(min = 60, max = 254)
-    @UIFieldGroup("CONNECTION")
-    default int getDiscoveryDuration() {
-        return getJsonData("dd", 254);
-    }
+  /**
+   * @return all zigbee devices registered in this coordinator
+   */
+  @JsonIgnore
+  @NotNull
+  Collection<ZigBeeDeviceBaseEntity> getZigBeeDevices();
 
-    default void setDiscoveryDuration(int value) {
-        setJsonData("dd", value);
-    }
-
-    /**
-     * @return all available properties Key - device's ieeeAddress Value - Map[propertyName, property]
-     */
-    @JsonIgnore
-    @NotNull Map<String, Map<String, ? extends DeviceEndpoint>> getCoordinatorTree();
-
-    /**
-     * @return all zigbee devices registered in this coordinator
-     */
-    @JsonIgnore
-    @NotNull Collection<ZigBeeDeviceBaseEntity> getZigBeeDevices();
-
-    @JsonIgnore
-    @Nullable ZigBeeDeviceBaseEntity getZigBeeDevice(@NotNull String ieeeAddress);
+  @JsonIgnore
+  @Nullable
+  ZigBeeDeviceBaseEntity getZigBeeDevice(@NotNull String ieeeAddress);
 }

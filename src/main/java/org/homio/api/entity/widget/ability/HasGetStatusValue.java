@@ -12,37 +12,38 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-/**
- * For widget dataSource to fetch simple entity status
- */
+/** For widget dataSource to fetch simple entity status */
 public interface HasGetStatusValue extends HasEntityIdentifier, HasUpdateValueListener {
 
-    Object getStatusValue(@NotNull GetStatusValueRequest request);
+  Object getStatusValue(@NotNull GetStatusValueRequest request);
 
-    ValueType getValueType();
+  ValueType getValueType();
 
-    SourceHistory getSourceHistory(@NotNull GetStatusValueRequest request);
+  SourceHistory getSourceHistory(@NotNull GetStatusValueRequest request);
 
-    List<SourceHistoryItem> getSourceHistoryItems(@NotNull GetStatusValueRequest request, int from, int count);
+  List<SourceHistoryItem> getSourceHistoryItems(
+      @NotNull GetStatusValueRequest request, int from, int count);
 
-    /**
-     * @param context -
-     * @return Get current value with unit or whatever to show on ui in popup. May contains HTML
-     */
-    default String getStatusValueRepresentation(@NotNull Context context) {
-        return null;
-    }
+  /**
+   * @param context -
+   * @return Get current value with unit or whatever to show on ui in popup. May contains HTML
+   */
+  default String getStatusValueRepresentation(@NotNull Context context) {
+    return null;
+  }
 
-    enum ValueType {
-        String, Float, Boolean, Unknown
-    }
+  enum ValueType {
+    String,
+    Float,
+    Boolean,
+    Unknown
+  }
 
-    @Getter
-    @AllArgsConstructor
-    class GetStatusValueRequest {
+  @Getter
+  @AllArgsConstructor
+  class GetStatusValueRequest {
 
-        private @NotNull
-        @Accessors(fluent = true) Context context;
-        private @Nullable JSONObject dynamicParameters;
-    }
+    private @NotNull @Accessors(fluent = true) Context context;
+    private @Nullable JSONObject dynamicParameters;
+  }
 }

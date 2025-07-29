@@ -10,9 +10,9 @@ import org.homio.api.ui.field.selection.UIFieldBeanSelection.UIFieldListBeanSele
 public @interface UIFieldBeanSelection {
 
   Class<?> value() default
-      Object
-          .class; // if value is Object.class then uses method return type or field type to
-                  // evalueate
+      Object.class; // if value is Object.class then uses method return type or field type to
+
+  // evalueate
 
   /**
    * Interface that uses by beans that has to be exposes via @UIFieldBeanSelection(value =

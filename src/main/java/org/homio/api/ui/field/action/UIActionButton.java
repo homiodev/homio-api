@@ -1,8 +1,7 @@
 package org.homio.api.ui.field.action;
 
-import org.homio.api.ui.UIActionHandler;
-
 import java.lang.annotation.*;
+import org.homio.api.ui.UIActionHandler;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

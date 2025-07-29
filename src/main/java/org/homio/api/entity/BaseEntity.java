@@ -1,7 +1,10 @@
 package org.homio.api.entity;
 
+import static org.homio.api.ContextSetting.setMemValue;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -17,10 +20,6 @@ import org.homio.api.model.Status;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import java.util.*;
-
-import static org.homio.api.ContextSetting.setMemValue;
 
 @Log4j2
 @MappedSuperclass

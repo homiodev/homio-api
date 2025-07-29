@@ -8,24 +8,24 @@ import org.json.JSONObject;
 
 public interface SettingPluginSlider extends SettingPluginInteger {
 
-    @Override
-    default @NotNull SettingType getSettingType() {
-        return SettingType.Slider;
-    }
+  @Override
+  default @NotNull SettingType getSettingType() {
+    return SettingType.Slider;
+  }
 
-    default Integer getStep() {
-        return null;
-    }
+  default Integer getStep() {
+    return null;
+  }
 
-    default String getHeader() {
-        return null;
-    }
+  default String getHeader() {
+    return null;
+  }
 
-    @Override
-    default @NotNull JSONObject getParameters(Context context, String value) {
-        JSONObject parameters = SettingPluginInteger.super.getParameters(context, value);
-        putOpt(parameters, "step", getStep());
-        putOpt(parameters, "header", getHeader());
-        return parameters;
-    }
+  @Override
+  default @NotNull JSONObject getParameters(Context context, String value) {
+    JSONObject parameters = SettingPluginInteger.super.getParameters(context, value);
+    putOpt(parameters, "step", getStep());
+    putOpt(parameters, "header", getHeader());
+    return parameters;
+  }
 }

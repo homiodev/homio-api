@@ -11,54 +11,55 @@ import org.json.JSONObject;
 
 public interface SettingPluginOptions<T> extends SettingPlugin<T> {
 
-    @NotNull Collection<OptionModel> getOptions(Context context, JSONObject params);
+  @NotNull
+  Collection<OptionModel> getOptions(Context context, JSONObject params);
 
-    default boolean allowEmpty() {
-        return false;
-    }
+  default boolean allowEmpty() {
+    return false;
+  }
 
-    default boolean lazyLoad() {
-        return false;
-    }
+  default boolean lazyLoad() {
+    return false;
+  }
 
-    default boolean rawInput() {
-        return false;
-    }
+  default boolean rawInput() {
+    return false;
+  }
 
-    default boolean multiSelect() {
-        return false;
-    }
+  default boolean multiSelect() {
+    return false;
+  }
 
-    @Override
-    default @NotNull SettingType getSettingType() {
-        return viewAsButton() ? SettingType.SelectBoxButton : SettingType.SelectBox;
-    }
+  @Override
+  default @NotNull SettingType getSettingType() {
+    return viewAsButton() ? SettingType.SelectBoxButton : SettingType.SelectBox;
+  }
 
-    default boolean viewAsButton() {
-        return false;
-    }
+  default boolean viewAsButton() {
+    return false;
+  }
 
-    // specify max width of rendered ui item
-    default @Nullable Integer getMaxWidth() {
-        return null;
-    }
+  // specify max width of rendered ui item
+  default @Nullable Integer getMaxWidth() {
+    return null;
+  }
 
-    default @Nullable Integer getMinWidth() {
-        return null;
-    }
+  default @Nullable Integer getMinWidth() {
+    return null;
+  }
 
-    default @NotNull JSONObject getParameters(Context context, String value) {
-        JSONObject parameters = SettingPlugin.super.getParameters(context, value);
-        if (!viewAsButton()) {
-            putOpt(parameters, "maxWidth", getMaxWidth());
-            putOpt(parameters, "minWidth", getMinWidth());
-        }
-        if (lazyLoad()) {
-            parameters.put("lazyLoad", true);
-        }
-        if (rawInput()) {
-            parameters.put("rawInput", true);
-        }
-        return parameters;
+  default @NotNull JSONObject getParameters(Context context, String value) {
+    JSONObject parameters = SettingPlugin.super.getParameters(context, value);
+    if (!viewAsButton()) {
+      putOpt(parameters, "maxWidth", getMaxWidth());
+      putOpt(parameters, "minWidth", getMinWidth());
     }
+    if (lazyLoad()) {
+      parameters.put("lazyLoad", true);
+    }
+    if (rawInput()) {
+      parameters.put("rawInput", true);
+    }
+    return parameters;
+  }
 }

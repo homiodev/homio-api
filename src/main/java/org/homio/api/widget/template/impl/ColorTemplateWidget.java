@@ -14,67 +14,84 @@ import org.homio.api.widget.template.WidgetDefinition;
 
 public class ColorTemplateWidget implements TemplateWidgetBuilder {
 
-    @Override
-    public void buildWidget(WidgetRequest widgetRequest) {
-        Context context = widgetRequest.context();
-        DeviceEndpointsBehaviourContract entity = widgetRequest.entity();
-        WidgetDefinition wd = widgetRequest.widgetDefinition();
+  @Override
+  public void buildWidget(WidgetRequest widgetRequest) {
+    Context context = widgetRequest.context();
+    DeviceEndpointsBehaviourContract entity = widgetRequest.entity();
+    WidgetDefinition wd = widgetRequest.widgetDefinition();
 
-        String layoutID = "lt-clr_" + entity.getIeeeAddress();
-        Map<String, ? extends DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
-        DeviceEndpoint onOffEndpoint = endpoints.get("state");
-        DeviceEndpoint brightnessEndpoint = endpoints.get("brightness");
-        DeviceEndpoint colorEndpoint = endpoints.get("color");
+    String layoutID = "lt-clr_" + entity.getIeeeAddress();
+    Map<String, ? extends DeviceEndpoint> endpoints = entity.getDeviceEndpoints();
+    DeviceEndpoint onOffEndpoint = endpoints.get("state");
+    DeviceEndpoint brightnessEndpoint = endpoints.get("brightness");
+    DeviceEndpoint colorEndpoint = endpoints.get("color");
 
-        context.widget().createLayoutWidget(layoutID, builder -> {
-            TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
-            builder.setBlockSize(2, 1)
-                    .setLayoutDimension(2, 6);
-        });
-
-        if (brightnessEndpoint != null) {
-            context.widget().createSliderWidget("sl_" + entity.getIeeeAddress(), builder -> {
-                builder.setBlockSize(wd.getBlockWidth(5), wd.getBlockHeight(1))
-                        .setZIndex(wd.getZIndex(20));
-                builder.attachToLayout(layoutID, 0, 0);
-                builder.addSeries(entity.getModel(), seriesBuilder -> {
-                    seriesBuilder.setIcon(entity.getEntityIcon());
-                    TemplateWidgetBuilder.setValueDataSource(seriesBuilder, context, brightnessEndpoint);
-                });
+    context
+        .widget()
+        .createLayoutWidget(
+            layoutID,
+            builder -> {
+              TemplateWidgetBuilder.buildCommon(wd, widgetRequest, builder);
+              builder.setBlockSize(2, 1).setLayoutDimension(2, 6);
             });
-        }
 
-        context.widget().createSimpleColorWidget("clr_" + entity.getIeeeAddress(), builder -> {
-            builder
-                    .setBlockSize(5, 1)
+    if (brightnessEndpoint != null) {
+      context
+          .widget()
+          .createSliderWidget(
+              "sl_" + entity.getIeeeAddress(),
+              builder -> {
+                builder
+                    .setBlockSize(wd.getBlockWidth(5), wd.getBlockHeight(1))
                     .setZIndex(wd.getZIndex(20));
-            TemplateWidgetBuilder.setValueDataSource(builder, context, colorEndpoint);
-            builder.attachToLayout(layoutID, 1, 0);
-        });
+                builder.attachToLayout(layoutID, 0, 0);
+                builder.addSeries(
+                    entity.getModel(),
+                    seriesBuilder -> {
+                      seriesBuilder.setIcon(entity.getEntityIcon());
+                      TemplateWidgetBuilder.setValueDataSource(
+                          seriesBuilder, context, brightnessEndpoint);
+                    });
+              });
+    }
 
-        if (onOffEndpoint != null) {
-            context.widget().createSimpleToggleWidget("tgl-" + entity.getIeeeAddress(), builder -> {
+    context
+        .widget()
+        .createSimpleColorWidget(
+            "clr_" + entity.getIeeeAddress(),
+            builder -> {
+              builder.setBlockSize(5, 1).setZIndex(wd.getZIndex(20));
+              TemplateWidgetBuilder.setValueDataSource(builder, context, colorEndpoint);
+              builder.attachToLayout(layoutID, 1, 0);
+            });
+
+    if (onOffEndpoint != null) {
+      context
+          .widget()
+          .createSimpleToggleWidget(
+              "tgl-" + entity.getIeeeAddress(),
+              builder -> {
                 TemplateWidgetBuilder.setValueDataSource(builder, context, onOffEndpoint);
                 builder.setAlign(HorizontalAlign.right, VerticalAlign.middle);
                 builder.attachToLayout(layoutID, 0, 5);
-            });
-        }
-
-        TemplateWidgetBuilder.addEndpoint(
-                context,
-                HorizontalAlign.right,
-                endpoints.get(ENDPOINT_SIGNAL),
-                false,
-                builder -> builder.attachToLayout(layoutID, 1, 5));
+              });
     }
 
-    @Override
-    public int getWidgetHeight(MainWidgetRequest request) {
-        throw new NotImplementedException();
-    }
+    TemplateWidgetBuilder.addEndpoint(
+        context,
+        HorizontalAlign.right,
+        endpoints.get(ENDPOINT_SIGNAL),
+        false,
+        builder -> builder.attachToLayout(layoutID, 1, 5));
+  }
 
-    @Override
-    public void buildMainWidget(MainWidgetRequest request) {
-        throw new NotImplementedException();
-    }
+  @Override
+  public int getWidgetHeight(MainWidgetRequest request) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public void buildMainWidget(MainWidgetRequest request) {
+    throw new NotImplementedException();
+  }
 }

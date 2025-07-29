@@ -1,11 +1,10 @@
 package org.homio.api.entity;
 
+import java.util.Set;
 import lombok.SneakyThrows;
 import org.homio.api.ui.field.UIField;
 import org.homio.api.ui.field.UIFieldGroup;
 import org.homio.api.ui.field.UIFieldTab;
-
-import java.util.Set;
 
 public interface HasPermissions extends HasJsonData, BaseEntityIdentifier {
   @UIField(order = 1, hideInView = true)

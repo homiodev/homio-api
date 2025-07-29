@@ -2,14 +2,6 @@ package org.homio.api.util;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.pivovarit.function.ThrowingFunction;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.homio.api.Context;
-import org.homio.hquery.hardware.network.NetworkHardwareRepository;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +10,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.homio.api.Context;
+import org.homio.hquery.hardware.network.NetworkHardwareRepository;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Log4j2
 public class HardwareUtils {

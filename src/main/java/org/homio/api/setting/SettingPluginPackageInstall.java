@@ -15,83 +15,89 @@ import org.jetbrains.annotations.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public interface SettingPluginPackageInstall extends SettingPluginButton {
 
-    String BUILT_IN_TAG = "Built-in";
+  String BUILT_IN_TAG = "Built-in";
 
-    @Override
-    default @Nullable Icon getIcon() {
-        return new Icon("fas fa-book");
-    }
+  @Override
+  default @Nullable Icon getIcon() {
+    return new Icon("fas fa-book");
+  }
 
-    PackageContext allPackages(@NotNull Context context) throws Exception;
+  PackageContext allPackages(@NotNull Context context) throws Exception;
 
-    PackageContext installedPackages(@NotNull Context context) throws Exception;
+  PackageContext installedPackages(@NotNull Context context) throws Exception;
 
-    void installPackage(@NotNull Context context, @NotNull PackageRequest packageRequest,
-                        @NotNull ProgressBar progressBar) throws Exception;
+  void installPackage(
+      @NotNull Context context,
+      @NotNull PackageRequest packageRequest,
+      @NotNull ProgressBar progressBar)
+      throws Exception;
 
-    void unInstallPackage(@NotNull Context context, @NotNull PackageRequest packageRequest,
-                          @NotNull ProgressBar progressBar) throws Exception;
+  void unInstallPackage(
+      @NotNull Context context,
+      @NotNull PackageRequest packageRequest,
+      @NotNull ProgressBar progressBar)
+      throws Exception;
 
-    @Override
-    @Nullable
-    default String getConfirmMsg() {
-        return null;
-    }
+  @Override
+  @Nullable
+  default String getConfirmMsg() {
+    return null;
+  }
 
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    @NoArgsConstructor
-    @AllArgsConstructor
-    class PackageContext {
+  @Getter
+  @Setter
+  @Accessors(chain = true)
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class PackageContext {
 
-        String error;
-        Collection<PackageModel> packages;
-    }
+    String error;
+    Collection<PackageModel> packages;
+  }
 
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    class PackageModel {
+  @Getter
+  @Setter
+  @Accessors(chain = true)
+  class PackageModel {
 
-        private String name;
-        private String title;
-        private String description;
+    private String name;
+    private String title;
+    private String description;
 
-        private String icon;
-        private String readme;
-        private Boolean readmeLazyLoading;
-        private String author;
-        private String website;
-        private String category;
-        private String jarUrl;
+    private String icon;
+    private String readme;
+    private Boolean readmeLazyLoading;
+    private String author;
+    private String website;
+    private String category;
+    private String jarUrl;
 
-        private List<String> versions;
+    private List<String> versions;
 
-        private String version;
-        private Long updated;
-        private Long size;
+    private String version;
+    private Long updated;
+    private Long size;
 
-        private Boolean disableRemovable;
+    private Boolean disableRemovable;
 
-        private Set<String> tags;
+    private Set<String> tags;
 
-        // current status
-        private Boolean installing;
-        private Boolean removing;
+    // current status
+    private Boolean installing;
+    private Boolean removing;
 
-        // last release date
-        private Long lastUpdated;
+    // last release date
+    private Long lastUpdated;
 
-        private boolean disabled; // in case if unable to install package for any reason
-    }
+    private boolean disabled; // in case if unable to install package for any reason
+  }
 
-    @Data
-    @Accessors(chain = true)
-    class PackageRequest {
+  @Data
+  @Accessors(chain = true)
+  class PackageRequest {
 
-        private String name;
-        private String url;
-        private String version;
-    }
+    private String name;
+    private String url;
+    private String version;
+  }
 }

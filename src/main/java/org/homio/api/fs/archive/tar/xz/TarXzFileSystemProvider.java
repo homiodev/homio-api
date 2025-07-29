@@ -8,16 +8,14 @@ import org.homio.api.fs.archive.tar.AbstractTarFileSystemProvider;
 
 public class TarXzFileSystemProvider extends AbstractTarFileSystemProvider {
 
-    @Override
-    public String getScheme() {
-        return "tar.xz";
-    }
+  @Override
+  public String getScheme() {
+    return "tar.xz";
+  }
 
-    @Override
-    protected AbstractTarFileSystem newInstance(
-            AbstractTarFileSystemProvider provider, Path path,
-            Map<String, ?> env) throws IOException {
-        return new TarXzFileSystem(provider, path, env);
-    }
-
+  @Override
+  protected AbstractTarFileSystem newInstance(
+      AbstractTarFileSystemProvider provider, Path path, Map<String, ?> env) throws IOException {
+    return new TarXzFileSystem(provider, path, env);
+  }
 }

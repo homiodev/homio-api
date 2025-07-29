@@ -8,18 +8,18 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @UIRouteMenu(
-        order = 50,
-        icon = "fas fa-microchip",
-        parent = UIRouteMenu.TopSidebarMenu.HARDWARE,
-        color = "#7482d0",
-        allowCreateItem = true,
-        overridePath = UIRouteMicroController.ROUTE)
+    order = 50,
+    icon = "fas fa-microchip",
+    parent = UIRouteMenu.TopSidebarMenu.HARDWARE,
+    color = "#7482d0",
+    allowCreateItem = true,
+    overridePath = UIRouteMicroController.ROUTE)
 public @interface UIRouteMicroController {
-    String ROUTE = "controllers";
+  String ROUTE = "controllers";
 
-    String icon() default "";
+  String icon() default "";
 
-    String color() default "";
+  String color() default "";
 
-    boolean allowCreateItem() default true;
+  boolean allowCreateItem() default true;
 }

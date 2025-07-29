@@ -8,17 +8,17 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @UIRouteMenu(
-        order = 900,
-        icon = "fas fa-puzzle-piece",
-        color = "#939E18",
-        allowCreateItem = true,
-        overridePath = UIRouteMisc.ROUTE)
+    order = 900,
+    icon = "fas fa-puzzle-piece",
+    color = "#939E18",
+    allowCreateItem = true,
+    overridePath = UIRouteMisc.ROUTE)
 public @interface UIRouteMisc {
-    String ROUTE = "misc";
+  String ROUTE = "misc";
 
-    String icon() default "";
+  String icon() default "";
 
-    String color() default "";
+  String color() default "";
 
-    boolean allowCreateItem() default true;
+  boolean allowCreateItem() default true;
 }

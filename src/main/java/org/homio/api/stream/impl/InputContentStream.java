@@ -1,13 +1,12 @@
 package org.homio.api.stream.impl;
 
+import java.io.InputStream;
 import lombok.Getter;
 import org.homio.api.stream.ContentStream;
 import org.homio.api.stream.StreamFormat;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-
-import java.io.InputStream;
 
 @Getter
 public class InputContentStream extends InputStreamResource implements ContentStream {

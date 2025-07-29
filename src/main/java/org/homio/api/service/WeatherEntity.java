@@ -1,5 +1,7 @@
 package org.homio.api.service;
 
+import java.util.List;
+import java.util.Map;
 import lombok.*;
 import org.homio.api.entity.device.DeviceBaseEntity;
 import org.homio.api.service.EntityService.ServiceInstance;
@@ -7,9 +9,6 @@ import org.homio.api.service.WeatherEntity.WeatherService;
 import org.homio.api.ui.route.UIRouteMisc;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.Map;
 
 @UIRouteMisc
 public abstract class WeatherEntity<T extends ServiceInstance & WeatherService> extends DeviceBaseEntity implements EntityService<T> {

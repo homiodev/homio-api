@@ -9,19 +9,20 @@ import org.jetbrains.annotations.Nullable;
 
 public interface HasVideoSources {
 
-    @JsonIgnore
-    @NotNull List<OptionModel> getVideoSources();
+  @JsonIgnore
+  @NotNull
+  List<OptionModel> getVideoSources();
 
-    default @Nullable String getPrimaryVideoSource() {
-        List<OptionModel> sources = getVideoSources();
-        if (sources.isEmpty()) {
-            return null;
-        }
-        OptionModel firstSource = sources.get(0);
-        if (firstSource.hasChildren()) {
-            List<OptionModel> models = Objects.requireNonNull(firstSource.getChildren());
-            return firstSource.getKey() + "-->" + models.get(0).getKey();
-        }
-        return firstSource.getKey();
+  default @Nullable String getPrimaryVideoSource() {
+    List<OptionModel> sources = getVideoSources();
+    if (sources.isEmpty()) {
+      return null;
     }
+    OptionModel firstSource = sources.get(0);
+    if (firstSource.hasChildren()) {
+      List<OptionModel> models = Objects.requireNonNull(firstSource.getChildren());
+      return firstSource.getKey() + "-->" + models.get(0).getKey();
+    }
+    return firstSource.getKey();
+  }
 }

@@ -64,7 +64,8 @@ public class ActionInputParameter {
     return new ActionInputParameter(name, Type.ColorPicker, null, defaultValue);
   }
 
-  public static @NotNull ActionInputParameter text(String name, String defaultValue, String... validators) {
+  public static @NotNull ActionInputParameter text(
+      String name, String defaultValue, String... validators) {
     return new ActionInputParameter(
         name, UIActionInput.Type.text, Set.of(validators), defaultValue);
   }
@@ -94,7 +95,8 @@ public class ActionInputParameter {
     return new ActionInputParameter(message, UIActionInput.Type.info, null, null);
   }
 
-  public static @NotNull ActionInputParameter message(@NotNull String message, @NotNull String param0) {
+  public static @NotNull ActionInputParameter message(
+      @NotNull String message, @NotNull String param0) {
     return new ActionInputParameter(
         Lang.getServerMessage(message, param0), UIActionInput.Type.info, null, null);
   }
@@ -109,7 +111,8 @@ public class ActionInputParameter {
   }
 
   // Options example: 1:true;0:false or 1;2;3
-  public static @NotNull ActionInputParameter select(String name, String value, List<OptionModel> options) {
+  public static @NotNull ActionInputParameter select(
+      String name, String value, List<OptionModel> options) {
     return new ActionInputParameter(name, UIActionInput.Type.select, null, value)
         .setOptions(options);
   }

@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 
 public interface ConsolePluginLines extends ConsolePlugin<Collection<String>> {
 
-    @Override
-    default @NotNull RenderType getRenderType() {
-        return RenderType.string;
-    }
+  @Override
+  default @NotNull RenderType getRenderType() {
+    return RenderType.string;
+  }
 }
