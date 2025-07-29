@@ -48,8 +48,8 @@ public interface UserEntity {
 
   void assertSettingsAccess(SettingPlugin<?> setting, Context context);
 
-  default void assertAdminAccess(String action) throws IllegalAccessException {
-    if (!isAdmin()) {
+  static void assertAdminAccess(UserEntity user, String action) throws IllegalAccessException {
+    if (user != null && !user.isAdmin()) {
       throw new IllegalAccessException("Non admin user is unable to " + action);
     }
   }
