@@ -92,6 +92,26 @@ public abstract class Scratch3ExtensionBlocks {
 
   public void init() {}
 
+  protected @NotNull Scratch3Block blockHatSingle(
+          int order,
+          @NotNull String opcode,
+          @NotNull String text,
+          @NotNull Scratch3Block.Scratch3BlockHandler handler,
+          @Nullable Consumer<Scratch3Block> configureHandler) {
+    return addBlock(
+            new Scratch3Block(order, opcode, BlockType.hat_single, text, handler, null), configureHandler);
+  }
+
+  protected @NotNull Scratch3Block blockSingle(
+          int order,
+          @NotNull String opcode,
+          @NotNull String text,
+          @NotNull Scratch3Block.Scratch3BlockHandler handler,
+          @Nullable Consumer<Scratch3Block> configureHandler) {
+    return addBlock(
+            new Scratch3Block(order, opcode, BlockType.single, text, handler, null), configureHandler);
+  }
+
   protected @NotNull Scratch3Block blockHat(
       int order,
       @NotNull String opcode,

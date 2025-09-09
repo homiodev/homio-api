@@ -25,7 +25,12 @@ public enum BlockType {
   /** Hat block which conditionally starts a block stack */
   hat,
 
-  hat_event,
+  hat_single,
+
+  /**
+   * Shape as simple rectangle
+   */
+  single,
 
   /**
    * Specialized command block which may or may not run a child branch If a child branch runs, the
